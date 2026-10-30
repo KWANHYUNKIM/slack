@@ -5,7 +5,7 @@
 ## 0. 프로젝트 개요
 - 목표: Slack과 동일하게 동작하는 팀 메신저를 직접 구현한다.
 - 분석 대상: 실제 Slack 워크스페이스 `https://app.slack.com/client/T0757A9TZUJ/C0754D3UL21`, Slack 데스크톱 앱(Electron)
-- 리버스 엔지니어링 도구: **REA** (`morluto/rea`, 설치: `npx rea-agents setup`)
+- 리버스 엔지니어링 도구: **REA** (`morluto/rea` 6.8.0, Claude Code에 MCP `rea`와 스킬 `reverse-engineer-anything`으로 설치됨. Node 24.22.1 이상 필요, 현재 Homebrew `node@24` 24.22.2)
 - 코드 베이스: **ncvgl/slawk** (MIT, Node.js · PostgreSQL · Prisma · Socket.io · React · Vite · Tailwind)를 `app/`에 받아 확장한다. (기준 커밋 `5f30358`, 2026-06-12. MIT 라이선스 고지 `app/LICENSE` 유지)
 - 저장소: `https://github.com/KWANHYUNKIM/slack` (공개 저장소이므로 비밀 정보 커밋 금지)
 - 하드웨어: Apple M2 8코어, **RAM 8GB**, 디스크 여유 약 14GB. 자원이 빠듯하므로 4장 규칙이 최우선이다.
