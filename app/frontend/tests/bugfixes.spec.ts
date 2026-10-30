@@ -1,0 +1,481 @@
+import { test, expect } from '@playwright/test';
+import { login, register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady , TEST_PASSWORD } from './helpers';
+
+test.describe('Bug #1: No console errors for non-member channels', () => {
+  test('page loads without "must be a member" errors', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Bug1 User', email, TEST_PASSWORD);
+
+    // Listen for console errors
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    // Reload the page to trigger channel fetching
+    await page.reload();
+    await expect(page.getByTestId('sidebar')).toBeVisible({ timeout: 10_000 });
+
+    // Wait a moment for any async errors to fire
+    await page.waitForTimeout(2_000);
+
+    // Check that no "must be a member" errors appeared
+    const memberErrors = consoleErrors.filter((e) => e.includes('must be a member'));
+    expect(memberErrors).toHaveLength(0);
+  });
+});
+
+test.describe('Bug #2: New users auto-joined to default channels', () => {
+  test('new user sees general and random channels after registration', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Bug2 User', email, TEST_PASSWORD);
+
+    // User should see #general and #random in the sidebar (use first() to avoid ambiguity with header)
+    await expectChannelInSidebar(page, 'general');
+    await expectChannelInSidebar(page, 'random');
+
+    // User should be able to send a message (proving they're a member)
+    await clickChannel(page, 'general');
+    // Wait for channel to be ready before sending (socket join:channel must complete)
+    await waitForChannelReady(page);
+    const testMsg = `Auto-join test ${Date.now()}`;
+    await sendMessage(page, testMsg);
+    await waitForMessage(page, testMsg);
+  });
+});
+
+test.describe('Bug #3: Channel browser to join existing channels', () => {
+  test('user can browse and join existing channels', async ({ browser }) => {
+    // User 1 creates a channel
+    const ctx1 = await browser.newContext();
+    const page1 = await ctx1.newPage();
+    const email1 = uniqueEmail();
+    await register(page1, 'Creator', email1, TEST_PASSWORD);
+    const channelName = `browse-${Date.now()}`;
+    await page1.locator('button').filter({ hasText: 'Add channels' }).click();
+    // Fill in channel name in the Create tab
+    await expect(page1.getByPlaceholder(/plan-budget/i)).toBeVisible({ timeout: 3_000 });
+    await page1.getByPlaceholder(/plan-budget/i).fill(channelName);
+    const responsePromise = page1.waitForResponse(
+      (resp) => resp.url().includes('/channels') && resp.request().method() === 'POST'
+    );
+    await page1.getByRole('button', { name: /create$/i }).click();
+    await responsePromise;
+
+    // User 2 registers and should be able to browse/join that channel
+    const ctx2 = await browser.newContext();
+    const page2 = await ctx2.newPage();
+    const email2 = uniqueEmail();
+    await register(page2, 'Joiner', email2, TEST_PASSWORD);
+
+    // Click "Add channels" - should show a dialog with tabs
+    await page2.locator('button').filter({ hasText: 'Add channels' }).click();
+
+    // Click "Browse channels" tab
+    await page2.getByRole('button', { name: /browse channels/i }).click();
+
+    // Should see the channel in the browse list (within the dialog)
+    const browseItem = page2.locator(`[data-channel-name="${channelName}"]`);
+    await expect(browseItem).toBeVisible({ timeout: 5_000 });
+
+    // Click Join on that channel
+    await browseItem.getByRole('button', { name: /join/i }).click();
+
+    // Channel should now appear in sidebar
+    await expect(
+      page2.getByTestId('sidebar').locator('button').filter({ has: page2.locator('span.truncate', { hasText: channelName }) }).first()
+    ).toBeVisible({ timeout: 5_000 });
+
+    await ctx1.close();
+    await ctx2.close();
+  });
+});
+
+test.describe('Bug #4: Search functionality', () => {
+  test('user can search for messages', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Search User', email, TEST_PASSWORD);
+
+    // Wait for general channel to appear and click it
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await expect(page.locator('.ql-editor')).toBeVisible();
+
+    // Add random suffix to avoid collision between parallel test workers
+    const searchTerm = `srch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    await sendMessage(page, searchTerm);
+    await waitForMessage(page, searchTerm);
+
+    // Type in search input
+    const searchInput = page.locator('input[placeholder="Search"]');
+    await searchInput.fill(searchTerm);
+    await searchInput.press('Enter');
+
+    // Wait for search results dropdown to appear and contain our message
+    const searchDropdown = page.locator('[data-testid="search-results-dropdown"]');
+    await expect(searchDropdown).toBeVisible({ timeout: 10_000 });
+    await expect(searchDropdown.getByText(searchTerm)).toBeVisible({ timeout: 10_000 });
+
+    // Press Escape to clear
+    await searchInput.press('Escape');
+    await expect(searchInput).toHaveValue('');
+  });
+});
+
+test.describe('Bug #5: Logout functionality', () => {
+  test('user can log out via avatar menu', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Logout User', email, TEST_PASSWORD);
+
+    // Click avatar in the nav rail
+    await page.locator('[data-testid="user-menu-button"]').click();
+
+    // Should see a menu with logout option
+    await expect(page.getByRole('button', { name: /log\s?out|sign\s?out/i })).toBeVisible();
+
+    // Click logout
+    await page.getByRole('button', { name: /log\s?out|sign\s?out/i }).click();
+
+    // Should be redirected to login page
+    await expect(page).toHaveURL(/\/login/);
+  });
+});
+
+test.describe('Bug #9: Registration error display', () => {
+  test('shows error when registration fails with duplicate email', async ({ page }) => {
+    const email = uniqueEmail();
+
+    // Register first time - should succeed
+    await register(page, 'First User', email, TEST_PASSWORD);
+
+    // Clear localStorage and navigate to register page again
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('/register');
+
+    // Try to register again with same email
+    await page.getByPlaceholder('Full name').fill('Second User');
+    await page.getByPlaceholder('name@work-email.com').fill(email);
+    await page.getByPlaceholder('Password', { exact: true }).fill(TEST_PASSWORD);
+    await page.getByPlaceholder('Confirm password').fill(TEST_PASSWORD);
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    // Should show error message
+    await expect(page.getByText(/unable to complete registration|already registered|already exists|error/i)).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('shows error for mismatched passwords', async ({ page }) => {
+    await page.goto('/register');
+    await page.getByPlaceholder('Full name').fill('Mismatch User');
+    await page.getByPlaceholder('name@work-email.com').fill(uniqueEmail());
+    await page.getByPlaceholder('Password', { exact: true }).fill(TEST_PASSWORD);
+    await page.getByPlaceholder('Confirm password').fill('differentpassword');
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    // Should show error about password mismatch
+    await expect(page.getByText(/passwords do not match/i)).toBeVisible({ timeout: 3_000 });
+  });
+});
+
+test.describe('Bug #10: Create channel validation', () => {
+  test('shows validation error for empty channel name', async ({ page }) => {
+    await register(page, 'ChanVal User', uniqueEmail(), TEST_PASSWORD);
+    await page.locator('button').filter({ hasText: 'Add channels' }).click();
+
+    // Create button should be disabled when name is empty
+    const createBtn = page.getByRole('button', { name: /create$/i });
+    await expect(createBtn).toBeDisabled();
+
+    // Type whitespace only
+    await page.getByPlaceholder(/plan-budget/i).fill('   ');
+    await expect(createBtn).toBeDisabled();
+  });
+});
+
+test.describe('Bug #11: Add teammates button', () => {
+  test('add teammates button opens a user picker dialog', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'DM User', email, TEST_PASSWORD);
+
+    // Wait for sidebar to load
+    await expect(page.locator('button').filter({ hasText: 'Add teammates' })).toBeVisible({ timeout: 10_000 });
+
+    // Click Add teammates
+    await page.locator('button').filter({ hasText: 'Add teammates' }).click();
+
+    // Should show a dialog/modal for finding users
+    await expect(page.getByText('Find or start a conversation')).toBeVisible({ timeout: 5_000 });
+  });
+});
+
+test.describe('Bug #3: No TypeError from fetchDirectMessages with null entries', () => {
+  test('null entry in DM API response does not throw TypeError', async ({ page }) => {
+    const email = uniqueEmail();
+
+    // Patch window.fetch before any app code runs to inject a null DM entry
+    await page.addInitScript(() => {
+      const orig = window.fetch.bind(window);
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const resp = await orig(input, init);
+        if (url.endsWith('/dms') && !url.match(/\/dms\/\d+/)) {
+          const body = await resp.clone().json();
+          if (Array.isArray(body)) {
+            return new Response(JSON.stringify([null, ...body]), {
+              status: resp.status,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        return resp;
+      };
+    });
+
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+
+    await register(page, 'DmNull User', email, TEST_PASSWORD);
+    await expectChannelInSidebar(page, 'general');
+    await page.waitForTimeout(1_000);
+
+    const typeErrors = consoleErrors.filter((e) => e.includes('Failed to fetch DMs'));
+    expect(typeErrors).toHaveLength(0);
+  });
+});
+
+test.describe('Bug #12: Channel star/favorite', () => {
+  test('starring a channel adds it to a Starred section in the sidebar', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Star User', email, TEST_PASSWORD);
+
+    // Open general channel
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await expect(page.locator('.ql-editor')).toBeVisible();
+
+    // Click the star button in the channel header
+    await page.locator('[data-testid="star-channel-button"]').click();
+
+    // A "Starred" section should appear in the sidebar
+    await expect(page.getByText('Starred', { exact: true })).toBeVisible({ timeout: 3_000 });
+
+    // The general channel should appear under the Starred section
+    const starredSection = page.locator('[data-testid="starred-section"]');
+    await expect(starredSection).toBeVisible();
+    await expect(starredSection.locator('button').filter({ has: page.locator('span.truncate', { hasText: 'general' }) })).toBeVisible();
+  });
+
+  test('un-starring a channel removes it from the Starred section', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Unstar User', email, TEST_PASSWORD);
+
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await expect(page.locator('.ql-editor')).toBeVisible();
+
+    // Star it
+    await page.locator('[data-testid="star-channel-button"]').click();
+    await expect(page.getByText('Starred', { exact: true })).toBeVisible({ timeout: 3_000 });
+
+    // Un-star it
+    await page.locator('[data-testid="star-channel-button"]').click();
+
+    // Starred section should disappear (no starred channels)
+    await expect(page.getByText('Starred', { exact: true })).not.toBeVisible({ timeout: 3_000 });
+  });
+});
+
+test.describe('Bug #11: Reaction emoji size inside pill', () => {
+  test('reaction emoji span has font-size of 14px (text-sm for uniform pill height)', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'EmojiSize User', email, TEST_PASSWORD);
+
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+
+    const msg = `emoji-size-${Date.now()}`;
+    await sendMessage(page, msg);
+    await waitForMessage(page, msg);
+
+    const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg });
+
+    // Add a 👍 reaction via hover toolbar
+    await messageRow.hover();
+    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    await hoverToolbar.locator('button').first().click();
+    const searchBox = page.getByRole('searchbox', { name: 'Search' });
+    await expect(searchBox).toBeVisible({ timeout: 5_000 });
+    await searchBox.fill('thumbsup');
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: '👍', exact: true }).click();
+
+    // Wait for reaction pill to appear
+    const reactionPill = messageRow.locator('button.inline-flex.items-center.gap-1').first();
+    await expect(reactionPill).toBeVisible({ timeout: 5_000 });
+
+    // The emoji span uses text-sm (14px) to ensure uniform pill height (Bug 9 fix)
+    const emojiSpan = reactionPill.locator('[data-testid="reaction-emoji"]');
+    await expect(emojiSpan).toHaveCSS('font-size', '14px');
+  });
+});
+
+test.describe('Bug #10: No video icon in message composer', () => {
+  test('video camera button is not present in the composer toolbar', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'NoVideo User', email, TEST_PASSWORD);
+
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await expect(page.locator('.ql-editor')).toBeVisible();
+
+    // The video button should NOT exist in the composer bottom toolbar
+    // (lucide Video icon renders as an SVG with a specific path shape)
+    await expect(page.locator('[data-testid="video-call-button"]')).toHaveCount(0);
+  });
+});
+
+test.describe('Bug #1: Pinned message does not show (edited) label', () => {
+  test('pinning a message does not make it show (edited)', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'PinEdit User', email, TEST_PASSWORD);
+
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+
+    const msg = `pin-edited-${Date.now()}`;
+    await sendMessage(page, msg);
+    await waitForMessage(page, msg);
+
+    const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg });
+    await messageRow.hover();
+
+    // Open the ⋮ more menu (4th button in hover toolbar)
+    const toolbar = messageRow.locator('.absolute.-top-4.right-5').first();
+    await toolbar.locator('button').nth(3).click();
+
+    // Pin the message
+    await page.getByRole('button', { name: /^pin message$/i }).click();
+
+    // The "(edited)" badge must NOT appear — pinning is not a content edit
+    await page.waitForTimeout(500);
+    await expect(messageRow.getByText('(edited)')).toHaveCount(0);
+  });
+});
+
+test.describe('Bug #9: Pinned message has orange background', () => {
+  test('pinned message row shows #FEF9ED background', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'PinBg User', email, TEST_PASSWORD);
+
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+
+    const msg = `pin-bg-${Date.now()}`;
+    await sendMessage(page, msg);
+    await waitForMessage(page, msg);
+
+    const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg });
+    await messageRow.hover();
+
+    // Open the ⋮ more menu (4th button in hover toolbar)
+    const toolbar = messageRow.locator('.absolute.-top-4.right-5').first();
+    await toolbar.locator('button').nth(3).click();
+
+    // Pin the message
+    await page.getByRole('button', { name: /^pin message$/i }).click();
+
+    // The message row must now have #FEF9ED background (rgb(254, 249, 237))
+    await expect(messageRow).toHaveCSS('background-color', 'rgb(254, 249, 237)');
+  });
+});
+
+test.describe('Bug #12: Bookmark button', () => {
+  test('bookmark button shows feedback when clicked', async ({ page }) => {
+    const email = uniqueEmail();
+    await register(page, 'Bookmark User', email, TEST_PASSWORD);
+
+    // Wait for general channel and click it
+    await expectChannelInSidebar(page, 'general');
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+    const msg = `Bookmark test ${Date.now()}`;
+    await sendMessage(page, msg);
+    await waitForMessage(page, msg);
+
+    // Hover over the message
+    const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg });
+    await messageRow.hover();
+
+    // The hover toolbar should appear - click the bookmark button (3rd button in toolbar)
+    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    await expect(hoverToolbar).toBeVisible();
+    // Bookmark is the 3rd button
+    await hoverToolbar.locator('button').nth(2).click();
+
+    // The bookmark icon should now have yellow fill
+    await expect(hoverToolbar.locator('.text-yellow-500')).toBeVisible({ timeout: 3_000 });
+  });
+});
+
+test.describe('Bug #4: Leave channel UI', () => {
+  test('user can leave a non-default channel via the channel header menu', async ({ browser }) => {
+    // User 1 creates a channel
+    const ctx1 = await browser.newContext();
+    const page1 = await ctx1.newPage();
+    const email1 = uniqueEmail();
+    await register(page1, 'LeaveOwner', email1, TEST_PASSWORD);
+    const channelName = `leave-test-${Date.now()}`;
+    await page1.locator('button').filter({ hasText: 'Add channels' }).click();
+    await expect(page1.getByPlaceholder(/plan-budget/i)).toBeVisible({ timeout: 3_000 });
+    await page1.getByPlaceholder(/plan-budget/i).fill(channelName);
+    const createResp = page1.waitForResponse(
+      (resp) => resp.url().includes('/channels') && resp.request().method() === 'POST'
+    );
+    await page1.getByRole('button', { name: /create$/i }).click();
+    await createResp;
+    await ctx1.close();
+
+    // User 2 registers, joins the channel, then leaves
+    const ctx2 = await browser.newContext();
+    const page2 = await ctx2.newPage();
+    const email2 = uniqueEmail();
+    await register(page2, 'LeaveJoiner', email2, TEST_PASSWORD);
+
+    // Browse and join the channel
+    await page2.locator('button').filter({ hasText: 'Add channels' }).click();
+    await page2.getByRole('button', { name: /browse channels/i }).click();
+    const browseItem = page2.locator(`[data-channel-name="${channelName}"]`);
+    await expect(browseItem).toBeVisible({ timeout: 5_000 });
+    await browseItem.getByRole('button', { name: /join/i }).click();
+
+    // Channel should appear in sidebar
+    const sidebarChannelBtn = page2.getByTestId('sidebar').locator('button').filter({ has: page2.locator('span.truncate', { hasText: channelName }) }).first();
+    await expect(sidebarChannelBtn).toBeVisible({ timeout: 5_000 });
+
+    // Click the channel to make it active
+    await sidebarChannelBtn.click();
+    await expect(page2.locator('.ql-editor')).toBeVisible();
+
+    // Open the channel header menu (⋮ button)
+    await page2.locator('[data-testid="channel-header-menu"]').click();
+
+    // Should show a "Leave channel" option
+    await expect(page2.getByRole('button', { name: /leave channel/i })).toBeVisible({ timeout: 3_000 });
+
+    // Click leave
+    await page2.getByRole('button', { name: /leave channel/i }).click();
+
+    // Channel should no longer appear in the sidebar
+    const sidebar = page2.locator('[data-testid="sidebar"]');
+    await expect(
+      sidebar.locator('button').filter({ has: page2.locator('span.truncate', { hasText: channelName }) }).first()
+    ).not.toBeVisible({ timeout: 5_000 });
+
+    await ctx2.close();
+  });
+});

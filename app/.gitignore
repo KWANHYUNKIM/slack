@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+.claude/
+frontend/playwright-report/
+frontend/test-results/
+backend/test-results/
+screenshots/
+my_prompts/deprecated/
+stop_hook_template/

@@ -1,0 +1,71 @@
+steps:
+  # Pull previous image for cache (ignore failure on first build)
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull ${_IMAGE}:latest || true']
+
+  # Build with cache
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from=${_IMAGE}:latest'
+      - '-t=${_IMAGE}:${BUILD_ID}'
+      - '-t=${_IMAGE}:latest'
+      - '.'
+
+  # Push both tags
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_IMAGE}']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image=${_IMAGE}:${BUILD_ID}'
+      - '--region=${_REGION}'
+      - '--add-cloudsql-instances=${_CLOUD_SQL}'
+      - '--set-env-vars=DATABASE_URL=${_DATABASE_URL}'
+      - '--set-env-vars=JWT_SECRET=${_JWT_SECRET}'
+      - '--set-env-vars=GCS_BUCKET_NAME=${_GCS_BUCKET}'
+      - '--set-env-vars=NODE_ENV=production'
+      - '--set-env-vars=VAPID_PUBLIC_KEY=${_VAPID_PUBLIC_KEY}'
+      - '--set-env-vars=VAPID_PRIVATE_KEY=${_VAPID_PRIVATE_KEY}'
+      - '--set-env-vars=VAPID_SUBJECT=${_VAPID_SUBJECT}'
+      - '--set-env-vars=RUN_SEED=${_RUN_SEED}'
+      - '--timeout=3600'
+      - '--session-affinity'
+      - '--min-instances=1'
+      - '--max-instances=3'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--allow-unauthenticated'
+
+  # Ensure traffic routes to the new revision
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'services'
+      - 'update-traffic'
+      - '${_SERVICE}'
+      - '--to-latest'
+      - '--region=${_REGION}'
+
+substitutions:
+  _SERVICE: slawk
+  _REGION: us-central1
+  _IMAGE: ''
+  _CLOUD_SQL: ''
+  _GCS_BUCKET: ''
+  _RUN_SEED: 'false'
+  _DATABASE_URL: ''
+  _JWT_SECRET: ''
+  _VAPID_PUBLIC_KEY: ''
+  _VAPID_PRIVATE_KEY: ''
+  _VAPID_SUBJECT: 'mailto:admin@slawk.dev'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

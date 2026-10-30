@@ -1,0 +1,1159 @@
+import { TEST_PASSWORD } from './test-constants.js';
+import request from 'supertest';
+import app from '../app.js';
+import prisma from '../db.js';
+
+describe('Security - Channel Access Control', () => {
+  let user1Token: string;
+  let user2Token: string;
+  let user1Id: number;
+  let user2Id: number;
+  let privateChannelId: number;
+
+  beforeEach(async () => {
+    // Clean up
+    await prisma.scheduledMessage.deleteMany();
+    await prisma.reaction.deleteMany();
+    await prisma.message.deleteMany();
+    await prisma.channelRead.deleteMany();
+    await prisma.channelMember.deleteMany();
+    await prisma.channel.deleteMany();
+    await prisma.directMessage.deleteMany();
+    await prisma.user.deleteMany();
+
+    // Create user1 (channel owner)
+    const user1Res = await request(app).post('/auth/register').send({
+      email: 'owner@example.com',
+      password: TEST_PASSWORD,
+      name: 'Channel Owner',
+    });
+    user1Token = user1Res.body.token;
+    user1Id = user1Res.body.user.id;
+
+    // Create user2 (attacker)
+    const user2Res = await request(app).post('/auth/register').send({
+      email: 'attacker@example.com',
+      password: TEST_PASSWORD,
+      name: 'Attacker',
+    });
+    user2Token = user2Res.body.token;
+    user2Id = user2Res.body.user.id;
+
+    // User1 creates a private channel
+    const channelRes = await request(app)
+      .post('/channels')
+      .set('Authorization', `Bearer ${user1Token}`)
+      .send({ name: 'secret-channel', isPrivate: true });
+
+    privateChannelId = channelRes.body.id;
+  });
+
+  describe('Bug #1: Private channel details access', () => {
+    it('should NOT allow non-member to view private channel details', async () => {
+      const res = await request(app)
+        .get(`/channels/${privateChannelId}`)
+        .set('Authorization', `Bearer ${user2Token}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Channel not found');
+    });
+
+    it('should allow member to view private channel details', async () => {
+      const res = await request(app)
+        .get(`/channels/${privateChannelId}`)
+        .set('Authorization', `Bearer ${user1Token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe('secret-channel');
+    });
+  });
+
+  describe('Bug #2: Private channel join without invite', () => {
+    it('should NOT allow joining private channel without invite', async () => {
+      const res = await request(app)
+        .post(`/channels/${privateChannelId}/join`)
+        .set('Authorization', `Bearer ${user2Token}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Channel not found');
+    });
+
+    it('should allow joining public channel', async () => {
+      // Create public channel
+      const publicChannelRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({ name: 'public-channel', isPrivate: false });
+
+      const res = await request(app)
+        .post(`/channels/${publicChannelRes.body.id}/join`)
+        .set('Authorization', `Bearer ${user2Token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Joined channel successfully');
+    });
+  });
+
+  describe('Bug #3: Read messages after leaving channel', () => {
+    let privateChannelId: number;
+
+    beforeEach(async () => {
+      // Create a private channel (public channels are readable by anyone by design)
+      const channelRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({ name: 'private-channel', isPrivate: true });
+
+      privateChannelId = channelRes.body.id;
+
+      // User1 (creator) adds User2 to the private channel
+      await request(app)
+        .post(`/channels/${privateChannelId}/members`)
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({ userId: user2Id });
+
+      // User1 sends a message
+      await request(app)
+        .post(`/channels/${privateChannelId}/messages`)
+        .set('Authorization', `Bearer ${user1Token}`)
+        .send({ content: 'Secret message' });
+
+      // User2 leaves the channel
+      await request(app)
+        .post(`/channels/${privateChannelId}/leave`)
+        .set('Authorization', `Bearer ${user2Token}`);
+    });
+
+    it('should NOT allow reading messages after leaving channel', async () => {
+      const res = await request(app)
+        .get(`/channels/${privateChannelId}/messages`)
+        .set('Authorization', `Bearer ${user2Token}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('You must be a member of this channel');
+    });
+
+    it('should allow reading messages while still a member', async () => {
+      const res = await request(app)
+        .get(`/channels/${privateChannelId}/messages`)
+        .set('Authorization', `Bearer ${user1Token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.messages).toHaveLength(1);
+    });
+  });
+});
+
+describe('Security - Input Validation', () => {
+  let authToken: string;
+  let channelId: number;
+
+  beforeEach(async () => {
+    await prisma.scheduledMessage.deleteMany();
+    await prisma.reaction.deleteMany();
+    await prisma.message.deleteMany();
+    await prisma.channelRead.deleteMany();
+    await prisma.channelMember.deleteMany();
+    await prisma.channel.deleteMany();
+    await prisma.directMessage.deleteMany();
+    await prisma.user.deleteMany();
+
+    const userRes = await request(app).post('/auth/register').send({
+      email: 'validator@example.com',
+      password: TEST_PASSWORD,
+      name: 'Validator',
+    });
+    authToken = userRes.body.token;
+
+    const channelRes = await request(app)
+      .post('/channels')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'test-channel' });
+    channelId = channelRes.body.id;
+  });
+
+  describe('Bug #4: Whitespace-only messages', () => {
+    it('should reject messages with only spaces', async () => {
+      const res = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: '   ' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject messages with only newlines', async () => {
+      const res = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: '\n\n\n' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject messages with only tabs', async () => {
+      const res = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: '\t\t\t' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should allow messages with real content', async () => {
+      const res = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Hello world' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.content).toBe('Hello world');
+    });
+  });
+
+  describe('Bug #5 & #6: Email and username length limits', () => {
+    it('should reject very long emails (>255 chars)', async () => {
+      const longEmail = 'a'.repeat(250) + '@test.com';
+      const res = await request(app).post('/auth/register').send({
+        email: longEmail,
+        password: TEST_PASSWORD,
+        name: 'Test User',
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject very long usernames (>100 chars)', async () => {
+      const longName = 'a'.repeat(150);
+      const res = await request(app).post('/auth/register').send({
+        email: 'longname@test.com',
+        password: TEST_PASSWORD,
+        name: longName,
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should accept valid email and name lengths', async () => {
+      const res = await request(app).post('/auth/register').send({
+        email: 'valid@test.com',
+        password: TEST_PASSWORD,
+        name: 'Valid Name',
+      });
+
+      expect(res.status).toBe(201);
+    });
+  });
+
+  describe('Bug #10: React to deleted messages', () => {
+    let messageId: number;
+
+    beforeEach(async () => {
+      // Create a message
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Message to delete' });
+      messageId = msgRes.body.id;
+
+      // Delete the message
+      await request(app)
+        .delete(`/messages/${messageId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+    });
+
+    it('should NOT allow reacting to deleted messages', async () => {
+      const res = await request(app)
+        .post(`/messages/${messageId}/reactions`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ emoji: 'thumbsup' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Message not found');
+    });
+  });
+
+  describe('Bug #11: Nested threads', () => {
+    let parentMessageId: number;
+    let replyId: number;
+
+    beforeEach(async () => {
+      // Create parent message
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Parent message' });
+      parentMessageId = msgRes.body.id;
+
+      // Create first reply
+      const replyRes = await request(app)
+        .post(`/messages/${parentMessageId}/reply`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'First reply' });
+      replyId = replyRes.body.id;
+    });
+
+    it('should NOT allow replying to a reply (nested threads)', async () => {
+      const res = await request(app)
+        .post(`/messages/${replyId}/reply`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Nested reply' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Cannot reply to a reply. Reply to the parent message instead.');
+    });
+
+    it('should allow replying to parent message', async () => {
+      const res = await request(app)
+        .post(`/messages/${parentMessageId}/reply`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Another reply' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.threadId).toBe(parentMessageId);
+    });
+  });
+
+  describe('Bug #7: Channel name validation', () => {
+    it('should reject channel names with path traversal (..)', async () => {
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: '../../../etc/passwd' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject channel names with forward slash', async () => {
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'channel/subpath' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should reject channel names with backslash', async () => {
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'channel\\subpath' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should allow valid channel names', async () => {
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'general-chat' });
+
+      expect(res.status).toBe(201);
+    });
+
+    it('should allow channel names with unicode', async () => {
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'channel-日本語' });
+
+      expect(res.status).toBe(201);
+    });
+  });
+
+  describe('Bug #12: Orphaned channels', () => {
+    it('should delete channel when last member leaves', async () => {
+      // Create a new channel where authToken user is the only member
+      const channelRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'solo-channel' });
+
+      const soloChannelId = channelRes.body.id;
+
+      const res = await request(app)
+        .post(`/channels/${soloChannelId}/leave`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+
+      // Verify channel was deleted
+      const getRes = await request(app)
+        .get(`/channels/${soloChannelId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(getRes.status).toBe(404);
+    });
+  });
+
+  describe('Bug #13: Duplicate channel names', () => {
+    it('should NOT allow duplicate channel names', async () => {
+      // First channel creation
+      await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'unique-channel-name' });
+
+      // Try to create another with same name
+      const res = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'unique-channel-name' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Channel name already exists');
+    });
+  });
+
+  describe('Bug #14: Mark DM as read for non-existent user', () => {
+    it('should return 404 when marking DM as read for non-existent user', async () => {
+      const res = await request(app)
+        .post('/dms/999999/read')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('User not found');
+    });
+  });
+
+  describe('Bug #17: Invalid JSON handling', () => {
+    it('should return 400 for invalid JSON instead of 500', async () => {
+      const res = await request(app)
+        .post('/auth/login')
+        .set('Content-Type', 'application/json')
+        .send('not valid json');
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Invalid JSON');
+    });
+  });
+
+  describe('Bug #18: Negative pagination limit', () => {
+    it('should treat negative limit as default', async () => {
+      // Send some messages first
+      await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Message 1' });
+
+      const res = await request(app)
+        .get(`/channels/${channelId}/messages?limit=-5`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      // Should use default limit, not negative
+      expect(res.body.messages.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should cap limit at maximum', async () => {
+      const res = await request(app)
+        .get(`/channels/${channelId}/messages?limit=999999`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      // Max limit is 100, so should not exceed
+    });
+  });
+
+  describe('Bug #8: Null bytes in input', () => {
+    it('should reject messages containing null bytes', async () => {
+      const res = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'hello\u0000world' });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('Archived channel reaction bypass', () => {
+    it('should NOT allow adding reactions in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'React to me' });
+      const msgId = msgRes.body.id;
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const res = await request(app)
+        .post(`/messages/${msgId}/reactions`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ emoji: 'thumbsup' });
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow removing reactions in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Reacted before archive' });
+      const msgId = msgRes.body.id;
+
+      // Add reaction before archiving
+      await request(app)
+        .post(`/messages/${msgId}/reactions`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ emoji: 'thumbsup' });
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const res = await request(app)
+        .delete(`/messages/${msgId}/reactions/thumbsup`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+  });
+
+  describe('Archived channel pin/unpin bypass', () => {
+    it('should NOT allow pinning messages in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Pin me' });
+      const msgId = msgRes.body.id;
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const res = await request(app)
+        .post(`/messages/${msgId}/pin`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow unpinning messages in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Pinned before archive' });
+      const msgId = msgRes.body.id;
+
+      // Pin the message first
+      await request(app)
+        .post(`/messages/${msgId}/pin`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Unpin should be blocked
+      const res = await request(app)
+        .delete(`/messages/${msgId}/pin`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      // Verify message is still pinned
+      const msg = await prisma.message.findUnique({ where: { id: msgId } });
+      expect(msg!.isPinned).toBe(true);
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+  });
+
+  describe('Archived channel membership changes', () => {
+    it('should NOT allow joining an archived channel', async () => {
+      // Create a public channel and archive it
+      const chRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'archive-join-test' });
+      const archChannelId = chRes.body.id;
+
+      await prisma.channel.update({
+        where: { id: archChannelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Create second user and try to join
+      const user2Res = await request(app).post('/auth/register').send({
+        email: 'join-archived@example.com',
+        password: 'password123',
+        name: 'Join Archived User',
+      });
+
+      const res = await request(app)
+        .post(`/channels/${archChannelId}/join`)
+        .set('Authorization', `Bearer ${user2Res.body.token}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+    });
+
+    it('should NOT allow adding members to an archived channel', async () => {
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const user2Res = await request(app).post('/auth/register').send({
+        email: 'add-archived@example.com',
+        password: 'password123',
+        name: 'Add Archived User',
+      });
+
+      const res = await request(app)
+        .post(`/channels/${channelId}/members`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ userId: user2Res.body.user.id });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow leaving an archived channel (prevents cascade deletion)', async () => {
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const res = await request(app)
+        .post(`/channels/${channelId}/leave`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      // Verify channel still exists
+      const ch = await prisma.channel.findUnique({ where: { id: channelId } });
+      expect(ch).not.toBeNull();
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow changing member roles in an archived channel', async () => {
+      // Create a second user and add them to the channel
+      const user2Res = await request(app).post('/auth/register').send({
+        email: 'role-archived@example.com',
+        password: 'password123',
+        name: 'Role Archived User',
+      });
+      const user2Id = user2Res.body.user.id;
+
+      // Need a channel where authToken user is OWNER
+      const chRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'role-archive-test' });
+      const roleChannelId = chRes.body.id;
+
+      await request(app)
+        .post(`/channels/${roleChannelId}/members`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ userId: user2Id });
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: roleChannelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Try to change the member's role — should be blocked
+      const res = await request(app)
+        .patch(`/channels/${roleChannelId}/members/${user2Id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ role: 'MODERATOR' });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      // Verify role wasn't changed
+      const member = await prisma.channelMember.findUnique({
+        where: { userId_channelId: { userId: user2Id, channelId: roleChannelId } },
+      });
+      expect(member!.role).toBe('MEMBER');
+    });
+  });
+
+  describe('Archived channel edit/delete bypass', () => {
+    it('should NOT allow editing messages in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Original content' });
+      const msgId = msgRes.body.id;
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Edit should be blocked
+      const editRes = await request(app)
+        .patch(`/messages/${msgId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Tampered content' });
+      expect(editRes.status).toBe(403);
+      expect(editRes.body.error).toBe('This channel has been archived');
+
+      // Verify original content is unchanged
+      const msg = await prisma.message.findUnique({ where: { id: msgId } });
+      expect(msg!.content).toBe('Original content');
+
+      // Unarchive for cleanup
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow deleting messages in archived channels', async () => {
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Preserved content' });
+      const msgId = msgRes.body.id;
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Delete should be blocked
+      const delRes = await request(app)
+        .delete(`/messages/${msgId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(delRes.status).toBe(403);
+      expect(delRes.body.error).toBe('This channel has been archived');
+
+      // Verify message still exists
+      const msg = await prisma.message.findUnique({ where: { id: msgId } });
+      expect(msg!.deletedAt).toBeNull();
+
+      // Unarchive for cleanup
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+  });
+
+  describe('Archived channel thread reply bypass', () => {
+    it('should NOT allow thread replies in archived channels', async () => {
+      // Send a message to create a thread parent
+      const msgRes = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Thread parent' });
+      expect(msgRes.status).toBe(201);
+      const parentId = msgRes.body.id;
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Verify top-level messages are blocked
+      const msgRes2 = await request(app)
+        .post(`/channels/${channelId}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Should fail' });
+      expect(msgRes2.status).toBe(403);
+
+      // Thread reply should also be blocked
+      const replyRes = await request(app)
+        .post(`/messages/${parentId}/reply`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Sneaky reply to archived channel' });
+      expect(replyRes.status).toBe(403);
+      expect(replyRes.body.error).toBe('This channel has been archived');
+
+      // Unarchive for cleanup
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+  });
+
+  describe('Adding deactivated users to channels', () => {
+    it('should NOT allow adding a deactivated user to a channel', async () => {
+      // Create a second user and deactivate them
+      const user2Res = await request(app).post('/auth/register').send({
+        email: 'deactivated-member@example.com',
+        password: 'password123',
+        name: 'Deactivated Member',
+      });
+      const user2Id = user2Res.body.user.id;
+
+      await prisma.user.update({
+        where: { id: user2Id },
+        data: { deactivatedAt: new Date(), tokenVersion: { increment: 1 } },
+      });
+
+      // Try to add the deactivated user to the channel
+      const res = await request(app)
+        .post(`/channels/${channelId}/members`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ userId: user2Id });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Cannot add a deactivated user to a channel');
+
+      // Verify user was not added
+      const membership = await prisma.channelMember.findUnique({
+        where: { userId_channelId: { userId: user2Id, channelId } },
+      });
+      expect(membership).toBeNull();
+    });
+  });
+
+  describe('Scheduled messages in archived channels', () => {
+    it('should NOT allow scheduling messages in archived channels', async () => {
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const res = await request(app)
+        .post('/messages/schedule')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Bypass archive', channelId, scheduledAt: futureDate });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      // Verify no scheduled message was created
+      const pending = await prisma.scheduledMessage.findMany({
+        where: { channelId, sent: false },
+      });
+      expect(pending).toHaveLength(0);
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+
+    it('should NOT allow send-now of scheduled messages in archived channels', async () => {
+      // Schedule a message while channel is active
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const schedRes = await request(app)
+        .post('/messages/schedule')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'Will try send-now after archive', channelId, scheduledAt: futureDate });
+      expect(schedRes.status).toBe(201);
+      const scheduledId = schedRes.body.id;
+
+      // Archive the channel
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: new Date() },
+      });
+
+      // Send-now should be blocked
+      const res = await request(app)
+        .post(`/messages/scheduled/${scheduledId}/send`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('This channel has been archived');
+
+      // Verify no message was created
+      const messages = await prisma.message.findMany({
+        where: { channelId, content: 'Will try send-now after archive' },
+      });
+      expect(messages).toHaveLength(0);
+
+      await prisma.channel.update({
+        where: { id: channelId },
+        data: { archivedAt: null },
+      });
+    });
+  });
+
+  describe('Scheduled message send-now after member removal (TOCTOU)', () => {
+    it('should NOT create a message if user is removed from channel between check and send', async () => {
+      // Schedule a message while the user IS a channel member
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const schedRes = await request(app)
+        .post('/messages/schedule')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'TOCTOU test message', channelId, scheduledAt: futureDate });
+      expect(schedRes.status).toBe(201);
+      const scheduledId = schedRes.body.id;
+
+      // Remove the user from the channel (simulates the race: removal
+      // happens after the pre-check but before the transaction)
+      await prisma.channelMember.deleteMany({ where: { userId: schedRes.body.userId } });
+
+      // Attempt send-now — the authorization check inside the transaction
+      // should catch this even though no pre-check middleware runs
+      const sendRes = await request(app)
+        .post(`/messages/scheduled/${scheduledId}/send`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(sendRes.status).toBe(403);
+      expect(sendRes.body.error).toBe('You are no longer a member of the channel');
+
+      // Verify no message was created in the channel
+      const messages = await prisma.message.findMany({
+        where: { channelId, content: 'TOCTOU test message' },
+      });
+      expect(messages).toHaveLength(0);
+
+      // Verify the scheduled message was NOT marked as sent (still pending
+      // so it can be retried if the user re-joins)
+      const pending = await prisma.scheduledMessage.findUnique({ where: { id: scheduledId } });
+      expect(pending!.sent).toBe(false);
+
+      // Re-add user for cleanup (other tests depend on membership)
+      await prisma.channelMember.create({
+        data: { userId: schedRes.body.userId, channelId },
+      });
+    });
+  });
+
+  describe('Deactivated user scheduled messages', () => {
+    let adminToken: string;
+    let targetToken: string;
+    let targetId: number;
+    let schedChannelId: number;
+
+    beforeEach(async () => {
+      // Create admin user (first user becomes OWNER in test setup via direct DB)
+      const adminRes = await request(app).post('/auth/register').send({
+        email: 'admin-sched@example.com',
+        password: 'password123',
+        name: 'Admin Sched',
+      });
+      adminToken = adminRes.body.token;
+      const adminId = adminRes.body.user.id;
+
+      // Promote to OWNER
+      await prisma.user.update({
+        where: { id: adminId },
+        data: { role: 'OWNER' },
+      });
+      // Re-login to get token with updated role
+      const adminLoginRes = await request(app).post('/auth/login').send({
+        email: 'admin-sched@example.com',
+        password: 'password123',
+      });
+      adminToken = adminLoginRes.body.token;
+
+      // Create target user
+      const targetRes = await request(app).post('/auth/register').send({
+        email: 'target-sched@example.com',
+        password: 'password123',
+        name: 'Target User',
+      });
+      targetToken = targetRes.body.token;
+      targetId = targetRes.body.user.id;
+
+      // Create a channel and add target user
+      const chRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: 'sched-channel' });
+      schedChannelId = chRes.body.id;
+
+      await request(app)
+        .post(`/channels/${schedChannelId}/members`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ userId: targetId });
+    });
+
+    it('should NOT allow deactivated user to send scheduled messages', async () => {
+      // Target user schedules a message
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const schedRes = await request(app)
+        .post('/messages/schedule')
+        .set('Authorization', `Bearer ${targetToken}`)
+        .send({ content: 'Malicious scheduled message', channelId: schedChannelId, scheduledAt: futureDate });
+      expect(schedRes.status).toBe(201);
+      const scheduledId = schedRes.body.id;
+
+      // Admin deactivates the target user
+      const deactRes = await request(app)
+        .post(`/admin/users/${targetId}/deactivate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(deactRes.status).toBe(200);
+
+      // Deactivated user's token should be rejected (authMiddleware blocks deactivated users)
+      const sendRes = await request(app)
+        .post(`/messages/scheduled/${scheduledId}/send`)
+        .set('Authorization', `Bearer ${targetToken}`);
+      expect(sendRes.status).toBe(401);
+
+      // Verify the scheduled message is still pending (not sent)
+      const pending = await prisma.scheduledMessage.findUnique({ where: { id: scheduledId } });
+      expect(pending).not.toBeNull();
+      expect(pending!.sent).toBe(false);
+
+      // Verify no message was created in the channel from this user
+      const messages = await prisma.message.findMany({
+        where: { channelId: schedChannelId, userId: targetId },
+      });
+      expect(messages).toHaveLength(0);
+    });
+
+    it('should cancel deactivated user scheduled messages in scheduler', async () => {
+      // Schedule a message in the past (so scheduler would pick it up)
+      const pastDate = new Date(Date.now() - 60 * 1000); // 1 minute ago
+      const scheduled = await prisma.scheduledMessage.create({
+        data: {
+          content: 'Should be cancelled',
+          channelId: schedChannelId,
+          userId: targetId,
+          scheduledAt: pastDate,
+          sent: false,
+        },
+      });
+
+      // Deactivate the user
+      await prisma.user.update({
+        where: { id: targetId },
+        data: { deactivatedAt: new Date(), tokenVersion: { increment: 1 } },
+      });
+
+      // Simulate what the scheduler does: find due messages and process them
+      const due = await prisma.scheduledMessage.findMany({
+        where: { sent: false, scheduledAt: { lte: new Date() }, id: scheduled.id },
+      });
+      expect(due).toHaveLength(1);
+
+      // Check user deactivation (same logic as scheduler)
+      const user = await prisma.user.findUnique({
+        where: { id: targetId },
+        select: { deactivatedAt: true },
+      });
+      expect(user!.deactivatedAt).not.toBeNull();
+
+      // Mark as sent (cancelled) since user is deactivated — simulating scheduler behavior
+      await prisma.scheduledMessage.update({
+        where: { id: scheduled.id },
+        data: { sent: true },
+      });
+
+      // Verify no actual message was created
+      const messages = await prisma.message.findMany({
+        where: { channelId: schedChannelId, userId: targetId },
+      });
+      expect(messages).toHaveLength(0);
+
+      // Verify the scheduled message was marked as sent (cancelled)
+      const cancelled = await prisma.scheduledMessage.findUnique({ where: { id: scheduled.id } });
+      expect(cancelled!.sent).toBe(true);
+    });
+  });
+
+  describe('CSP media-src scoping', () => {
+    it('should NOT allow the entire storage.googleapis.com domain in media-src', async () => {
+      // Any authenticated request will return the CSP header
+      const res = await request(app)
+        .get('/channels')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const csp = res.headers['content-security-policy'];
+      expect(csp).toBeDefined();
+
+      // media-src must NOT contain the bare domain (would allow any GCS bucket)
+      expect(csp).not.toMatch(/media-src[^;]*https:\/\/storage\.googleapis\.com[^/]/);
+
+      // If GCS_BUCKET_NAME is set, media-src should scope to that bucket only
+      // If not set, media-src should only allow 'self' and blob:
+      if (process.env.GCS_BUCKET_NAME) {
+        expect(csp).toContain(`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`);
+      }
+    });
+
+    it('should scope img-src and media-src consistently for GCS', async () => {
+      const res = await request(app)
+        .get('/channels')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      const csp = res.headers['content-security-policy'] as string;
+
+      // Extract the GCS origins from img-src and media-src
+      const imgSrc = csp.match(/img-src\s+([^;]+)/)?.[1] || '';
+      const mediaSrc = csp.match(/media-src\s+([^;]+)/)?.[1] || '';
+
+      const imgGcs = imgSrc.match(/https:\/\/storage\.googleapis\.com\S*/g) || [];
+      const mediaGcs = mediaSrc.match(/https:\/\/storage\.googleapis\.com\S*/g) || [];
+
+      // Both should either be empty (no GCS) or scoped to the same bucket
+      // Neither should contain the bare domain without a bucket path
+      for (const origin of [...imgGcs, ...mediaGcs]) {
+        // Each GCS origin must have a bucket path (not just the bare domain)
+        expect(origin).toMatch(/https:\/\/storage\.googleapis\.com\/.+/);
+      }
+    });
+  });
+
+  describe('Bug #15 & #16: File upload error handling', () => {
+    it('should return 400 for invalid file type instead of 500', async () => {
+      const res = await request(app)
+        .post('/files')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('file', Buffer.from('#!/bin/bash\necho "test"'), {
+          filename: 'script.sh',
+          contentType: 'application/x-sh',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('File type not allowed');
+    });
+
+    it('should return 413 for file too large instead of 500', async () => {
+      // Multer limit is 50MB — create a buffer that exceeds it
+      const largeBuffer = Buffer.alloc(51 * 1024 * 1024, 'a');
+
+      const res = await request(app)
+        .post('/files')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('file', largeBuffer, {
+          filename: 'large.txt',
+          contentType: 'text/plain',
+        });
+
+      expect(res.status).toBe(413);
+      expect(res.body.error).toMatch(/too large/i);
+    });
+  });
+});

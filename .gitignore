@@ -1,0 +1,17 @@
+# 개인 세션 기록
+.remember/
+.claude/settings.local.json
+
+# 의존성, 빌드 산출물
+node_modules/
+dist/
+build/
+coverage/
+
+# 비밀 정보
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
