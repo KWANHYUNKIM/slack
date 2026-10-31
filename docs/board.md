@@ -76,16 +76,17 @@
 | E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 완료(PR #96 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:51 | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 완료(PR #99), QR 완료(PR #101 머지) | 1.5h | | | E7b 남은 이슈 |
-| verify/rtl-layout: ar·he·fa 선택 시 브라우저 RTL 레이아웃(좌우 반전, 말줄임, 버튼 폭) 스모크 | - | sonnet | 대기(정상 단계에서) | 1h | | | i18n-5i 남은 이슈 |
-| fix/orphan-private-channel: 워크스페이스 나가기로 마지막 멤버가 빠진 비공개 채널 정리 정책 | - | sonnet | 대기 | 30분 | | | E1c 남은 이슈 |
+| verify/rtl-layout: ar·he·fa 선택 시 브라우저 RTL 레이아웃(좌우 반전, 말줄임, 버튼 폭) 스모크 | dev-2 | sonnet | 진행 | 1h | 2026-11-01 06:21 | | i18n-5i 남은 이슈 |
+| fix/orphan-private-channel: 워크스페이스 나가기로 마지막 멤버가 빠진 비공개 채널 정리 정책 | dev-4 | sonnet | E1c 리뷰 반영에 포함(삭제) | 30분 | | | E1c 남은 이슈 |
 | e2e/2fa-hang(완료: 재현 안 됨, PR #126 문서화. vite 대상 변수화는 #123, ThreadsPage는 #120): ThreadsPage 같은 체크 초기화 패턴, vite 프록시 대상 환경 변수화, 2FA E2E가 고스왑 환경에서 멈추는 원인 조사 | - | haiku | 대기 | 1h | | | PR #120 남은 이슈 |
 | fix/spa-routes: 프로덕션 spaRoutes에 /search, /unreads 등 누락 확인·보완(새로고침 시 API 응답) | dev-2 | haiku | 완료(PR #120 머지) | 30분 | 2026-11-01 04:49 | | E2E 남은 이슈 |
 | fix/thread-alsosend-race, fix/login-admin-nav-race: 스레드 '채널에도 보내기' 체크 해제 경합, 로그인 직후 관리자 이동 경합 | dev-2 | haiku | 완료(PR #120 머지) | 45분 | 2026-11-01 04:49 | 2026-11-01 05:06 | E2E 남은 이슈 |
 | fix/channel-purge-order: 채널 메시지 정리(deleteMessages, blankParents)도 DB 처리 행(RETURNING) 기준으로 저장소 파일을 사후 삭제할지, 본체 삭제 실패 재시도 방식 통일 | dev-3 | sonnet | 완료(PR #112 머지) | 45분 | 2026-11-01 04:14 | | PR #106 남은 이슈 |
 | spec/E1-multi-workspace: E1 조직·멀티 워크스페이스 스펙과 파트 분할(E2·E3·E8·E9 의존 정리), Enterprise Grid 조사 | planner-1 | opus | 완료(D1~D11 제안안 확정) | 1.5h | 2026-11-01 03:54 | 2026-11-01 04:03 | 엔터프라이즈 3절 |
+| spec/E2-sso: SSO(OIDC→SAML) 스펙·파트 분할, 외부 https 예외 범위 | planner-1 | opus | 진행 | 1h | 2026-11-01 06:21 | | 엔터프라이즈 3절 |
 | E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | dev-4 | opus | 완료(PR #115 머지) | 2h | 2026-11-01 04:22 | 2026-11-01 04:19 | docs/specs/E1-multi-workspace.md 9절 |
 | E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | dev-4 | opus | 완료(PR #128 머지) | 2h | 2026-11-01 05:22 | 2026-11-01 05:18 | E1 스펙 |
-| E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | dev-4 | opus | PR #138 리뷰 중 | 2h | 2026-11-01 06:03 | 2026-11-01 06:05 | E1 스펙 |
+| E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | dev-4 | opus | PR #138 리뷰 반영 중 | 2h | 2026-11-01 06:03 | 2026-11-01 06:05 | E1 스펙 |
 | E1d DM·검색·활동·MCP 워크스페이스 범위 | - | sonnet | 대기(E1c 후) | 2h | | | E1 스펙 |
 | E1e 조직 거버넌스 설정 분리 | - | sonnet | 대기(E1d 후) | 2h | | | E1 스펙 |
 | E1f 프런트 전환기와 /w/:id URL | - | sonnet | 대기(E1c 후, E1d와 병렬 가능) | 2h | | | E1 스펙 |

@@ -347,3 +347,7 @@
 | 2026-11-01 06:20 | E1c 검토: 리베이스 충돌 0, dev4 DB에 020000 적용, workspace-isolation 19·workspaces 41·channels 14·admin 48·users 23·messages 33·websocket 11·error-code-coverage 11, tsc, 외부 URL → PR #138, /code-review high. 결정: 헤더 B 게스트의 B 멤버 목록 노출은 워크스페이스 범위 목록이므로 승인 |
 | 2026-11-01 06:23 | i18n-5i 검토: tsc, lint, i18n:check 0, i18n:test 42, rtl:test 50, 물리 방향 189, 외부 URL → PR #139, /code-review low |
 | 2026-11-01 06:24 | PR #139 리뷰 지적 0 → 머지. 2등급 31/31 완료 |
+| 2026-11-01 06:26 | PR #138 리뷰 10건 → dev-4: 없음/숨김 404 본문 동일(열거 방지), 기본 채널 슬롯 advisory lock, 계정 단위 관리 작업은 조직 관리자 범위, /admin 채널·초대·웹훅은 req.workspace 기준(스펙), 게스트 DM 이력 가시성, 마지막 멤버 나간 비공개 채널 삭제, 공개 채널 이벤트는 비게스트 room, 캐시 상태 재사용, 범위 헬퍼 일원화 |
+| 2026-11-01 06:20 | 사용자: "계속 돌려줘 그리고 MCP 되나 이제?" → main 기준 mcp 30·mcp-write 19·mcp-dm 22·oauth 42 재실행 통과, 도구 18개와 연결 방법 안내 |
+| 2026-11-01 06:21 | 사용자: "loop를 바로바로 해주면 안되나?" → 3명 허용대로 빈 자리 채움: planner-1 spec/E2-sso(opus, 문서), dev-2 verify/rtl-layout(sonnet, 3120/5190). 예비 점검 주기 25분→10분 |
+| 2026-11-01 06:22 | 사용자: "이거 또한 md 에 적용시켜서 해주면 되거든" → CLAUDE.md 3장에 "루프는 바로바로"(알림 즉시 처리, 빈 자리 즉시 채움, 예비 점검 10분), 4장에 감속 단계 3명 허용(무거운 작업만 순차) 반영 |
