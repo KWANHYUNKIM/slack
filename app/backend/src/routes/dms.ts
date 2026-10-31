@@ -11,16 +11,14 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { toPublicUser } from '../services/statusService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
+import { sendDirectMessage, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
+import { ServiceError } from '../services/messageService.js';
 import {
   createActivitiesForDm,
-  syncActivitiesOnDmEdit,
-  deleteActivitiesForDm,
   createReactionActivity,
   removeReactionActivity,
   markDmMentionsRead,
-  getMentionCountsByDmPartner,
 } from '../services/mentionService.js';
 
 const router = Router();
@@ -38,90 +36,21 @@ const sendDMSchema = z.object({
 // POST /dms - Send a direct message
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const fromUserId = req.user!.userId;
     const { toUserId, content, fileIds } = sendDMSchema.parse(req.body);
-
-    // Check if recipient exists and is active (self-DM is allowed)
-    if (fromUserId !== toUserId) {
-      const recipient = await prisma.user.findUnique({
-        where: { id: toUserId },
-        select: { id: true, deactivatedAt: true },
-      });
-
-      if (!recipient || recipient.deactivatedAt) {
-        res.status(400).json({ error: 'Unable to send message' });
-        return;
-      }
-
-      // Guests can only DM users who share a channel with them
-      if (req.user!.role === 'GUEST') {
-        const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-          SELECT cm1."channelId" AS id
-          FROM "ChannelMember" cm1
-          JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-          WHERE cm1."userId" = ${fromUserId} AND cm2."userId" = ${toUserId}
-          LIMIT 1
-        `;
-        if (sharedChannel.length === 0) {
-          res.status(400).json({ error: 'Unable to send message' });
-          return;
-        }
-      }
-    }
-
-    const dm = await prisma.$transaction(async (tx) => {
-      const created = await tx.directMessage.create({
-        data: {
-          content,
-          fromUserId,
-          toUserId,
-          // Self-DMs are auto-read (no notifications for yourself)
-          ...(fromUserId === toUserId && { readAt: new Date() }),
-        },
-      });
-
-      if (fileIds && fileIds.length > 0) {
-        const updated = await tx.file.updateMany({
-          where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
-          data: { dmId: created.id },
-        });
-        if (updated.count !== fileIds.length) {
-          throw new Error('Invalid file IDs or files already attached');
-        }
-      }
-
-      return tx.directMessage.findUnique({
-        where: { id: created.id },
-        include: DM_INCLUDE_USERS,
-      });
-    });
-
-    // Broadcast via WebSocket so the recipient sees the DM in real-time
-    const io = getIO();
-    if (io && dm) {
-      io.to(`user:${fromUserId}`).emit('dm:new', dm);
-      if (fromUserId !== toUserId) {
-        io.to(`user:${toUserId}`).emit('dm:new', dm);
-
-        // Push notification (fire-and-forget)
-        if (!isUserOnline(toUserId)) {
-          const senderName = dm.fromUser?.name || 'Someone';
-          sendPushToUser(toUserId, {
-            title: senderName,
-            body: dm.content.slice(0, 100) || 'Sent an attachment',
-            url: `/d/${fromUserId}`,
-          }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
-        }
-      }
-    }
-
+    // 받는 사람 확인, 게스트 격리, 전송, 소켓, 푸시, 활동 생성은 dmService가 한다(소켓·MCP와 같은 경로)
+    const dm = await sendDirectMessage({ userId: req.user!.userId, role: req.user!.role }, toUserId, { content, fileIds });
     res.status(201).json(dm);
-
-    // dm:new 뒤, 응답 뒤에 활동 생성(await하지 않는다)
-    if (dm) void createActivitiesForDm(dm);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
+    if (error instanceof InvalidFileIdsError) {
+      res.status(400).json({ error: error.message, code: error.code });
       return;
     }
     logError('Send DM error', error);
@@ -129,115 +58,10 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// 원시 SQL(jsonb)로 읽은 상태 컬럼은 UTC ISO 문자열이다. Date로 되돌려 공개용 뷰로 바꾼다.
-function withPublicStatus<T extends Record<string, any>>(user: T) {
-  return toPublicUser({
-    ...user,
-    customStatusEmoji: user.customStatusEmoji ?? null,
-    customStatusText: user.customStatusText ?? null,
-    customStatusExpiresAt: user.customStatusExpiresAt ? new Date(user.customStatusExpiresAt) : null,
-    dndUntil: user.dndUntil ? new Date(user.dndUntil) : null,
-    dndWithStatus: user.dndWithStatus === true,
-  });
-}
-
 // GET /dms - List all DM conversations
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user!.userId;
-
-    // Single query: get all conversations with last message and unread count
-    const conversations: any[] = await prisma.$queryRaw`
-      WITH conversation_partners AS (
-        SELECT DISTINCT
-          CASE WHEN "fromUserId" = ${userId} THEN "toUserId" ELSE "fromUserId" END AS "otherUserId"
-        FROM "DirectMessage"
-        WHERE ("fromUserId" = ${userId} OR "toUserId" = ${userId})
-          AND "groupId" IS NULL
-          AND "deletedAt" IS NULL
-      ),
-      last_messages AS (
-        SELECT DISTINCT ON (other_id)
-          dm.id,
-          dm.content,
-          dm."fromUserId",
-          dm."toUserId",
-          dm."createdAt",
-          dm."updatedAt",
-          dm."editedAt",
-          dm."deletedAt",
-          dm."readAt",
-          CASE WHEN dm."fromUserId" = ${userId} THEN dm."toUserId" ELSE dm."fromUserId" END AS other_id
-        FROM "DirectMessage" dm
-        WHERE (dm."fromUserId" = ${userId} OR dm."toUserId" = ${userId})
-          AND dm."groupId" IS NULL
-          AND dm."deletedAt" IS NULL
-        ORDER BY other_id, dm."createdAt" DESC
-      ),
-      unread_counts AS (
-        SELECT "fromUserId" AS "otherUserId", COUNT(*)::int AS "unreadCount"
-        FROM "DirectMessage"
-        WHERE "toUserId" = ${userId}
-          AND "deletedAt" IS NULL
-          AND "readAt" IS NULL
-        GROUP BY "fromUserId"
-      )
-      SELECT
-        jsonb_build_object(
-          'id', u.id, 'name', u.name, 'avatar', u.avatar, 'status', u.status,
-          -- 컬럼은 UTC 기준 timestamp라 서버·세션 시간대와 무관하게 UTC ISO로 내보낸다
-          'customStatusEmoji', u."customStatusEmoji", 'customStatusText', u."customStatusText",
-          'customStatusExpiresAt', to_char(u."customStatusExpiresAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'dndUntil', to_char(u."dndUntil", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
-          'dndWithStatus', u."dndWithStatus"
-        ) AS "otherUser",
-        jsonb_build_object(
-          'id', lm.id, 'content', lm.content, 'fromUserId', lm."fromUserId",
-          'toUserId', lm."toUserId", 'createdAt', lm."createdAt",
-          'updatedAt', lm."updatedAt", 'editedAt', lm."editedAt",
-          'deletedAt', lm."deletedAt", 'readAt', lm."readAt"
-        ) AS "lastMessage",
-        COALESCE(uc."unreadCount", 0) AS "unreadCount"
-      FROM conversation_partners cp
-      JOIN "User" u ON u.id = cp."otherUserId"
-      LEFT JOIN last_messages lm ON lm.other_id = cp."otherUserId"
-      LEFT JOIN unread_counts uc ON uc."otherUserId" = cp."otherUserId"
-      ORDER BY lm."createdAt" DESC NULLS LAST
-    `;
-
-    // Guests: filter conversations to only shared-channel members
-    let filteredConversations = conversations;
-    if (req.user!.role === 'GUEST') {
-      const sharedMembers = await prisma.$queryRaw<Array<{ userId: number }>>`
-        SELECT DISTINCT cm2."userId"
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId" AND cm2."userId" != cm1."userId"
-        WHERE cm1."userId" = ${userId}
-      `;
-      const sharedIds = new Set(sharedMembers.map(m => m.userId));
-      filteredConversations = conversations.filter(
-        (conv: any) => conv.otherUser && sharedIds.has(conv.otherUser.id)
-      );
-    }
-
-    const [mentionCounts, stars] = await Promise.all([
-      getMentionCountsByDmPartner(userId),
-      prisma.dMStar.findMany({ where: { userId }, select: { otherUserId: true } }),
-    ]);
-    const starredIds = new Set(stars.map(st => st.otherUserId));
-
-    // Apply online status from WebSocket tracking
-    const result = filteredConversations.map((conv) => ({
-      otherUser: conv.otherUser ? withPublicStatus({
-        ...conv.otherUser,
-        status: isUserOnline(conv.otherUser.id) ? 'online' : 'offline',
-      }) : conv.otherUser,
-      lastMessage: conv.lastMessage,
-      unreadCount: Number(conv.unreadCount),
-      mentionCount: conv.otherUser ? mentionCounts.get(conv.otherUser.id) ?? 0 : 0,
-      isStarred: conv.otherUser ? starredIds.has(conv.otherUser.id) : false,
-    }));
-
-    res.json(result);
+    res.json(await listDirectConversations(req.user!.userId, req.user!.role));
   } catch (error) {
     logError('Get DM conversations error', error);
     res.status(500).json({ error: 'Failed to get DM conversations' });
@@ -634,37 +458,21 @@ router.get('/messages/:id/thread', authMiddleware, requireDmAccess, async (req: 
 // PATCH /dms/messages/:id - Edit a direct message
 router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: AuthRequest, res: Response) => {
   try {
-    const dmId = req.dm.id;
-
     const contentSchema = z.object({
       content: z.string().min(1).max(MAX_MESSAGE_LENGTH)
         .refine(val => !val.includes('\u0000'), { message: 'Content cannot contain null bytes' }),
     });
     const { content } = contentSchema.parse(req.body);
 
-    const updated = await prisma.directMessage.update({
-      where: { id: dmId },
-      data: { content, editedAt: new Date() },
-      include: {
-        ...DM_INCLUDE_USERS,
-      },
-    });
-
-    // Broadcast to the other user so the edit appears in real-time
-    // (the sender's UI is already updated from the REST response)
-    const io = getIO();
-    if (updated.groupId !== null) {
-      await emitToGroup(updated.groupId, 'dm:updated', updated, updated.fromUserId);
-    } else if (io && updated.fromUserId !== updated.toUserId) {
-      io.to(`user:${updated.toUserId}`).emit('dm:updated', updated);
-    }
-
-    res.json(updated);
-
-    void syncActivitiesOnDmEdit(updated);
+    // 다른 참여자에게 알리는 소켓 이벤트와 멘션 활동 갱신은 dmService가 한다
+    res.json(await editDirectMessage(req.user!.userId, req.dm, content));
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
       return;
     }
     logError('Edit DM error', error);
@@ -675,35 +483,13 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
 // DELETE /dms/messages/:id - Delete a direct message (soft delete)
 router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: AuthRequest, res: Response) => {
   try {
-    const dm = req.dm;
-
-    await prisma.directMessage.update({
-      where: { id: dm.id },
-      data: { deletedAt: new Date() },
-    });
-    void deleteActivitiesForDm(dm.id);
-
-    // Broadcast to the other user so the deletion appears in real-time
-    // (the sender's UI is already updated from the REST response)
-    const io = getIO();
-    if (dm.groupId !== null) {
-      await emitToGroup(dm.groupId, 'dm:deleted', {
-        dmId: dm.id,
-        fromUserId: dm.fromUserId,
-        toUserId: null,
-        groupId: dm.groupId,
-        threadId: dm.threadId,
-      }, dm.fromUserId);
-    } else if (io && dm.fromUserId !== dm.toUserId) {
-      io.to(`user:${dm.toUserId}`).emit('dm:deleted', {
-        dmId: dm.id,
-        fromUserId: dm.fromUserId,
-        toUserId: dm.toUserId,
-      });
-    }
-
+    await deleteDirectMessage(req.user!.userId, req.dm);
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
     logError('Delete DM error', error);
     res.status(500).json({ error: 'Failed to delete message' });
   }

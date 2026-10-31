@@ -14,8 +14,10 @@ const TOKEN_PATTERN = /^scpat_([0-9a-f]{12})_([A-Za-z0-9_-]{43})$/;
 export const READ_SCOPES = ['channels:read', 'channels:history', 'users:read'] as const;
 /** 쓰기 범위(mcp-2). chat:write는 메시지 작성·수정·삭제, reactions:write는 리액션. */
 export const WRITE_SCOPES = ['chat:write', 'reactions:write'] as const;
-export const ALLOWED_SCOPES: readonly string[] = [...READ_SCOPES, ...WRITE_SCOPES];
-export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[number];
+/** DM 범위(mcp-2b). im:read는 DM 목록, im:history는 DM 내용 읽기, im:write는 DM 보내기·수정·삭제. 개인 대화라 기본 범위에는 넣지 않는다. */
+export const DM_SCOPES = ['im:read', 'im:history', 'im:write'] as const;
+export const ALLOWED_SCOPES: readonly string[] = [...READ_SCOPES, ...WRITE_SCOPES, ...DM_SCOPES];
+export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[number] | (typeof DM_SCOPES)[number];
 
 export const MAX_ACTIVE_TOKENS = 20;
 

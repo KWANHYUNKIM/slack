@@ -12,6 +12,9 @@ export const ACCESS_TOKEN_SCOPES: { scope: AccessTokenScope; key: string }[] = [
   { scope: 'users:read', key: 'usersRead' },
   { scope: 'chat:write', key: 'chatWrite' },
   { scope: 'reactions:write', key: 'reactionsWrite' },
+  { scope: 'im:read', key: 'imRead' },
+  { scope: 'im:history', key: 'imHistory' },
+  { scope: 'im:write', key: 'imWrite' },
 ];
 
 interface AccessTokenState {

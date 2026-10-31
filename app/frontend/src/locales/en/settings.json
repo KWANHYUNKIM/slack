@@ -56,7 +56,10 @@
       "channelsHistory": "Read messages, threads and activity",
       "usersRead": "View people",
       "chatWrite": "Post, edit and delete your messages",
-      "reactionsWrite": "Add and remove your reactions"
+      "reactionsWrite": "Add and remove your reactions",
+      "imRead": "List your direct messages and group DMs",
+      "imHistory": "Read your direct message history",
+      "imWrite": "Send, edit and delete your direct messages"
     },
     "expiryLabel": "Expires",
     "expiryDays": "{count, plural, one {# day} other {# days}}",

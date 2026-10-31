@@ -16,8 +16,9 @@ const NAME_MAX = 100;
 const TOKEN_LIMIT = 20;
 const EXPIRY_OPTIONS = ['7', '30', '90', '365', 'never'] as const;
 type ExpiryOption = (typeof EXPIRY_OPTIONS)[number];
-// 처음에는 읽기 범위만 켠다. 쓰기(메시지, 리액션)는 사용자가 직접 켜야 한다.
-const DEFAULT_SCOPES: AccessTokenScope[] = ACCESS_TOKEN_SCOPES.map((s) => s.scope).filter((scope) => !scope.endsWith(':write'));
+// 처음에는 채널 읽기 범위만 켠다. 쓰기(메시지, 리액션, DM)와 DM 읽기(개인 대화)는 사용자가 직접 켜야 한다.
+const DEFAULT_SCOPES: AccessTokenScope[] = ACCESS_TOKEN_SCOPES.map((s) => s.scope)
+  .filter((scope) => !scope.endsWith(':write') && !scope.startsWith('im:'));
 
 // 개인 액세스 토큰 관리(mcp-1): 발급, 목록, 이름 바꾸기, 폐기. 원문은 발급 직후 이 화면에서 한 번만 보인다.
 export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
