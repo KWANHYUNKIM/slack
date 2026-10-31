@@ -275,3 +275,15 @@
 | 2026-11-01 03:22 | E6 리뷰 반영 검토: 커밋 2개를 하나로 합친 뒤 main(E10·#99·#101) 리베이스, 충돌 9파일 양쪽 보존(번역 JSON은 파싱 검증), dev1 DB에 070000 적용, legal-holds 10·ediscovery 8·retention 20·dlp 56·edit-delete 14·audit-logs 24, tsc, lint, i18n, 물리 방향 182, 외부 URL → 머지(PR #98, f63ebaf). 060000을 slackclone, slackclone_dev, dev2·3·5에 적용(dev4는 OAuth 진행 중이라 PR 검토 때) |
 | 2026-11-01 03:24 | main에서 error-code-coverage 실패 확인(code 포함 상수 객체 오탐, E7b·#97 이후) → dev-3 test/error-code-coverage-consts(haiku) 배정 |
 | 2026-11-01 03:25 | 배정: dev-1 feat/group-membership-history(opus, worktree, dev1 DB, 마이그레이션 090000). 진행 3명(dev-4 OAuth, dev-3, dev-1) |
+| 2026-11-01 03:27 | dev-3 검토: error-code-coverage 11/11(dev3 DB), tsc → PR #104, /code-review low |
+| 2026-11-01 03:28 | PR #104 리뷰: 테스트 파일만이라 low 대상 없음(총괄이 diff·테스트로 확인) → 머지. main 정적 검사 복구 |
+| 2026-11-01 03:29 | 배정: dev-3 fix/dm-delete-detach(sonnet, worktree, dev3 DB): DM 삭제도 첨부 분리, 분리 파일 재연결 금지. 진행 3명(dev-4 OAuth, dev-1 그룹 이력, dev-3) |
+| 2026-11-01 03:33 | dev-3 검토: main(#104) 리베이스 후 file-detach 4·error-code-coverage 11·dms 27, tsc → PR #105, /code-review medium. 업로더 본인의 분리 파일 접근은 채널과 같은 기존 규칙으로 유지 |
+| 2026-11-01 03:35 | PR #105 리뷰 6건 전부 → dev-3: 분리 파일 업로더 삭제 거부, 분리 파일 보존 정리에 원래 DM·채널 보존 조건, 파일 목록에서 분리 파일 제외, 과거 삭제 DM 파일 백필 마이그레이션 100000, fileIds 중복 허용, 주석 |
+| 2026-11-01 03:37 | 그룹 이력 결정: eDiscovery·보존 범위는 "대상자가 볼 수 있었던 메시지"(마지막 탈퇴 시각 이전 전체 + 본인 발신)로 넓힘 → dev-1. dev-3에 dmHeldFilter 변경 예고(PR #105 병합 대비) |
+| 2026-11-01 03:38 | PR #105 리뷰 반영 검토: 리뷰 포크가 worktree 브랜치를 pr105로 바꿔 둔 것을 확인, 커밋 내용은 동일해 HEAD를 원래 PR 브랜치로 푸시. file-detach 8·retention 20·files 41, i18n → 머지(11a517c). 100000 백필을 slackclone, slackclone_dev, dev2·3·5 적용 |
+| 2026-11-01 03:40 | 그룹 이력 검토: main(#105) 리베이스 후 dropHeldDetached가 새 dmHeldFilter(held) 시그니처와 맞지 않아(tsc) 총괄이 한 줄 수정. file-detach 8·retention 22·ediscovery 9·dm-groups 24·legal-holds 10·files 41 → PR #106, /code-review medium |
+| 2026-11-01 03:44 | OAuth 검토: main 리베이스 충돌 3파일 양쪽 보존, dev4 DB에 060000·100000 적용, oauth 25·mcp 30·mfa 32·error-code-coverage 11·admin 48·legal-holds 10, tsc, lint, i18n, 물리 방향 185, 외부 URL → PR #107, /code-review high |
+| 2026-11-01 03:47 | PR #106 리뷰 8건 → dev-1: 보존 판단을 상관 NOT EXISTS raw SQL로(이력 크기와 무관한 파라미터, 문장마다 재평가), DB 시각 사용, 열린 구간 부분 유니크 인덱스, 현재 구성원 안전망, joinedAt 감사용, 경계 lte |
+| 2026-11-01 03:47 | PR #107 리뷰 10건 → dev-4: 코드에 동의 시점 tokenVersion, /mcp 실패 limiter는 무효 토큰만, token limiter 키 IP+client_id, 검증 후 claim+토큰 삽입 한 트랜잭션, 끄기·해제 시 코드 삭제, 회전 시 이전 액세스 토큰 즉시 무효, 정리 작업, /oauth limiter, lastUsed 헬퍼 공용화, 이름 없는 앱 번역 키 |
+| 2026-11-01 03:48 | 배정: dev-3 feat/stun-public-port(haiku, worktree). 진행 3명(dev-1 #106, dev-4 #107, dev-3) |

@@ -163,3 +163,13 @@
 | 2026-11-01 03:09 | dev-5 | sonnet | E7c-QR | 82,413 |
 | 2026-11-01 03:14 | code-review | (리뷰) | PR #101 low | 50,935 |
 | 2026-11-01 03:16 | dev-1 | opus | PR #98 리뷰 반영 | 99,300 |
+| 2026-11-01 03:21 | dev-3 | haiku | test/error-code-coverage-consts | 74,611 |
+| 2026-11-01 03:28 | code-review | (리뷰) | PR #104 low | 46,419 |
+| 2026-11-01 03:25 | dev-3 | sonnet | fix/dm-delete-detach | 85,087 |
+| 2026-11-01 03:35 | code-review | (리뷰) | PR #105 medium | 70,006 |
+| 2026-11-01 03:27 | dev-1 | opus | feat/group-membership-history | (미보고, 약 120k 추정) |
+| 2026-11-01 03:31 | dev-3 | sonnet | PR #105 리뷰 반영 | 25,292 |
+| 2026-11-01 03:32 | dev-1 | opus | 그룹 이력 범위 반영 | 19,275 |
+| 2026-11-01 03:32 | dev-4 | opus | mcp-4 OAuth 2.1 | 278,048 |
+| 2026-11-01 03:46 | code-review | (리뷰) | PR #107 high | (미보고) |
+| 2026-11-01 03:46 | code-review | (리뷰) | PR #106 medium | 76,462 |
