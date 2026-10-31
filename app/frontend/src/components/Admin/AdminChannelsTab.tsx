@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Lock, Hash, Trash2, Archive, ArchiveRestore, Pencil, X, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
-import { checkChannelName, normalizeChannelName } from '@/lib/channelName';
+import { CHANNEL_NAME_ADMIN_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 import { ConfirmDialog } from './ConfirmDialog';
 
 export function AdminChannelsTab() {
@@ -23,15 +23,22 @@ export function AdminChannelsTab() {
 
   const saveEdit = async () => {
     if (!editingId || !editName.trim()) return;
-    const channel = channels.find((c) => c.id === editingId);
+    const id = editingId;
+    const channel = channels.find((c) => c.id === id);
     const name = normalizeChannelName(editName);
     if (channel && name !== channel.name) {
-      // 관리자 수정의 상한은 DB 컬럼 크기(80)
-      if (checkChannelName(name, 80)) {
-        setEditError(t('channels.invalidName'));
+      const reason = checkChannelName(name, CHANNEL_NAME_ADMIN_MAX);
+      if (reason) {
+        setEditError(channelNameErrorMessage(t, reason, CHANNEL_NAME_ADMIN_MAX));
         return;
       }
-      await editChannel(editingId, { name });
+      await editChannel(id, { name });
+      // 스토어는 실패를 삼키고 error만 남긴다. 이름이 바뀌지 않았으면 실패로 보고 편집 행을 열어 둔다.
+      const state = useAdminStore.getState();
+      if (state.channels.find((c) => c.id === id)?.name !== name) {
+        setEditError(state.error || t('errors.editChannel'));
+        return;
+      }
     }
     setEditError('');
     setEditingId(null);
@@ -59,32 +66,44 @@ export function AdminChannelsTab() {
               <tr key={channel.id} className="border-b border-slack-border last:border-b-0 hover:bg-gray-50/50">
                 <td className="px-4 py-2.5">
                   {editingId === channel.id ? (
-                    <div className="flex items-center gap-1.5">
-                      {channel.isPrivate ? (
-                        <Lock className="h-3.5 w-3.5 text-slack-hint flex-shrink-0" />
-                      ) : (
-                        <Hash className="h-3.5 w-3.5 text-slack-hint flex-shrink-0" />
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        {channel.isPrivate ? (
+                          <Lock className="h-3.5 w-3.5 text-slack-hint flex-shrink-0" />
+                        ) : (
+                          <Hash className="h-3.5 w-3.5 text-slack-hint flex-shrink-0" />
+                        )}
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => { setEditName(e.target.value); setEditError(''); }}
+                          aria-invalid={editError ? true : undefined}
+                          aria-describedby={editError ? `channel-edit-error-${channel.id}` : undefined}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          className="w-full rounded border border-slack-focus px-1.5 py-0.5 text-sm font-medium focus:outline-none"
+                          autoFocus
+                        />
+                        <button onClick={saveEdit} className="text-green-600 hover:text-green-700" title={t('common:actions.save')} aria-label={t('common:actions.save')}>
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => setEditingId(null)} className="text-slack-hint hover:text-slack-primary" title={t('common:actions.cancel')} aria-label={t('common:actions.cancel')}>
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      {editError && (
+                        <p
+                          id={`channel-edit-error-${channel.id}`}
+                          data-testid="channel-edit-error"
+                          role="alert"
+                          className="mt-1 text-xs text-slack-error"
+                        >
+                          {editError}
+                        </p>
                       )}
-                      <input
-                        type="text"
-                        value={editName}
-                        onChange={(e) => { setEditName(e.target.value); setEditError(''); }}
-                        aria-invalid={editError ? true : undefined}
-                        title={editError || undefined}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEdit();
-                          if (e.key === 'Escape') setEditingId(null);
-                        }}
-                        className="w-full rounded border border-slack-focus px-1.5 py-0.5 text-sm font-medium focus:outline-none"
-                        autoFocus
-                      />
-                      <button onClick={saveEdit} className="text-green-600 hover:text-green-700" title={t('common:actions.save')} aria-label={t('common:actions.save')}>
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
-                      <button onClick={() => setEditingId(null)} className="text-slack-hint hover:text-slack-primary" title={t('common:actions.cancel')} aria-label={t('common:actions.cancel')}>
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    </>
                   ) : (
                     <div className="flex items-center gap-1.5">
                       {channel.isPrivate ? (

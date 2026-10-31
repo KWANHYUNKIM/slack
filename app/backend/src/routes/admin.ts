@@ -8,7 +8,7 @@ import { AuthRequest } from '../types.js';
 import { getIO, kickUser } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { validateChannelName } from '../utils/channelName.js';
+import { CHANNEL_NAME_ADMIN_MAX, validateChannelName } from '../utils/channelName.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 
 const router = Router();
@@ -464,7 +464,6 @@ router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) =
 });
 
 // PATCH /admin/channels/:id - Edit channel name
-const ADMIN_CHANNEL_NAME_MAX = 80;
 const editChannelSchema = z.object({
   name: z.string().optional(),
   isPrivate: z.boolean().optional(),
@@ -485,10 +484,10 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
       return;
     }
-    // 이름은 생성 경로와 같은 검증을 쓴다. DB 컬럼 상한(80)은 기존 관리자 상한을 유지한다.
+    // 이름은 생성 경로와 같은 검증을 쓴다. 상한만 관리자 상한(CHANNEL_NAME_ADMIN_MAX)이다.
     let newName: string | undefined;
     if (parsed.data.name !== undefined) {
-      const nameResult = validateChannelName(parsed.data.name, ADMIN_CHANNEL_NAME_MAX);
+      const nameResult = validateChannelName(parsed.data.name, CHANNEL_NAME_ADMIN_MAX);
       if (!nameResult.ok) {
         res.status(400).json({ error: nameResult.error, code: nameResult.code });
         return;
@@ -528,11 +527,21 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const updated = await prisma.channel.update({
-      where: { id },
-      data: updateData,
-      include: { _count: { select: { members: true, messages: true } } },
-    });
+    let updated;
+    try {
+      updated = await prisma.channel.update({
+        where: { id },
+        data: updateData,
+        include: { _count: { select: { members: true, messages: true } } },
+      });
+    } catch (error) {
+      // 위 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(유니크 제약). POST /channels와 같은 응답을 준다.
+      if ((error as { code?: string }).code === 'P2002') {
+        res.status(400).json({ error: 'A channel with that name already exists' });
+        return;
+      }
+      throw error;
+    }
 
     writeAuditLog({
       action: 'channel.edited',

@@ -1,8 +1,86 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import { jest } from '@jest/globals';
+import { fileURLToPath } from 'url';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
-import { normalizeChannelName, validateChannelName } from '../utils/channelName.js';
+import {
+  CHANNEL_NAME_ADMIN_MAX,
+  CHANNEL_NAME_MAX,
+  checkChannelName,
+  normalizeChannelName,
+  validateChannelName,
+  type ChannelNameReason,
+} from '../utils/channelName.js';
+
+// 허용/거부 테스트 벡터. 백엔드와 프런트(frontend/src/lib/channelName.ts) 구현이 모두 이 결과를 내야 한다.
+// 값이 문자열이면 허용되고 그 이름으로 저장된다는 뜻, { reason }이면 그 이유로 거부된다는 뜻이다.
+type Expected = string | { reason: ChannelNameReason };
+const VECTORS: [label: string, input: string, expected: Expected][] = [
+  ['ascii', 'dev-team', 'dev-team'],
+  ['trim + lowercase', '  Project_A ', 'project_a'],
+  ['korean', '개발팀', '개발팀'],
+  ['korean NFD -> NFC', '한글팀'.normalize('NFD'), '한글팀'],
+  ['korean compatibility jamo kept', 'ㅋㅋ', 'ㅋㅋ'],
+  ['korean + latin + underscore', '프로젝트_a', '프로젝트_a'],
+  ['japanese', '日本語', '日本語'],
+  ['halfwidth katakana -> fullwidth', 'ﾃﾞｰﾀ', 'データ'],
+  ['arabic', 'قناة', 'قناة'],
+  ['pure russian', 'общий', 'общий'],
+  ['pure greek', 'ελληνικά', 'ελληνικά'],
+  ['cyrillic + digits + hyphen', 'общий-2', 'общий-2'],
+  ['arabic-indic digits alone', '٣٤', '٣٤'],
+  ['arabic letters + arabic-indic digits', 'قناة٣', 'قناة٣'],
+  ['combining accent after letter', 'cafe\u0301', 'café'],
+  ['fullwidth -> ascii (NFKC)', 'ｇｅｎｅｒａｌ', 'general'],
+  ['fullwidth uppercase', 'ＧＥＮＥＲＡＬ', 'general'],
+  ['ligature fi', '\uFB01le', 'file'],
+  ['math bold letter', '\u{1D420}en', 'gen'],
+  ['kelvin sign', '\u212Aelvin', 'kelvin'],
+  ['turkish I without locale', 'INFO', 'info'],
+  ['25 code points of astral han', '\u{20BB7}'.repeat(25), '\u{20BB7}'.repeat(25)],
+
+  ['empty', '   ', { reason: 'required' }],
+  ['26 code points', '가'.repeat(26), { reason: 'tooLong' }],
+  ['variation selector FE0F', 'dev\uFE0F', { reason: 'invalidChars' }],
+  ['variation selector supplement E0100', 'dev\u{E0100}', { reason: 'invalidChars' }],
+  ['combining grapheme joiner', 'de\u034Fv', { reason: 'invalidChars' }],
+  ['hangul filler 3164', 'dev\u3164', { reason: 'invalidChars' }],
+  ['hangul filler only', '\u3164', { reason: 'invalidChars' }],
+  ['hangul choseong filler 115F', '\u115F가', { reason: 'invalidChars' }],
+  ['hangul jungseong filler 1160', '가\u1160', { reason: 'invalidChars' }],
+  ['halfwidth hangul filler FFA0', 'dev\uFFA0', { reason: 'invalidChars' }],
+  ['mongolian FVS 180B', 'dev\u180B', { reason: 'invalidChars' }],
+  ['mongolian vowel separator 180E', 'dev\u180E', { reason: 'invalidChars' }],
+  ['soft hyphen', 'de\u00ADv', { reason: 'invalidChars' }],
+  ['bidi override U+202E', 'abc\u202Edef', { reason: 'invalidChars' }],
+  ['bidi isolate U+2066', 'abc\u2066def', { reason: 'invalidChars' }],
+  ['zero-width space', 'ab\u200Bcd', { reason: 'invalidChars' }],
+  ['zero-width joiner', 'ab\u200Dcd', { reason: 'invalidChars' }],
+  ['word joiner', 'ab\u2060cd', { reason: 'invalidChars' }],
+  ['BOM inside', 'ab\uFEFFcd', { reason: 'invalidChars' }],
+  ['emoji', 'party-\u{1F389}', { reason: 'invalidChars' }],
+  ['inner space', 'two words', { reason: 'invalidChars' }],
+  ['ideographic space inside', 'ab\u3000cd', { reason: 'invalidChars' }],
+  ['control char', 'ab\u0007cd', { reason: 'invalidChars' }],
+  ['leading hyphen', '-abc', { reason: 'invalidChars' }],
+  ['leading underscore', '_abc', { reason: 'invalidChars' }],
+  ['leading combining mark', '\u0301abc', { reason: 'invalidChars' }],
+  ['combining mark after hyphen', 'a-\u0301b', { reason: 'invalidChars' }],
+  ['symbol', 'a#b', { reason: 'invalidChars' }],
+  ['path traversal', 'a..b', { reason: 'invalidChars' }],
+  ['modifier letter okina (Common script)', 'hawai\u02BBi', { reason: 'invalidChars' }],
+  ['modifier letter prime', 'a\u02B9b', { reason: 'invalidChars' }],
+  ['fullwidth symbol', 'a\uFF03b', { reason: 'invalidChars' }],
+  ['latin + cyrillic e', 'g\u0435neral', { reason: 'mixedScripts' }],
+  ['latin + cyrillic a (all looks latin)', 'p\u0430y', { reason: 'mixedScripts' }],
+  ['latin + greek omicron', 'hell\u03BF', { reason: 'mixedScripts' }],
+  ['cyrillic + greek', 'общий\u03B1', { reason: 'mixedScripts' }],
+  ['latin + armenian o', 'g\u0585', { reason: 'mixedScripts' }],
+  ['latin + bengali digit 4 (looks like 8)', 'room\u09EA', { reason: 'mixedScripts' }],
+  ['korean + bengali digit', '팀\u09EA', { reason: 'mixedScripts' }],
+  ['ascii digit + arabic-indic digit', '1\u0663', { reason: 'mixedScripts' }],
+];
 
 describe('Channel names (unicode)', () => {
   let token: string;
@@ -33,21 +111,76 @@ describe('Channel names (unicode)', () => {
   });
 
   describe('normalize / validate (unit)', () => {
-    it('trims, NFC-normalizes and lowercases without locale', () => {
-      expect(normalizeChannelName('  Dev-Team ')).toBe('dev-team');
-      expect(normalizeChannelName('가')).toBe('가'); // 가 (NFD -> NFC)
-      // 터키어 로캘 영향 없음: I -> i
-      expect(normalizeChannelName('INFO')).toBe('info');
+    it.each(VECTORS)('%s', (_label, input, expected) => {
+      const result = validateChannelName(input);
+      if (typeof expected === 'string') {
+        expect(result).toEqual({ ok: true, name: expected });
+        // 정규화는 멱등이어야 한다(저장된 이름을 다시 넣어도 같은 이름)
+        expect(normalizeChannelName(expected)).toBe(expected);
+        expect(checkChannelName(expected)).toBeNull();
+      } else {
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+          expect(result.reason).toBe(expected.reason);
+          expect(result.code).toBe('CHANNEL_NAME_INVALID');
+        }
+      }
     });
 
-    it('counts length in code points', () => {
-      expect(validateChannelName('\u{20BB7}'.repeat(25)).ok).toBe(true); // 𠮷 x25 (UTF-16 길이 50)
-      expect(validateChannelName('\u{20BB7}'.repeat(26)).ok).toBe(false);
+    it('rejects non-string input', () => {
+      const result = validateChannelName(123);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('required');
+    });
+
+    it('uses a separate message for too long names', () => {
+      const short = validateChannelName('가'.repeat(CHANNEL_NAME_MAX + 1));
+      const admin = validateChannelName('a'.repeat(CHANNEL_NAME_ADMIN_MAX + 1), CHANNEL_NAME_ADMIN_MAX);
+      expect(!short.ok && short.error).toMatch(new RegExp(`${CHANNEL_NAME_MAX} characters or fewer`));
+      expect(!admin.ok && admin.error).toMatch(new RegExp(`${CHANNEL_NAME_ADMIN_MAX} characters or fewer`));
+      expect(validateChannelName('a'.repeat(CHANNEL_NAME_ADMIN_MAX), CHANNEL_NAME_ADMIN_MAX).ok).toBe(true);
+    });
+  });
+
+  // 프런트와 백엔드 규칙이 어긋나지 않는지(복붙 드리프트) 같은 벡터로 비교한다.
+  // 경로를 실행 시점에 만들어 백엔드 tsc(rootDir=src)가 프런트 파일을 따라가지 않게 한다.
+  describe('frontend rules match backend', () => {
+    type FrontendModule = {
+      CHANNEL_NAME_MAX: number;
+      CHANNEL_NAME_ADMIN_MAX: number;
+      normalizeChannelName: (input: string) => string;
+      checkChannelName: (name: string, maxLength?: number) => ChannelNameReason | null;
+    };
+    let frontend: FrontendModule;
+
+    beforeAll(async () => {
+      const frontendPath = fileURLToPath(new URL('../../../frontend/src/lib/channelName.ts', import.meta.url));
+      frontend = (await import(frontendPath)) as FrontendModule;
+    });
+
+    it('shares the length limits', () => {
+      expect(frontend.CHANNEL_NAME_MAX).toBe(CHANNEL_NAME_MAX);
+      expect(frontend.CHANNEL_NAME_ADMIN_MAX).toBe(CHANNEL_NAME_ADMIN_MAX);
+    });
+
+    it.each(VECTORS)('%s', (_label, input, expected) => {
+      const name = frontend.normalizeChannelName(input);
+      expect(name).toBe(normalizeChannelName(input));
+      const reason = frontend.checkChannelName(name);
+      expect(reason).toBe(checkChannelName(name));
+      expect(reason).toBe(typeof expected === 'string' ? null : expected.reason);
+      if (typeof expected === 'string') expect(name).toBe(expected);
+    });
+
+    it('applies the admin limit the same way', () => {
+      const long = 'a'.repeat(CHANNEL_NAME_ADMIN_MAX + 1);
+      expect(frontend.checkChannelName(long, CHANNEL_NAME_ADMIN_MAX)).toBe('tooLong');
+      expect(frontend.checkChannelName(long.slice(1), CHANNEL_NAME_ADMIN_MAX)).toBeNull();
     });
   });
 
   describe('CRUD with unicode names', () => {
-    const names = ['개발팀', '프로젝트_a', '日本語', 'قناة'];
+    const names = ['개발팀', '프로젝트_a', '日本語', 'قناة', 'общий', 'ελληνικά'];
 
     it.each(names)('creates, reads, searches, renames and deletes %s (repeated)', async (name) => {
       for (let round = 0; round < 2; round++) {
@@ -92,22 +225,45 @@ describe('Channel names (unicode)', () => {
       expect(res.status).toBe(201);
       expect(res.body.name).toBe('project_a');
     });
+
+    it('folds fullwidth names (NFKC) through create, read, rename and delete (repeated)', async () => {
+      for (let round = 0; round < 2; round++) {
+        // Create: 전각 입력은 ASCII 이름으로 저장된다
+        const created = await create('ｌｏｂｂｙ');
+        expect(created.status).toBe(201);
+        expect(created.body.name).toBe('lobby');
+        const id = created.body.id;
+
+        // 같은 이름의 ASCII·전각 대문자 입력은 중복이다
+        for (const dupName of ['lobby', 'ＬＯＢＢＹ', 'ｌｏｂｂｙ']) {
+          const dup = await create(dupName);
+          expect(dup.status).toBe(400);
+          expect(dup.body.error).toMatch(/already exists/);
+        }
+
+        // Read
+        const list = await request(app).get('/channels').set('Authorization', `Bearer ${token}`);
+        const items = Array.isArray(list.body) ? list.body : list.body.items;
+        expect(items.map((c: { name: string }) => c.name)).toContain('lobby');
+
+        // Update: 관리자 이름 변경도 NFKC로 접는다
+        const renamed = await adminEdit(id, 'ｄｅｖ－ｔｅａｍ');
+        expect(renamed.status).toBe(200);
+        expect(renamed.body.name).toBe('dev-team');
+
+        // Delete then read fails
+        const del = await request(app).delete(`/admin/channels/${id}`)
+          .set('Authorization', `Bearer ${adminToken}`);
+        expect(del.status).toBeLessThan(300);
+        const after = await request(app).get('/channels').set('Authorization', `Bearer ${token}`);
+        const afterItems = Array.isArray(after.body) ? after.body : after.body.items;
+        expect(afterItems.map((c: { name: string }) => c.name)).not.toContain('dev-team');
+      }
+    });
   });
 
   describe('rejections', () => {
-    const bad: [string, string][] = [
-      ['bidi override U+202E', 'abc‮def'],
-      ['bidi isolate U+2066', 'abc⁦def'],
-      ['zero-width space U+200B', 'ab​cd'],
-      ['zero-width joiner U+200D', 'ab‍cd'],
-      ['emoji', 'party-\u{1F389}'],
-      ['inner space', 'two words'],
-      ['control char', 'ab\u0007cd'],
-      ['leading hyphen', '-abc'],
-      ['leading underscore', '_abc'],
-      ['symbol', 'a#b'],
-      ['empty', '   '],
-    ];
+    const bad = VECTORS.filter((v): v is [string, string, { reason: ChannelNameReason }] => typeof v[2] !== 'string');
 
     it.each(bad)('rejects %s on create with CHANNEL_NAME_INVALID', async (_label, name) => {
       const res = await create(name);
@@ -123,7 +279,9 @@ describe('Channel names (unicode)', () => {
     });
 
     it('rejects over 25 code points but accepts 25 Hangul syllables', async () => {
-      expect((await create('가'.repeat(26))).status).toBe(400);
+      const long = await create('가'.repeat(26));
+      expect(long.status).toBe(400);
+      expect(long.body.error).toMatch(/25 characters or fewer/);
       expect((await create('가'.repeat(25))).status).toBe(201);
     });
 
@@ -135,20 +293,71 @@ describe('Channel names (unicode)', () => {
       expect(dup.body.error).toMatch(/already exists/);
     });
 
-    it('applies the same rules on admin rename', async () => {
-      const created = await create('rename-me');
-      const id = created.body.id;
-      for (const name of ['abc‮def', 'ab​cd', 'x \u{1F389}', 'two words']) {
-        const res = await adminEdit(id, name);
+    it('rejects a look-alike of an existing channel (latin + cyrillic)', async () => {
+      expect((await create('lobby')).status).toBe(201);
+      const fake = await create('l\u043Ebby');
+      expect(fake.status).toBe(400);
+      expect(fake.body.code).toBe('CHANNEL_NAME_INVALID');
+    });
+  });
+
+  describe('admin rename', () => {
+    it.each(VECTORS.filter((v) => typeof v[2] !== 'string' && v[2].reason !== 'tooLong'))(
+      'rejects %s with CHANNEL_NAME_INVALID',
+      async (_label, name) => {
+        const created = await create('rename-me');
+        const res = await adminEdit(created.body.id, name);
         expect(res.status).toBe(400);
         expect(res.body.code).toBe('CHANNEL_NAME_INVALID');
-      }
+      },
+    );
+
+    it('uses the admin length limit with its own message', async () => {
+      const created = await create('rename-me');
+      const id = created.body.id;
+      const tooLong = await adminEdit(id, 'a'.repeat(81));
+      expect(tooLong.status).toBe(400);
+      expect(tooLong.body.error).toMatch(/80 characters or fewer/);
+      const ok = await adminEdit(id, 'a'.repeat(80));
+      expect(ok.status).toBe(200);
+    });
+
+    it('renames to a unicode name and rejects NFD/fullwidth renames onto existing names', async () => {
+      const created = await create('rename-me');
+      const id = created.body.id;
       const ok = await adminEdit(id, '개발팀');
       expect(ok.status).toBe(200);
-      // NFD rename onto an existing name is a conflict
-      await create('日本語');
-      const dup = await adminEdit(id, '日本語');
-      expect(dup.status).toBe(400);
+      expect(ok.body.name).toBe('개발팀');
+
+      // 한글은 NFD와 NFC가 다르다(日本語는 같아서 이 검사가 의미 없다)
+      expect('한글팀'.normalize('NFD')).not.toBe('한글팀');
+      expect((await create('한글팀')).status).toBe(201);
+      const nfdDup = await adminEdit(id, '한글팀'.normalize('NFD'));
+      expect(nfdDup.status).toBe(400);
+      expect(nfdDup.body.error).toMatch(/already exists/);
+
+      expect((await create('lobby')).status).toBe(201);
+      const fullwidthDup = await adminEdit(id, 'ｌｏｂｂｙ');
+      expect(fullwidthDup.status).toBe(400);
+      expect(fullwidthDup.body.error).toMatch(/already exists/);
+
+      const unchanged = await request(app).get('/channels').set('Authorization', `Bearer ${token}`);
+      const items = Array.isArray(unchanged.body) ? unchanged.body : unchanged.body.items;
+      expect(items.find((c: { id: number }) => c.id === id)?.name).toBe('개발팀');
+    });
+
+    it('returns 400 already exists when the unique constraint fires (race after the duplicate check)', async () => {
+      const created = await create('rename-me');
+      expect((await create('taken')).status).toBe(201);
+      // 중복 검사(findFirst)와 update 사이에 다른 요청이 같은 이름을 저장한 상황을 만든다
+      const spy = jest.spyOn(prisma.channel, 'findFirst').mockResolvedValueOnce(null);
+      try {
+        const res = await adminEdit(created.body.id, 'taken');
+        expect(res.status).toBe(400);
+        expect(res.body.error).toMatch(/already exists/);
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 });

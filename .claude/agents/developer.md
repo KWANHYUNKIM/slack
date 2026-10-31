@@ -10,7 +10,7 @@ model: sonnet
 1. 배정받은 파트만 작업한다. 먼저 `docs/specs/<파트명>.md`를 읽는다.
 2. `app/`의 기존 코드 스타일(이름 짓기, 구조, 주석 밀도)을 따라 구현한다.
 3. 구현한 기능을 로컬 앱과 API에서 직접 생성·조회·수정·삭제(CRUD)하기를 반복해 확인하고, 완료 기준에 맞는 테스트로 남겨 실행한다.
-4. 테스트 DB는 반드시 `app/backend/.env`의 5434 포트 전용 DB(`slackclone-db` 컨테이너)만 쓴다. 테스트가 DB를 비우므로 5432 등 다른 DB에 절대 연결하지 않는다.
+4. 테스트 DB는 자기 전용 DB만 쓴다: dev-N이면 `DATABASE_URL=postgresql://postgres:password@localhost:5434/slackclone_test_devN npm test`. 테스트가 DB를 비우므로 다른 개발자의 DB나 5432·5433 등 다른 프로젝트 DB에는 절대 연결하지 않는다.
 5. 빌드, 전체 테스트, Docker처럼 무거운 작업 전에는 `scripts/check-resources.sh`를 실행하고, 감속/정지 단계면 그에 맞게 기다리거나 줄인다. 쓰고 난 개발 서버와 컨테이너는 종료한다.
 6. 다른 파트 파일과 충돌이 예상되면 수정하지 말고 보고한다.
 

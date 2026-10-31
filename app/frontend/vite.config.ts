@@ -66,6 +66,16 @@ export default defineConfig({
           }
         },
       },
+      '/huddles': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        // Skip proxy for HTML page navigations so the SPA handles /huddles in the browser
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
       '/bookmarks': { target: 'http://localhost:3000', changeOrigin: true },
       '/push': { target: 'http://localhost:3000', changeOrigin: true },
       '/health': { target: 'http://localhost:3000', changeOrigin: true },
