@@ -5,7 +5,8 @@ import 'quill/dist/quill.snow.css';
 import { uploadFile, getUsers, type ApiFile } from '@/lib/api';
 import { MENTION_CHANNEL_ID, MENTION_HERE_ID, type MentionUser } from '@/lib/types';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
-import emojiData from '@emoji-mart/data';
+import { useEmojiData } from '@/lib/emoji/emojiData';
+import { buildEmojiIndex, buildEmojiMap } from '@/lib/emoji/emojiLookup';
 import type { EmojiOption } from '@/components/Messages/EmojiAutocomplete';
 import { t } from '@/lib/i18n';
 
@@ -37,35 +38,8 @@ class MentionBlot extends Embed {
 }
 Quill.register(MentionBlot);
 
-// Shape of the emoji-mart data we read (the package ships no usable types)
-interface EmojiMartData {
-  emojis: Record<string, { name: string; skins?: { native?: string }[] }>;
-  aliases?: Record<string, string>;
-}
-
-// Build searchable emoji list from emoji-mart data
-function buildEmojiIndex(): EmojiOption[] {
-  const { emojis, aliases = {} } = emojiData as EmojiMartData;
-  const results: EmojiOption[] = [];
-  for (const [id, entry] of Object.entries(emojis)) {
-    const native = entry.skins?.[0]?.native;
-    if (!native) continue;
-    results.push({ id, native, name: entry.name });
-  }
-  // Add aliases as separate entries pointing to the same emoji
-  for (const [alias, target] of Object.entries(aliases) as [string, string][]) {
-    const entry = emojis[target];
-    if (!entry?.skins?.[0]?.native) continue;
-    results.push({ id: alias, native: entry.skins[0].native, name: entry.name });
-  }
-  return results;
-}
-
-const EMOJI_INDEX = buildEmojiIndex();
-const EMOJI_MAP = new Map<string, EmojiOption>();
-for (const e of EMOJI_INDEX) {
-  if (!EMOJI_MAP.has(e.id)) EMOJI_MAP.set(e.id, e);
-}
+const EMPTY_EMOJI_INDEX: EmojiOption[] = [];
+const EMPTY_EMOJI_MAP = new Map<string, EmojiOption>();
 
 interface UseQuillEditorOptions {
   placeholder: string;
@@ -117,11 +91,19 @@ export function useQuillEditor({
     },
   });
 
+  // 이모지 데이터는 lazy 청크로 읽는다 (규칙 17). 로드 전에는 자동완성 결과가 비어 있다.
+  const emojiData = useEmojiData();
+  const emojiIndex = useMemo(() => (emojiData ? buildEmojiIndex(emojiData) : EMPTY_EMOJI_INDEX), [emojiData]);
+  const emojiMapRef = useRef(EMPTY_EMOJI_MAP);
+  useEffect(() => {
+    emojiMapRef.current = buildEmojiMap(emojiIndex);
+  }, [emojiIndex]);
+
   // Filter emojis based on query (memoized)
   const filteredEmojis = useMemo(() => {
     if (!showEmojiAutocomplete || emojiQuery.length < 2) return [];
     const q = emojiQuery.toLowerCase();
-    const results = EMOJI_INDEX.filter((e) => e.id.includes(q));
+    const results = emojiIndex.filter((e) => e.id.includes(q));
     // Sort: exact start match first, then by id length (shorter = more relevant)
     results.sort((a, b) => {
       const aStarts = a.id.startsWith(q) ? 0 : 1;
@@ -130,7 +112,7 @@ export function useQuillEditor({
       return a.id.length - b.id.length;
     });
     return results.slice(0, 8);
-  }, [showEmojiAutocomplete, emojiQuery]);
+  }, [showEmojiAutocomplete, emojiQuery, emojiIndex]);
 
   // Stable refs for Quill keyboard bindings
   const mentionActiveRef = useRef(false);
@@ -388,7 +370,7 @@ export function useQuillEditor({
             const beforeOpen = openColon > 0 ? txt[openColon - 1] : ' ';
             const shortcode = beforeClose.slice(openColon + 1).toLowerCase();
             if ((openColon === 0 || /\s/.test(beforeOpen)) && shortcode.length >= 2 && !/\s/.test(shortcode)) {
-              const match = EMOJI_MAP.get(shortcode);
+              const match = emojiMapRef.current.get(shortcode);
               if (match) {
                 const delta = new Delta()
                   .retain(openColon)

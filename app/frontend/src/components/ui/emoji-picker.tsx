@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Picker } from 'emoji-mart';
-import data from '@emoji-mart/data';
+import { loadEmojiData } from '@/lib/emoji/emojiData';
 import { cn } from '@/lib/utils';
 import i18n from '@/lib/i18n';
 import { loadEmojiMartI18n } from '@/lib/i18n/emojiI18n';
@@ -29,8 +29,16 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
 
     // Delay picker creation to avoid the opening click triggering onClickOutside
     const timer = setTimeout(async () => {
-      // 번들에 포함된 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
-      // 실패하면 i18n 없이 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      // 번들에 포함된 데이터(lazy 청크)와 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
+      // data를 안 넘기면 emoji-mart가 jsdelivr에서 받으므로 로드 실패 시에는 피커를 띄우지 않는다.
+      // i18n이 실패하면 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      let data;
+      try {
+        data = await loadEmojiData();
+      } catch (err) {
+        console.warn('emoji data load failed, picker not shown', err);
+        return;
+      }
       let locale = 'en';
       let pickerI18n: Record<string, unknown> | undefined;
       try {

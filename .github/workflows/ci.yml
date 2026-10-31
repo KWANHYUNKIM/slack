@@ -139,8 +139,19 @@ jobs:
       - name: Desktop bridge unit tests
         run: npm run desktop:test
 
+      # 이모지 단축코드 변환·색인 순수 함수 단위 테스트
+      - name: Emoji lookup unit tests
+        run: npm run emoji:test
+
       - name: Build
         run: npm run build
+
+      # 규칙 17: 번들(dist)에 CDN 도메인(jsdelivr, unpkg, 웹폰트 등)이 남지 않았는지 검사한다.
+      - name: Check dist for CDN domains
+        working-directory: .
+        run: |
+          node --test scripts/check-dist-cdn.test.mjs
+          scripts/check-dist-cdn.sh
 
       # high 이상이 하나라도 있으면 실패한다(docs/security/nodejs-security.md 1절). PR #4, #6으로 0건이 됐다.
       - name: Audit production dependencies
