@@ -741,11 +741,30 @@ describe('Activity: mentions, thread replies, reactions', () => {
         rs.forEach((r) => expect(r.status).toBe(200));
         expect(await cursorOf(bob)).toBe(hi);
       }
-      // with no row at all, concurrent first reads still succeed
+      // 행이 없는 상태의 동시 첫 읽기: 한쪽이 행을 만드는 사이 다른 쪽의 갱신이 사라지면 안 된다(회귀 20회)
+      for (let i = 0; i < 20; i++) {
+        await resetRead(bob);
+        const order = i % 2 === 0 ? [lo, hi, lo, hi] : [hi, lo, hi, lo];
+        const rs = await Promise.all(order.map((messageId) => request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId })));
+        rs.forEach((r) => expect(r.status).toBe(200));
+        expect(await cursorOf(bob)).toBe(hi);
+      }
+    });
+
+    it('mark-unread moves the cursor back on purpose, and a later /read advances it again', async () => {
       await resetRead(bob);
-      const rs = await Promise.all([lo, hi].map((messageId) => request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId })));
-      rs.forEach((r) => expect(r.status).toBe(200));
-      expect(await cursorOf(bob)).toBe(hi);
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      const a = (await post(alice, pubId, 'u1')).body.id;
+      const b = (await post(alice, pubId, 'u2')).body.id;
+      expect((await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: b })).status).toBe(200);
+      expect(await cursorOf(bob)).toBe(b);
+      expect((await request(app).post(`/channels/${pubId}/unread`).set(auth(bob)).send({ messageId: b })).status).toBe(200);
+      expect(await cursorOf(bob)).toBe(a);
+      expect((await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: b })).status).toBe(200);
+      expect(await cursorOf(bob)).toBe(b);
+      // 삭제 후에도 읽음 상태 조회가 된다
+      expect((await request(app).delete(`/messages/${b}`).set(auth(alice))).status).toBe(200);
+      expect(await cursorOf(bob)).toBe(b);
     });
 
     it('a deleted message in this channel still advances the cursor and clears mentions; another channel id is 404', async () => {

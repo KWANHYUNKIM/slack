@@ -813,23 +813,17 @@ const markReadSchema = z.object({
   messageId: z.number().int().positive(),
 });
 
-// 읽음 커서를 조건부 UPDATE 한 번으로 앞당긴다. 읽고-쓰기로 나누면 동시 요청(120, 100)이 커서를 뒤로 돌린다.
-// 행이 없으면 만들고, 동시에 다른 요청이 먼저 만들었으면(P2002) 한 번 더 조건부 갱신한다. 움직였으면 true.
+// 읽음 커서를 SQL 문장 하나로 앞당긴다(upsert + 조건부 갱신). 읽고-쓰기나 "갱신 시도 후 조회 후 생성"으로 나누면
+// 그 사이에 다른 요청이 행을 만들어 큰 id의 갱신이 사라지거나 커서가 뒤로 돈다. 움직였으면 true.
 async function advanceReadCursor(userId: number, channelId: number, messageId: number): Promise<boolean> {
-  const advance = () => prisma.channelRead.updateMany({
-    where: { userId, channelId, OR: [{ lastReadMessageId: null }, { lastReadMessageId: { lt: messageId } }] },
-    data: { lastReadMessageId: messageId },
-  });
-  if ((await advance()).count > 0) return true;
-  const existing = await prisma.channelRead.findUnique({ where: { userId_channelId: { userId, channelId } }, select: { id: true } });
-  if (existing) return false;
-  try {
-    await prisma.channelRead.create({ data: { userId, channelId, lastReadMessageId: messageId } });
-    return true;
-  } catch (err) {
-    if ((err as { code?: string }).code !== 'P2002') throw err;
-    return (await advance()).count > 0;
-  }
+  const rows = await prisma.$queryRaw<{ id: number }[]>`
+    INSERT INTO "ChannelRead" ("userId", "channelId", "lastReadMessageId", "updatedAt")
+    VALUES (${userId}, ${channelId}, ${messageId}, NOW())
+    ON CONFLICT ("userId", "channelId") DO UPDATE
+      SET "lastReadMessageId" = EXCLUDED."lastReadMessageId", "updatedAt" = NOW()
+      WHERE "ChannelRead"."lastReadMessageId" IS NULL OR "ChannelRead"."lastReadMessageId" < EXCLUDED."lastReadMessageId"
+    RETURNING id`;
+  return rows.length > 0;
 }
 
 router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
