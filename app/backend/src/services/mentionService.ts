@@ -314,7 +314,7 @@ async function notifyChannelActivities(
   });
 
   const channelName = channel?.name ?? 'channel';
-  const senderName = actor?.name ?? 'Someone';
+  const senderName = actor?.name;
   const url = `/c/${msg.channelId}`;
   const notified = new Set<number>();
   for (const a of created) {

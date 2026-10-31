@@ -56,16 +56,17 @@ export async function sendPushToUser(userId: number, input: PushPayload | PushSp
   if (!ensureConfigured()) return;
   if (!(await shouldNotify(userId, ctx))) return;
 
+  // locale은 구독과 한 번에 가져온다(수신자마다 따로 조회하지 않는다)
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId },
+    include: { user: { select: { locale: true } } },
   });
 
   if (subscriptions.length === 0) return;
 
   let payload: PushPayload;
   if ('titleKey' in input) {
-    const u = await prisma.user.findUnique({ where: { id: userId }, select: { locale: true } });
-    payload = renderPush(resolvePushLocale(u?.locale, ctx?.localeFallback), input);
+    payload = renderPush(resolvePushLocale(subscriptions[0].user.locale, ctx?.localeFallback), input);
   } else {
     payload = input;
   }

@@ -94,7 +94,7 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
   if (fromUserId !== toUserId && !isUserOnline(toUserId)) {
     // Push notification (fire-and-forget)
     sendPushToUser(toUserId, {
-      titleKey: 'dmTitle', sender: dm.fromUser?.name || 'Someone', content: dm.content, plainBody: true,
+      titleKey: 'dmTitle', sender: dm.fromUser?.name, content: dm.content, plainBody: true,
       url: `/d/${fromUserId}`,
     }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
   }

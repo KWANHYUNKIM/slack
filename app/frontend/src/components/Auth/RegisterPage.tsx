@@ -6,7 +6,9 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateInvite } from '@/lib/api';
+import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { registerFieldErrorKey, registerInputErrorKey } from '@/lib/authErrors';
 
 export function RegisterPage() {
   const { t } = useTranslation('auth');
@@ -44,12 +46,19 @@ export function RegisterPage() {
       setError(t('register.errors.passwordMismatch'));
       return;
     }
+    // 서버에 보내기 전에 이름·비밀번호 규칙을 먼저 안내한다
+    const inputError = registerInputErrorKey(name, password);
+    if (inputError) {
+      setError(t(inputError));
+      return;
+    }
     try {
       await register(name, email, password, inviteCode);
       navigate('/');
     } catch (err) {
       // 서버 code로 문구를 고른다(영어 원문 비교 금지)
-      setError(apiErrorMessage(err, 'auth:login.errors.generic'));
+      const fieldKey = err instanceof ApiError && err.code === 'VALIDATION_FAILED' ? registerFieldErrorKey(err.fields) : null;
+      setError(fieldKey ? t(fieldKey) : apiErrorMessage(err, 'auth:login.errors.generic'));
     }
   };
 
@@ -115,9 +124,9 @@ export function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('fields.password')}
               required
-              minLength={8}
               className="h-11"
             />
+            <p className="mt-1 text-xs text-gray-500">{t('register.passwordHint')}</p>
           </div>
           <div>
             <Input

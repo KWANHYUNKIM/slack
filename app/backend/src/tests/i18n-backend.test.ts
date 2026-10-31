@@ -13,7 +13,8 @@ import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { settleBackgroundWork as settle } from '../services/mentionService.js';
 import { canonicalLocale, canonicalTimeZone } from '../utils/userPrefs.js';
-import { pickLocale, pushT, resolvePushLocale } from '../i18n/pushMessages.js';
+import { pickLocale, pushT, renderPush, resolvePushLocale } from '../i18n/pushMessages.js';
+import { errorCodeDefaults, validationFields } from '../middleware/errorCode.js';
 
 // i18n-3: 오류 code, User.locale·timeZone, 푸시 문구 번역, 검색 tz 기본값
 
@@ -270,6 +271,16 @@ describe('i18n backend', () => {
       expect(pushT('en', 'body', { sender: 'a', content: '{sender}' })).toBe('a: {sender}');
     });
 
+    it('translates the unknown-sender fallback and treats whitespace-only content as empty on every path', () => {
+      expect(renderPush('ko', { titleKey: 'dmTitle', sender: null, content: 'hi', plainBody: true }).title).toBe('누군가');
+      expect(renderPush('en', { titleKey: 'dmTitle', sender: undefined, content: 'hi', plainBody: true }).title).toBe('Someone');
+      expect(renderPush('ko', { titleKey: 'channelMention', channel: 'c', sender: ' ', content: 'x' }).body).toBe('누군가: x');
+      // 공백만 있는 본문은 plainBody 여부와 관계없이 첨부 문구로 대체된다
+      expect(renderPush('en', { titleKey: 'dmTitle', sender: 'A', content: '   ', plainBody: true }).body).toBe('Sent an attachment');
+      expect(renderPush('en', { titleKey: 'channelMessage', channel: 'c', sender: 'A', content: '   ' }).body).toBe('A: Sent an attachment');
+      expect(renderPush('ko', { titleKey: 'channelMessage', channel: 'c', sender: 'A', content: '' }).body).toBe('A: 첨부 파일을 보냈습니다');
+    });
+
     it('prefers User.locale over the Reminder.locale saved at creation', async () => {
       await patchMe(kim, { locale: 'en' });
       const { processDueReminders } = await import('../services/reminderService.js');
@@ -343,6 +354,53 @@ describe('i18n backend', () => {
       const again = await reg('inv5-i18n@example.com', 'i18n-ok');
       expect(again.status).toBe(400);
       expect(again.body.code).toBe('INVITE_EXHAUSTED');
+    });
+
+    it('VALIDATION_FAILED carries per-field reasons without internal details (register and login)', async () => {
+      const shortPw = await request(app).post('/auth/register').send({ email: 'fields-i18n@example.com', password: 'abc', name: 'Fields' });
+      expect(shortPw.status).toBe(400);
+      expect(shortPw.body.code).toBe('VALIDATION_FAILED');
+      expect(shortPw.body.fields).toEqual([{ path: 'password', reason: 'too_small' }]);
+
+      const longPw = await request(app).post('/auth/register').send({ email: 'fields-i18n@example.com', password: 'x'.repeat(73), name: 'Fields' });
+      expect(longPw.body.fields).toEqual([{ path: 'password', reason: 'too_big' }]);
+
+      const noName = await request(app).post('/auth/register').send({ email: 'fields-i18n@example.com', password: TEST_PASSWORD, name: '' });
+      expect(noName.body.fields).toEqual([{ path: 'name', reason: 'too_small' }]);
+
+      const badEmail = await request(app).post('/auth/login').send({ email: 'nope', password: 'x' });
+      expect(badEmail.body.fields).toEqual([{ path: 'email', reason: 'invalid_format' }]);
+      const emptyPw = await request(app).post('/auth/login').send({ email: 'a@example.com', password: '' });
+      expect(emptyPw.body.fields).toEqual([{ path: 'password', reason: 'too_small' }]);
+      // fields에는 path와 reason만 있다
+      for (const f of [...shortPw.body.fields, ...badEmail.body.fields]) expect(Object.keys(f).sort()).toEqual(['path', 'reason']);
+      expect(validationFields([{ code: 'custom', path: ['a', 0], message: 'secret' }])).toEqual([{ path: 'a.0', reason: 'custom' }]);
+      expect(validationFields('not issues')).toBeNull();
+    });
+
+    it('maps oversized and unsupported bodies to stable codes', async () => {
+      // 113KB JSON은 express.json 한도(100kb)를 넘는다
+      const big = await request(app).post('/auth/login').set('Content-Type', 'application/json')
+        .send(JSON.stringify({ email: 'a@example.com', password: 'x', pad: 'p'.repeat(113 * 1024) }));
+      expect(big.status).toBe(413);
+      expect(big.body).toEqual({ error: 'Payload too large', code: 'PAYLOAD_TOO_LARGE' });
+    });
+
+    it('uses a generic status code only as a default, and skips JSON-RPC bodies', async () => {
+      // 구체 code가 없는 오류는 상태별 기본 code, 목록에 없는 4xx는 BAD_REQUEST
+      const mw = errorCodeDefaults;
+      const run = (status: number, body: unknown) => {
+        let out: unknown;
+        const res = { statusCode: status, json: (b: unknown) => { out = b; return res; } } as unknown as import('express').Response;
+        mw({} as import('express').Request, res, () => {});
+        res.json(body);
+        return out as Record<string, unknown>;
+      };
+      expect(run(500, { error: 'x' }).code).toBe('INTERNAL_ERROR');
+      expect(run(418, { error: 'x' }).code).toBe('BAD_REQUEST');
+      expect(run(503, { error: 'x' }).code).toBe('INTERNAL_ERROR');
+      expect(run(404, { error: 'x', code: 'CHANNEL_NOT_FOUND' }).code).toBe('CHANNEL_NOT_FOUND');
+      expect(run(400, { jsonrpc: '2.0', error: { code: -32000, message: 'm' }, id: null })).toEqual({ jsonrpc: '2.0', error: { code: -32000, message: 'm' }, id: null });
     });
 
     it('GET /auth/invite/:code returns INVITE_* codes', async () => {
