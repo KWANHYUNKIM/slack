@@ -174,6 +174,7 @@ export interface ApiChannel {
   isPrivate: boolean;
   createdAt: string;
   unreadCount: number;
+  mentionCount?: number;
   isMember: boolean;
   _count: { members: number; messages: number };
 }
@@ -262,6 +263,47 @@ export interface ApiReaction {
   messageId: number;
   createdAt: string;
   user: { id: number; name: string };
+}
+
+// ---- Activity ----
+
+export type ActivityType = 'MENTION' | 'CHANNEL_MENTION' | 'HERE_MENTION' | 'THREAD_REPLY' | 'REACTION';
+export type ActivityFilter = 'all' | 'mentions' | 'threads' | 'reactions';
+
+export interface ApiActivity {
+  id: number;
+  type: ActivityType;
+  actor: { id: number; name: string; avatar?: string | null };
+  channel: { id: number; name: string } | null;
+  channelId: number | null;
+  messageId: number | null;
+  dmId: number | null;
+  threadId: number | null;
+  message: { id: number; content: string; excerpt: string };
+  emoji: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export function getActivity(type: ActivityFilter, cursor?: number, limit = 30) {
+  const params = new URLSearchParams({ type, limit: String(limit) });
+  if (cursor) params.set('cursor', String(cursor));
+  return request<{ items: ApiActivity[]; nextCursor: number | null }>(`/activity?${params}`);
+}
+
+export function getActivityUnreadCount() {
+  return request<{ total: number; mentions: number }>('/activity/unread-count');
+}
+
+export function getMentionCounts() {
+  return request<{ channels: Record<string, number>; dms: Record<string, number> }>('/activity/mention-counts');
+}
+
+export function markActivityRead(body: { ids: number[] } | { all: true }) {
+  return request<{ updated: number; ids: number[] }>('/activity/read', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 export interface ApiMessageFile {
@@ -507,6 +549,7 @@ export interface ApiDMConversation {
   otherUser: { id: number; name: string; email: string; avatar?: string | null; status?: string };
   lastMessage: { content: string; createdAt: string; fromUserId: number } | null;
   unreadCount: number;
+  mentionCount?: number;
 }
 
 export interface ApiDMReaction {

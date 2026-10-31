@@ -50,7 +50,6 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   const messages = getMessagesForChannel(channelId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const highlightedId = useChannelStore((s) => s.highlightedMessageId);
   const didScrollToTarget = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAtBottom = useRef(true); // Start true since we auto-scroll on load
@@ -65,12 +64,15 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
     isAtBottom.current = distanceFromBottom < 100; // Within 100px of bottom
   };
 
-  // Clear stale refs and fetch messages when channel changes
+  // Fetch when the channel changes. The jump target is read once from the store (not a dep),
+  // so clearing it later never triggers another fetch.
+  const requestedAroundRef = useRef<number | null>(null);
   useEffect(() => {
-    messageRefs.current = new Map();
     isAtBottom.current = true; // Reset to true when switching channels
-    fetchMessages(channelId, scrollToMessageId ?? undefined);
-  }, [channelId, fetchMessages, scrollToMessageId]);
+    const target = useChannelStore.getState().scrollToMessageId;
+    requestedAroundRef.current = target;
+    fetchMessages(channelId, target ?? undefined);
+  }, [channelId, fetchMessages]);
 
   // After messages load, persist the read state to the backend so the
   // unread badge does not reappear on page reload.
@@ -88,21 +90,35 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
     }
   }, [channelId, lastMessageId, markChannelAsRead, readOnly]);
 
-  // Scroll to target message from search result
+  // Jump to a target message (search result, activity item). While the target is set and
+  // loaded it is also the highlighted message; the store clears it after 2s.
+  const hasMessages = messages.length > 0;
+  const targetLoaded = scrollToMessageId !== null && messages.some((m) => m.id === scrollToMessageId);
+  const highlightedId = targetLoaded ? scrollToMessageId : null;
+  const scrolledTargetRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!scrollToMessageId || messages.length === 0) return;
-    const el = messageRefs.current.get(scrollToMessageId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      didScrollToTarget.current = true;
-      useChannelStore.setState({ scrollToMessageId: null, highlightedMessageId: scrollToMessageId });
+    if (scrollToMessageId === null) {
+      scrolledTargetRef.current = null;
+      return;
     }
-  }, [scrollToMessageId, messages.length]);
+    if (scrolledTargetRef.current === scrollToMessageId) return;
+    if (targetLoaded) {
+      const el = messageRefs.current.get(scrollToMessageId);
+      if (!el) return;
+      scrolledTargetRef.current = scrollToMessageId;
+      didScrollToTarget.current = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (hasMessages && !isLoading && requestedAroundRef.current !== scrollToMessageId) {
+      // Target is older than what is loaded: fetch the page around it once
+      requestedAroundRef.current = scrollToMessageId;
+      fetchMessages(channelId, scrollToMessageId);
+    }
+  }, [scrollToMessageId, targetLoaded, hasMessages, isLoading, channelId, fetchMessages]);
 
-  // Auto-clear highlight after 2s
+  // Clear the target (and so the highlight) 2s after it was reached
   useEffect(() => {
     if (!highlightedId) return;
-    const timer = setTimeout(() => useChannelStore.setState({ highlightedMessageId: null }), 2000);
+    const timer = setTimeout(() => useChannelStore.setState({ scrollToMessageId: null }), 2000);
     return () => clearTimeout(timer);
   }, [highlightedId]);
 

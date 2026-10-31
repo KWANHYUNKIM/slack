@@ -34,9 +34,6 @@ interface ChannelState {
   activeDMId: number | null;
   scrollToMessageId: number | null;
   dmScrollToMessageId: number | null;
-  /** Message briefly highlighted after a jump-to-message (cleared after 2s) */
-  highlightedMessageId: number | null;
-  dmHighlightedMessageId: number | null;
   isLoading: boolean;
   loadError: string | null;
 
@@ -58,6 +55,12 @@ interface ChannelState {
   setUnreadCount: (channelId: number, count: number) => void;
   incrementDMUnread: (userId: number) => void;
   markChannelAsRead: (channelId: number) => void;
+  /** Re-fetch only the mention counts (after activity read/removed events) */
+  refreshMentionCounts: () => Promise<void>;
+  /** Lower a channel or DM mention badge by one (an activity was read or removed) */
+  decrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
+  /** A new mention arrived for a channel (channelId) or DM partner (dmUserId) */
+  incrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
   markDMAsRead: (dmId: number) => void;
   getActiveChannel: () => Channel | undefined;
   getActiveDM: () => DirectMessage | undefined;
@@ -70,8 +73,6 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   activeDMId: null,
   scrollToMessageId: null,
   dmScrollToMessageId: null,
-  highlightedMessageId: null,
-  dmHighlightedMessageId: null,
   isLoading: false,
   loadError: null,
 
@@ -85,6 +86,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         userAvatar: c.otherUser.avatar || '',
         userStatus: (c.otherUser.status as DirectMessage['userStatus']) || 'offline',
         unreadCount: c.unreadCount,
+        mentionCount: c.mentionCount ?? 0,
       }));
       set({ directMessages: dms });
     } catch {
@@ -103,6 +105,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         isPrivate: ch.isPrivate,
         memberCount: ch._count.members,
         unreadCount: ch.unreadCount,
+        mentionCount: ch.mentionCount ?? 0,
         isMember: ch.isMember,
         isStarred: starred.has(ch.id),
       }));
@@ -124,6 +127,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         isPrivate: ch.isPrivate,
         memberCount: ch._count?.members ?? 1,
         unreadCount: 0,
+        mentionCount: 0,
         isMember: true,
       };
       set((state) => ({
@@ -209,6 +213,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
             userAvatar: userAvatar || '',
             userStatus: 'online',
             unreadCount: 0,
+            mentionCount: 0,
           },
         ],
       });
@@ -230,6 +235,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
           userAvatar: userAvatar || '',
           userStatus: 'online',
           unreadCount: 0,
+          mentionCount: 0,
         },
       ],
     });
@@ -303,6 +309,41 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     set((state) => ({
       channels: state.channels.map((ch) =>
         ch.id === channelId ? { ...ch, unreadCount: 0 } : ch,
+      ),
+    }));
+  },
+
+  refreshMentionCounts: async () => {
+    try {
+      // Lightweight endpoint: only counts, not the full channel and DM lists
+      const counts = await api.getMentionCounts();
+      set((state) => ({
+        channels: state.channels.map((ch) => ({ ...ch, mentionCount: counts.channels[ch.id] ?? 0 })),
+        directMessages: state.directMessages.map((dm) => ({ ...dm, mentionCount: counts.dms[dm.userId] ?? 0 })),
+      }));
+    } catch {
+      // Badge refresh is best-effort; the next full fetch corrects it
+    }
+  },
+
+  decrementMention: ({ channelId, dmUserId }) => {
+    set((state) => ({
+      channels: channelId === undefined ? state.channels : state.channels.map((ch) =>
+        ch.id === channelId ? { ...ch, mentionCount: Math.max(0, ch.mentionCount - 1) } : ch,
+      ),
+      directMessages: dmUserId === undefined ? state.directMessages : state.directMessages.map((dm) =>
+        dm.userId === dmUserId ? { ...dm, mentionCount: Math.max(0, dm.mentionCount - 1) } : dm,
+      ),
+    }));
+  },
+
+  incrementMention: ({ channelId, dmUserId }) => {
+    set((state) => ({
+      channels: channelId === undefined ? state.channels : state.channels.map((ch) =>
+        ch.id === channelId ? { ...ch, mentionCount: ch.mentionCount + 1 } : ch,
+      ),
+      directMessages: dmUserId === undefined ? state.directMessages : state.directMessages.map((dm) =>
+        dm.userId === dmUserId ? { ...dm, mentionCount: dm.mentionCount + 1 } : dm,
       ),
     }));
   },

@@ -9,6 +9,7 @@ import { useConnectionStore } from '@/stores/useConnectionStore';
 import { AdminPage } from '@/components/Admin/AdminPage';
 import { FilesPage } from '@/components/Messages/FilesPage';
 import { UnreadsPage } from '@/components/Messages/UnreadsPage';
+import { ActivityPage } from '@/components/Messages/ActivityPage';
 import { LaterPage } from '@/components/Messages/LaterPage';
 
 export function AppLayout() {
@@ -32,6 +33,8 @@ export function AppLayout() {
     content = <UnreadsPage />;
   } else if (location.pathname === '/files') {
     content = <FilesPage />;
+  } else if (location.pathname === '/activity') {
+    content = <ActivityPage />;
   } else if (location.pathname === '/later') {
     content = <LaterPage />;
   } else {

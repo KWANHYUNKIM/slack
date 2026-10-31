@@ -1,3 +1,4 @@
+import { mentionsUser } from '@/lib/mentions';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { FileIcon, Download, Pin } from 'lucide-react';
@@ -60,6 +61,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
     onSave: onEditMessage ?? ((id, content) => editMessage(id, content)),
   });
   const isOwner = currentUser?.id === message.userId;
+  const isMentionedMe = !!currentUser && !isOwner && mentionsUser(message.content, currentUser.id);
   const isEditing = editingId === message.id;
 
   // Collapsible long messages
@@ -101,9 +103,10 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
     <div
       className={cn(
         'group relative flex px-5',
-        message.isPinned ? 'bg-slack-pinned hover:bg-slack-pinned' : 'hover:bg-slack-hover',
+        message.isPinned ? 'bg-slack-pinned hover:bg-slack-pinned' : isMentionedMe ? 'bg-slack-mention hover:bg-slack-mention-hover' : 'hover:bg-slack-hover',
         showAvatar ? 'pt-2 pb-px' : 'py-px'
       )}
+      data-mentioned-me={isMentionedMe || undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={() => onMouseLeave(() => setShowMoreMenu(false))}
       onTouchStart={onTouchStart}

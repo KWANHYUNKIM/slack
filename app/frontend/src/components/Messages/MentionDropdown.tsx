@@ -1,7 +1,15 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
-import type { MentionUser } from '@/lib/types';
+import { MENTION_CHANNEL_ID, MENTION_HERE_ID, type MentionUser } from '@/lib/types';
+
+// UI strings (to be moved to translation keys)
+const TEXT = {
+  hereLabel: '@here',
+  hereHint: 'Notify everyone who is online',
+  channelLabel: '@channel',
+  channelHint: 'Notify everyone in this channel',
+};
 
 interface MentionDropdownProps {
   users: MentionUser[];
@@ -26,7 +34,9 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
         className="absolute bottom-full left-0 mb-1 w-[280px] max-h-[200px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg z-50"
       >
         {users.map((user, index) => {
-          const isHere = user.id === -1 && user.name === 'here';
+          const isHere = user.id === MENTION_HERE_ID && user.name === 'here';
+          const isChannel = user.id === MENTION_CHANNEL_ID && user.name === 'channel';
+          const isBroadcast = isHere || isChannel;
           return (
             <button
               key={user.id}
@@ -38,7 +48,7 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
                 index === selectedIndex ? 'bg-slack-link text-white' : 'text-slack-primary',
               )}
             >
-              {isHere ? (
+              {isBroadcast ? (
                 <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-amber-400 text-[10px] font-bold text-white">@</div>
               ) : (
                 <Avatar
@@ -50,8 +60,8 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
                 />
               )}
               <div className="flex flex-col truncate">
-                <span className="truncate font-medium">{isHere ? '@here' : user.name}</span>
-                {isHere && <span className="text-xs text-slack-hint truncate">Notify everyone who is online</span>}
+                <span className="truncate font-medium">{isHere ? TEXT.hereLabel : isChannel ? TEXT.channelLabel : user.name}</span>
+                {isBroadcast && <span className="text-xs text-slack-hint truncate">{isHere ? TEXT.hereHint : TEXT.channelHint}</span>}
               </div>
             </button>
           );

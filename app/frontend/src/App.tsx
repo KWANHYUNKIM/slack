@@ -8,6 +8,7 @@ import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
+import { useActivityStore } from '@/stores/useActivityStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
@@ -87,31 +88,10 @@ function RouteSync() {
 }
 
 /**
- * Clears active channel/DM when navigating to /files so MessageArea
- * knows to render the full-page files view.
+ * Clears the active channel/DM on full-page routes (/files, /unreads, /later, /activity, /admin)
+ * so MessageArea/AppLayout render the page instead of a conversation.
  */
-function FileRouteSync() {
-  useEffect(() => {
-    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
-  }, []);
-  return null;
-}
-
-function LaterRouteSync() {
-  useEffect(() => {
-    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
-  }, []);
-  return null;
-}
-
-function UnreadsRouteSync() {
-  useEffect(() => {
-    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
-  }, []);
-  return null;
-}
-
-function AdminRouteSync() {
+function PageRouteSync() {
   useEffect(() => {
     useChannelStore.setState({ activeChannelId: null, activeDMId: null });
   }, []);
@@ -241,7 +221,9 @@ function AppShell() {
     const handleConnect = () => {
       useAuthStore.getState().updateUser({ status: 'online' });
       useConnectionStore.getState().setConnected(true);
+      void useActivityStore.getState().fetchUnreadCount();
     };
+    const unbindActivity = useActivityStore.getState().bindSocket(socket);
     // If already connected (reconnect scenario), update immediately
     if (socket.connected) handleConnect();
 
@@ -468,6 +450,7 @@ function AppShell() {
     socket.on('disconnect', handleDisconnect);
 
     return () => {
+      unbindActivity();
       socket.off('connect', handleConnect);
       socket.off('message:new', handleNewMessage);
       socket.off('message:updated', handleUpdatedMessage);
@@ -572,10 +555,11 @@ function App() {
           <Route index element={<DefaultRedirect />} />
           <Route path="c/:channelId" element={<RouteSync />} />
           <Route path="d/:userId" element={<RouteSync />} />
-          <Route path="files" element={<FileRouteSync />} />
-          <Route path="unreads" element={<UnreadsRouteSync />} />
-          <Route path="later" element={<LaterRouteSync />} />
-          <Route path="admin" element={<AdminGuard><AdminRouteSync /></AdminGuard>} />
+          <Route path="files" element={<PageRouteSync />} />
+          <Route path="unreads" element={<PageRouteSync />} />
+          <Route path="later" element={<PageRouteSync />} />
+          <Route path="activity" element={<PageRouteSync />} />
+          <Route path="admin" element={<AdminGuard><PageRouteSync /></AdminGuard>} />
           <Route path="*" element={<DefaultRedirect />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

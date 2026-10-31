@@ -16,13 +16,14 @@ export function ChannelItem({
   onClick,
 }: ChannelItemProps) {
   const Icon = isPrivate ? Lock : Hash;
-  const hasUnread = channel.unreadCount > 0;
+  const hasUnread = channel.unreadCount > 0 || channel.mentionCount > 0;
 
   return (
     <SidebarItem
       isActive={isActive}
       hasUnread={hasUnread}
       unreadCount={channel.unreadCount}
+      mentionCount={channel.mentionCount}
       onClick={onClick}
       leftSlot={<Icon className="w-4 h-4 flex-shrink-0" />}
       label={channel.name}

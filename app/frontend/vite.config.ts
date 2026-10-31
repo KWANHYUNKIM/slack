@@ -45,6 +45,16 @@ export default defineConfig({
           }
         },
       },
+      '/activity': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        // Skip proxy for HTML page navigations so the /activity SPA route works on refresh
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
       '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
       '/admin': {
         target: 'http://localhost:3000',

@@ -6,6 +6,7 @@ interface SidebarItemProps {
   isActive: boolean;
   hasUnread: boolean;
   unreadCount: number;
+  mentionCount?: number;
   onClick: () => void;
   leftSlot: ReactNode;
   label: ReactNode;
@@ -16,6 +17,7 @@ export function SidebarItem({
   isActive,
   hasUnread,
   unreadCount,
+  mentionCount,
   onClick,
   leftSlot,
   label,
@@ -38,7 +40,7 @@ export function SidebarItem({
     >
       {leftSlot}
       <span className="truncate">{label}</span>
-      <UnreadBadge count={unreadCount} isActive={isActive} />
+      <UnreadBadge count={unreadCount} mentionCount={mentionCount} isActive={isActive} />
     </button>
   );
 }

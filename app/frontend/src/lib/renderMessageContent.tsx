@@ -7,9 +7,9 @@ import React from 'react';
  */
 function renderInline(content: string, keyOffset: number = 0): React.ReactNode[] {
   // Mentions use <@id|name> format (inserted by autocomplete). Bare @word is NOT a mention.
-  // Also supports <@here> for broadcast mentions.
+  // Also supports <@here> and <@channel> for broadcast mentions.
   // Order matters: **bold** before *italic*, ~~strike~~ before ~strike~, _italic_ uses word-boundary-like guards
-  const TOKEN = /(\*\*(.+?)\*\*)|(<@here>)|(<@(\d+)\|([^>]+)>)|(\*([^*\n]+?)\*)|((?<![a-zA-Z0-9])_([^_\n]+?)_(?![a-zA-Z0-9]))|(`([^`\n]+?)`)|(~~(.+?)~~)|(~([^~\n]+?)~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"'\])]+)/g;
+  const TOKEN = /(\*\*(.+?)\*\*)|(<@(?:here|channel)>)|(<@(\d+)\|([^>]+)>)|(\*([^*\n]+?)\*)|((?<![a-zA-Z0-9])_([^_\n]+?)_(?![a-zA-Z0-9]))|(`([^`\n]+?)`)|(~~(.+?)~~)|(~([^~\n]+?)~)|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>"'\])]+)/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
@@ -20,8 +20,9 @@ function renderInline(content: string, keyOffset: number = 0): React.ReactNode[]
       // **bold** — recurse for nested formatting
       nodes.push(<strong key={key++} className="font-bold">{renderInline(m[2], key * 1000)}</strong>);
     } else if (m[3]) {
-      // <@here> — broadcast mention
-      nodes.push(<span key={key++} className="mention-highlight rounded bg-amber-200/60 px-[2px] text-amber-900 font-medium cursor-pointer hover:bg-amber-200">@here</span>);
+      // <@here> / <@channel> — broadcast mention
+      const broadcast = m[3] === '<@channel>' ? '@channel' : '@here';
+      nodes.push(<span key={key++} className="mention-highlight rounded bg-amber-200/60 px-[2px] text-amber-900 font-medium cursor-pointer hover:bg-amber-200">{broadcast}</span>);
     } else if (m[4]) {
       // <@id|name> — user mention
       nodes.push(<span key={key++} className="mention-highlight rounded bg-slack-mention px-[2px] text-slack-link font-medium cursor-pointer hover:bg-slack-mention-hover" data-mention-id={m[5]} data-mention-name={m[6]}>@{m[6]}</span>);
