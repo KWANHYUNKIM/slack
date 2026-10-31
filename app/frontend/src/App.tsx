@@ -354,12 +354,13 @@ function AppShell() {
     };
 
     const handlePresenceUpdate = (data: { userId: number; status: string }) => {
-      const { updateDMStatus } = useChannelStore.getState();
-      updateDMStatus(data.userId, data.status as import('@/lib/types').DirectMessage['userStatus']);
+      // Ignore statuses we do not know about in both stores
+      const status = toUserStatus(data.status);
+      if (!status) return;
+      useChannelStore.getState().updateDMStatus(data.userId, status);
       // Also update own status in auth store when server confirms our presence
       const currentUser = useAuthStore.getState().user;
-      const status = toUserStatus(data.status);
-      if (currentUser && status && data.userId === currentUser.id) {
+      if (currentUser && data.userId === currentUser.id) {
         useAuthStore.getState().updateUser({ status });
       }
     };

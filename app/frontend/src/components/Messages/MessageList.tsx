@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -50,7 +50,7 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   const messages = getMessagesForChannel(channelId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const highlightedId = useChannelStore((s) => s.highlightedMessageId);
   const didScrollToTarget = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAtBottom = useRef(true); // Start true since we auto-scroll on load
@@ -75,22 +75,18 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   // After messages load, persist the read state to the backend so the
   // unread badge does not reappear on page reload.
   // Only mark as read if user is at/near the bottom of the message list.
-  const messagesRef = useRef(messages);
+  const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
   useEffect(() => {
-    messagesRef.current = messages;
-  });
-  useEffect(() => {
-    if (readOnly || messages.length === 0) return;
-    const lastMessage = messagesRef.current[messagesRef.current.length - 1];
+    if (readOnly || lastMessageId === null) return;
     // Update in-memory unread count immediately (clears badge)
     markChannelAsRead(channelId);
     // Only persist to backend if user is at/near bottom
     if (isAtBottom.current) {
-      markChannelRead(channelId, lastMessage.id).catch(() => {
+      markChannelRead(channelId, lastMessageId).catch(() => {
         // Silently ignore errors (e.g. if the user isn't a member)
       });
     }
-  }, [channelId, messages.length, markChannelAsRead, readOnly]);
+  }, [channelId, lastMessageId, markChannelAsRead, readOnly]);
 
   // Scroll to target message from search result
   useEffect(() => {
@@ -98,17 +94,15 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
     const el = messageRefs.current.get(scrollToMessageId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Deferred so the highlight state is not set synchronously inside the effect
-      queueMicrotask(() => setHighlightedId(scrollToMessageId));
       didScrollToTarget.current = true;
-      useChannelStore.setState({ scrollToMessageId: null });
+      useChannelStore.setState({ scrollToMessageId: null, highlightedMessageId: scrollToMessageId });
     }
   }, [scrollToMessageId, messages.length]);
 
   // Auto-clear highlight after 2s
   useEffect(() => {
     if (!highlightedId) return;
-    const timer = setTimeout(() => setHighlightedId(null), 2000);
+    const timer = setTimeout(() => useChannelStore.setState({ highlightedMessageId: null }), 2000);
     return () => clearTimeout(timer);
   }, [highlightedId]);
 
@@ -176,7 +170,6 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
             <Message
               message={message}
               showAvatar={showAvatar}
-              isCompact={!showAvatar}
               onOpenThread={onOpenThread}
               readOnly={readOnly}
             />

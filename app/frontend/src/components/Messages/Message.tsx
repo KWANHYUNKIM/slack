@@ -26,7 +26,6 @@ import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 interface MessageProps {
   message: MessageType;
   showAvatar: boolean;
-  isCompact: boolean;
   onOpenThread?: (messageId: number) => void;
   readOnly?: boolean;
   variant?: 'default' | 'thread';

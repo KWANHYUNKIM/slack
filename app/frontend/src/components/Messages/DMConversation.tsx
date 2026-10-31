@@ -78,7 +78,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [isStarred, setIsStarred] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const highlightedId = useChannelStore((s) => s.dmHighlightedMessageId);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -114,17 +114,15 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
     const el = messageRefs.current.get(dmScrollToMessageId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Deferred so the highlight state is not set synchronously inside the effect
-      queueMicrotask(() => setHighlightedId(dmScrollToMessageId));
       didScrollToTarget.current = true;
-      useChannelStore.setState({ dmScrollToMessageId: null });
+      useChannelStore.setState({ dmScrollToMessageId: null, dmHighlightedMessageId: dmScrollToMessageId });
     }
   }, [dmScrollToMessageId, messages.length]);
 
   // Auto-clear highlight after 2s
   useEffect(() => {
     if (!highlightedId) return;
-    const timer = setTimeout(() => setHighlightedId(null), 2000);
+    const timer = setTimeout(() => useChannelStore.setState({ dmHighlightedMessageId: null }), 2000);
     return () => clearTimeout(timer);
   }, [highlightedId]);
 

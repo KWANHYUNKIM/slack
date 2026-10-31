@@ -28,41 +28,39 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   const [confirmRemove, setConfirmRemove] = useState<{ userId: number; userName: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  // Show the spinner again when the panel is pointed at another channel
-  const [loadedChannelId, setLoadedChannelId] = useState(channelId);
-  if (loadedChannelId !== channelId) {
-    setLoadedChannelId(channelId);
-    setIsLoading(true);
-  }
-
-  const loadMembers = useCallback(() => {
+  // isStale lets an effect drop responses that arrive after the channel changed
+  const loadMembers = useCallback((isStale: () => boolean = () => false) => {
     getChannelMembers(channelId)
       .then((data) => {
+        if (isStale()) return;
         setMembers(data);
         setLoadError(null);
         // Sync badge count with actual member list
         useChannelStore.getState().updateMemberCount(channelId, data.length);
       })
-      .catch(() => setLoadError('Failed to load members.'))
-      .finally(() => setIsLoading(false));
+      .catch(() => {
+        if (!isStale()) setLoadError('Failed to load members.');
+      })
+      .finally(() => {
+        if (!isStale()) setIsLoading(false);
+      });
   }, [channelId]);
 
-  // Refresh the member list, showing the spinner again
-  const fetchMembers = useCallback(() => {
-    setIsLoading(true);
-    loadMembers();
-  }, [loadMembers]);
-
   useEffect(() => {
-    loadMembers();
+    let cancelled = false;
+    loadMembers(() => cancelled);
     // Fetch channel details to get creator and current user's role
     getChannel(channelId).then((channel) => {
+      if (cancelled) return;
       setChannelCreatorId(channel.createdBy ?? null);
       const currentMember = channel.members.find((m) => m.userId === currentUser?.id);
       setCurrentUserChannelRole(currentMember?.role ?? null);
     }).catch(() => {
       // Ignore error, user may not have access
     });
+    return () => {
+      cancelled = true;
+    };
   }, [channelId, currentUser?.id, loadMembers]);
 
   // Listen for real-time presence updates
@@ -100,7 +98,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
     const handleMemberLeft = (data: { channelId: number; userId: number; memberCount: number }) => {
       if (data.channelId === channelId) {
-        fetchMembers(); // Refresh the member list
+        loadMembers(); // Refresh the member list
       }
     };
 
@@ -108,7 +106,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
     return () => {
       socket.off('channel:member-left', handleMemberLeft);
     };
-  }, [channelId, fetchMembers]);
+  }, [channelId, loadMembers]);
 
   const handleRemoveMember = async (userId: number, userName: string) => {
     setConfirmRemove({ userId, userName });
@@ -191,7 +189,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
             memberUserIds={memberUserIds}
             onAdded={() => {
               setShowAddForm(false);
-              fetchMembers();
+              loadMembers();
             }}
             onCancel={() => setShowAddForm(false)}
           />

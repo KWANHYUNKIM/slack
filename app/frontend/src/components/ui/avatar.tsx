@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import type { UserStatus } from '@/lib/types';
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string | null;
   alt?: string;
   fallback?: string;
   size?: 'sm' | 'md' | 'lg';
-  status?: 'online' | 'away' | 'dnd' | 'offline';
+  status?: UserStatus;
 }
 
 const sizeClasses = {

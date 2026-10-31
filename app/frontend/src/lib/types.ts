@@ -1,10 +1,9 @@
-export type UserStatus = 'online' | 'away' | 'dnd' | 'offline';
-
-const USER_STATUSES: readonly string[] = ['online', 'away', 'dnd', 'offline'];
+const USER_STATUSES = ['online', 'away', 'dnd', 'offline'] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
 
 /** Narrow a server-provided status string; unknown values give undefined. */
 export function toUserStatus(status: string | undefined): UserStatus | undefined {
-  return status !== undefined && USER_STATUSES.includes(status) ? (status as UserStatus) : undefined;
+  return USER_STATUSES.find((s) => s === status);
 }
 
 export interface User {
@@ -34,7 +33,7 @@ export interface DirectMessage {
   userId: number;
   userName: string;
   userAvatar: string;
-  userStatus: 'online' | 'away' | 'dnd' | 'offline';
+  userStatus: UserStatus;
   unreadCount: number;
 }
 

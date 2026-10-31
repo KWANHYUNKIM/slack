@@ -30,12 +30,6 @@ export function ScheduledMessagesTab() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // Reload after a failed action, showing the spinner again
-  const fetchMessages = useCallback(() => {
-    setIsLoading(true);
-    loadMessages();
-  }, [loadMessages]);
-
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
@@ -46,7 +40,7 @@ export function ScheduledMessagesTab() {
     try {
       await cancelScheduledMessage(id);
     } catch {
-      fetchMessages();
+      loadMessages();
       setActionError('Failed to cancel message.');
     }
   };
@@ -57,7 +51,7 @@ export function ScheduledMessagesTab() {
     try {
       await sendScheduledMessageNow(id);
     } catch {
-      fetchMessages();
+      loadMessages();
       setActionError('Failed to send message.');
     }
   };

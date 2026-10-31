@@ -330,7 +330,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 <Message
                   message={parentMessage}
                   showAvatar={true}
-                  isCompact={false}
                   variant="thread"
                   readOnly={readOnly}
                   onEditMessage={handleEditMessage}
@@ -351,7 +350,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 key={reply.id}
                 message={reply}
                 showAvatar={true}
-                isCompact={false}
                 variant="thread"
                 readOnly={readOnly}
                 onEditMessage={handleEditMessage}

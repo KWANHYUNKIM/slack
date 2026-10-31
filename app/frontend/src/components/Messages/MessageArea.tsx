@@ -148,18 +148,21 @@ export function MessageArea() {
       </div>
       {showMembers && (
         <MembersPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowMembers(false)}
         />
       )}
       {showPins && (
         <PinsPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowPins(false)}
         />
       )}
       {showFiles && (
         <FilesPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowFiles(false)}
         />
