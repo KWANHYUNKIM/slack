@@ -49,7 +49,8 @@ export function withParentExcerpt<T extends { parent?: { content: string; delete
 /** 스레드 참여자: 부모 작성자 + 삭제되지 않은 답글 작성자 중 지금도 그 채널 멤버인 사람. */
 export async function getThreadParticipantIds(parentId: number, channelId: number): Promise<number[]> {
   const rows = await prisma.message.findMany({
-    where: { OR: [{ id: parentId }, { threadId: parentId }], deletedAt: null },
+    // 부모 작성자는 부모가 삭제돼도 참여자다(listThreads 기준과 같다)
+    where: { OR: [{ id: parentId }, { threadId: parentId, deletedAt: null }] },
     select: { userId: true },
     distinct: ['userId'],
   });
@@ -70,6 +71,34 @@ async function emitThreadUpdated(parentId: number, channelId: number, lastReplyI
   emitToUsers(participants, 'thread:updated', { parentId, channelId, lastReplyId, replyCount, actorId });
 }
 
+/** 읽음 위치를 앞으로만 옮긴다(GREATEST). 동시 요청에도 역행하지 않도록 한 문장으로 upsert한다. */
+async function advanceThreadRead(userId: number, threadId: number, replyId: number): Promise<number | null> {
+  const rows = await prisma.$queryRaw<{ lastReadReplyId: number | null }[]>`
+    INSERT INTO "ThreadRead" ("userId", "threadId", "lastReadReplyId", "createdAt", "updatedAt")
+    VALUES (${userId}, ${threadId}, ${replyId}, NOW(), NOW())
+    ON CONFLICT ("userId", "threadId") DO UPDATE
+      SET "lastReadReplyId" = GREATEST(COALESCE("ThreadRead"."lastReadReplyId", 0), EXCLUDED."lastReadReplyId"),
+          "updatedAt" = NOW()
+    RETURNING "lastReadReplyId"`;
+  return rows[0]?.lastReadReplyId ?? null;
+}
+
+/** 부모가 삭제됐을 때: 살아 있는 답글이 남아 있으면 참여자에게 자리표시자로 바뀐 것을 알린다. */
+export function onThreadParentDeleted(parent: ReplyLike): Promise<void> {
+  return trackBackground((async () => {
+    try {
+      const last = await prisma.message.findFirst({
+        where: { threadId: parent.id, deletedAt: null },
+        orderBy: { id: 'desc' },
+        select: { id: true },
+      });
+      if (last) await emitThreadUpdated(parent.id, parent.channelId, last.id, parent.userId);
+    } catch (err) {
+      logError('Thread parent delete post-process failed', err);
+    }
+  })());
+}
+
 /** 답글이 만들어진 뒤: 작성자의 읽음 위치를 그 답글로 옮기고 참여자에게 thread:updated를 보낸다. 실패는 로그만 남긴다. */
 export function onThreadReplyCreated(reply: ReplyLike): Promise<void> {
   return trackBackground(onThreadReplyCreatedImpl(reply));
@@ -78,11 +107,7 @@ export function onThreadReplyCreated(reply: ReplyLike): Promise<void> {
 async function onThreadReplyCreatedImpl(reply: ReplyLike): Promise<void> {
   if (!reply.threadId) return;
   try {
-    await prisma.threadRead.upsert({
-      where: { userId_threadId: { userId: reply.userId, threadId: reply.threadId } },
-      create: { userId: reply.userId, threadId: reply.threadId, lastReadReplyId: reply.id },
-      update: { lastReadReplyId: reply.id },
-    });
+    await advanceThreadRead(reply.userId, reply.threadId, reply.id);
     await emitThreadUpdated(reply.threadId, reply.channelId, reply.id, reply.userId);
   } catch (err) {
     logError('Thread reply post-process failed', err);
@@ -151,13 +176,22 @@ export async function listThreads(userId: number, limit: number, cursor?: number
   if (page.length === 0) return { items: [], nextCursor: undefined };
 
   const parentIds = page.map((r) => r.parentId);
+  // 부모별 최근 INLINE_REPLY_LIMIT개 답글 id만 DB에서 고른다
+  const recent = await prisma.$queryRaw<{ id: number }[]>`
+    SELECT x.id
+    FROM unnest(${parentIds}::int[]) AS pid(id)
+    CROSS JOIN LATERAL (
+      SELECT r.id FROM "Message" r
+      WHERE r."threadId" = pid.id AND r."deletedAt" IS NULL
+      ORDER BY r.id DESC LIMIT ${INLINE_REPLY_LIMIT}
+    ) x`;
   const [parents, replies] = await Promise.all([
     prisma.message.findMany({
       where: { id: { in: parentIds } },
       include: { ...THREAD_REPLY_INCLUDE, channel: { select: { id: true, name: true, isPrivate: true } } },
     }),
     prisma.message.findMany({
-      where: { threadId: { in: parentIds }, deletedAt: null },
+      where: { id: { in: recent.map((r) => r.id) } },
       include: THREAD_REPLY_INCLUDE,
       orderBy: { id: 'asc' },
     }),
@@ -180,7 +214,7 @@ export async function listThreads(userId: number, limit: number, cursor?: number
       channel,
       replyCount: row.replyCount,
       unreadCount: row.unreadCount,
-      replies: all.slice(-INLINE_REPLY_LIMIT),
+      replies: all,
       lastReply,
       lastActivityAt: lastReply?.createdAt ?? parent.createdAt,
     };
@@ -190,10 +224,13 @@ export async function listThreads(userId: number, limit: number, cursor?: number
 
 /** 안 읽은 답글이 있는 스레드 수(사이드바 배지). */
 export async function countUnreadThreads(userId: number): Promise<number> {
-  const rows = await prisma.$queryRaw<{ unread: number }[]>`
-    SELECT (COUNT(*) FILTER (WHERE r."userId" <> ${userId} AND r.id > COALESCE(tr."lastReadReplyId", 0)))::int AS unread
-    ${participatingThreadsSql(userId)}`;
-  return rows.filter((r) => r.unread > 0).length;
+  const rows = await prisma.$queryRaw<{ count: number }[]>`
+    SELECT COUNT(*)::int AS count FROM (
+      SELECT p.id
+      ${participatingThreadsSql(userId)}
+      HAVING COUNT(*) FILTER (WHERE r."userId" <> ${userId} AND r.id > COALESCE(tr."lastReadReplyId", 0)) > 0
+    ) unread_threads`;
+  return rows[0]?.count ?? 0;
 }
 
 // ── 읽음 ────────────────────────────────────────────────────────────
@@ -212,15 +249,11 @@ export async function markThreadRead(userId: number, parentId: number, lastReadR
     target = last?.id ?? null;
   }
 
-  const existing = await prisma.threadRead.findUnique({ where: { userId_threadId: { userId, threadId: parentId } } });
-  const next = Math.max(existing?.lastReadReplyId ?? 0, target ?? 0) || null;
-  const saved = await prisma.threadRead.upsert({
-    where: { userId_threadId: { userId, threadId: parentId } },
-    create: { userId, threadId: parentId, lastReadReplyId: next },
-    update: { lastReadReplyId: next },
-  });
+  const lastRead = target === null
+    ? (await prisma.threadRead.findUnique({ where: { userId_threadId: { userId, threadId: parentId } } }))?.lastReadReplyId ?? null
+    : await advanceThreadRead(userId, parentId, target);
   emitToUsers([userId], 'thread:read', { parentId });
-  return { ok: true, lastReadReplyId: saved.lastReadReplyId };
+  return { ok: true, lastReadReplyId: lastRead };
 }
 
 // ── 채널에도 보내기 ──────────────────────────────────────────────────

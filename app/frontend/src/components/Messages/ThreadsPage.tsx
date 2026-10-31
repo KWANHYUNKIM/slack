@@ -54,8 +54,8 @@ function ThreadCard({ item }: { item: ApiThreadItem }) {
       await replyToMessage(item.parent.id, content, undefined, alsoSend);
       setText('');
       setAlsoSend(false);
-      // 서버가 thread:updated를 보내 목록을 다시 불러온다. 이벤트가 늦어도 보이게 직접 한 번 더 부른다.
-      void useThreadStore.getState().fetchFirstPage();
+      // thread:updated가 목록을 갱신한다. 이벤트가 늦어도 보이게 앞쪽만 직접 한 번 더 합친다.
+      void useThreadStore.getState().refreshHead();
     } catch {
       setError(true);
     } finally {
@@ -139,7 +139,9 @@ export function ThreadsPage() {
   const { items, nextCursor, isLoading, isLoadingMore, loadError, fetchFirstPage, fetchMore } = useThreadStore();
 
   useEffect(() => {
+    useThreadStore.getState().setActive(true);
     void fetchFirstPage();
+    return () => useThreadStore.getState().setActive(false);
   }, [fetchFirstPage]);
 
   return (

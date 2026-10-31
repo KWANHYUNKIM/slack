@@ -234,7 +234,17 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   },
 
   onMessageUpdated: (msg: api.ApiMessage) => {
-    const updated = transformApiMessage(msg);
+    const prev = get().messages.find((m) => m.id === msg.id);
+    let updated = transformApiMessage(msg);
+    // 편집 응답에는 답글 수(_count)와 부모 발췌가 없을 수 있다. 기존 값을 보존한다.
+    if (prev) {
+      updated = {
+        ...updated,
+        threadCount: msg._count ? updated.threadCount : prev.threadCount,
+        threadParticipants: msg.threadParticipants ?? prev.threadParticipants,
+        parentExcerpt: msg.parent !== undefined ? updated.parentExcerpt : prev.parentExcerpt,
+      };
+    }
     // 스레드 답글의 "채널에도 보내기"가 사후에 켜지거나 꺼진 경우: 타임라인에 넣거나 뺀다
     if (msg.threadId) {
       const exists = get().messages.some((m) => m.id === updated.id);
@@ -243,7 +253,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       } else if (!msg.alsoSendToChannel) {
         set({ messages: get().messages.filter((m) => m.id !== updated.id) });
       } else {
-        set({ messages: get().messages.map((m) => (m.id === updated.id ? { ...updated, threadCount: m.threadCount } : m)) });
+        set({ messages: get().messages.map((m) => (m.id === updated.id ? updated : m)) });
       }
       return;
     }

@@ -21,7 +21,7 @@ import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted } from '../services/threadService.js';
+import { PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, onThreadParentDeleted } from '../services/threadService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
   processNewChannelMessage,
@@ -381,6 +381,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
             sendError('Thread parent must belong to the same channel');
             return;
           }
+          if (parentMessage.threadId !== null) {
+            sendError('Cannot reply to a reply. Reply to the parent message instead.');
+            return;
+          }
         }
 
         // Create message and atomically attach files in a transaction
@@ -481,8 +485,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
         const updatedMessage = await prisma.message.update({
           where: { id: data.messageId },
           data: { content: data.content, editedAt: new Date() },
-          include: { user: { select: USER_SELECT_BASIC } },
-        });
+          include: { user: { select: USER_SELECT_BASIC }, ...PARENT_EXCERPT_INCLUDE },
+        }).then(withParentExcerpt);
 
         io.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
         void syncActivitiesOnEdit(updatedMessage);
@@ -551,7 +555,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
         ]);
 
         void deleteActivitiesForMessage(data.messageId);
-        void onThreadReplyDeleted(message);
+        if (message.threadId) void onThreadReplyDeleted(message);
+        else void onThreadParentDeleted(message);
 
         io.to(`channel:${message.channelId}`).emit('message:deleted', {
           messageId: data.messageId,

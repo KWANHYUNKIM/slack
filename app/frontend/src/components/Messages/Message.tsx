@@ -145,7 +145,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
           <button
             type="button"
             data-testid="thread-reply-label"
-            onClick={() => onOpenThread?.(message.parentExcerpt!.id)}
+            onClick={() => onOpenThread?.(message.threadId!)}
             className="block max-w-full truncate text-start text-[12px] text-slack-secondary hover:underline"
           >
             {t('messages:message.repliedToThread', { excerpt: message.parentExcerpt.content })}

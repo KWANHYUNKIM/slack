@@ -55,6 +55,10 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
         res.status(400).json({ error: 'Thread parent must belong to the same channel' });
         return;
       }
+      if (parentMessage.threadId !== null) {
+        res.status(400).json({ error: 'Cannot reply to a reply. Reply to the parent message instead.' });
+        return;
+      }
     }
 
     // Create message and atomically attach files in a transaction

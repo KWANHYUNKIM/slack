@@ -42,10 +42,10 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 | 이벤트 | 방향 | 대상 room | payload | 시점 |
 |---|---|---|---|---|
-| `thread:updated` | 서버 -> 클라이언트 | 스레드 참여자 각자의 `user:<id>` (작성자 본인 포함) | `{ parentId, channelId, lastReplyId, replyCount, actorId }` | 답글 생성(HTTP 답글, 채널 메시지 POST, 소켓 `message:send`)과 답글 삭제 후. 삭제로 답글이 없어지면 `lastReplyId`는 null |
+| `thread:updated` | 서버 -> 클라이언트 | 스레드 참여자 각자의 `user:<id>` (작성자 본인 포함) | `{ parentId, channelId, lastReplyId, replyCount, actorId }` | 답글 생성(HTTP 답글, 채널 메시지 POST, 소켓 `message:send`), 답글 삭제 후, 답글이 남은 부모 삭제 후(부모 작성자도 대상). 삭제로 답글이 없어지면 `lastReplyId`는 null |
 | `thread:read` | 서버 -> 클라이언트 | `user:<본인>` | `{ parentId }` | `POST /threads/:id/read` (다른 탭 동기화) |
 | `message:send` (확장) | 클라이언트 -> 서버 | - | `alsoSendToChannel?: boolean` 추가 (`threadId`가 있을 때만 의미) | 채널에도 보내기 |
-| `message:new` / `message:updated` (확장) | 서버 -> 클라이언트 | `channel:<id>` | 스레드 답글에 `alsoSendToChannel`, `parent`(`{ id, content(100자 발췌), deletedAt, user }`) 포함 | `POST/DELETE /messages/:id/broadcast`는 `message:updated`로 알린다 |
+| `message:new` / `message:updated` (확장) | 서버 -> 클라이언트 | `channel:<id>` | 스레드 답글에 `alsoSendToChannel`, `parent`(`{ id, content(100자 발췌), deletedAt, user }`) 포함 | `POST/DELETE /messages/:id/broadcast`와 HTTP `PATCH /messages/:id`(소켓 `message:edit`과 같은 payload)는 `message:updated`로 알린다 |
 
 ## 기존 이벤트 (slawk에서 이어받음)
 

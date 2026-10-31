@@ -173,6 +173,9 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   // ?reply=가 있고 아직 그 위치로 가지 않았다면 답글로, 아니면 맨 아래로 스크롤한다
   const scrolledToHighlight = useRef(false);
   useEffect(() => {
+    scrolledToHighlight.current = false;
+  }, [messageId, highlightReplyId]);
+  useEffect(() => {
     if (highlightReplyId && !scrolledToHighlight.current && replies.some((r) => r.id === highlightReplyId)) {
       scrolledToHighlight.current = true;
       document.querySelector(`[data-testid="${testPrefix}-panel"] [data-message-id="${highlightReplyId}"]`)?.scrollIntoView({ block: 'center' });

@@ -7,6 +7,7 @@ import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { settleBackgroundWork as settle } from '../services/mentionService.js';
+import { onThreadReplyCreated } from '../services/threadService.js';
 
 interface TestUser { id: number; token: string; name: string }
 
@@ -442,6 +443,96 @@ describe('Threads view: list, read state, also send to channel', () => {
       } while (cursor && pages < 10);
       expect(pages).toBe(3);
       expect(seen).toEqual([...made].reverse());
+    });
+  });
+
+  describe('review follow-ups', () => {
+    it('rejects replying to a reply through POST /channels/:id/messages and the socket', async () => {
+      const parent = (await post(alice, pubId, 'nest parent')).body;
+      const r = (await reply(bob, parent.id, 'first level')).body;
+      expect((await post(carol, pubId, 'second level', { threadId: r.id })).status).toBe(400);
+      expect((await request(app).post(`/messages/${r.id}/reply`).set(auth(carol)).send({ content: 'x' })).status).toBe(400);
+
+      const s = await connect(carol);
+      const err = collect(s, 'error');
+      const ack = await new Promise<any>((resolve) => s.emit('message:send', { channelId: pubId, content: 'ws nested', threadId: r.id }, resolve));
+      await pause();
+      expect(err.length + (ack?.error ? 1 : 0)).toBeGreaterThan(0);
+      expect(await prisma.message.count({ where: { content: 'ws nested' } })).toBe(0);
+      expect(await prisma.message.count({ where: { content: 'second level' } })).toBe(0);
+    });
+
+    it('keeps the parent excerpt when a broadcast reply is edited, over HTTP and the socket, and emits message:updated', async () => {
+      const parent = (await post(alice, pubId, 'excerpt parent')).body;
+      const cast = (await reply(bob, parent.id, 'cast v1', { alsoSendToChannel: true })).body;
+      const sa = await connect(alice);
+      const updated = collect(sa, 'message:updated');
+      await request(app).post(`/channels/${pubId}/join`).set(auth(alice));
+      sa.emit('join:channel', pubId);
+      await pause();
+
+      const http = await request(app).patch(`/messages/${cast.id}`).set(auth(bob)).send({ content: 'cast v2' });
+      expect(http.status).toBe(200);
+      expect(http.body.parent).toMatchObject({ id: parent.id, content: 'excerpt parent' });
+      await pause();
+      expect(updated.find((m) => m.id === cast.id && m.content === 'cast v2')?.parent).toMatchObject({ id: parent.id });
+
+      const sb = await connect(bob);
+      sb.emit('message:edit', { messageId: cast.id, content: 'cast v3' });
+      await pause(400);
+      expect(updated.find((m) => m.id === cast.id && m.content === 'cast v3')?.parent).toMatchObject({ id: parent.id });
+      expect((await timeline(alice, pubId)).find((m) => m.id === cast.id)!.content).toBe('cast v3');
+      const thread = (await request(app).get(`/messages/${parent.id}/thread`).set(auth(alice))).body;
+      expect(thread.replies.find((r: any) => r.id === cast.id).content).toBe('cast v3');
+      // 삭제하면 타임라인과 스레드 양쪽에서 사라진다
+      await request(app).delete(`/messages/${cast.id}`).set(auth(bob));
+      expect((await timeline(alice, pubId)).some((m) => m.id === cast.id)).toBe(false);
+      const after = (await request(app).get(`/messages/${parent.id}/thread`).set(auth(alice))).body;
+      expect(after.replies.some((r: any) => r.id === cast.id)).toBe(false);
+    });
+
+    it('notifies the parent author and repliers when the parent is deleted', async () => {
+      const parent = (await post(alice, pubId, 'delete event parent')).body;
+      await reply(bob, parent.id, 'still here');
+      const [sa, sb, sc] = [await connect(alice), await connect(bob), await connect(carol)];
+      const [ea, eb, ec] = [collect(sa, 'thread:updated'), collect(sb, 'thread:updated'), collect(sc, 'thread:updated')];
+      expect((await request(app).delete(`/messages/${parent.id}`).set(auth(alice))).status).toBe(200);
+      await settle();
+      await pause();
+      expect(ea).toHaveLength(1);
+      expect(ea[0]).toMatchObject({ parentId: parent.id, replyCount: 1 });
+      expect(eb).toHaveLength(1);
+      expect(ec).toHaveLength(0);
+      // 부모 작성자는 삭제 뒤에도 답글이 달리면 알림을 받지 못하는 것이 아니라 참여자로 남는다(새 답글은 404라 달 수 없다)
+      expect(parentIds(await list(alice))).toContain(parent.id);
+    });
+
+    it('never moves the read position backwards', async () => {
+      const parent = (await post(alice, pubId, 'greatest parent')).body;
+      const r1 = (await reply(bob, parent.id, 'g1')).body;
+      const r2 = (await reply(bob, parent.id, 'g2')).body;
+      await request(app).post(`/threads/${parent.id}/read`).set(auth(alice)).send({ lastReadReplyId: r2.id });
+      // 늦게 처리된 오래된 답글 후처리가 읽음 위치를 되돌리면 안 된다
+      await onThreadReplyCreated({ id: r1.id, userId: alice.id, channelId: pubId, threadId: parent.id });
+      const row = await prisma.threadRead.findUnique({ where: { userId_threadId: { userId: alice.id, threadId: parent.id } } });
+      expect(row!.lastReadReplyId).toBe(r2.id);
+      // 동시에 여러 번 호출해도 하나의 행으로 앞쪽 값만 남는다
+      const r3 = (await reply(bob, parent.id, 'g3')).body;
+      await Promise.all([r1, r3, r2].map((r) => onThreadReplyCreated({ id: r.id, userId: carol.id, channelId: pubId, threadId: parent.id })));
+      const rows = await prisma.threadRead.findMany({ where: { userId: carol.id, threadId: parent.id } });
+      expect(rows).toHaveLength(1);
+      expect(rows[0].lastReadReplyId).toBe(r3.id);
+    });
+
+    it('limits inline replies per thread to the most recent 20 and returns the real total', async () => {
+      const parent = (await post(alice, pubId, 'many replies parent')).body;
+      const ids: number[] = [];
+      for (let i = 0; i < 22; i++) ids.push((await reply(bob, parent.id, `m${i}`)).body.id);
+      const item = (await list(alice)).body.items.find((i: any) => i.parent.id === parent.id);
+      expect(item.replyCount).toBe(22);
+      expect(item.replies).toHaveLength(20);
+      expect(item.replies[19].id).toBe(ids[21]);
+      expect(item.lastReply.id).toBe(ids[21]);
     });
   });
 });

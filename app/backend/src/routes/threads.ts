@@ -11,7 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, setReplyBroadcast } from '../services/threadService.js';
+import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, onThreadParentDeleted, setReplyBroadcast } from '../services/threadService.js';
 import { processNewChannelMessage, syncActivitiesOnEdit, deleteActivitiesForMessage, markThreadMentionsRead } from '../services/mentionService.js';
 
 const router = Router();
@@ -160,16 +160,20 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
       return;
     }
 
-    const updatedMessage = await prisma.message.update({
+    const edited = await prisma.message.update({
       where: { id: messageId },
       data: { content, editedAt: new Date() },
       include: {
         user: { select: USER_SELECT_BASIC },
         reactions: { include: { user: { select: { id: true, name: true } } } },
+        ...PARENT_EXCERPT_INCLUDE,
       },
     });
+    // 채널에도 보낸 답글의 "스레드에 답글" 머리글이 유지되도록 부모 발췌를 함께 보낸다
+    const updatedMessage = withParentExcerpt(edited);
 
     res.json(updatedMessage);
+    getIO()?.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
 
     void syncActivitiesOnEdit(updatedMessage);
   } catch (error) {
@@ -217,7 +221,8 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
     ]);
 
     void deleteActivitiesForMessage(messageId);
-    void onThreadReplyDeleted(message);
+    if (message.threadId) void onThreadReplyDeleted(message);
+    else void onThreadParentDeleted(message);
 
     // Broadcast deletion to channel so other clients update in real-time
     const io = getIO();
