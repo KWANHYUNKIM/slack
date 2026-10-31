@@ -8,6 +8,10 @@ import { formatDateTime, DATE_TIME_MEDIUM } from '@/lib/i18n/format';
 import { useToastStore } from '@/stores/useToastStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { TwoFactorSetup } from './TwoFactorSetup';
+import { RecoveryCodesRegenerate } from './RecoveryCodesRegenerate';
+
+// 남은 복구 코드가 이 수 이하이면 새로 만들라고 안내한다
+const LOW_RECOVERY_CODES = 3;
 
 interface TwoFactorDialogProps {
   onClose: () => void;
@@ -95,6 +99,12 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
             <p data-testid="mfa-recovery-remaining" className="mb-3 text-[13px] text-slack-secondary">
               {t('twoFactor.recoveryRemaining', { count: status.recoveryCodesRemaining })}
             </p>
+            {status.recoveryCodesRemaining <= LOW_RECOVERY_CODES && (
+              <p data-testid="mfa-recovery-low" role="status" className="mb-3 text-[13px] text-amber-700">
+                {t('twoFactor.regenerate.lowNotice', { count: status.recoveryCodesRemaining })}
+              </p>
+            )}
+            <RecoveryCodesRegenerate onFinished={() => void load()} />
             {status.required ? (
               // 조직이 필수로 했으면 끌 수 없다(서버도 MFA_REQUIRED_BY_POLICY로 막는다)
               <p data-testid="mfa-disable-blocked" className="text-[13px] text-amber-700">{t('twoFactor.disable.blockedByPolicy')}</p>

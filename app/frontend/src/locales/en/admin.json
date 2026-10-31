@@ -205,6 +205,7 @@
       "mfaEnabled": "Two-factor turned on",
       "mfaDisabled": "Two-factor turned off",
       "mfaRecoveryUsed": "Recovery code used",
+      "mfaRecoveryRegenerated": "Recovery codes regenerated",
       "mfaResetByAdmin": "Two-factor reset by admin",
       "mfaPolicyChanged": "Two-factor requirement changed",
       "dlpBlocked": "Message blocked by DLP",

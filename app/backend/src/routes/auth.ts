@@ -6,7 +6,7 @@ import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
-import { kickUser, kickSession } from '../websocket/index.js';
+import { kickUserExcept, kickSession } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
@@ -420,10 +420,11 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     // Invalidate cached auth so the revoked token is rejected immediately
     invalidateTokenCache(userId);
 
-    // Immediately disconnect all WebSocket connections for this user
+    // Immediately disconnect the other devices' WebSocket connections
     // (don't wait for the 5-minute periodic revalidation — the password
-    // change may be in response to a compromised account)
-    kickUser(userId);
+    // change may be in response to a compromised account).
+    // 이 기기의 소켓은 남긴다(끊으면 프런트가 로그아웃으로 처리한다). 프런트가 새 토큰으로 다시 붙는다.
+    kickUserExcept(userId, req.user!.sid);
 
     // Issue a fresh token with the new tokenVersion
     // 세션 행도 함께 정리한다(tokenVersion이 이미 이전 토큰을 막지만, 목록에 죽은 기기가 남지 않게 한다)

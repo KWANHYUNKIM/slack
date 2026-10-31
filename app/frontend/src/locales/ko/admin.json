@@ -205,6 +205,7 @@
       "mfaEnabled": "2단계 인증 켬",
       "mfaDisabled": "2단계 인증 끔",
       "mfaRecoveryUsed": "복구 코드 사용",
+      "mfaRecoveryRegenerated": "복구 코드 다시 만듦",
       "mfaResetByAdmin": "관리자가 2단계 인증 초기화",
       "mfaPolicyChanged": "2단계 인증 필수 정책 변경",
       "dlpBlocked": "DLP로 메시지 차단",

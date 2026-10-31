@@ -21,6 +21,7 @@ import {
   KeyRound,
   Laptop,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -38,6 +39,7 @@ import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
 import { SessionsDialog } from '@/components/Profile/SessionsDialog';
 import { TwoFactorDialog } from '@/components/Profile/TwoFactorDialog';
+import { ChangePasswordDialog } from '@/components/Profile/ChangePasswordDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
@@ -76,6 +78,7 @@ export function Sidebar() {
   const [showTokensDialog, setShowTokensDialog] = useState(false);
   const [showSessionsDialog, setShowSessionsDialog] = useState(false);
   const [showTwoFactorDialog, setShowTwoFactorDialog] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const myCustomStatus = useCustomStatus(user?.id);
   const myDndOn = useIsDnd(user?.id);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
@@ -223,6 +226,7 @@ export function Sidebar() {
       {showTokensDialog && <AccessTokensDialog onClose={() => setShowTokensDialog(false)} />}
       {showSessionsDialog && <SessionsDialog onClose={() => setShowSessionsDialog(false)} />}
       {showTwoFactorDialog && <TwoFactorDialog onClose={() => setShowTwoFactorDialog(false)} />}
+      {showPasswordDialog && <ChangePasswordDialog onClose={() => setShowPasswordDialog(false)} />}
       {/* Nav Rail - 70px wide, darker purple */}
       <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
@@ -326,6 +330,10 @@ export function Sidebar() {
                 <Button variant="menu-item" data-testid="two-factor-menu-item" onClick={() => { setShowAvatarMenu(false); setShowTwoFactorDialog(true); }}>
                   <ShieldCheck className="h-4 w-4" />
                   {t('userMenu.twoFactor')}
+                </Button>
+                <Button variant="menu-item" data-testid="change-password-menu-item" onClick={() => { setShowAvatarMenu(false); setShowPasswordDialog(true); }}>
+                  <Lock className="h-4 w-4" />
+                  {t('userMenu.changePassword')}
                 </Button>
                 {/* 데스크톱 앱은 웹 푸시 대신 자체 알림 설정을 쓴다 */}
                 {getDesktop() ? (

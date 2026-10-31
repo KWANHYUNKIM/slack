@@ -11,7 +11,7 @@ import { kickUserExcept } from '../websocket/index.js';
 import { revokeUserSessions, createSessionToken } from '../services/sessionService.js';
 import {
   isMfaAvailable, getMfaStatus, startMfaSetup, enableMfa, clearMfa, verifySecondFactor, getRequireMfa,
-  isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures, isMfaPolicyEnforced,
+  isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures, isMfaPolicyEnforced, regenerateRecoveryCodes,
 } from '../services/mfaService.js';
 
 // 내 2단계 인증(E7b). /users/me/2fa 아래에 /users보다 먼저 붙는다.
@@ -189,6 +189,57 @@ router.post('/disable', async (req: AuthRequest, res: Response) => {
     }
     logError('2FA disable error', error);
     res.status(500).json({ error: 'Failed to disable 2FA', code: ERR.INTERNAL_ERROR });
+  }
+});
+
+// POST /users/me/2fa/recovery-codes - 복구 코드를 새 10개로 바꾼다(E7c). 기존 코드는 모두 무효가 된다.
+// 끄기와 같은 재확인(비밀번호 + 현재 TOTP 또는 복구 코드)과 같은 시도 제한을 쓴다. 세션은 건드리지 않는다.
+router.post('/recovery-codes', async (req: AuthRequest, res: Response) => {
+  try {
+    const { password, code } = z.object({ password: z.string().min(1).max(72), code: codeSchema }).strict().parse(req.body);
+    const userId = req.user!.userId;
+    if (isMfaVerifyLocked(userId)) {
+      res.status(429).json(TOO_MANY);
+      return;
+    }
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true, mfaEnabledAt: true } });
+    if (!user?.mfaEnabledAt) {
+      res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
+      return;
+    }
+    // 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 헛되이 쓰지 않게)
+    if (!(await bcrypt.compare(password, user.password))) {
+      recordMfaVerifyFailure(userId);
+      res.status(403).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
+      return;
+    }
+    const result = await verifySecondFactor(userId, code);
+    if (!result.ok) {
+      if (result.reason === 'unavailable') {
+        res.status(503).json(UNAVAILABLE);
+        return;
+      }
+      recordMfaVerifyFailure(userId);
+      res.status(403).json(INVALID_CODE);
+      return;
+    }
+    clearMfaVerifyFailures(userId);
+    const recoveryCodes = await regenerateRecoveryCodes(userId);
+    if (!recoveryCodes) {
+      res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
+      return;
+    }
+    // 코드 원문은 감사 로그에 남기지 않는다
+    await writeAuditLog({ action: 'mfa.recovery_regenerated', actorId: userId, targetType: 'user', targetId: userId, details: `method=${result.method}` });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ recoveryCodes, recoveryCodesRemaining: recoveryCodes.length });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
+      return;
+    }
+    logError('2FA recovery codes error', error);
+    res.status(500).json({ error: 'Failed to regenerate recovery codes', code: ERR.INTERNAL_ERROR });
   }
 });
 

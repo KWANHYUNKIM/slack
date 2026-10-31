@@ -152,6 +152,24 @@ export async function enableMfa(userId: number, code: string, now = Date.now()):
   return { ok: true, recoveryCodes: codes };
 }
 
+/**
+ * 복구 코드를 새로 만든다(E7c). 기존 코드는 쓴 것과 안 쓴 것 모두 지우고 새 10개로 바꾼다. 원문은 여기서만 한 번 돌려준다.
+ * 2FA가 켜져 있을 때만 바꾸고, 지우기와 만들기는 한 트랜잭션이라 중간에 코드가 0개인 상태가 보이지 않는다.
+ */
+export async function regenerateRecoveryCodes(userId: number): Promise<string[] | null> {
+  const codes = Array.from({ length: RECOVERY_CODE_COUNT }, generateRecoveryCode);
+  const done = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { mfaEnabledAt: true } });
+    if (!user?.mfaEnabledAt) return false;
+    await tx.mfaRecoveryCode.deleteMany({ where: { userId } });
+    await tx.mfaRecoveryCode.createMany({
+      data: codes.map((c) => ({ userId, codeHash: hashRecoveryCode(normalizeRecoveryCode(c)!) })),
+    });
+    return true;
+  });
+  return done ? codes : null;
+}
+
 /** 2FA를 끈다(본인 해제, 관리자 초기화 공용). 비밀, 등록 대기, 복구 코드, 로그인 대기를 모두 지운다. */
 export async function clearMfa(userId: number): Promise<void> {
   await prisma.$transaction([
