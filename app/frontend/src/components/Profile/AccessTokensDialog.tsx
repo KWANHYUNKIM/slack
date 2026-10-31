@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, KeyRound } from 'lucide-react';
+import * as api from '@/lib/api';
 import { ApiError, type AccessTokenScope } from '@/lib/api';
 import { getMcpUrl } from '@/lib/serverUrl';
 import { useAccessTokenStore, ACCESS_TOKEN_SCOPES } from '@/stores/useAccessTokenStore';
@@ -30,6 +31,13 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
   const [expiry, setExpiry] = useState<ExpiryOption>('30');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 2FA 사용자는 발급할 때 코드를 다시 넣는다(E7b). 상태를 못 읽어도 서버가 MFA_CODE_REQUIRED로 알려 준다.
+  const [needsCode, setNeedsCode] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+
+  useEffect(() => {
+    api.getMfaStatus().then((s) => setNeedsCode(s.enabled)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     load().catch(() => setError(t('accessTokens.errors.loadFailed')));
@@ -37,7 +45,7 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
     return () => dismissCreated();
   }, [load, dismissCreated, t]);
 
-  const canCreate = !busy && name.trim().length > 0 && scopes.length > 0;
+  const canCreate = !busy && name.trim().length > 0 && scopes.length > 0 && (!needsCode || mfaCode.trim().length > 0);
 
   const toggleScope = (scope: AccessTokenScope) =>
     setScopes((cur) => (cur.includes(scope) ? cur.filter((s) => s !== scope) : [...cur, scope]));
@@ -46,11 +54,20 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
     setBusy(true);
     setError(null);
     try {
-      await create({ name: name.trim(), scopes, expiresInDays: expiry === 'never' ? null : Number(expiry) });
+      await create({
+        name: name.trim(), scopes, expiresInDays: expiry === 'never' ? null : Number(expiry),
+        ...(needsCode ? { code: mfaCode.trim() } : {}),
+      });
       setName('');
+      setMfaCode('');
     } catch (err) {
-      setError(err instanceof ApiError && err.code === 'TOKEN_LIMIT_REACHED'
+      const code = err instanceof ApiError ? err.code : undefined;
+      if (code === 'MFA_CODE_REQUIRED') setNeedsCode(true);
+      if (code === 'MFA_CODE_REQUIRED' || code === 'MFA_INVALID_CODE') setMfaCode('');
+      setError(code === 'TOKEN_LIMIT_REACHED'
         ? t('accessTokens.errors.limitReached', { max: TOKEN_LIMIT })
+        : code === 'MFA_CODE_REQUIRED' ? t('accessTokens.errors.codeRequired')
+        : code === 'MFA_INVALID_CODE' ? t('accessTokens.errors.invalidCode')
         : t('accessTokens.errors.createFailed'));
     } finally {
       setBusy(false);
@@ -160,6 +177,21 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
             </select>
           </label>
           {expiry === 'never' && <p className="mb-2 text-[12px] text-amber-700">{t('accessTokens.neverWarning')}</p>}
+          {needsCode && (
+            <label className="mb-3 block text-[13px] text-slack-secondary">
+              {t('accessTokens.codeLabel')}
+              <input
+                data-testid="access-token-mfa-code"
+                autoComplete="one-time-code"
+                maxLength={32}
+                dir="ltr"
+                className="mt-1 block w-40 rounded-md border border-slack-border px-2 py-1.5 font-mono text-[14px]"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+              />
+              <span className="mt-1 block text-[12px]">{t('accessTokens.codeHint')}</span>
+            </label>
+          )}
           <button
             type="button"
             data-testid="access-token-create"

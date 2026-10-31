@@ -14,6 +14,7 @@ import {
   generateToken,
   toTokenView,
 } from '../services/accessTokenService.js';
+import { verifySecondFactor, isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures } from '../services/mfaService.js';
 
 // 개인 액세스 토큰 관리(mcp-1). 로그인 세션(JWT)으로만 다룬다.
 // authMiddleware는 JWT만 받으므로 PAT로 PAT를 만들거나 지울 수 없다.
@@ -30,6 +31,8 @@ const createSchema = z.object({
     .min(1).max(ALLOWED_SCOPES.length).default([...READ_SCOPES]),
   // null이면 만료 없음. 기본 30일.
   expiresInDays: z.number().int().min(1).max(365).nullable().default(30),
+  // 2FA 사용자는 발급할 때 코드를 다시 확인한다(E7b). 훔친 세션만으로 오래 사는 토큰을 만들지 못하게.
+  code: z.string().trim().min(1).max(32).optional(),
 }).strict();
 
 const updateSchema = z.object({ name: nameSchema }).strict();
@@ -53,8 +56,31 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 // POST /tokens - 발급. 응답의 token(원문)은 이때 한 번만 내려가고 다시 볼 수 없다.
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, scopes, expiresInDays } = createSchema.parse(req.body);
+    const { name, scopes, expiresInDays, code } = createSchema.parse(req.body);
     const userId = req.user!.userId;
+
+    const me = await prisma.user.findUnique({ where: { id: userId }, select: { mfaEnabledAt: true } });
+    if (me?.mfaEnabledAt) {
+      if (!code) {
+        res.status(403).json({ error: 'Two-factor code required', code: ERR.MFA_CODE_REQUIRED });
+        return;
+      }
+      if (isMfaVerifyLocked(userId)) {
+        res.status(429).json({ error: 'Too many failed attempts. Try again later.', code: ERR.AUTH_TOO_MANY_ATTEMPTS });
+        return;
+      }
+      const verified = await verifySecondFactor(userId, code);
+      if (!verified.ok) {
+        recordMfaVerifyFailure(userId);
+        // 401은 프런트에서 로그아웃으로 처리되므로 403으로 답한다
+        res.status(403).json({ error: 'Invalid authentication code', code: ERR.MFA_INVALID_CODE });
+        return;
+      }
+      clearMfaVerifyFailures(userId);
+      if (verified.method === 'recovery') {
+        void writeAuditLog({ action: 'mfa.recovery_used', actorId: userId, targetType: 'user', targetId: userId, details: `remaining=${verified.remaining}; purpose=token_create` });
+      }
+    }
 
     const { token, publicId, tokenHash } = generateToken();
     const now = new Date();

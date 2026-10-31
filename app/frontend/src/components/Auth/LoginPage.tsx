@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import { loginFieldErrorKey } from '@/lib/authErrors';
 import { SESSION_ENDED_FLAG } from '@/lib/socket';
+import { TwoFactorLoginStep } from './TwoFactorLoginStep';
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
@@ -21,15 +22,16 @@ export function LoginPage() {
     sessionStorage.removeItem(SESSION_ENDED_FLAG);
     return flag;
   });
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, mfaToken } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
-      navigate('/');
+      // 2FA 사용자는 같은 화면에서 2단계 코드 입력으로 넘어간다
+      if ((await login(email, password)) === 'done') navigate('/');
+      else setPassword('');
     } catch (err) {
       // 서버 code로 문구를 고른다(영어 원문 비교 금지). 검증 실패는 이메일 필드일 때만 이메일 안내를 보인다.
       setError(err instanceof ApiError && err.code === 'VALIDATION_FAILED'
@@ -55,45 +57,49 @@ export function LoginPage() {
       {/* Login Form */}
       <div className="w-full max-w-[400px] px-4">
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {sessionEnded && !error && (
-            <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800" role="status" data-testid="session-ended-notice">
-              {t('login.sessionEnded')}
+        {mfaToken ? (
+          <TwoFactorLoginStep onExpired={() => setError(t('login.twoFactor.expired'))} />
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {sessionEnded && !error && (
+              <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800" role="status" data-testid="session-ended-notice">
+                {t('login.sessionEnded')}
+              </div>
+            )}
+            {error && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert">
+                {error}
+              </div>
+            )}
+            <div>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('fields.emailPlaceholder')}
+                required
+                className="h-11"
+              />
             </div>
-          )}
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert">
-              {error}
+            <div>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t('fields.password')}
+                required
+                className="h-11"
+              />
             </div>
-          )}
-          <div>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('fields.emailPlaceholder')}
-              required
-              className="h-11"
-            />
-          </div>
-          <div>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('fields.password')}
-              required
-              className="h-11"
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
-          >
-            {isLoading ? t('login.submitting') : t('login.submit')}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
+            >
+              {isLoading ? t('login.submitting') : t('login.submit')}
+            </Button>
+          </form>
+        )}
 
         <p className="mt-6 text-center text-sm text-gray-600">
           {t('login.newToApp')}{' '}

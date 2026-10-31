@@ -170,6 +170,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
     if (!result.ok) {
       return next(new Error('Invalid token'));
     }
+    // 2FA 등록이 필요한 사용자는 등록을 마칠 때까지 실시간 연결도 열지 않는다
+    if (result.user.mfaEnrollmentRequired) {
+      return next(new Error('MFA enrollment required'));
+    }
 
     socket.user = result.user;
     next();

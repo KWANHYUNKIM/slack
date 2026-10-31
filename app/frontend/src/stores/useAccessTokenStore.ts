@@ -25,7 +25,7 @@ interface AccessTokenState {
   /** 방금 발급한 토큰의 원문. 화면에 한 번만 보여 준다. */
   justCreated: { id: number; token: string } | null;
   load: () => Promise<void>;
-  create: (input: { name: string; scopes: AccessTokenScope[]; expiresInDays: number | null }) => Promise<void>;
+  create: (input: { name: string; scopes: AccessTokenScope[]; expiresInDays: number | null; code?: string }) => Promise<void>;
   rename: (id: number, name: string) => Promise<void>;
   revoke: (id: number) => Promise<void>;
   /** 원문을 메모리에서 지운다 */

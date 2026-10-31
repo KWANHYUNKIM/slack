@@ -6,6 +6,8 @@ export interface JwtPayload {
   /** 세션 id(E7). 없으면 세션 도입 전에 발급된 토큰이다. */
   sid?: string;
   role?: string;
+  /** 조직이 2FA를 필수로 했는데 아직 등록하지 않았다(E7b). validateAccessToken이 채운다. */
+  mfaEnrollmentRequired?: boolean;
   iat?: number;
   exp?: number;
 }

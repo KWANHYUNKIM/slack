@@ -6,12 +6,13 @@ import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
 import { checkSession } from '../services/sessionService.js';
+import { isMfaPolicyEnforced } from '../services/mfaService.js';
 
 // Short-lived cache for tokenVersion checks to avoid a DB round-trip on every request.
 // TTL is 5 seconds — revoked tokens may work for up to 5s after revocation.
 // Disabled in test to avoid stale state between tests that bypass the API.
 const TOKEN_CACHE_TTL = process.env.NODE_ENV === 'test' ? 0 : 5_000;
-const tokenCache = new Map<number, { tokenVersion: number; role: string; deactivatedAt: Date | null; expiresAt: number }>();
+const tokenCache = new Map<number, { tokenVersion: number; role: string; deactivatedAt: Date | null; mfaEnabled: boolean; expiresAt: number }>();
 
 // Periodically evict expired entries to prevent unbounded growth.
 // Without this, entries accumulate forever (only skipped on read, never deleted).
@@ -65,10 +66,13 @@ export async function validateAccessToken(token: string): Promise<AccessTokenRes
   if (!cached || cached.expiresAt < now) {
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { tokenVersion: true, role: true, deactivatedAt: true },
+      select: { tokenVersion: true, role: true, deactivatedAt: true, mfaEnabledAt: true },
     });
     if (!user) return { ok: false };
-    cached = { tokenVersion: user.tokenVersion, role: user.role, deactivatedAt: user.deactivatedAt, expiresAt: now + TOKEN_CACHE_TTL };
+    cached = {
+      tokenVersion: user.tokenVersion, role: user.role, deactivatedAt: user.deactivatedAt,
+      mfaEnabled: user.mfaEnabledAt !== null, expiresAt: now + TOKEN_CACHE_TTL,
+    };
     tokenCache.set(decoded.userId, cached);
   }
 
@@ -81,7 +85,15 @@ export async function validateAccessToken(token: string): Promise<AccessTokenRes
     if (!(await checkSession(decoded.sid, decoded.userId))) return { ok: false };
   }
 
-  return { ok: true, user: { ...decoded, role: cached.role } };
+  // 조직이 2FA를 필수로 했는데 아직 등록하지 않았으면 표시한다. 어디까지 허용할지는 호출한 쪽이 정한다(HTTP는 등록 API만, 소켓은 거부).
+  const mfaEnrollmentRequired = !cached.mfaEnabled && (await isMfaPolicyEnforced());
+
+  return { ok: true, user: { ...decoded, role: cached.role, ...(mfaEnrollmentRequired ? { mfaEnrollmentRequired: true } : {}) } };
+}
+
+/** 2FA 등록이 필요한 사용자에게도 열어 두는 경로: 2FA 상태·등록 API와 로그아웃 */
+function isMfaEnrollmentPath(fullPath: string): boolean {
+  return fullPath === '/users/me/2fa' || fullPath.startsWith('/users/me/2fa/') || fullPath === '/auth/logout';
 }
 
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -108,6 +120,11 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     // All failures return the same generic message to prevent
     // authentication state enumeration (OWASP).
     res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
+    return;
+  }
+
+  if (result.user.mfaEnrollmentRequired && !isMfaEnrollmentPath(req.baseUrl + req.path)) {
+    res.status(403).json({ error: 'Two-factor authentication enrollment required', code: ERR.MFA_ENROLLMENT_REQUIRED });
     return;
   }
 

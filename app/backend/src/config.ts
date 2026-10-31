@@ -68,3 +68,30 @@ export function getSessionIdleTimeoutHours(): number {
   const hours = Number.parseFloat(process.env.SESSION_IDLE_TIMEOUT_HOURS ?? '');
   return Number.isFinite(hours) && hours > 0 ? Math.min(hours, 24 * 365) : 96;
 }
+
+// 2FA 비밀 암호화 키(E7b). 32바이트를 hex(64자) 또는 base64로 받는다. 호출 시점에 읽는다(테스트가 바꿔 가며 확인한다).
+// 없거나 형식이 틀리면 null이고, 그때 2FA 등록·TOTP 확인·필수 정책은 꺼진다(이미 켠 사용자는 복구 코드로만 로그인한다).
+let warnedTotpKey = false;
+export function getTotpEncryptionKey(): Buffer | null {
+  const raw = (process.env.TOTP_ENCRYPTION_KEY ?? '').trim();
+  let key: Buffer | null = null;
+  if (/^[0-9a-fA-F]{64}$/.test(raw)) {
+    key = Buffer.from(raw, 'hex');
+  } else if (/^[A-Za-z0-9+/]{43}=?$/.test(raw)) {
+    const b = Buffer.from(raw, 'base64');
+    if (b.length === 32) key = b;
+  }
+  if (!key && !warnedTotpKey && process.env.NODE_ENV !== 'test') {
+    warnedTotpKey = true;
+    console.warn(raw
+      ? 'WARNING: TOTP_ENCRYPTION_KEY must be 32 bytes (64 hex chars or base64). Two-factor authentication is disabled.'
+      : 'WARNING: TOTP_ENCRYPTION_KEY not set. Two-factor authentication is disabled.');
+  }
+  return key;
+}
+
+// 인증 앱에 보이는 발급자 이름. 영문·숫자·공백·하이픈만 쓴다(otpauth URI 라벨의 ':' 구분과 겹치지 않게).
+export function getMfaIssuer(): string {
+  const v = (process.env.MFA_ISSUER ?? '').trim();
+  return /^[A-Za-z0-9 ._-]{1,40}$/.test(v) ? v : 'slawk';
+}

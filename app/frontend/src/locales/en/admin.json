@@ -8,7 +8,8 @@
       "channels": "Channels",
       "webhooks": "Webhooks",
       "audit": "Audit Log",
-      "retention": "Data retention"
+      "retention": "Data retention",
+      "security": "Security"
     }
   },
   "channels": {
@@ -68,7 +69,8 @@
       "transfer": "Transfer ownership",
       "reactivate": "Reactivate",
       "deactivate": "Deactivate",
-      "forceLogout": "Force sign-out"
+      "forceLogout": "Force sign-out",
+      "resetMfa": "Reset 2FA"
     },
     "empty": "No users found",
     "dialogs": {
@@ -91,7 +93,16 @@
         "title": "Force sign-out",
         "confirm": "Sign out",
         "message": "Sign {name} out of every device now? Their account stays active and they can sign in again."
+      },
+      "resetMfa": {
+        "title": "Reset two-factor authentication",
+        "confirm": "Reset",
+        "message": "Remove two-factor authentication for {name}? They will be signed out of every device and can sign in with only their password."
       }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Two-factor authentication is on"
     }
   },
   "invites": {
@@ -188,7 +199,12 @@
       "retentionPurged": "Expired data deleted",
       "retentionWorkspaceUpdated": "Retention policy changed",
       "retentionChannelUpdated": "Channel retention changed",
-      "retentionChannelCleared": "Channel retention reset"
+      "retentionChannelCleared": "Channel retention reset",
+      "mfaEnabled": "Two-factor turned on",
+      "mfaDisabled": "Two-factor turned off",
+      "mfaRecoveryUsed": "Recovery code used",
+      "mfaResetByAdmin": "Two-factor reset by admin",
+      "mfaPolicyChanged": "Two-factor requirement changed"
     },
     "filters": {
       "allActions": "All actions",
@@ -228,7 +244,8 @@
     "removeChannelMember": "Failed to remove channel member",
     "transferOwnership": "Failed to transfer ownership",
     "unarchiveChannel": "Failed to unarchive channel",
-    "updateRole": "Failed to update role"
+    "updateRole": "Failed to update role",
+    "resetMfa": "Failed to reset two-factor authentication"
   },
   "retention": {
     "title": "Data retention",
@@ -268,6 +285,18 @@
       "title": "Delete old messages permanently?",
       "message": "At the next cleanup, messages older than {count, plural, one {# day} other {# days}} will be permanently deleted along with their files. This can't be undone.",
       "confirm": "Apply policy"
+    }
+  },
+  "security": {
+    "title": "Two-factor authentication",
+    "requireMfa": "Require two-factor authentication for everyone",
+    "requireMfaHint": "Members without two-factor authentication can only reach the setup screen until they turn it on.",
+    "unavailable": "Two-factor authentication is turned off on this server because no encryption key is set (TOTP_ENCRYPTION_KEY). The requirement is not enforced.",
+    "saved": "Security settings saved",
+    "loading": "Loading...",
+    "errors": {
+      "loadFailed": "Could not load security settings.",
+      "saveFailed": "Could not save security settings."
     }
   }
 }

@@ -12,6 +12,10 @@ import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
 import { createSessionToken, revokeUserSessions, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
+import {
+  createMfaChallenge, findMfaChallenge, recordMfaChallengeFailure, consumeMfaChallenge,
+  verifySecondFactor, isMfaPolicyEnforced, MFA_CHALLENGE_TTL_MS,
+} from '../services/mfaService.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -47,6 +51,30 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000).unref();
+
+/** 실패 한 번을 센다. 한도에 닿으면 잠그고 그 순간 한 번만 감사 로그를 남긴다. 비밀번호와 2FA 코드 실패가 같은 카운터를 쓴다. */
+function recordFailedLogin(email: string, userId: number | null): void {
+  if (loginAttempts.size >= MAX_LOCKOUT_ENTRIES) return;
+  const now = Date.now();
+  const current = loginAttempts.get(email) || { count: 0, lockedUntil: 0, lastAttempt: now };
+  current.count++;
+  current.lastAttempt = now;
+  if (current.count >= MAX_FAILED_ATTEMPTS) {
+    current.lockedUntil = now + LOCKOUT_DURATION_MS;
+    // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
+    void writeAuditLog({
+      action: 'auth.login_locked', actorId: null, targetType: 'user',
+      ...(userId ? { targetId: userId } : {}), details: `emailHash=${hashEmailForAudit(email)}`,
+    });
+    current.count = 0;
+  }
+  loginAttempts.set(email, current);
+}
+
+function isLoginLocked(email: string): boolean {
+  const attempts = loginAttempts.get(email);
+  return !!attempts && attempts.lockedUntil > Date.now();
+}
 
 // POST /auth/register
 router.post('/register', async (req: Request, res: Response) => {
@@ -138,8 +166,10 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     const { token } = await createSessionToken({ id: user.id, tokenVersion: 0 }, req);
+    // 조직이 2FA를 필수로 했으면 새 사용자도 등록 화면부터 간다
+    const mfaEnrollmentRequired = await isMfaPolicyEnforced();
 
-    res.status(201).json({ user, token });
+    res.status(201).json({ user, token, ...(mfaEnrollmentRequired ? { mfaEnrollmentRequired: true } : {}) });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
@@ -168,8 +198,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const { email, password } = loginSchema.parse(req.body);
 
     // Check account lockout
-    const attempts = loginAttempts.get(email);
-    if (attempts && attempts.lockedUntil > Date.now()) {
+    if (isLoginLocked(email)) {
       res.status(429).json({ error: 'Account temporarily locked. Try again later.', code: ERR.AUTH_ACCOUNT_LOCKED });
       return;
     }
@@ -179,24 +208,13 @@ router.post('/login', async (req: Request, res: Response) => {
       select: {
         id: true, email: true, name: true, avatar: true, role: true,
         password: true, deactivatedAt: true, tokenVersion: true, createdAt: true, locale: true, timeZone: true,
+        mfaEnabledAt: true,
       },
     });
     if (!user) {
       // Dummy bcrypt to normalize response time (prevent timing-based email enumeration)
       await bcrypt.compare(password, '$2b$10$invalidhashfortimingpadding.padding');
-      if (loginAttempts.size < MAX_LOCKOUT_ENTRIES) {
-        const now = Date.now();
-        const current = loginAttempts.get(email) || { count: 0, lockedUntil: 0, lastAttempt: now };
-        current.count++;
-        current.lastAttempt = now;
-        if (current.count >= MAX_FAILED_ATTEMPTS) {
-          current.lockedUntil = now + LOCKOUT_DURATION_MS;
-          // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
-          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', details: `emailHash=${hashEmailForAudit(email)}` });
-          current.count = 0;
-        }
-        loginAttempts.set(email, current);
-      }
+      recordFailedLogin(email, null);
       // 이메일 원문은 남기지 않고 해시만 남긴다(사용자를 특정할 수 없으니 actorId는 비운다)
       // 공격자가 마음대로 만들 수 있는 기록이라 emailHash당 15분에 한 건만 남기고, 그 사이 시도 횟수는 count로 합친다
       const emailHash = hashEmailForAudit(email);
@@ -216,21 +234,17 @@ router.post('/login', async (req: Request, res: Response) => {
       return;
     }
     if (!validPassword) {
-      if (loginAttempts.size < MAX_LOCKOUT_ENTRIES) {
-        const now = Date.now();
-        const current = loginAttempts.get(email) || { count: 0, lockedUntil: 0, lastAttempt: now };
-        current.count++;
-        current.lastAttempt = now;
-        if (current.count >= MAX_FAILED_ATTEMPTS) {
-          current.lockedUntil = now + LOCKOUT_DURATION_MS;
-          // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
-          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', targetId: user.id, details: `emailHash=${hashEmailForAudit(email)}` });
-          current.count = 0;
-        }
-        loginAttempts.set(email, current);
-      }
+      recordFailedLogin(email, user.id);
       void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: 'reason=bad_password' });
       res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
+      return;
+    }
+
+    // 2FA 사용자: 비밀번호만으로는 세션을 만들지 않고 5분짜리 1회용 mfaToken을 준다.
+    // 실패 카운터는 2단계까지 끝나야 비운다(비밀번호를 아는 공격자가 코드를 맞히는 동안 잠금이 풀리지 않게).
+    if (user.mfaEnabledAt) {
+      const { mfaToken } = await createMfaChallenge({ id: user.id, tokenVersion: user.tokenVersion });
+      res.json({ mfaRequired: true, mfaToken, expiresIn: Math.floor(MFA_CHALLENGE_TTL_MS / 1000) });
       return;
     }
 
@@ -238,27 +252,109 @@ router.post('/login', async (req: Request, res: Response) => {
     loginAttempts.delete(email);
     void writeAuditLog({ action: 'auth.login', actorId: user.id, targetType: 'user', targetId: user.id });
 
-    const { token } = await createSessionToken({ id: user.id, tokenVersion: user.tokenVersion }, req);
-
-    res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        role: user.role,
-        createdAt: user.createdAt,
-        locale: user.locale,
-        timeZone: user.timeZone,
-      },
-      token,
-    });
+    await sendLoginSuccess(req, res, user);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
       return;
     }
     logError('Login error', error);
+    res.status(500).json({ error: 'Failed to login', code: ERR.INTERNAL_ERROR });
+  }
+});
+
+/** 세션을 만들고 로그인 응답을 보낸다(비밀번호만, 또는 2단계까지 통과). */
+async function sendLoginSuccess(
+  req: Request,
+  res: Response,
+  user: {
+    id: number; email: string; name: string; avatar: string | null; role: string; createdAt: Date;
+    locale: string | null; timeZone: string | null; tokenVersion: number; mfaEnabledAt: Date | null;
+  },
+): Promise<void> {
+  const { token } = await createSessionToken({ id: user.id, tokenVersion: user.tokenVersion }, req);
+  const mfaEnrollmentRequired = !user.mfaEnabledAt && (await isMfaPolicyEnforced());
+  res.json({
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar,
+      role: user.role,
+      createdAt: user.createdAt,
+      locale: user.locale,
+      timeZone: user.timeZone,
+    },
+    token,
+    ...(mfaEnrollmentRequired ? { mfaEnrollmentRequired: true } : {}),
+  });
+}
+
+const login2faSchema = z.object({
+  mfaToken: z.string().min(1).max(100),
+  code: z.string().trim().min(1).max(32),
+});
+
+const MFA_TOKEN_EXPIRED = { error: 'Login session expired. Sign in again.', code: ERR.MFA_TOKEN_INVALID };
+
+// POST /auth/login/2fa - 로그인 2단계. TOTP 6자리 또는 복구 코드를 받는다. 실패는 비밀번호 실패와 같은 잠금 카운터를 쓴다.
+router.post('/login/2fa', async (req: Request, res: Response) => {
+  try {
+    const { mfaToken, code } = login2faSchema.parse(req.body);
+    const challenge = await findMfaChallenge(mfaToken);
+    if (!challenge) {
+      res.status(401).json(MFA_TOKEN_EXPIRED);
+      return;
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: challenge.userId },
+      select: {
+        id: true, email: true, name: true, avatar: true, role: true,
+        deactivatedAt: true, tokenVersion: true, createdAt: true, locale: true, timeZone: true, mfaEnabledAt: true,
+      },
+    });
+    // 대기 중에 비활성화, 비밀번호 변경·강제 로그아웃(tokenVersion), 2FA 초기화가 있었으면 처음부터 다시 하게 한다
+    if (!user || user.deactivatedAt || user.tokenVersion !== challenge.tokenVersion || !user.mfaEnabledAt) {
+      await consumeMfaChallenge(challenge.id);
+      res.status(401).json(MFA_TOKEN_EXPIRED);
+      return;
+    }
+    if (isLoginLocked(user.email)) {
+      res.status(429).json({ error: 'Account temporarily locked. Try again later.', code: ERR.AUTH_ACCOUNT_LOCKED });
+      return;
+    }
+
+    const result = await verifySecondFactor(user.id, code);
+    if (!result.ok) {
+      await recordMfaChallengeFailure(challenge.id);
+      recordFailedLogin(user.email, user.id);
+      // 코드 원문은 남기지 않는다. 키가 없어 TOTP를 확인할 수 없는 경우도 사용자 쪽에서는 같은 실패라 bad_totp로 센다.
+      const reason = result.reason === 'bad_recovery_code' ? 'bad_recovery_code' : 'bad_totp';
+      void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: `reason=${reason}` });
+      res.status(401).json({
+        error: 'Invalid authentication code',
+        code: result.reason === 'unavailable' ? ERR.MFA_UNAVAILABLE : ERR.MFA_INVALID_CODE,
+      });
+      return;
+    }
+    if (!(await consumeMfaChallenge(challenge.id))) {
+      res.status(401).json(MFA_TOKEN_EXPIRED);
+      return;
+    }
+
+    loginAttempts.delete(user.email);
+    if (result.method === 'recovery') {
+      void writeAuditLog({ action: 'mfa.recovery_used', actorId: user.id, targetType: 'user', targetId: user.id, details: `remaining=${result.remaining}` });
+    }
+    void writeAuditLog({ action: 'auth.login', actorId: user.id, targetType: 'user', targetId: user.id, details: `mfa=${result.method}` });
+
+    await sendLoginSuccess(req, res, user);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
+      return;
+    }
+    logError('Login 2FA error', error);
     res.status(500).json({ error: 'Failed to login', code: ERR.INTERNAL_ERROR });
   }
 });

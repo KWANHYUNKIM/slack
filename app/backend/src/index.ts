@@ -3,7 +3,7 @@ import app from './app.js';
 import { initializeWebSocket } from './websocket/index.js';
 import { startScheduler } from './scheduler.js';
 import prisma from './db.js';
-import { getStunConfig } from './config.js';
+import { getStunConfig, getTotpEncryptionKey } from './config.js';
 import { startStunServer, StunServer } from './stun/stunServer.js';
 
 const PORT = process.env.PORT || 3000;
@@ -15,6 +15,9 @@ server.headersTimeout = 10_000;   // 10 seconds to receive headers
 server.requestTimeout = 30_000;   // 30 seconds for full request
 server.timeout = 120_000;         // 2 minutes overall socket timeout
 server.keepAliveTimeout = 65_000; // slightly above common LB idle timeout (60s)
+
+// 2FA 암호화 키가 없으면 시작할 때 경고한다(2FA 기능은 꺼진 채로 뜬다)
+getTotpEncryptionKey();
 
 // Initialize WebSocket
 const io = initializeWebSocket(server);

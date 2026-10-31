@@ -95,8 +95,12 @@
       "renameFailed": "토큰 이름을 바꾸지 못했습니다.",
       "revokeFailed": "토큰을 폐기하지 못했습니다.",
       "copyFailed": "복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요.",
-      "limitReached": "활성 토큰은 최대 {max}개까지 만들 수 있습니다. 쓰지 않는 토큰을 폐기한 뒤 다시 시도하세요."
-    }
+      "limitReached": "활성 토큰은 최대 {max}개까지 만들 수 있습니다. 쓰지 않는 토큰을 폐기한 뒤 다시 시도하세요.",
+      "codeRequired": "토큰을 만들려면 2단계 인증 코드를 입력하세요.",
+      "invalidCode": "2단계 인증 코드가 맞지 않습니다."
+    },
+    "codeLabel": "2단계 인증 코드",
+    "codeHint": "토큰을 만들려면 인증 앱의 코드를 입력하세요."
   },
   "sessions": {
     "title": "로그인된 기기",
@@ -124,6 +128,64 @@
       "browser": "{browser}",
       "browserOn": "{os}의 {browser}",
       "unknownOn": "{os}의 알 수 없는 기기"
+    }
+  },
+  "twoFactor": {
+    "title": "2단계 인증",
+    "description": "로그인할 때 비밀번호와 함께 인증 앱의 코드를 확인합니다.",
+    "loading": "불러오는 중...",
+    "statusOn": "켜짐",
+    "statusOff": "꺼짐",
+    "enabledSince": "{date}에 켬",
+    "recoveryRemaining": "{count, plural, other {복구 코드 #개 남음}}",
+    "unavailable": "이 서버에서는 2단계 인증을 쓸 수 없습니다. 관리자에게 문의하세요.",
+    "requiredNotice": "조직에서 2단계 인증을 필수로 정했습니다.",
+    "close": "닫기",
+    "setup": {
+      "start": "2단계 인증 설정",
+      "starting": "준비 중...",
+      "step1": "1. 인증 앱에 이 계정을 추가하세요. 휴대폰에서 링크를 열거나 설정 키를 직접 입력합니다.",
+      "uriLabel": "설정 링크",
+      "openInApp": "인증 앱에서 열기",
+      "keyLabel": "설정 키",
+      "copyKey": "설정 키 복사",
+      "copyUri": "설정 링크 복사",
+      "copied": "복사했습니다",
+      "step2": "2. 인증 앱에 표시된 6자리 코드를 입력하세요.",
+      "codeLabel": "인증 코드",
+      "codePlaceholder": "123456",
+      "verify": "켜기",
+      "verifying": "확인 중...",
+      "cancel": "취소",
+      "passwordLabel": "3. 현재 비밀번호를 입력하세요.",
+      "sessionsNote": "켜면 이 기기를 뺀 다른 기기에서 로그아웃됩니다."
+    },
+    "recovery": {
+      "title": "복구 코드를 저장하세요",
+      "description": "기기를 잃어버렸을 때 복구 코드로 로그인할 수 있습니다. 코드마다 한 번만 쓸 수 있고, 다시 보여 주지 않습니다.",
+      "download": "다운로드",
+      "copy": "모두 복사",
+      "fileHeader": "복구 코드입니다. 코드마다 한 번만 쓸 수 있습니다. 안전한 곳에 보관하세요.",
+      "confirmSaved": "복구 코드를 저장했습니다"
+    },
+    "disable": {
+      "title": "2단계 인증 끄기",
+      "description": "비밀번호와 인증 앱의 코드(또는 복구 코드)를 입력하세요.",
+      "start": "끄기",
+      "passwordLabel": "비밀번호",
+      "codeLabel": "인증 코드 또는 복구 코드",
+      "submit": "2단계 인증 끄기",
+      "submitting": "끄는 중...",
+      "cancel": "취소"
+    },
+    "enabledToast": "2단계 인증을 켰습니다",
+    "disabledToast": "2단계 인증을 껐습니다",
+    "errors": {
+      "loadFailed": "2단계 인증 설정을 불러오지 못했습니다.",
+      "setupFailed": "설정을 시작하지 못했습니다. 다시 시도해 주세요.",
+      "enableFailed": "2단계 인증을 켜지 못했습니다.",
+      "disableFailed": "2단계 인증을 끄지 못했습니다.",
+      "copyFailed": "클립보드에 복사하지 못했습니다."
     }
   }
 }

@@ -8,7 +8,8 @@
       "channels": "채널",
       "webhooks": "웹훅",
       "audit": "감사 로그",
-      "retention": "데이터 보존"
+      "retention": "데이터 보존",
+      "security": "보안"
     }
   },
   "channels": {
@@ -68,7 +69,8 @@
       "transfer": "소유권 이전",
       "reactivate": "다시 활성화",
       "deactivate": "비활성화",
-      "forceLogout": "강제 로그아웃"
+      "forceLogout": "강제 로그아웃",
+      "resetMfa": "2FA 초기화"
     },
     "empty": "사용자를 찾을 수 없습니다",
     "dialogs": {
@@ -91,7 +93,16 @@
         "title": "강제 로그아웃",
         "confirm": "로그아웃",
         "message": "{name} 님을 모든 기기에서 지금 로그아웃할까요? 계정은 그대로 유지되며 다시 로그인할 수 있습니다."
+      },
+      "resetMfa": {
+        "title": "2단계 인증 초기화",
+        "confirm": "초기화",
+        "message": "{name} 님의 2단계 인증을 지울까요? 모든 기기에서 로그아웃되고, 비밀번호만으로 다시 로그인할 수 있습니다."
       }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "2단계 인증 켜짐"
     }
   },
   "invites": {
@@ -188,7 +199,12 @@
       "retentionPurged": "만료된 데이터 삭제",
       "retentionWorkspaceUpdated": "보존 정책 변경",
       "retentionChannelUpdated": "채널 보존 정책 변경",
-      "retentionChannelCleared": "채널 보존 정책 초기화"
+      "retentionChannelCleared": "채널 보존 정책 초기화",
+      "mfaEnabled": "2단계 인증 켬",
+      "mfaDisabled": "2단계 인증 끔",
+      "mfaRecoveryUsed": "복구 코드 사용",
+      "mfaResetByAdmin": "관리자가 2단계 인증 초기화",
+      "mfaPolicyChanged": "2단계 인증 필수 정책 변경"
     },
     "filters": {
       "allActions": "모든 작업",
@@ -228,7 +244,8 @@
     "removeChannelMember": "채널 멤버를 내보내지 못했습니다",
     "transferOwnership": "소유권을 이전하지 못했습니다",
     "unarchiveChannel": "채널 보관을 해제하지 못했습니다",
-    "updateRole": "역할을 변경하지 못했습니다"
+    "updateRole": "역할을 변경하지 못했습니다",
+    "resetMfa": "2단계 인증을 초기화하지 못했습니다"
   },
   "retention": {
     "title": "데이터 보존",
@@ -268,6 +285,18 @@
       "title": "오래된 메시지를 영구 삭제할까요?",
       "message": "다음 정리 때 {count}일보다 오래된 메시지가 파일과 함께 영구 삭제됩니다. 되돌릴 수 없습니다.",
       "confirm": "정책 적용"
+    }
+  },
+  "security": {
+    "title": "2단계 인증",
+    "requireMfa": "모든 사용자 2단계 인증 필수",
+    "requireMfaHint": "2단계 인증을 켜지 않은 구성원은 켤 때까지 설정 화면만 쓸 수 있습니다.",
+    "unavailable": "암호화 키(TOTP_ENCRYPTION_KEY)가 설정되지 않아 이 서버에서는 2단계 인증이 꺼져 있습니다. 필수 정책도 적용되지 않습니다.",
+    "saved": "보안 설정을 저장했습니다",
+    "loading": "불러오는 중...",
+    "errors": {
+      "loadFailed": "보안 설정을 불러오지 못했습니다.",
+      "saveFailed": "보안 설정을 저장하지 못했습니다."
     }
   }
 }

@@ -29,11 +29,12 @@ import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { LoginPage } from '@/components/Auth/LoginPage';
 import { RegisterPage } from '@/components/Auth/RegisterPage';
+import { MfaEnrollmentPage } from '@/components/Auth/MfaEnrollmentPage';
 import { startUserPrefsSync } from '@/lib/userPrefsSync';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common');
-  const { isAuthenticated, isHydrating } = useAuthStore();
+  const { isAuthenticated, isHydrating, mfaEnrollmentRequired } = useAuthStore();
 
   if (isHydrating) {
     return (
@@ -45,6 +46,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // 조직이 2FA를 필수로 했는데 아직 등록하지 않았으면 앱 대신 등록 화면만 보여 준다(E7b)
+  if (mfaEnrollmentRequired) {
+    return <MfaEnrollmentPage />;
   }
 
   return <>{children}</>;
