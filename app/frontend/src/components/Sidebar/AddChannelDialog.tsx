@@ -3,6 +3,7 @@ import { Hash, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import type { Channel } from '@/lib/types';
 import { CHANNEL_NAME_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 
@@ -109,9 +110,7 @@ export function AddChannelDialog({
                   setNewChannelName('');
                   setCreateChannelError('');
                 } catch (err) {
-                  setCreateChannelError(
-                    err instanceof Error ? err.message : t('dialog.errors.createFailed')
-                  );
+                  setCreateChannelError(apiErrorMessage(err, 'channels:dialog.errors.createFailed'));
                 }
               }}
             >

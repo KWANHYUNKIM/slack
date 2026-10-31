@@ -145,14 +145,16 @@ router.patch('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Respon
       return;
     }
     const userId = req.user!.userId;
-    const existing = await prisma.sidebarPref.findUnique({ where: { userId } });
-    const collapsed = { ...normalizeCollapsed(existing?.collapsed), ...parsed.data.collapsed };
-    await prisma.sidebarPref.upsert({
-      where: { userId },
-      create: { userId, collapsed },
-      update: { collapsed },
-    });
-    res.json({ collapsed });
+    // 보낸 키만 한 번의 UPDATE로 병합한다(읽고 쓰기 사이에 다른 요청의 키가 덮이지 않게). 값은 파라미터로 바인딩한다.
+    const patchJson = JSON.stringify(parsed.data.collapsed);
+    const rows = await prisma.$queryRaw<Array<{ collapsed: unknown }>>`
+      INSERT INTO "SidebarPref" ("userId", "collapsed", "updatedAt")
+      VALUES (${userId}, ${patchJson}::jsonb, NOW())
+      ON CONFLICT ("userId") DO UPDATE
+        SET "collapsed" = "SidebarPref"."collapsed" || EXCLUDED."collapsed", "updatedAt" = NOW()
+      RETURNING "collapsed"
+    `;
+    res.json({ collapsed: normalizeCollapsed(rows[0]?.collapsed) });
   } catch (error) {
     logError('Update sidebar pref error', error);
     res.status(500).json({ error: 'Failed to update sidebar preferences' });

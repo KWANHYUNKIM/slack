@@ -199,11 +199,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
-    const mentionCounts = await getMentionCountsByDmPartner(userId);
-    const starredIds = new Set(
-      (await prisma.dMStar.findMany({ where: { userId }, select: { otherUserId: true } }))
-        .map(st => st.otherUserId),
-    );
+    const [mentionCounts, stars] = await Promise.all([
+      getMentionCountsByDmPartner(userId),
+      prisma.dMStar.findMany({ where: { userId }, select: { otherUserId: true } }),
+    ]);
+    const starredIds = new Set(stars.map(st => st.otherUserId));
 
     // Apply online status from WebSocket tracking
     const result = filteredConversations.map((conv) => ({

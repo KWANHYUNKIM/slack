@@ -94,12 +94,17 @@ export function clearDownloadToken(): void {
   stopDownloadTokenRefresh();
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
+  /** Machine-readable error code from the server (e.g. CHANNEL_NAME_TAKEN) */
+  code?: string;
+  reason?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string, reason?: string) {
     super(message);
     this.status = status;
+    this.code = code;
+    this.reason = reason;
     this.name = 'ApiError';
   }
 }
@@ -128,7 +133,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const errorMsg = Array.isArray(body.error)
       ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
       : body.error || t('errors:client.requestFailed');
-    throw new ApiError(errorMsg, res.status);
+    throw new ApiError(errorMsg, res.status, body.code, body.reason);
   }
 
   return res.json();

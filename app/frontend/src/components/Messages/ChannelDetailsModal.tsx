@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getChannel } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,9 @@ export function ChannelDetailsModal({ channel, onClose }: ChannelDetailsModalPro
 
   const canEdit = isWorkspaceAdmin || memberRole === 'OWNER' || memberRole === 'MODERATOR';
   const nameMax = isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : CHANNEL_NAME_MAX;
-  const nameReason = name.trim().length > 0 ? checkChannelName(name, nameMax) : 'required';
+  // 이름을 바꾸지 않았으면 이름 검사로 저장을 막지 않는다(길이·대문자 규칙이 달랐던 옛 이름 보호)
+  const nameChanged = name !== channel.name;
+  const nameReason = !nameChanged ? null : name.trim().length > 0 ? checkChannelName(name, nameMax) : 'required';
   const nameError = nameReason ? channelNameErrorMessage(tChannels, nameReason, nameMax) : '';
 
   const handleSave = async () => {
@@ -65,13 +68,13 @@ export function ChannelDetailsModal({ channel, onClose }: ChannelDetailsModalPro
     setError('');
     try {
       await updateChannelMeta(channel.id, {
-        name: normalizeChannelName(name),
+        ...(nameChanged ? { name: normalizeChannelName(name) } : {}),
         topic: topic.trim() || null,
         description: description.trim() || null,
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('details.saveFailed'));
+      setError(apiErrorMessage(err, 'messages:details.saveFailed', nameMax));
     } finally {
       setSaving(false);
     }

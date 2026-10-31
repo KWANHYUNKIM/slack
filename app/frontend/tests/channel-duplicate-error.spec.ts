@@ -27,7 +27,7 @@ test.describe('Channel duplicate name error', () => {
 
     // Error message should be visible
     await expect(page.getByTestId('channel-error')).toBeVisible({ timeout: 3_000 });
-    await expect(page.getByTestId('channel-error')).toHaveText('Channel name already exists');
+    await expect(page.getByTestId('channel-error')).toHaveText('A channel with that name already exists.');
 
     // Dialog should still be open (the input is still visible)
     await expect(nameInput).toBeVisible();

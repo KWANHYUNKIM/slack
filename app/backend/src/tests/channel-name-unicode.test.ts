@@ -238,7 +238,7 @@ describe('Channel names (unicode)', () => {
         for (const dupName of ['lobby', 'ＬＯＢＢＹ', 'ｌｏｂｂｙ']) {
           const dup = await create(dupName);
           expect(dup.status).toBe(400);
-          expect(dup.body.error).toMatch(/already exists/);
+          expect(dup.body.code).toBe('CHANNEL_NAME_TAKEN');
         }
 
         // Read
@@ -333,28 +333,28 @@ describe('Channel names (unicode)', () => {
       expect('한글팀'.normalize('NFD')).not.toBe('한글팀');
       expect((await create('한글팀')).status).toBe(201);
       const nfdDup = await adminEdit(id, '한글팀'.normalize('NFD'));
-      expect(nfdDup.status).toBe(400);
-      expect(nfdDup.body.error).toMatch(/already exists/);
+      expect(nfdDup.status).toBe(409);
+      expect(nfdDup.body.code).toBe('CHANNEL_NAME_TAKEN');
 
       expect((await create('lobby')).status).toBe(201);
       const fullwidthDup = await adminEdit(id, 'ｌｏｂｂｙ');
-      expect(fullwidthDup.status).toBe(400);
-      expect(fullwidthDup.body.error).toMatch(/already exists/);
+      expect(fullwidthDup.status).toBe(409);
+      expect(fullwidthDup.body.code).toBe('CHANNEL_NAME_TAKEN');
 
       const unchanged = await request(app).get('/channels').set('Authorization', `Bearer ${token}`);
       const items = Array.isArray(unchanged.body) ? unchanged.body : unchanged.body.items;
       expect(items.find((c: { id: number }) => c.id === id)?.name).toBe('개발팀');
     });
 
-    it('returns 400 already exists when the unique constraint fires (race after the duplicate check)', async () => {
+    it('returns 409 CHANNEL_NAME_TAKEN when the unique constraint fires (race after the duplicate check)', async () => {
       const created = await create('rename-me');
       expect((await create('taken')).status).toBe(201);
       // 중복 검사(findFirst)와 update 사이에 다른 요청이 같은 이름을 저장한 상황을 만든다
       const spy = jest.spyOn(prisma.channel, 'findFirst').mockResolvedValueOnce(null);
       try {
         const res = await adminEdit(created.body.id, 'taken');
-        expect(res.status).toBe(400);
-        expect(res.body.error).toMatch(/already exists/);
+        expect(res.status).toBe(409);
+        expect(res.body.code).toBe('CHANNEL_NAME_TAKEN');
       } finally {
         spy.mockRestore();
       }

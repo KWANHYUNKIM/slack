@@ -11,6 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { validateChannelName, CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
+import { updateChannel, CHANNEL_NAME_TAKEN } from '../services/channelService.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
 
 const router = Router();
@@ -42,7 +43,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       where: { name: { equals: name, mode: 'insensitive' } },
     });
     if (existing) {
-      res.status(400).json({ error: 'Channel name already exists' });
+      res.status(400).json({ error: 'Channel name already exists', code: CHANNEL_NAME_TAKEN });
       return;
     }
 
@@ -76,7 +77,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      res.status(400).json({ error: 'Channel name already exists' });
+      res.status(400).json({ error: 'Channel name already exists', code: CHANNEL_NAME_TAKEN });
       return;
     }
     logError('Create channel error', error);
@@ -165,7 +166,8 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
     const userId = req.user!.userId;
 
-    const channel = await prisma.channel.findUnique({
+    const [channel, star] = await Promise.all([
+      prisma.channel.findUnique({
       where: { id: channelId },
       include: {
         members: {
@@ -179,7 +181,12 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
           select: { messages: true },
         },
       },
-    });
+    }),
+      prisma.channelStar.findUnique({
+        where: { userId_channelId: { userId, channelId } },
+        select: { userId: true },
+      }),
+    ]);
 
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
@@ -194,10 +201,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const isStarred = !!(await prisma.channelStar.findUnique({
-      where: { userId_channelId: { userId, channelId } },
-      select: { userId: true },
-    }));
+    const isStarred = !!star;
 
     // Non-members viewing public channels get a minimal member list:
     // only user id + name.  The ...m spread that was here previously
@@ -274,90 +278,19 @@ router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const data: { name?: string; topic?: string | null; description?: string | null } = {};
-    const changes: string[] = [];
-
-    if (parsed.data.name !== undefined) {
-      // 생성 경로와 같은 검증. 이미 25자를 넘는 기존 이름이 있어 관리자는 관리자 상한을 쓴다.
-      const nameResult = validateChannelName(
-        parsed.data.name,
-        isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : undefined,
-      );
-      if (!nameResult.ok) {
-        res.status(400).json({ error: nameResult.error, code: nameResult.code });
-        return;
-      }
-      if (nameResult.name !== channel.name) {
-        const existing = await prisma.channel.findFirst({
-          where: { name: { equals: nameResult.name, mode: 'insensitive' }, id: { not: channelId } },
-          select: { id: true },
-        });
-        if (existing) {
-          res.status(409).json({ error: 'A channel with that name already exists' });
-          return;
-        }
-        data.name = nameResult.name;
-        changes.push(`Renamed from #${channel.name} to #${nameResult.name}`);
-      }
-    }
-    if (parsed.data.topic !== undefined && parsed.data.topic !== channel.topic) {
-      data.topic = parsed.data.topic;
-      changes.push(parsed.data.topic === null ? 'Topic cleared' : 'Topic changed');
-    }
-    if (parsed.data.description !== undefined && parsed.data.description !== channel.description) {
-      data.description = parsed.data.description;
-      changes.push(parsed.data.description === null ? 'Description cleared' : 'Description changed');
-    }
-
-    if (Object.keys(data).length === 0) {
-      res.json(channel);
+    // 이름 검증·중복·알림은 관리자 경로와 같은 서비스 함수가 맡는다.
+    // 이미 25자를 넘는 기존 이름이 있어 관리자는 관리자 상한을 쓴다.
+    const result = await updateChannel({
+      channel,
+      actorId: userId,
+      input: parsed.data,
+      nameMax: isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : undefined,
+    });
+    if (!result.ok) {
+      res.status(result.status).json(result.body);
       return;
     }
-
-    let updated;
-    try {
-      updated = await prisma.channel.update({
-        where: { id: channelId },
-        data,
-        include: { _count: { select: { members: true, messages: true } } },
-      });
-    } catch (error) {
-      // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(유니크 제약)
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        res.status(409).json({ error: 'A channel with that name already exists' });
-        return;
-      }
-      throw error;
-    }
-
-    await writeAuditLog({
-      action: 'channel.edited',
-      actorId: userId,
-      targetType: 'channel',
-      targetId: channelId,
-      targetName: updated.name,
-      details: changes.join('; '),
-    });
-
-    // DB 커밋 뒤 알림: 채널 룸, 공개 채널은 전체 멤버의 개인 룸(룸에 아직 join하지 않은 탭 포함)
-    const io = getIO();
-    if (io) {
-      const payload = {
-        id: updated.id,
-        name: updated.name,
-        topic: updated.topic,
-        description: updated.description,
-      };
-      let target = io.to(`channel:${channelId}`);
-      if (!updated.isPrivate) {
-        const members = await prisma.channelMember.findMany({
-          where: { channelId },
-          select: { userId: true },
-        });
-        for (const m of members) target = target.to(`user:${m.userId}`);
-      }
-      target.emit('channel:updated', payload);
-    }
+    const updated = result.channel;
 
     res.json(updated);
   } catch (error) {

@@ -1,5 +1,7 @@
 import { t } from '@/lib/i18n';
 import { create } from 'zustand';
+import { apiErrorMessage } from '@/lib/apiErrors';
+import { CHANNEL_NAME_ADMIN_MAX } from '@/lib/channelName';
 import * as api from '@/lib/api';
 import type { AdminUser, AdminChannel, AdminInvite, AuditLogEntry, AdminWebhook } from '@/lib/api';
 
@@ -205,7 +207,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminEditChannel(channelId, data);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.editChannel') });
+      set({ channels: prev, error: apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_ADMIN_MAX) });
     }
   },
 

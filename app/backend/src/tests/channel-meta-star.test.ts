@@ -162,6 +162,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
       await request(app).post('/channels').set(auth(ownerToken)).send({ name: 'taken' });
       let res = await patch(ownerToken, channelId, { name: 'Taken' });
       expect(res.status).toBe(409);
+      expect(res.body.code).toBe('CHANNEL_NAME_TAKEN');
       res = await patch(ownerToken, channelId, { name: 'bad name!' });
       expect(res.status).toBe(400);
       res = await patch(ownerToken, channelId, { name: '' });
@@ -178,6 +179,70 @@ describe('Channel meta, stars, sidebar prefs', () => {
       expect(res.status).toBe(403);
       res = await patch(ownerToken, channelId, { topic: 'after-archive' });
       expect(res.status).toBe(403);
+    });
+
+    it('keeps a legacy name (uppercase, over 25 chars) when only topic or description changes', async () => {
+      const legacy = 'LegacyChannelNameThatIsVeryLong_ABC';
+      expect(legacy.length).toBeGreaterThan(25);
+      const ch = await prisma.channel.create({
+        data: { name: legacy, createdBy: ownerId, members: { create: { userId: ownerId, role: 'OWNER' } } },
+      });
+      // 이름을 같이 보내도(모달이 현재 이름을 그대로 보낼 때) 이름은 검증도 변경도 되지 않는다
+      let res = await patch(ownerToken, ch.id, { name: legacy, topic: 'only topic' });
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe(legacy);
+      res = await patch(ownerToken, ch.id, { topic: null, description: 'only desc' });
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe(legacy);
+      expect(res.body.topic).toBeNull();
+      expect((await prisma.channel.findUnique({ where: { id: ch.id } }))?.name).toBe(legacy);
+    });
+
+    it('shares the rename path with the admin route (409 code, GET reflects, event received)', async () => {
+      await request(app).post('/channels').set(auth(ownerToken)).send({ name: 'adm-taken' });
+      const dup = await request(app).patch(`/admin/channels/${channelId}`).set(auth(adminToken)).send({ name: 'adm-taken' });
+      expect(dup.status).toBe(409);
+      expect(dup.body.code).toBe('CHANNEL_NAME_TAKEN');
+      const createDup = await request(app).post('/channels').set(auth(ownerToken)).send({ name: 'adm-taken' });
+      expect(createDup.status).toBe(400);
+      expect(createDup.body.code).toBe('CHANNEL_NAME_TAKEN');
+
+      // 비멤버도 공개 채널의 이름 변경 알림을 받는다(io.emit)
+      const socket = Client(`http://localhost:${port}`, { auth: { token: outsiderToken } });
+      sockets.push(socket);
+      await new Promise<void>((resolve, reject) => {
+        socket.on('connect', () => resolve());
+        socket.on('connect_error', reject);
+      });
+      const received = new Promise<Record<string, unknown>>((resolve) => socket.on('channel:updated', resolve));
+      const res = await request(app).patch(`/admin/channels/${channelId}`).set(auth(adminToken)).send({ name: 'admin-renamed' });
+      expect(res.status).toBe(200);
+      expect((await received).name).toBe('admin-renamed');
+      const got = await request(app).get(`/channels/${channelId}`).set(auth(memberToken));
+      expect(got.body.name).toBe('admin-renamed');
+      expect(await prisma.auditLog.count({ where: { action: 'channel.edited', targetId: channelId } })).toBe(1);
+    });
+
+    it('sends channel:updated for private channels only to members', async () => {
+      const priv = await request(app).post('/channels').set(auth(ownerToken)).send({ name: 'priv-ch', isPrivate: true });
+      const connect = async (token: string) => {
+        const sk = Client(`http://localhost:${port}`, { auth: { token } });
+        sockets.push(sk);
+        await new Promise<void>((resolve, reject) => {
+          sk.on('connect', () => resolve());
+          sk.on('connect_error', reject);
+        });
+        return sk;
+      };
+      const ownerSocket = await connect(ownerToken);
+      const outsiderSocket = await connect(outsiderToken);
+      let outsiderGot = false;
+      outsiderSocket.on('channel:updated', () => { outsiderGot = true; });
+      const received = new Promise<Record<string, unknown>>((resolve) => ownerSocket.on('channel:updated', resolve));
+      await patch(ownerToken, priv.body.id, { topic: 'secret topic' });
+      expect((await received).topic).toBe('secret topic');
+      await new Promise((r) => setTimeout(r, 200));
+      expect(outsiderGot).toBe(false);
     });
 
     it('writes audit logs', async () => {
@@ -298,6 +363,20 @@ describe('Channel meta, stars, sidebar prefs', () => {
 
       res = await request(app).patch('/users/me/sidebar').set(auth(memberToken)).send({ collapsed: { channels: false, dms: false } });
       expect(res.body.collapsed).toEqual({ starred: false, channels: false, dms: false });
+    });
+
+    it('keeps both keys when two PATCH requests run at the same time', async () => {
+      for (let round = 0; round < 3; round++) {
+        await prisma.sidebarPref.deleteMany();
+        const [a, b] = await Promise.all([
+          request(app).patch('/users/me/sidebar').set(auth(memberToken)).send({ collapsed: { channels: true } }),
+          request(app).patch('/users/me/sidebar').set(auth(memberToken)).send({ collapsed: { dms: true } }),
+        ]);
+        expect(a.status).toBe(200);
+        expect(b.status).toBe(200);
+        const res = await request(app).get('/users/me/sidebar').set(auth(memberToken));
+        expect(res.body.collapsed).toEqual({ starred: false, channels: true, dms: true });
+      }
     });
 
     it('rejects unknown keys and non-boolean values', async () => {

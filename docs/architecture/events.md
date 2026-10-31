@@ -17,7 +17,7 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 | 이벤트 | 방향 | 대상 room | payload | 시점 |
 |---|---|---|---|---|
-| `channel:updated` | 서버 -> 클라이언트 | `channel:<id>`, 공개 채널이면 멤버 각자의 `user:<id>` | `{ id, name, topic, description }` | `PATCH /channels/:id`로 이름·주제·설명이 바뀌었을 때(변경 없으면 보내지 않음) |
+| `channel:updated` | 서버 -> 클라이언트 | 공개 채널은 전체(`io.emit`), 비공개 채널은 멤버 각자의 `user:<id>` | `{ id, name, topic, description }` | `PATCH /channels/:id` 또는 `PATCH /admin/channels/:id`로 이름·주제·설명·공개 여부가 바뀌었을 때(변경 없으면 보내지 않음) |
 | `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'channel' \| 'dm', id, isStarred }` | `PUT/DELETE /channels/:id/star`, `/dms/:userId/star` (다른 탭 동기화) |
 
 ## 기존 이벤트 (slawk에서 이어받음)

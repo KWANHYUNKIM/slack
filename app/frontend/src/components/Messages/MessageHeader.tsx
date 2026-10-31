@@ -112,6 +112,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
               <Star className={cn('h-4 w-4', channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-slack-secondary')} />
             </Button>
           )}
+          {!readOnly && (
           <button
             data-testid="channel-topic-button"
             onClick={() => setShowDetails(true)}
@@ -123,6 +124,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
           >
             {channel.topic || t('header.addTopic')}
           </button>
+          )}
         </div>
 
         {/* Right Section */}

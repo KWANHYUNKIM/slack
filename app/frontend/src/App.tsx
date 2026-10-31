@@ -391,7 +391,7 @@ function AppShell() {
     };
 
     const handleStarUpdated = (data: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => {
-      useChannelStore.getState().applyStar(data);
+      useChannelStore.getState().applyRemoteStar(data);
     };
 
     const handleChannelUnarchived = () => {
