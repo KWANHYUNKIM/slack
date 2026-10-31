@@ -44,7 +44,7 @@
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | 완료(PR #49 머지) | 2h | 2026-10-31 23:23 | | |
-| mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | 진행 | 1.5h | 2026-11-01 00:15 | | |
+| mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | PR #68 리뷰 반영 중 | 1.5h | 2026-11-01 00:15 | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | - | haiku | 대기 | 45분 | | | PR #11 남은 이슈 |
