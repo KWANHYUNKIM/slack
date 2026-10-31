@@ -89,6 +89,8 @@
     "WORKSPACE_SLUG_TAKEN": "That workspace URL is already taken.",
     "WORKSPACE_NAME_TAKEN": "A workspace with this name already exists.",
     "INVALID_WORKSPACE_SLUG": "Use 1 to 21 lowercase letters, numbers, or hyphens for the workspace URL.",
-    "WORKSPACE_ROLE_FORBIDDEN": "You can't give or change this role."
+    "WORKSPACE_ROLE_FORBIDDEN": "You can't give or change this role.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "People can't leave or be removed from the default workspace. To remove someone, deactivate their account in admin settings.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "The default workspace can't be archived."
   }
 }

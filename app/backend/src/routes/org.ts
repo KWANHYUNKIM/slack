@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireOrgAdmin, requireOrgOwner } from '../middleware/adminAuth.js';
-import { clearWorkspaceCache, getWorkspaceState } from '../middleware/workspace.js';
+import { clearWorkspaceCache, invalidateWorkspaceCache, requestWorkspaceState } from '../middleware/workspace.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -13,7 +13,8 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { getIO } from '../websocket/index.js';
 import {
   MEMBERSHIP_USER_SELECT, WORKSPACE_PUBLIC_SELECT, WORKSPACE_SLUG_RE, activeMemberWhere,
-  activeMembershipsOf, isDefaultWorkspaceArchived, isOrgAdminRole, parseWorkspaceId,
+  activeMembershipsOf, isDefaultWorkspaceArchived, isOrgAdminRole, materializeImplicitDefaultMembership, parseWorkspaceId,
+  DEFAULT_WORKSPACE_ID,
 } from '../services/workspaceService.js';
 import { workspaceRoom } from '../services/workspaceMemberService.js';
 
@@ -74,11 +75,24 @@ function uniqueConflict(error: unknown) {
     : { error: 'Workspace name is taken', code: ERR.WORKSPACE_NAME_TAKEN };
 }
 
-async function activeMemberCounts(ids: number[]): Promise<Map<number, number>> {
-  const counts = await Promise.all(ids.map(async (id) => [id, await prisma.user.count({
-    where: { AND: [activeMemberWhere(id), { deactivatedAt: null }] },
-  })] as const));
-  return new Map(counts);
+/**
+ * 워크스페이스별 활성 멤버 수(비활성 계정 제외). 행 기준 groupBy 한 번에, 기본 워크스페이스는 행이 하나도 없는
+ * 암묵 멤버(activeMembershipsOf와 같은 규칙)를 더한다.
+ */
+async function activeMemberCounts(organizationId: number, ids: number[]): Promise<Map<number, number>> {
+  const [grouped, implicitDefault] = await Promise.all([
+    prisma.workspaceMember.groupBy({
+      by: ['workspaceId'],
+      where: { workspaceId: { in: ids }, leftAt: null, user: { deactivatedAt: null } },
+      _count: { _all: true },
+    }),
+    ids.includes(DEFAULT_WORKSPACE_ID)
+      ? prisma.user.count({ where: { organizationId, deactivatedAt: null, workspaces: { none: {} } } })
+      : Promise.resolve(0),
+  ]);
+  const counts = new Map(grouped.map((g) => [g.workspaceId, g._count._all]));
+  if (ids.includes(DEFAULT_WORKSPACE_ID)) counts.set(DEFAULT_WORKSPACE_ID, (counts.get(DEFAULT_WORKSPACE_ID) ?? 0) + implicitDefault);
+  return counts;
 }
 
 // PATCH /org/workspaces/:id 권한: 조직 관리자 또는 그 워크스페이스 OWNER
@@ -89,7 +103,7 @@ async function requireOrgAdminOrWorkspaceOwner(req: AuthRequest, res: Response, 
   }
   try {
     const id = parseWorkspaceId(req.params.id);
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     const role = state?.memberships.find((m) => m.workspaceId === id)?.role;
     if (role === 'OWNER') {
       next();
@@ -111,7 +125,7 @@ async function loadOrgWorkspace(req: AuthRequest, res: Response) {
     res.status(400).json({ error: 'Invalid workspace id', code: ERR.INVALID_WORKSPACE_ID });
     return null;
   }
-  const state = await getWorkspaceState(req.user!.userId);
+  const state = await requestWorkspaceState(req);
   const ws = await prisma.workspace.findUnique({ where: { id }, select: ORG_WORKSPACE_SELECT });
   if (!ws || !state || ws.organizationId !== state.organizationId) {
     res.status(404).json(WORKSPACE_NOT_FOUND);
@@ -123,7 +137,7 @@ async function loadOrgWorkspace(req: AuthRequest, res: Response) {
 // GET /org - 조직 정보
 router.get('/', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
   try {
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     const org = await prisma.organization.findUnique({
       where: { id: state!.organizationId },
       select: { id: true, name: true, primaryOwnerId: true, createdAt: true },
@@ -139,7 +153,7 @@ router.get('/', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
 router.patch('/', authMiddleware, requireOrgOwner, async (req: AuthRequest, res: Response) => {
   try {
     const { name } = updateOrgSchema.parse(req.body);
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     const org = await prisma.organization.update({
       where: { id: state!.organizationId },
       data: { name },
@@ -160,13 +174,13 @@ router.patch('/', authMiddleware, requireOrgOwner, async (req: AuthRequest, res:
 // GET /org/workspaces - 보관 포함 전체와 활성 멤버 수
 router.get('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
   try {
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     const rows = await prisma.workspace.findMany({
       where: { organizationId: state!.organizationId },
       select: ORG_WORKSPACE_SELECT,
       orderBy: { id: 'asc' },
     });
-    const counts = await activeMemberCounts(rows.map((w) => w.id));
+    const counts = await activeMemberCounts(state!.organizationId, rows.map((w) => w.id));
     res.json({ workspaces: rows.map((w) => ({ ...w, memberCount: counts.get(w.id) ?? 0 })) });
   } catch (error) {
     logError('List org workspaces error', error);
@@ -184,7 +198,7 @@ router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Respons
       return;
     }
     const actorId = req.user!.userId;
-    const state = await getWorkspaceState(actorId);
+    const state = await requestWorkspaceState(req);
     const organizationId = state!.organizationId;
     const conflict = await findWorkspaceConflict(organizationId, body.slug, body.name);
     if (conflict) {
@@ -199,10 +213,12 @@ router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Respons
         },
         select: ORG_WORKSPACE_SELECT,
       });
+      await materializeImplicitDefaultMembership(tx, actorId);
       await tx.workspaceMember.create({ data: { workspaceId: created.id, userId: actorId, role: 'OWNER' } });
       return created;
     });
-    clearWorkspaceCache();
+    // 멤버십이 바뀐 사람은 만든 사람뿐이다
+    invalidateWorkspaceCache(actorId);
     const io = getIO();
     if (io) {
       io.in(`user:${actorId}`).socketsJoin(workspaceRoom(ws.id));
@@ -281,6 +297,11 @@ router.post('/workspaces/:id/archive', ...ADMIN_STACK, async (req: AuthRequest, 
   try {
     const current = await loadOrgWorkspace(req, res);
     if (!current) return;
+    // 기본 워크스페이스는 행 없는 사용자의 암묵 소속, 가입·기본 채널 경로가 기대므로 보관하지 않는다
+    if (current.id === DEFAULT_WORKSPACE_ID) {
+      res.status(409).json({ error: 'The default workspace cannot be archived', code: ERR.DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN });
+      return;
+    }
     if (current.archivedAt) {
       res.json(current);
       return;
@@ -335,7 +356,7 @@ router.post('/workspaces/:id/unarchive', ...ADMIN_STACK, async (req: AuthRequest
 // GET /org/users - 조직 사용자와 소속 워크스페이스(teams). 커서는 사용자 id
 router.get('/users', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
   try {
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 50, 1), 100);
     const cursor = parseIntParam(req.query.cursor as string | undefined);
     const rows = await prisma.user.findMany({

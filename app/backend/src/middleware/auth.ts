@@ -134,7 +134,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
 
   req.user = result.user;
 
-  // 현재 워크스페이스(X-Workspace-Id, 없으면 기본)와 호환 심(req.user.role = 워크스페이스 역할). 스펙 5.2
+  // 현재 워크스페이스(X-Workspace-Id, 없으면 기본)를 req.workspace에 둔다. req.user.role은 바꾸지 않는다. 스펙 5.2
   try {
     if (!(await applyWorkspaceContext(req, res))) return;
   } catch (error) {

@@ -107,14 +107,37 @@ describe('Workspaces (E1b)', () => {
 
   // ─── 호환 심 ──────────────────────────────────────────────────
 
-  describe('compat shim (req.user.role = current workspace role)', () => {
-    it('applies the workspace role to existing admin checks', async () => {
-      // ab는 A의 MEMBER, B의 ADMIN
+  describe('existing routes keep the default workspace role (no escalation through the header)', () => {
+    it('a workspace ADMIN elsewhere is not an /admin admin with that header', async () => {
+      // ab는 A의 MEMBER, B의 ADMIN. /admin은 아직 워크스페이스 범위가 없어 User.role(MEMBER)로 판단한다
       await addFixtureMember(fx.workspaceB, fx.users.ab.id, 'ADMIN');
       const inB = await request(app).get('/admin/users').set(auth(fx.users.ab.token)).set('X-Workspace-Id', String(fx.workspaceB));
-      expect(inB.status).toBe(200);
-      const inA = await request(app).get('/admin/users').set(auth(fx.users.ab.token)).set('X-Workspace-Id', String(fx.workspaceA));
-      expect(inA.status).toBe(403);
+      expect(inB.status).toBe(403);
+    });
+
+    it('a workspace OWNER elsewhere cannot transfer ownership or promote with that header', async () => {
+      // bOwner: 기본 워크스페이스 ADMIN, 워크스페이스 B OWNER
+      await setUserRole(prisma, fx.users.bOwner.id, 'ADMIN');
+      const headers = { ...auth(fx.users.bOwner.token), 'X-Workspace-Id': String(fx.workspaceB) };
+      const transfer = await request(app).post('/admin/transfer-ownership').set(headers).send({ userId: fx.users.b.id });
+      expect(transfer.status).toBe(403);
+      const promote = await request(app).patch(`/admin/users/${fx.users.b.id}`).set(headers).send({ role: 'ADMIN' });
+      expect(promote.status).toBe(403);
+      expect((await prisma.user.findUnique({ where: { id: fx.users.b.id }, select: { role: true } }))?.role).toBe('MEMBER');
+      // 새 API에서는 B의 OWNER 권한이 그대로 쓰인다
+      const wsPromote = await request(app).patch(`/workspaces/${fx.workspaceB}/members/${fx.users.b.id}`).set(auth(fx.users.bOwner.token)).send({ role: 'ADMIN' });
+      expect(wsPromote.status).toBe(200);
+    });
+
+    it('a default workspace GUEST stays guest-scoped in GET /users even with a header for a workspace where they are MEMBER', async () => {
+      const g = await createFixtureUser('wsx-guest@example.com', 'Guest');
+      await setUserRole(prisma, g.id, 'GUEST');
+      await addFixtureMember(fx.workspaceB, g.id, 'MEMBER');
+      const res = await request(app).get('/users').set(auth(g.token)).set('X-Workspace-Id', String(fx.workspaceB));
+      expect(res.status).toBe(200);
+      const ids = res.body.map((u: { id: number }) => u.id);
+      expect(ids).not.toContain(fx.users.b.id);
+      expect(ids).not.toContain(fx.users.bOwner.id);
     });
 
     it('keeps User.role as the default workspace role (legacy users and direct prisma promotions)', async () => {
@@ -243,13 +266,36 @@ describe('Workspaces (E1b)', () => {
       expect(notOwner.status).toBe(403);
     });
 
-    it('refuses to archive the last active workspace', async () => {
+    it('refuses to archive the default workspace and the last active workspace', async () => {
       const admin = auth(fx.users.orgAdmin.token);
+      const def = await request(app).post(`/org/workspaces/${DEFAULT_WORKSPACE_ID}/archive`).set(admin);
+      expect(def.status).toBe(409);
+      expect(def.body.code).toBe('DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN');
+      expect((await prisma.workspace.findUnique({ where: { id: DEFAULT_WORKSPACE_ID } }))?.archivedAt).toBeNull();
+
+      // 기본 워크스페이스가 (데이터로) 보관된 상태에서만 닿는 가드
+      await prisma.workspace.update({ where: { id: DEFAULT_WORKSPACE_ID }, data: { archivedAt: new Date() } });
       await request(app).post(`/org/workspaces/${fx.workspaceB}/archive`).set(admin).expect(200);
-      await request(app).post(`/org/workspaces/${DEFAULT_WORKSPACE_ID}/archive`).set(admin).expect(200);
       const last = await request(app).post(`/org/workspaces/${fx.workspaceA}/archive`).set(admin);
       expect(last.status).toBe(409);
       expect(last.body.code).toBe('LAST_WORKSPACE');
+    });
+
+    it('counts active members per workspace including implicit default workspace members', async () => {
+      const admin = auth(fx.users.orgAdmin.token);
+      const legacy = await createFixtureUser('wsx-count@example.com', 'Count');
+      const gone = await createFixtureUser('wsx-gone@example.com', 'Gone');
+      await prisma.user.update({ where: { id: gone.id }, data: { deactivatedAt: new Date() } });
+      await prisma.workspaceMember.update({
+        where: { workspaceId_userId: { workspaceId: fx.workspaceA, userId: fx.users.a.id } }, data: { leftAt: new Date() },
+      });
+      const res = await request(app).get('/org/workspaces').set(admin);
+      const count = (id: number) => res.body.workspaces.find((w: { id: number }) => w.id === id).memberCount;
+      // A: ab, orgAdmin, ga, aAdmin(a는 나감). B: b, ab, bOwner. 기본: 행 없는 legacy만(gone은 비활성)
+      expect(count(fx.workspaceA)).toBe(4);
+      expect(count(fx.workspaceB)).toBe(3);
+      expect(count(DEFAULT_WORKSPACE_ID)).toBe(1);
+      expect(legacy.id).toBeGreaterThan(0);
     });
 
     it('GET /org shows the organization, PATCH /org needs an org owner, GET /org/users lists teams', async () => {
@@ -375,6 +421,48 @@ describe('Workspaces (E1b)', () => {
       const primary = await request(app).delete(`/workspaces/${fx.workspaceA}/members/${fx.users.ab.id}`).set(admin);
       expect(primary.status).toBe(403);
       expect(primary.body.code).toBe('CANNOT_REMOVE_PRIMARY_OWNER');
+      // 스스로 나가는 것도 막는다
+      const primaryLeave = await request(app).post(`/workspaces/${fx.workspaceA}/leave`).set(auth(fx.users.ab.token));
+      expect(primaryLeave.status).toBe(403);
+      expect(primaryLeave.body.code).toBe('CANNOT_REMOVE_PRIMARY_OWNER');
+      expect((await request(app).get(`/workspaces/${fx.workspaceA}`).set(auth(fx.users.ab.token))).status).toBe(200);
+    });
+
+    it('two owners leaving at the same time: exactly one succeeds (row lock)', async () => {
+      for (let round = 0; round < 3; round++) {
+        await addFixtureMember(fx.workspaceB, fx.users.b.id, 'OWNER');
+        await addFixtureMember(fx.workspaceB, fx.users.bOwner.id, 'OWNER');
+        const results = await Promise.all([
+          request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.b.token)),
+          request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.bOwner.token)),
+        ]);
+        expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
+        expect(results.find((r) => r.status === 409)!.body.code).toBe('LAST_WORKSPACE_OWNER');
+        const owners = await prisma.workspaceMember.count({ where: { workspaceId: fx.workspaceB, role: 'OWNER', leftAt: null } });
+        expect(owners).toBe(1);
+      }
+    });
+
+    it('does not let anyone leave or be removed from the default workspace through /workspaces', async () => {
+      const owner = await createFixtureUser('wsx-defowner@example.com', 'DefOwner');
+      await setUserRole(prisma, owner.id, 'OWNER');
+      const member = await createFixtureUser('wsx-defm@example.com', 'DefM');
+      await setUserRole(prisma, member.id, 'MEMBER');
+      const leave = await request(app).post(`/workspaces/${DEFAULT_WORKSPACE_ID}/leave`).set(auth(member.token));
+      expect(leave.status).toBe(409);
+      expect(leave.body.code).toBe('DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED');
+      const remove = await request(app).delete(`/workspaces/${DEFAULT_WORKSPACE_ID}/members/${member.id}`).set(auth(owner.token));
+      expect(remove.status).toBe(409);
+      expect(remove.body.code).toBe('DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED');
+      const row = await prisma.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: DEFAULT_WORKSPACE_ID, userId: member.id } } });
+      expect(row?.leftAt).toBeNull();
+    });
+
+    it('keeps the implicit default workspace membership when a row-less user gets a first workspace', async () => {
+      const legacy = await createFixtureUser('wsx-legacy2@example.com', 'Legacy2');
+      await request(app).post(`/workspaces/${fx.workspaceB}/members`).set(auth(fx.users.orgAdmin.token)).send({ userId: legacy.id }).expect(201);
+      const list = await request(app).get('/workspaces').set(auth(legacy.token));
+      expect(list.body.workspaces.map((w: { id: number }) => w.id).sort()).toEqual([DEFAULT_WORKSPACE_ID, fx.workspaceB].sort());
     });
 
     it('default workspace role changes go through setUserRole (User.role and orgRole follow)', async () => {
@@ -563,8 +651,8 @@ describe('Workspace socket events (E1b)', () => {
     expect(aGot).toEqual([expect.objectContaining({ id: fx.workspaceA })]);
   });
 
-  it('member added/updated/removed: target joins and leaves the room live', async () => {
-    const a = await connect(fx.users.a.token);
+  it('member added/updated/removed: target joins the room live, role change and removal disconnect the target', async () => {
+    let a = await connect(fx.users.a.token);
     const b = await connect(fx.users.b.token);
     const admin = auth(fx.users.orgAdmin.token);
 
@@ -574,20 +662,33 @@ describe('Workspace socket events (E1b)', () => {
     expect(await added).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'MEMBER' });
     expect(await bSawAdded).toMatchObject({ userId: fx.users.a.id });
 
-    // 이제 a도 B room에 있다
+    // 이제 a도 B room에 있다(추가는 끊지 않는다)
     const aUpdated = next(a, 'workspace:updated');
     await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: 'x' }).expect(200);
     expect(await aUpdated).toMatchObject({ id: fx.workspaceB });
+    expect(a.connected).toBe(true);
 
+    // 역할 변경: 이벤트를 받은 뒤 서버가 연결을 끊는다
     const roleChanged = next(a, 'workspace:member:updated');
+    const kicked = next(a, 'error');
+    const dropped = next(a, 'disconnect');
     await request(app).patch(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).send({ role: 'ADMIN' }).expect(200);
     expect(await roleChanged).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'ADMIN' });
+    expect(await kicked).toEqual({ message: 'Workspace membership changed' });
+    expect(await dropped).toBe('io server disconnect');
 
+    // 다시 붙으면 B room에 있다
+    a = await connect(fx.users.a.token);
     const removed = next(a, 'workspace:member:removed');
+    const droppedAgain = next(a, 'disconnect');
+    const bSawRemoved = next(b, 'workspace:member:removed');
     await request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).expect(200);
     expect(await removed).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id });
+    expect(await droppedAgain).toBe('io server disconnect');
+    expect(await bSawRemoved).toMatchObject({ userId: fx.users.a.id });
 
-    // 제거 뒤에는 B 이벤트를 받지 않는다(b가 받는 시점까지 a에는 오지 않음)
+    // 다시 붙어도 B 이벤트는 받지 않는다(b가 받는 시점까지 a에는 오지 않음)
+    a = await connect(fx.users.a.token);
     const aGot = record(a, 'workspace:updated');
     const bUpdated = next(b, 'workspace:updated');
     await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: 'y' }).expect(200);
@@ -596,6 +697,19 @@ describe('Workspace socket events (E1b)', () => {
     await request(app).patch(`/org/workspaces/${fx.workspaceA}`).set(admin).send({ description: 'z' }).expect(200);
     await aSelf;
     expect(aGot.map((p: any) => p.id)).toEqual([fx.workspaceA]);
+  });
+
+  it('leaving by yourself does not disconnect you', async () => {
+    await prisma.workspace.update({ where: { id: fx.workspaceB }, data: { discoverability: 'OPEN' } });
+    const ab = await connect(fx.users.ab.token);
+    const removed = next(ab, 'workspace:member:removed');
+    await request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.ab.token)).expect(200);
+    expect(await removed).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.ab.id });
+    // 같은 소켓으로 A 이벤트를 계속 받는다
+    const aUpdated = next(ab, 'workspace:updated');
+    await request(app).patch(`/org/workspaces/${fx.workspaceA}`).set(auth(fx.users.orgAdmin.token)).send({ description: 'still' }).expect(200);
+    expect(await aUpdated).toMatchObject({ id: fx.workspaceA });
+    expect(ab.connected).toBe(true);
   });
 
   it('workspace:archived goes to members and the room is emptied', async () => {

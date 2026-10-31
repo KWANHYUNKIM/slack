@@ -4,7 +4,7 @@ import { Role } from '@prisma/client';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireWorkspaceAdmin, requireWorkspaceMember } from '../middleware/adminAuth.js';
-import { getWorkspaceState } from '../middleware/workspace.js';
+import { requestWorkspaceState } from '../middleware/workspace.js';
 import { guestVisibleUserIds } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
@@ -13,7 +13,8 @@ import { ERR } from '../utils/errorCodes.js';
 import { STATUS_SELECT, toPublicUser } from '../services/statusService.js';
 import { isUserOnline } from '../websocket/index.js';
 import {
-  DEFAULT_WORKSPACE_ID, WORKSPACE_PUBLIC_SELECT, activeMemberWhere, countWorkspaceOwners, loadUserWorkspaceState,
+  DEFAULT_WORKSPACE_ID, LastWorkspaceOwnerError, WORKSPACE_PUBLIC_SELECT, activeMemberWhere, loadUserWorkspaceState,
+  workspaceSummaryForUser,
   parseWorkspaceId, roleRank,
 } from '../services/workspaceService.js';
 import { addMember, removeMember, updateMemberRole } from '../services/workspaceMemberService.js';
@@ -34,6 +35,15 @@ const WORKSPACE_NOT_FOUND = { error: 'Workspace not found', code: ERR.WORKSPACE_
 const USER_NOT_FOUND = { error: 'User not found', code: ERR.USER_NOT_FOUND } as const;
 const ROLE_FORBIDDEN = { error: 'You cannot give or change this role', code: ERR.WORKSPACE_ROLE_FORBIDDEN } as const;
 const LAST_OWNER = { error: 'A workspace needs at least one owner', code: ERR.LAST_WORKSPACE_OWNER } as const;
+const PRIMARY_OWNER = { error: 'The primary owner cannot be removed', code: ERR.CANNOT_REMOVE_PRIMARY_OWNER } as const;
+const DEFAULT_MEMBERSHIP_REQUIRED = {
+  error: 'Members cannot leave or be removed from the default workspace', code: ERR.DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED,
+} as const;
+
+async function isPrimaryOwner(organizationId: number, userId: number): Promise<boolean> {
+  const org = await prisma.organization.findUnique({ where: { id: organizationId }, select: { primaryOwnerId: true } });
+  return org?.primaryOwnerId === userId;
+}
 
 /**
  * 역할을 정하거나 바꿀 수 있는 사람(privileged)인지. 기본 워크스페이스의 역할은 setUserRole로 조직 역할까지 바뀌므로
@@ -62,21 +72,16 @@ async function targetMembership(workspaceId: number, organizationId: number, use
   return { user: state, role: m?.role ?? null };
 }
 
-// GET /workspaces - 내 활성 워크스페이스(참여한 순서)
+// GET /workspaces - 내 활성 워크스페이스(참여한 순서). 로그인 응답·GET /users/me와 같은 workspaceSummaryForUser를 쓴다
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const state = await getWorkspaceState(req.user!.userId);
-    const memberships = state?.memberships ?? [];
-    const rows = await prisma.workspace.findMany({
-      where: { id: { in: memberships.map((m) => m.workspaceId) } },
-      select: WORKSPACE_PUBLIC_SELECT,
-    });
-    const byId = new Map(rows.map((w) => [w.id, w]));
-    const workspaces = memberships.flatMap((m) => {
-      const w = byId.get(m.workspaceId);
-      return w ? [{ ...w, role: m.role }] : [];
-    });
-    res.json({ workspaces, defaultWorkspaceId: state?.defaultWorkspaceId ?? null });
+    const state = await requestWorkspaceState(req);
+    if (!state) {
+      res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
+      return;
+    }
+    const { workspaces, defaultWorkspaceId } = await workspaceSummaryForUser(prisma, state);
+    res.json({ workspaces, defaultWorkspaceId });
   } catch (error) {
     logError('List workspaces error', error);
     res.status(500).json({ error: 'Failed to list workspaces', code: ERR.INTERNAL_ERROR });
@@ -86,7 +91,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 // GET /workspaces/discover - 조직의 공개·초대 전용 워크스페이스(숨김·보관 제외)와 내 참여 여부
 router.get('/discover', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const state = await getWorkspaceState(req.user!.userId);
+    const state = await requestWorkspaceState(req);
     if (!state) {
       res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
       return;
@@ -166,18 +171,26 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
   }
 });
 
-// POST /workspaces/:id/leave - 나가기. 마지막 OWNER는 거부
+// POST /workspaces/:id/leave - 나가기. 기본 워크스페이스·주 소유자·마지막 OWNER는 거부
 router.post('/:id/leave', authMiddleware, requireWorkspaceMember, async (req: AuthRequest, res: Response) => {
   try {
     const t = req.targetWorkspace!;
     const userId = req.user!.userId;
-    if (t.role === 'OWNER' && (await countWorkspaceOwners(prisma, t.id)) <= 1) {
-      res.status(409).json(LAST_OWNER);
+    if (t.id === DEFAULT_WORKSPACE_ID) {
+      res.status(409).json(DEFAULT_MEMBERSHIP_REQUIRED);
+      return;
+    }
+    if (await isPrimaryOwner(t.organizationId, userId)) {
+      res.status(403).json(PRIMARY_OWNER);
       return;
     }
     await removeMember({ workspaceId: t.id, userId, currentRole: t.role!, actorId: userId, self: true });
     res.json({ success: true });
   } catch (error) {
+    if (error instanceof LastWorkspaceOwnerError) {
+      res.status(409).json(LAST_OWNER);
+      return;
+    }
     logError('Leave workspace error', error);
     res.status(500).json({ error: 'Failed to leave workspace', code: ERR.INTERNAL_ERROR });
   }
@@ -306,15 +319,16 @@ router.patch('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, asyn
       res.json({ workspaceId: t.id, userId: target.userId, role });
       return;
     }
-    if (target.role === 'OWNER' && (await countWorkspaceOwners(prisma, t.id)) <= 1) {
-      res.status(409).json(LAST_OWNER);
-      return;
-    }
+    // 마지막 OWNER 강등은 updateMemberRole이 워크스페이스 행을 잠근 뒤 검사한다(LastWorkspaceOwnerError)
     await updateMemberRole({ workspaceId: t.id, userId: target.userId, role, previousRole: target.role, actorId: req.user!.userId });
     res.json({ workspaceId: t.id, userId: target.userId, role });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
+      return;
+    }
+    if (error instanceof LastWorkspaceOwnerError) {
+      res.status(409).json(LAST_OWNER);
       return;
     }
     logError('Update workspace member error', error);
@@ -326,27 +340,32 @@ router.patch('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, asyn
 router.delete('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const t = req.targetWorkspace!;
+    // 기본 워크스페이스에서 빼는 것은 계정 비활성화(/admin/users/:id/deactivate)로만 한다
+    if (t.id === DEFAULT_WORKSPACE_ID) {
+      res.status(409).json(DEFAULT_MEMBERSHIP_REQUIRED);
+      return;
+    }
     const target = await loadTargetMember(req, res);
     if (!target) return;
-    const org = await prisma.organization.findUnique({ where: { id: t.organizationId }, select: { primaryOwnerId: true } });
-    if (org?.primaryOwnerId === target.userId) {
-      res.status(403).json({ error: 'The primary owner cannot be removed', code: ERR.CANNOT_REMOVE_PRIMARY_OWNER });
+    if (await isPrimaryOwner(t.organizationId, target.userId)) {
+      res.status(403).json(PRIMARY_OWNER);
       return;
     }
     if (!canTouch(req, target.role)) {
       res.status(403).json(ROLE_FORBIDDEN);
       return;
     }
-    if (target.role === 'OWNER' && (await countWorkspaceOwners(prisma, t.id)) <= 1) {
-      res.status(409).json(LAST_OWNER);
-      return;
-    }
+    // 마지막 OWNER 검사는 removeMember가 워크스페이스 행을 잠근 뒤 한다
     await removeMember({
       workspaceId: t.id, userId: target.userId, currentRole: target.role, actorId: req.user!.userId,
       self: target.userId === req.user!.userId,
     });
     res.json({ success: true });
   } catch (error) {
+    if (error instanceof LastWorkspaceOwnerError) {
+      res.status(409).json(LAST_OWNER);
+      return;
+    }
     logError('Remove workspace member error', error);
     res.status(500).json({ error: 'Failed to remove member', code: ERR.INTERNAL_ERROR });
   }

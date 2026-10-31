@@ -89,6 +89,8 @@
     "WORKSPACE_SLUG_TAKEN": "이미 사용 중인 워크스페이스 주소입니다.",
     "WORKSPACE_NAME_TAKEN": "같은 이름의 워크스페이스가 이미 있습니다.",
     "INVALID_WORKSPACE_SLUG": "워크스페이스 주소는 영문 소문자, 숫자, 하이픈으로 1~21자를 쓰세요.",
-    "WORKSPACE_ROLE_FORBIDDEN": "이 역할은 지정하거나 바꿀 수 없습니다."
+    "WORKSPACE_ROLE_FORBIDDEN": "이 역할은 지정하거나 바꿀 수 없습니다.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "기본 워크스페이스에서는 나가거나 제거할 수 없습니다. 내보내려면 관리 화면에서 계정을 비활성화하세요.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "기본 워크스페이스는 보관할 수 없습니다."
   }
 }

@@ -3,7 +3,8 @@ import { AuthRequest } from '../types.js';
 import { ERR } from '../utils/errorCodes.js';
 import { isOrgAdminRole } from '../services/workspaceService.js';
 
-// requireAdmin·requireOwner는 현재 워크스페이스 역할(호환 심으로 req.user.role)을 본다(E1b).
+// requireAdmin·requireOwner는 req.user.role(기본 워크스페이스 역할 = User.role)을 본다. 헤더로 고른 워크스페이스 역할은
+// 쓰지 않는다(다른 워크스페이스 OWNER가 헤더만 바꿔 기본 워크스페이스 관리 API를 쓰는 권한 상승 방지). 범위는 E1c·E1h에서 생긴다.
 export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
   if (req.user?.role !== 'ADMIN' && req.user?.role !== 'OWNER') {
     res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });

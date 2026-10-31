@@ -79,8 +79,8 @@ export interface SetUserRoleOptions {
 }
 
 // 사용자 역할의 유일한 기록자. E1b~E1g 동안 User.role이 권한 판단의 원천이므로 User.role·orgRole(한 번의 update),
-// 기본 워크스페이스 멤버십과 역할, 조직 주 소유자를 함께 맞춘다. 그래야 E1b의 호환 심(req.user.role = WorkspaceMember.role)이
-// 켜지는 순간에도 결과가 같다. 다른 코드는 User.role을 직접 쓰지 않는다(tests/user-role-writes.test.ts가 검사).
+// 기본 워크스페이스 멤버십과 역할, 조직 주 소유자를 함께 맞춘다. 그래야 기본 워크스페이스 역할을 User.role로 읽든
+// WorkspaceMember.role로 읽든 결과가 같다. 다른 코드는 User.role을 직접 쓰지 않는다(tests/user-role-writes.test.ts가 검사).
 export async function setUserRole(
   db: Prisma.TransactionClient,
   userId: number,
@@ -290,6 +290,45 @@ export async function countWorkspaceOwners(db: Prisma.TransactionClient, workspa
   return db.user.count({ where: { AND: [activeMemberWhere(workspaceId), ownerWhere, { deactivatedAt: null }] } });
 }
 
+/** 트랜잭션 안에서 워크스페이스 행을 잠근다. 같은 워크스페이스의 OWNER 수를 바꾸는 요청(나가기·제거·강등)을 줄 세운다 */
+export async function lockWorkspace(db: Prisma.TransactionClient, workspaceId: number): Promise<void> {
+  await db.$queryRaw`SELECT "id" FROM "Workspace" WHERE "id" = ${workspaceId} FOR UPDATE`;
+}
+
+/** 마지막 OWNER를 빼거나 강등하려 할 때 던진다. 라우트가 409 LAST_WORKSPACE_OWNER로 바꾼다 */
+export class LastWorkspaceOwnerError extends Error {
+  constructor() {
+    super('LAST_WORKSPACE_OWNER');
+  }
+}
+
+/**
+ * OWNER인 사용자를 빼거나 강등하기 전에 부른다. 워크스페이스 행을 잠근 뒤 세므로 두 OWNER가 동시에 나가도 하나만 성공한다.
+ * 잠금은 트랜잭션이 끝날 때 풀린다.
+ */
+export async function assertNotLastOwner(db: Prisma.TransactionClient, workspaceId: number): Promise<void> {
+  await lockWorkspace(db, workspaceId);
+  if ((await countWorkspaceOwners(db, workspaceId)) <= 1) throw new LastWorkspaceOwnerError();
+}
+
+/**
+ * 행이 하나도 없는 기본 워크스페이스 암묵 멤버가 다른 워크스페이스 행을 처음 얻기 전에 부른다.
+ * 그대로 두면 행이 생기는 순간 암묵 멤버십이 사라지므로 기본 워크스페이스 행을 지금 역할(User.role)로 만든다.
+ * 가입 경로(다른 워크스페이스 초대로 새로 만든 계정)는 부르지 않는다.
+ */
+export async function materializeImplicitDefaultMembership(db: Prisma.TransactionClient, userId: number): Promise<void> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true, organizationId: true, _count: { select: { workspaces: true } } },
+  });
+  if (!user || user._count.workspaces > 0 || user.organizationId !== DEFAULT_ORGANIZATION_ID) return;
+  if (await isDefaultWorkspaceArchived(db)) return;
+  await db.workspaceMember.createMany({
+    data: [{ workspaceId: DEFAULT_WORKSPACE_ID, userId, role: user.role }],
+    skipDuplicates: true,
+  });
+}
+
 /**
  * 워크스페이스에 넣는다(배정, 초대 수락, 공개 워크스페이스 참여). 기본 워크스페이스는 역할을 setUserRole로 쓰고
  * 나갔던 행을 되살린다. 다른 워크스페이스는 WorkspaceMember 행만 쓴다.
@@ -300,6 +339,7 @@ export async function joinWorkspace(
 ): Promise<void> {
   const { workspaceId, userId, role, invitedBy = null } = params;
   if (workspaceId !== DEFAULT_WORKSPACE_ID) {
+    await materializeImplicitDefaultMembership(db, userId);
     await addWorkspaceMember(db, { workspaceId, userId, role, invitedBy });
     return;
   }
@@ -362,10 +402,11 @@ export const WORKSPACE_PUBLIC_SELECT = {
   id: true, slug: true, name: true, description: true, icon: true, discoverability: true,
 } satisfies Prisma.WorkspaceSelect;
 
-/** 로그인 응답과 GET /users/me에 붙이는 조직·워크스페이스 정보 */
-export async function workspaceSummaryForUser(db: Prisma.TransactionClient, userId: number) {
-  const state = await loadUserWorkspaceState(db, userId);
-  if (!state) return null;
+/**
+ * 로그인 응답, GET /users/me, GET /workspaces가 함께 쓰는 조직·워크스페이스 정보.
+ * 멤버십은 호출한 쪽이 이미 읽은 상태(authMiddleware가 req.workspaceState에 둔 것)를 받아 다시 조회하지 않는다.
+ */
+export async function workspaceSummaryForUser(db: Prisma.TransactionClient, state: UserWorkspaceState) {
   const [organization, workspaces] = await Promise.all([
     db.organization.findUnique({ where: { id: state.organizationId }, select: { id: true, name: true } }),
     db.workspace.findMany({

@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { guestVisibleUserIds } from '../middleware/authorize.js';
-import { getWorkspaceState, invalidateWorkspaceCache } from '../middleware/workspace.js';
+import { invalidateWorkspaceCache, requestWorkspaceState } from '../middleware/workspace.js';
 import { workspaceSummaryForUser } from '../services/workspaceService.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
@@ -107,7 +107,9 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     // Enrich with real-time WebSocket presence
     const online = isUserOnline(userId);
     // 조직·워크스페이스(E1b). role은 호환을 위해 기본 워크스페이스 역할(User.role) 그대로다
-    const workspaceInfo = await workspaceSummaryForUser(prisma, userId);
+    // authMiddleware가 읽은 멤버십 상태를 그대로 쓴다(다시 조회하지 않음)
+    const state = await requestWorkspaceState(req);
+    const workspaceInfo = state ? await workspaceSummaryForUser(prisma, state) : null;
     res.json({
       ...toPublicUser(user, { self: true }),
       status: online ? 'online' : (user.status || 'offline'),
@@ -146,7 +148,7 @@ router.put('/me/default-workspace', authMiddleware, async (req: AuthRequest, res
   try {
     const userId = req.user!.userId;
     const { workspaceId } = defaultWorkspaceSchema.parse(req.body);
-    const state = await getWorkspaceState(userId);
+    const state = await requestWorkspaceState(req);
     if (!state?.memberships.some((m) => m.workspaceId === workspaceId)) {
       res.status(404).json({ error: 'Workspace not found', code: ERR.WORKSPACE_NOT_FOUND });
       return;

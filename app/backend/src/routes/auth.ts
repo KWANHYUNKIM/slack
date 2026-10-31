@@ -13,9 +13,9 @@ import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
 import {
   DEFAULT_WORKSPACE_ID, WORKSPACE_PUBLIC_SELECT, addWorkspaceMember, joinWorkspaceDefaultChannels, setUserRole,
-  workspaceSummaryForUser,
+  loadUserWorkspaceState, workspaceSummaryForUser,
 } from '../services/workspaceService.js';
-import { getWorkspaceState } from '../middleware/workspace.js';
+import { requestWorkspaceState } from '../middleware/workspace.js';
 import { addMember } from '../services/workspaceMemberService.js';
 import { createSessionToken, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
@@ -280,7 +280,8 @@ async function sendLoginSuccess(
   const { token } = await createSessionToken({ id: user.id, tokenVersion: user.tokenVersion }, req);
   const mfaEnrollmentRequired = !user.mfaEnabledAt && (await isMfaPolicyEnforced());
   // 조직·워크스페이스 정보(E1b). role은 호환을 위해 기본 워크스페이스 역할(User.role) 그대로다
-  const workspaceInfo = await workspaceSummaryForUser(prisma, user.id);
+  const state = await loadUserWorkspaceState(prisma, user.id);
+  const workspaceInfo = state ? await workspaceSummaryForUser(prisma, state) : null;
   res.json({
     user: {
       id: user.id,
@@ -516,7 +517,7 @@ router.post('/invite/:code/accept', authMiddleware, async (req: AuthRequest, res
       },
     });
     const userId = req.user!.userId;
-    const state = await getWorkspaceState(userId);
+    const state = await requestWorkspaceState(req);
     if (!invite || !state || invite.workspace.archivedAt || invite.workspace.organizationId !== state.organizationId) {
       res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
       return;

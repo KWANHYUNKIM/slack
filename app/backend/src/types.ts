@@ -1,11 +1,12 @@
 import { Request } from 'express';
 import type { Role } from '@prisma/client';
+import type { UserWorkspaceState } from './services/workspaceService.js';
 
 /** 요청의 현재 워크스페이스(E1b). middleware/workspace.ts의 resolveWorkspace가 채운다. */
 export interface WorkspaceContext {
   id: number;
   organizationId: number;
-  /** 이 워크스페이스에서의 역할. 호환 심으로 req.user.role도 같은 값이 된다 */
+  /** 이 워크스페이스에서의 역할. req.user.role(기본 워크스페이스 역할 = User.role)과 별개다. 새 /workspaces·/org API만 쓴다 */
   role: Role;
 }
 
@@ -35,6 +36,8 @@ export interface JwtPayload {
 export interface AuthRequest extends Request {
   user?: JwtPayload;
   workspace?: WorkspaceContext;
+  /** authMiddleware가 읽은 사용자 멤버십 상태(E1b). 같은 요청에서 다시 조회하지 않으려고 둔다 */
+  workspaceState?: UserWorkspaceState;
   targetWorkspace?: TargetWorkspaceAccess;
   channelId?: number;
   // These use `any` because `file` conflicts with Express/multer's Request.file type.

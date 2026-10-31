@@ -42,6 +42,11 @@ export async function getWorkspaceState(userId: number): Promise<UserWorkspaceSt
   return state;
 }
 
+/** authMiddleware가 이미 읽은 상태가 있으면 그것을, 없으면 캐시에서 읽는다 */
+export async function requestWorkspaceState(req: AuthRequest): Promise<UserWorkspaceState | null> {
+  return req.workspaceState ?? getWorkspaceState(req.user!.userId);
+}
+
 /**
  * 현재 워크스페이스를 쓰지 않는 경로. 계정 단위(로그인, 내 프로필·세션·2FA·상태, 토큰)와 워크스페이스를 경로로 받는
  * /workspaces, /org는 헤더를 보지 않는다. 그래야 워크스페이스가 하나도 없는 사용자도 로그아웃·초대 수락·참여를 할 수 있다.
@@ -56,8 +61,10 @@ export function isWorkspaceFreePath(fullPath: string): boolean {
 
 /**
  * req.user가 정해진 뒤 현재 워크스페이스를 정한다. 성공하면 true, 응답을 이미 보냈으면 false.
- * 호환 심: req.user.role을 현재 워크스페이스 역할로 덮어써서 기존 `req.user.role === 'ADMIN'` 검사가
- * "현재 워크스페이스 관리자"라는 뜻으로 그대로 돈다(스펙 3.4).
+ * req.user.role은 덮어쓰지 않는다(PR #128 리뷰 결정). 기존 라우트(/admin, 채널, 사용자, DM, MCP, 소켓)는 범위가 아직
+ * 워크스페이스로 나뉘지 않았으므로(E1c·E1h) 계속 기본 워크스페이스 역할(User.role)을 쓴다. 헤더로 고른 워크스페이스의
+ * 역할을 넣으면 다른 워크스페이스 OWNER가 헤더만 바꿔 기본 워크스페이스 관리 API를 쓸 수 있다.
+ * 현재 워크스페이스 역할은 req.workspace.role에 두고 새 /workspaces·/org API만 쓴다.
  */
 export async function applyWorkspaceContext(req: AuthRequest, res: Response): Promise<boolean> {
   const state = await getWorkspaceState(req.user!.userId);
@@ -65,6 +72,7 @@ export async function applyWorkspaceContext(req: AuthRequest, res: Response): Pr
     res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
     return false;
   }
+  req.workspaceState = state;
   req.user!.orgRole = state.orgRole;
   if (isWorkspaceFreePath(req.baseUrl + req.path)) return true;
 
@@ -76,7 +84,6 @@ export async function applyWorkspaceContext(req: AuthRequest, res: Response): Pr
     return false;
   }
   req.workspace = { id: picked.workspaceId, organizationId: state.organizationId, role: picked.role };
-  req.user!.role = picked.role;
   res.setHeader('X-Workspace-Id', String(picked.workspaceId));
   return true;
 }
@@ -106,7 +113,7 @@ function requireTargetWorkspace(admin: boolean) {
         res.status(400).json({ error: 'Invalid workspace id', code: ERR.INVALID_WORKSPACE_ID });
         return;
       }
-      const state = await getWorkspaceState(req.user!.userId);
+      const state = await requestWorkspaceState(req);
       if (!state) {
         res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
         return;
