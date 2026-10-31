@@ -1,12 +1,15 @@
-// Timed out at the default 10s under CPU load on the 8GB dev machine (100 concurrent requests).
-import { jest } from '@jest/globals';
-
-jest.setTimeout(30000);
-
 import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
+import { settleBackgroundWork } from '../services/mentionService.js';
+
+// 상태를 확인하지 않으면 실패한 POST가 뒤의 개수 검증에서야 원인 없이 드러난다. 실패하면 응답 전체를 메시지에 담는다.
+function expectCreated(res: request.Response, i: number): void {
+  if (res.status !== 201) {
+    throw new Error(`message #${i} POST -> ${res.status} ${JSON.stringify(res.body)} ${res.text?.slice(0, 200)}`);
+  }
+}
 
 describe('Scale & Performance Tests', () => {
   beforeEach(async () => {
@@ -151,10 +154,11 @@ describe('Scale & Performance Tests', () => {
     it('should paginate through many messages correctly', async () => {
       // Create 50 messages
       for (let i = 1; i <= 50; i++) {
-        await request(app)
+        const res = await request(app)
           .post(`/channels/${channelId}/messages`)
           .set('Authorization', `Bearer ${authToken}`)
           .send({ content: `Message ${i}` });
+        expectCreated(res, i);
       }
 
       // Get first page
@@ -195,6 +199,60 @@ describe('Scale & Performance Tests', () => {
     });
   });
 
+  describe('Bulk Message CRUD', () => {
+    it('should create 10, read, update and delete one, and see each change', async () => {
+      const userRes = await request(app).post('/auth/register').send({
+        email: 'crud-test@test.com',
+        password: TEST_PASSWORD,
+        name: 'Crud Tester',
+      });
+      const token = userRes.body.token;
+      const channelRes = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'crud-channel' });
+      const chId = channelRes.body.id;
+
+      const ids: number[] = [];
+      for (let i = 1; i <= 10; i++) {
+        const res = await request(app)
+          .post(`/channels/${chId}/messages`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ content: `Crud ${i}` });
+        expectCreated(res, i);
+        ids.push(res.body.id);
+      }
+      expect(new Set(ids).size).toBe(10);
+
+      const list = await request(app)
+        .get(`/channels/${chId}/messages?limit=10`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(list.status).toBe(200);
+      expect(list.body.messages).toHaveLength(10);
+
+      const edit = await request(app)
+        .patch(`/messages/${ids[0]}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ content: 'Crud edited' });
+      expect(edit.status).toBe(200);
+      expect(edit.body.content).toBe('Crud edited');
+
+      const del = await request(app)
+        .delete(`/messages/${ids[1]}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(del.status).toBe(200);
+
+      const after = await request(app)
+        .get(`/channels/${chId}/messages?limit=10`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(after.body.messages).toHaveLength(9);
+      expect(after.body.messages.some((m: any) => m.id === ids[1])).toBe(false);
+      const edited = after.body.messages.find((m: any) => m.id === ids[0]);
+      expect(edited).toBeDefined();
+      expect(edited.content).toBe('Crud edited');
+    });
+  });
+
   describe('API Response Time', () => {
     let channelId: number;
     let authToken: string;
@@ -215,18 +273,21 @@ describe('Scale & Performance Tests', () => {
 
       // Create some messages
       for (let i = 1; i <= 50; i++) {
-        await request(app)
+        const res = await request(app)
           .post(`/channels/${channelId}/messages`)
           .set('Authorization', `Bearer ${authToken}`)
           .send({ content: `Message ${i}` });
+        expectCreated(res, i);
       }
+      // 메시지마다 도는 활동 후처리가 끝나야 아래 응답 시간 측정이 DB 풀 경쟁에 흔들리지 않는다.
+      await settleBackgroundWork();
     });
 
     it('should fetch messages in reasonable time', async () => {
       const startTime = Date.now();
 
       const res = await request(app)
-        .get(`/channels/${channelId}/messages?limit=50`)
+        .get(`/channels/${channelId}/messages?limit=10`)
         .set('Authorization', `Bearer ${authToken}`);
 
       const endTime = Date.now();

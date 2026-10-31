@@ -15,6 +15,7 @@ export default {
   },
   testMatch: ['**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
-  testTimeout: 10000,
+  // 8GB 개발 머신에서 다른 작업과 CPU를 나눌 때 10초는 느린 꼬리 테스트를 오탐으로 만들었다(DB는 연결 16개, 142/256MiB로 여유).
+  testTimeout: 30000,
   maxWorkers: 1,
 };
