@@ -268,3 +268,7 @@
 | 2026-11-01 03:06 | PR #99 리뷰 10건 → dev-4 9건: rotateSessions 공용화와 sid 없는 소켓 즉시 끊기, 재발급 행 잠금, 새 코드 표시 중 닫기 방지, 상태 즉시 갱신, ReauthForm·reauthenticate 공용화, maxLength, 주석. 현재 기기 소켓 옛 sid는 수용 |
 | 2026-11-01 03:09 | E10 리뷰 반영 검토: dlp 56·dms 27·mentions-scheduled-webhook 9, tsc, lint, i18n, 물리 방향 174, 외부 URL → 푸시·머지(PR #96, 5739954). 070000을 slackclone, slackclone_dev, dev2, dev3에 적용(dev1·dev4·dev5는 각 PR 검토 때) |
 | 2026-11-01 03:11 | 자원 정상(스왑 88%, 디스크 11GB). 배정: dev-5 E7c-QR(sonnet, worktree, 외부 의존 없이 로컬 인코더). 진행 3명(dev-1 E6 리뷰 반영, dev-4 PR #99 리뷰 반영, dev-5) |
+| 2026-11-01 03:11 | PR #99 리뷰 반영 검토: dev4 DB에 070000 적용, mfa 32·sessions 29·auth 25·auth-401-codes 12·dlp 56, tsc, lint, autherrors 9, i18n, 물리 방향 176 → 머지 |
+| 2026-11-01 03:13 | QR 검토: 외부 라이브러리 없이 직접 구현, qr:test 12/12. 총괄 독립 검증으로 macOS CoreImage QR 인식기가 v1·v8·v10 출력을 원문대로 디코드 → PR #101, /code-review low |
+| 2026-11-01 03:14 | PR #101 /code-review low 지적 0 → 머지. E7c 완료 |
+| 2026-11-01 03:16 | 배정: dev-4 mcp-4 OAuth 2.1(opus, worktree, dev4 DB, 마이그레이션 080000, 새 패키지 금지). 진행 2명(dev-1 E6 리뷰 반영, dev-4). e2e-smoke는 감속 단계라 보류 |
