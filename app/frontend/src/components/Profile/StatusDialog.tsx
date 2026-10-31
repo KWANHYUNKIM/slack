@@ -27,7 +27,8 @@ export function StatusDialog({ onClose }: StatusDialogProps) {
   const [text, setText] = useState(existing?.text ?? '');
   // 다시 열면 기존 만료를 그대로 유지한다. 바꾸고 싶을 때만 기간을 고른다.
   const [duration, setDuration] = useState<Duration | 'keep'>(existing?.expiresAt ? 'keep' : 'never');
-  const [pause, setPause] = useState(false);
+  // 이미 상태에 묶인 방해금지가 있으면 체크된 채로 연다(서버는 본인 응답에만 withStatus를 준다)
+  const [pause, setPause] = useState(useStatusStore.getState().myDnd.withStatus === true);
   const [showPicker, setShowPicker] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +42,8 @@ export function StatusDialog({ onClose }: StatusDialogProps) {
       await saveStatus({
         emoji,
         text: text.trim() || null,
-        expiresAt: duration === 'keep' ? existing?.expiresAt ?? null : expiryFor(duration),
+        // 'keep'이면 expiresAt을 보내지 않아 서버가 기존 만료를 유지한다(과거·임박 시각 재전송으로 400이 나지 않게)
+        ...(duration === 'keep' ? {} : { expiresAt: expiryFor(duration) }),
         pauseNotifications: pause,
       });
       onClose();

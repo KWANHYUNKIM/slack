@@ -164,10 +164,10 @@ describe('Custom status and Do Not Disturb', () => {
       expect((await setStatus(alice, { text: 'ok', extra: 1 })).status).toBe(400);
     });
 
-    it('strips HTML and control characters from the text', async () => {
+    it('keeps the text as typed except control characters (escaping is the renderer\'s job)', async () => {
       const res = await setStatus(alice, { text: '<script>alert(1)</script>Hi\u0000\n<b>there</b>' });
       expect(res.status).toBe(200);
-      expect(res.body.customStatus.text).toBe('alert(1)Hi there');
+      expect(res.body.customStatus.text).toBe('<script>alert(1)</script>Hi <b>there</b>');
       expect(cleanStatusText('a\tb')).toBe('a b');
       expect(isSingleEmoji('👨‍👩‍👧')).toBe(true);
       expect(isSingleEmoji('🇰🇷')).toBe(true);
@@ -267,11 +267,11 @@ describe('Custom status and Do Not Disturb', () => {
     it('sets DND together with the status and lifts it when the status is cleared', async () => {
       const expiresAt = inMinutes(60);
       const res = await setStatus(alice, { emoji: '📅', text: 'In a meeting', expiresAt, pauseNotifications: true });
-      expect(res.body.dnd).toEqual({ active: true, until: new Date(expiresAt).toISOString() });
+      expect(res.body.dnd).toEqual({ active: true, until: new Date(expiresAt).toISOString(), withStatus: true });
       expect((await dndGet(alice)).body.active).toBe(true);
 
       const cleared = await clearStatus(alice);
-      expect(cleared.body.dnd).toEqual({ active: false, until: null });
+      expect(cleared.body.dnd).toEqual({ active: false, until: null, withStatus: false });
       expect((await dndGet(alice)).body.active).toBe(false);
     });
 
@@ -293,6 +293,97 @@ describe('Custom status and Do Not Disturb', () => {
       await dndOn(alice, { minutes: 30 });
       await clearStatus(alice);
       expect((await dndGet(alice)).body.active).toBe(true);
+    });
+  });
+
+  describe('manual DND and keep-expiry semantics', () => {
+    afterEach(() => resetState(alice));
+
+    it('leaves a manual DND that ends later than the status untouched', async () => {
+      const manualUntil = inMinutes(120);
+      await dndOn(alice, { until: manualUntil });
+      const res = await setStatus(alice, { text: 'Meeting', expiresAt: inMinutes(30), pauseNotifications: true });
+      expect(res.body.dnd).toEqual({ active: true, until: new Date(manualUntil).toISOString(), withStatus: false });
+
+      // 상태를 지워도 수동 DND는 남는다
+      const cleared = await clearStatus(alice);
+      expect(cleared.body.dnd.active).toBe(true);
+      expect(cleared.body.dnd.until).toBe(new Date(manualUntil).toISOString());
+    });
+
+    it('keeps the manual DND when the status expires', async () => {
+      const manualUntil = inMinutes(120);
+      await dndOn(alice, { until: manualUntil });
+      await setStatus(alice, { text: 'Meeting', expiresAt: inMinutes(30), pauseNotifications: true });
+      await prisma.user.update({ where: { id: alice.id }, data: { customStatusExpiresAt: new Date(Date.now() - 1000) } });
+      await clearExpired();
+      expect((await getMe(alice)).customStatus).toBeNull();
+      expect((await dndGet(alice)).body).toEqual({ active: true, until: new Date(manualUntil).toISOString() });
+    });
+
+    it('turns the DND into a status-bound one when the status ends later, then lifts it on clear', async () => {
+      await dndOn(alice, { minutes: 30 });
+      const statusEnd = inMinutes(120);
+      const res = await setStatus(alice, { text: 'Offsite', expiresAt: statusEnd, pauseNotifications: true });
+      expect(res.body.dnd).toEqual({ active: true, until: new Date(statusEnd).toISOString(), withStatus: true });
+      expect((await clearStatus(alice)).body.dnd.active).toBe(false);
+    });
+
+    it('turns a manual DND into a status-bound one when the status has no expiry', async () => {
+      await dndOn(alice, { minutes: 30 });
+      const res = await setStatus(alice, { text: 'Deep work', pauseNotifications: true });
+      expect(res.body.dnd).toEqual({ active: true, until: null, withStatus: true });
+      expect((await clearStatus(alice)).body.dnd.active).toBe(false);
+    });
+
+    it('keeps the manual DND when saving without the option', async () => {
+      await dndOn(alice, { minutes: 30 });
+      const res = await setStatus(alice, { text: 'Hi' });
+      expect(res.body.dnd.active).toBe(true);
+      expect(res.body.dnd.withStatus).toBe(false);
+    });
+
+    it('keeps the existing expiry when expiresAt is omitted, and removes it when null', async () => {
+      const expiresAt = inMinutes(60);
+      await setStatus(alice, { emoji: '🎯', text: 'Focus', expiresAt });
+      // 'keep'으로 편집 저장: expiresAt을 보내지 않는다
+      const edited = await setStatus(alice, { emoji: '🎯', text: 'Focus edited' });
+      expect(edited.status).toBe(200);
+      expect(edited.body.customStatus).toEqual({ emoji: '🎯', text: 'Focus edited', expiresAt: new Date(expiresAt).toISOString() });
+      // 명시적 null은 만료 제거
+      const removed = await setStatus(alice, { emoji: '🎯', text: 'Focus edited', expiresAt: null });
+      expect(removed.body.customStatus.expiresAt).toBeNull();
+    });
+
+    it('keeps the bound DND in step with the kept expiry', async () => {
+      const expiresAt = inMinutes(60);
+      await setStatus(alice, { text: 'Meeting', expiresAt, pauseNotifications: true });
+      const edited = await setStatus(alice, { text: 'Meeting 2', pauseNotifications: true });
+      expect(edited.body.dnd).toEqual({ active: true, until: new Date(expiresAt).toISOString(), withStatus: true });
+    });
+
+    it('tells only the owner whether the DND is bound to the status', async () => {
+      await setStatus(alice, { text: 'Busy', expiresAt: inMinutes(30), pauseNotifications: true });
+      expect((await getMe(alice)).dnd.withStatus).toBe(true);
+      expect((await getUser(bob, alice.id)).dnd).not.toHaveProperty('withStatus');
+      await clearStatus(alice);
+      await dndOn(alice, { minutes: 30 });
+      expect((await getMe(alice)).dnd.withStatus).toBe(false);
+    });
+  });
+
+  describe('GET /dms exposes status times as UTC ISO regardless of server time zone', () => {
+    afterEach(() => resetState(alice));
+
+    it('returns the exact instants that were stored', async () => {
+      await request(app).post('/dms').set(auth(alice)).send({ toUserId: bob.id, content: 'tz check' });
+      const expiresAt = inMinutes(45);
+      await setStatus(alice, { emoji: '🕒', text: 'TZ', expiresAt, pauseNotifications: true });
+      const list = (await request(app).get('/dms').set(auth(bob))).body as any[];
+      const conv = list.find((c) => c.otherUser.id === alice.id);
+      expect(conv.otherUser.customStatus).toEqual({ emoji: '🕒', text: 'TZ', expiresAt: new Date(expiresAt).toISOString() });
+      expect(conv.otherUser.dnd).toEqual({ active: true, until: new Date(expiresAt).toISOString() });
+      expect(conv.otherUser).not.toHaveProperty('dndWithStatus');
     });
   });
 
@@ -420,8 +511,11 @@ describe('Custom status and Do Not Disturb', () => {
         expect(got).toHaveLength(1);
         expect(got[0].userId).toBe(alice.id);
         expect(got[0].customStatus.emoji).toBe('🌴');
-        expect(got[0].dnd).toEqual({ active: false, until: null });
       }
+      expect(b[0].dnd).toEqual({ active: false, until: null });
+      // 본인 탭에는 묶인 DND 여부(withStatus)까지 간다
+      expect(a1[0].dnd).toEqual({ active: false, until: null, withStatus: false });
+      expect(a2[0].dnd).toEqual({ active: false, until: null, withStatus: false });
       expect(d).toHaveLength(0);
 
       await dndOn(alice, { minutes: 30 });

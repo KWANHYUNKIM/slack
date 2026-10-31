@@ -13,7 +13,7 @@ import { logError } from '../utils/logger.js';
 import { isUserOnline, presenceQueue } from '../websocket/index.js';
 import {
   STATUS_SELECT, MAX_STATUS_TEXT, MIN_FUTURE_MS, MAX_FUTURE_MS,
-  cleanStatusText, isSingleEmoji, statusView, setCustomStatus, clearCustomStatus, setDnd, endDnd,
+  cleanStatusText, isSingleEmoji, statusView, toPublicUser, setCustomStatus, clearCustomStatus, setDnd, endDnd,
   computeDnd,
 } from '../services/statusService.js';
 
@@ -102,12 +102,10 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Enrich with real-time WebSocket presence
     const online = isUserOnline(userId);
-    const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = user;
     res.json({
-      ...rest,
+      ...toPublicUser(user, { self: true }),
       status: online ? 'online' : (user.status || 'offline'),
       isOnline: online,
-      ...statusView(user),
     });
   } catch (error) {
     logError('Get profile error', error);
@@ -182,7 +180,8 @@ function futureDate(label: string) {
 const customStatusSchema = z.object({
   emoji: z.string().max(50).refine(isSingleEmoji, { message: 'Emoji must be a single emoji' }).nullish(),
   text: z.string().max(MAX_STATUS_TEXT).transform(cleanStatusText).nullish(),
-  expiresAt: futureDate('expiresAt').nullish(),
+  // 필드를 보내지 않으면 기존 만료를 유지하고, null을 보내면 만료를 없앤다
+  expiresAt: futureDate('expiresAt').nullable().optional(),
   pauseNotifications: z.boolean().optional(),
 }).strict().refine((v) => !!v.emoji || !!v.text, { message: 'Emoji or text is required' });
 
@@ -192,7 +191,7 @@ const dndSchema = z.object({
 }).strict().refine((v) => (v.minutes === undefined) !== (v.until === undefined), { message: 'Provide either minutes or until' });
 
 function statusResponse(userId: number, user: Parameters<typeof statusView>[0]) {
-  return { id: userId, ...statusView(user) };
+  return { id: userId, ...statusView(user, true) };
 }
 
 // GET /users/me/dnd - 방해금지 상태 조회 (만료는 조회 시점에 계산)
@@ -252,7 +251,7 @@ router.put('/me/custom-status', authMiddleware, async (req: AuthRequest, res: Re
     const user = await setCustomStatus(req.user!.userId, {
       emoji: emoji || null,
       text: text || null,
-      expiresAt: expiresAt ?? null,
+      expiresAt,
       pauseNotifications: pauseNotifications === true,
     });
     res.json(statusResponse(req.user!.userId, user));
@@ -439,15 +438,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Enrich with real-time presence status
     const online = isUserOnline(userId);
-    const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...publicFields } = user;
-    const view = statusView(user);
+    // 타인에게는 켜짐 여부와 끝나는 시각만 보인다(상태에 묶인 DND 여부 같은 내부 값은 숨긴다).
     const enrichedUser = {
-      ...publicFields,
+      ...toPublicUser(user),
       status: online ? 'online' : (user.status || 'offline'),
       isOnline: online,
-      customStatus: view.customStatus,
-      // 타인에게는 켜짐 여부와 끝나는 시각만 보인다(상태에 묶인 DND 여부 같은 내부 값은 숨긴다).
-      dnd: view.dnd,
     };
 
     res.json(enrichedUser);
@@ -503,12 +498,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Augment with real-time WebSocket presence
     const augmented = users.map((u) => {
-      const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = u;
       return {
-        ...rest,
+        ...toPublicUser(u),
         status: isUserOnline(u.id) ? 'online' : u.status,
         isOnline: isUserOnline(u.id),
-        ...statusView(u),
       };
     });
 

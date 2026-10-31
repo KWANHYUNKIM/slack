@@ -17,6 +17,8 @@ export interface CustomStatus {
 export interface Dnd {
   active: boolean;
   until: string | null;
+  /** 본인 응답에만 온다: 상태에 묶인 방해금지인지 */
+  withStatus?: boolean;
 }
 
 export interface User {

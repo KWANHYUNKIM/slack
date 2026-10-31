@@ -27,6 +27,7 @@ import { useProfileStore } from '@/stores/useProfileStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Avatar } from '@/components/ui/avatar';
 import { UserMenuStatus } from '@/components/Profile/UserMenuStatus';
+import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
@@ -58,6 +59,7 @@ export function Sidebar() {
   const starredExpanded = !sidebarCollapsed.starred;
   const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/threads' ? 'threads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
   const myCustomStatus = useCustomStatus(user?.id);
   const myDndOn = useIsDnd(user?.id);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
@@ -207,6 +209,8 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full">
+      {/* 상태 대화상자는 아바타 메뉴 밖에 둔다(메뉴의 바깥 클릭 처리에 휘말려 닫히지 않게) */}
+      {showStatusDialog && <StatusDialog onClose={() => setShowStatusDialog(false)} />}
       {/* Nav Rail - 70px wide, darker purple */}
       <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
@@ -294,7 +298,7 @@ export function Sidebar() {
                   <p className="text-sm font-medium text-slack-primary">{user.name}</p>
                   <p className="text-xs text-slack-hint">{user.email}</p>
                 </div>
-                <UserMenuStatus onDone={() => setShowAvatarMenu(false)} />
+                <UserMenuStatus onDone={() => setShowAvatarMenu(false)} onOpenStatusDialog={() => setShowStatusDialog(true)} />
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); openProfile(); }}>
                   <User className="h-4 w-4" />
                   {t('userMenu.profile')}

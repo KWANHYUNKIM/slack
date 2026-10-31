@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as api from '@/lib/api';
+import { useAuthStore } from './useAuthStore';
 import type { CustomStatus, Dnd } from '@/lib/types';
 
 // 커스텀 상태와 방해금지(05). 프레즌스(useAuthStore의 status)와 별개 값이다.
@@ -19,7 +20,8 @@ interface StatusState {
   now: number;
   loadMine: () => Promise<void>;
   setEntry: (userId: number, entry: Partial<UserStatusEntry>) => void;
-  saveStatus: (input: { emoji: string | null; text: string | null; expiresAt: string | null; pauseNotifications: boolean }) => Promise<void>;
+  /** expiresAt을 빼면 서버가 기존 만료를 유지하고, null이면 만료를 없앤다 */
+  saveStatus: (input: { emoji: string | null; text: string | null; expiresAt?: string | null; pauseNotifications: boolean }) => Promise<void>;
   clearStatus: () => Promise<void>;
   pauseNotifications: (input: { minutes?: number; until?: string }) => Promise<void>;
   resumeNotifications: () => Promise<void>;
@@ -76,11 +78,15 @@ export const useStatusStore = create<StatusState>((set, get) => ({
   pauseNotifications: async (input) => {
     const dnd = await api.startDnd(input);
     set({ myDnd: dnd });
+    const myId = useAuthStore.getState().user?.id;
+    if (myId !== undefined) get().setEntry(myId, { dnd });
   },
 
   resumeNotifications: async () => {
     const dnd = await api.endDnd();
     set({ myDnd: dnd });
+    const myId = useAuthStore.getState().user?.id;
+    if (myId !== undefined) get().setEntry(myId, { dnd });
   },
 
   onUserStatus: (data, myUserId) => {

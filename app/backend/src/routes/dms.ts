@@ -11,7 +11,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { statusView } from '../services/statusService.js';
+import { toPublicUser } from '../services/statusService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import {
   createActivitiesForDm,
@@ -129,19 +129,16 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// 원시 SQL로 읽은 상태 컬럼(날짜는 문자열)을 공개 형태(customStatus, dnd)로 바꾼다.
+// 원시 SQL(jsonb)로 읽은 상태 컬럼은 UTC ISO 문자열이다. Date로 되돌려 공개용 뷰로 바꾼다.
 function withPublicStatus<T extends Record<string, any>>(user: T) {
-  const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = user;
-  return {
-    ...rest,
-    ...statusView({
-      customStatusEmoji: customStatusEmoji ?? null,
-      customStatusText: customStatusText ?? null,
-      customStatusExpiresAt: customStatusExpiresAt ? new Date(customStatusExpiresAt) : null,
-      dndUntil: dndUntil ? new Date(dndUntil) : null,
-      dndWithStatus: dndWithStatus === true,
-    }),
-  };
+  return toPublicUser({
+    ...user,
+    customStatusEmoji: user.customStatusEmoji ?? null,
+    customStatusText: user.customStatusText ?? null,
+    customStatusExpiresAt: user.customStatusExpiresAt ? new Date(user.customStatusExpiresAt) : null,
+    dndUntil: user.dndUntil ? new Date(user.dndUntil) : null,
+    dndWithStatus: user.dndWithStatus === true,
+  });
 }
 
 // GET /dms - List all DM conversations
@@ -188,8 +185,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       SELECT
         jsonb_build_object(
           'id', u.id, 'name', u.name, 'avatar', u.avatar, 'status', u.status,
+          -- 컬럼은 UTC 기준 timestamp라 서버·세션 시간대와 무관하게 UTC ISO로 내보낸다
           'customStatusEmoji', u."customStatusEmoji", 'customStatusText', u."customStatusText",
-          'customStatusExpiresAt', u."customStatusExpiresAt", 'dndUntil', u."dndUntil",
+          'customStatusExpiresAt', to_char(u."customStatusExpiresAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'dndUntil', to_char(u."dndUntil", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
           'dndWithStatus', u."dndWithStatus"
         ) AS "otherUser",
         jsonb_build_object(

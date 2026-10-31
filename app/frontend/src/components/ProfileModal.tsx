@@ -10,7 +10,7 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { AvatarCropModal } from './AvatarCropModal';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatTime } from '@/lib/i18n/format';
-import { isStatusActive, isDndActive } from '@/stores/useStatusStore';
+import { isStatusActive, isDndActive, useStatusStore } from '@/stores/useStatusStore';
 import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { toUserStatus } from '@/lib/types';
 
@@ -23,6 +23,8 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
   const { t } = useTranslation('settings');
   const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
+  // 만료 판단은 스토어의 주기 갱신 시각을 쓴다(열어 둔 동안에도 만료되면 사라진다)
+  const now = useStatusStore((s) => s.now);
   const isOwnProfile = !userId || userId === currentUser?.id;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,8 +139,8 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   fallback={profile.name}
                   size="lg"
                   status={toUserStatus(profile.status)}
-                  statusEmoji={isStatusActive(profile.customStatus, Date.now()) ? profile.customStatus?.emoji : null}
-                  dnd={isDndActive(profile.dnd, Date.now())}
+                  statusEmoji={isStatusActive(profile.customStatus, now) ? profile.customStatus?.emoji : null}
+                  dnd={isDndActive(profile.dnd, now)}
                 />
                 {isOwnProfile && isEditing && (
                   <button
@@ -230,7 +232,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                 </div>
 
                 {/* Custom status (05) */}
-                {isStatusActive(profile.customStatus, Date.now()) && (
+                {isStatusActive(profile.customStatus, now) && (
                   <div className="mb-4" data-testid="profile-custom-status">
                     <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.status')}</p>
                     <p

@@ -51,7 +51,7 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 | 이벤트 | 방향 | 대상 room | payload | 시점 |
 |---|---|---|---|---|
-| `user:status` | 서버 -> 클라이언트 | 본인(모든 탭)과, 같은 채널·DM·그룹 DM을 쓰는 사용자 각자의 `user:<id>` | `{ userId, customStatus: { emoji, text, expiresAt } \| null, dnd: { active, until } }` | `PUT/DELETE /users/me/custom-status`, `PUT/POST/DELETE /users/me/dnd`, 스케줄러가 만료된 상태·DND를 정리했을 때. 만료된 값은 null/꺼짐으로 계산해 보낸다. 방해금지 세부(상태에 묶인 여부)는 보내지 않는다 |
+| `user:status` | 서버 -> 클라이언트 | 본인(모든 탭)과, 같은 채널·DM·그룹 DM을 쓰는 사용자 각자의 `user:<id>` | `{ userId, customStatus: { emoji, text, expiresAt } \| null, dnd: { active, until } }` | `PUT/DELETE /users/me/custom-status`, `PUT/POST/DELETE /users/me/dnd`, 스케줄러가 만료된 상태·DND를 정리했을 때. 만료된 값은 null/꺼짐으로 계산해 보낸다. 타인에게는 `dnd`가 `{ active, until }`뿐이고, 본인의 모든 탭에는 `dnd.withStatus`(상태에 묶인 방해금지인지)가 더 붙는다. `PUT /users/me/custom-status`에서 `expiresAt`을 빼면 기존 만료를 유지하고 `null`이면 만료를 없앤다 |
 
 ## 기존 이벤트 (slawk에서 이어받음)
 

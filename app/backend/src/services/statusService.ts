@@ -6,6 +6,7 @@ import { logError } from '../utils/logger.js';
 // 만료는 저장된 시각으로 매번 계산한다(스케줄러가 늦어도 조회와 푸시 판단은 정확하다).
 
 export const MAX_STATUS_TEXT = 100;
+const BROADCAST_BATCH = 20;
 export const MAX_EMOJI_LENGTH = 50;
 export const MIN_FUTURE_MS = 60_000;
 export const MAX_FUTURE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -27,14 +28,12 @@ export interface StatusFields {
 }
 
 export interface CustomStatusView { emoji: string | null; text: string | null; expiresAt: Date | null }
-export interface DndView { active: boolean; until: Date | null }
+export interface DndView { active: boolean; until: Date | null; withStatus?: boolean }
 
-/** 제어문자와 HTML 태그를 지우고 공백을 정리한다. React가 출력을 이스케이프하지만 API 층에서도 한 번 거른다. */
+/** 제어문자를 지우고 공백을 정리한다. 원문은 보존하고, 출력 이스케이프는 렌더링(React)이 맡는다. */
 export function cleanStatusText(raw: string): string {
   return raw
     .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ')
-    .replace(/<[^>]*>/g, '')
-    .replace(/[<>]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -70,8 +69,19 @@ export function isDndActive(u: StatusFields, now = new Date()): boolean {
   return computeDnd(u, now).active;
 }
 
-export function statusView(u: StatusFields) {
-  return { customStatus: computeCustomStatus(u), dnd: computeDnd(u) };
+/** self이면 dnd.withStatus(상태에 묶인 DND인지)를 함께 낸다. 타인에게는 숨긴다. */
+export function statusView(u: StatusFields, self = false) {
+  const dnd = computeDnd(u);
+  return {
+    customStatus: computeCustomStatus(u),
+    dnd: self ? { ...dnd, withStatus: dnd.active && u.dndWithStatus } : dnd,
+  };
+}
+
+/** 상태 컬럼을 떼고 공개용 뷰(customStatus, dnd)를 붙인다. users.ts와 dms.ts가 같이 쓴다. */
+export function toPublicUser<T extends StatusFields>(user: T, opts: { self?: boolean } = {}) {
+  const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = user;
+  return { ...rest, ...statusView(user, opts.self === true) };
 }
 
 /** 푸시 억제 판단용. 사용자가 없으면 false(보낼 곳이 없다). */
@@ -87,7 +97,12 @@ export async function broadcastUserStatus(userId: number, fields: StatusFields):
   try {
     const targets = new Set<number>(await getSharedUsers(userId));
     targets.add(userId);
-    io.to([...targets].map((id) => `user:${id}`)).emit('user:status', { userId, ...statusView(fields) });
+    targets.delete(userId);
+    if (targets.size > 0) {
+      io.to([...targets].map((id) => `user:${id}`)).emit('user:status', { userId, ...statusView(fields) });
+    }
+    // 본인(모든 탭)에게는 묶인 DND 여부까지 보낸다
+    io.to(`user:${userId}`).emit('user:status', { userId, ...statusView(fields, true) });
   } catch (err) {
     logError('user:status broadcast failed', err);
   }
@@ -96,26 +111,37 @@ export async function broadcastUserStatus(userId: number, fields: StatusFields):
 export interface SetStatusInput {
   emoji: string | null;
   text: string | null;
-  expiresAt: Date | null;
+  /** undefined이면 기존 만료를 유지하고, null이면 만료를 없앤다 */
+  expiresAt: Date | null | undefined;
   pauseNotifications: boolean;
 }
 
 export async function setCustomStatus(userId: number, input: SetStatusInput): Promise<StatusFields> {
-  // 상태와 DND를 한 트랜잭션으로 바꾼다. 체크를 풀고 저장하면 상태에 묶여 있던 DND만 풀리고,
-  // 사용자가 따로 켠 DND(dndWithStatus=false)는 남는다.
+  // 읽고 쓰는 사이에 다른 요청이 끼지 않게 한 트랜잭션에서 처리한다.
   const user = await prisma.$transaction(async (tx) => {
-    if (!input.pauseNotifications) {
-      await tx.user.updateMany({ where: { id: userId, dndWithStatus: true }, data: { dndUntil: null } });
+    const now = new Date();
+    const cur = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: STATUS_SELECT });
+    const curStatusLive = computeCustomStatus(cur, now);
+    const expiresAt = input.expiresAt === undefined ? (curStatusLive?.expiresAt ?? null) : input.expiresAt;
+
+    let dnd: { dndUntil?: Date | null; dndWithStatus: boolean };
+    if (input.pauseNotifications) {
+      const manualActive = !cur.dndWithStatus && !!cur.dndUntil && cur.dndUntil > now;
+      // 수동 DND가 상태보다 늦게(또는 같이) 끝나면 수동 DND를 그대로 둔다. 상태가 더 늦거나 무기한이면 묶인 DND로 바꾼다.
+      const keepManual = manualActive && expiresAt !== null && expiresAt <= cur.dndUntil!;
+      dnd = keepManual ? { dndWithStatus: false } : { dndUntil: expiresAt, dndWithStatus: true };
+    } else {
+      // 체크를 풀면 상태에 묶여 있던 DND만 풀리고, 수동 DND는 남는다.
+      dnd = cur.dndWithStatus ? { dndUntil: null, dndWithStatus: false } : { dndWithStatus: false };
     }
+
     return tx.user.update({
       where: { id: userId },
       data: {
         customStatusEmoji: input.emoji,
         customStatusText: input.text,
-        customStatusExpiresAt: input.expiresAt,
-        ...(input.pauseNotifications
-          ? { dndUntil: input.expiresAt, dndWithStatus: true }
-          : { dndWithStatus: false }),
+        customStatusExpiresAt: expiresAt,
+        ...dnd,
       },
       select: STATUS_SELECT,
     });
@@ -194,14 +220,17 @@ export async function clearExpired(now = new Date()): Promise<number> {
     const ids = expiredDnd.map((u) => u.id);
     await prisma.user.updateMany({
       where: { id: { in: ids }, dndUntil: { lte: now } },
-      data: { dndUntil: null },
+      data: { dndUntil: null, dndWithStatus: false },
     });
     ids.forEach((id) => changed.add(id));
   }
 
   if (changed.size > 0) {
     const users = await prisma.user.findMany({ where: { id: { in: [...changed] } }, select: { id: true, ...STATUS_SELECT } });
-    for (const u of users) await broadcastUserStatus(u.id, u);
+    // 20명씩 병렬로 보낸다
+    for (let i = 0; i < users.length; i += BROADCAST_BATCH) {
+      await Promise.all(users.slice(i, i + BROADCAST_BATCH).map((u) => broadcastUserStatus(u.id, u)));
+    }
   }
   return changed.size;
 }

@@ -12,12 +12,11 @@ export function startScheduler(): NodeJS.Timeout {
 
   let isProcessing = false;
   const handle = setInterval(async () => {
+    // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.
+    void clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
     if (isProcessing) return;
     isProcessing = true;
     try {
-      // 만료된 커스텀 상태와 방해금지를 정리한다(예약 메시지가 없어도 매 틱 돈다).
-      await clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
-
       const due = await prisma.scheduledMessage.findMany({
         where: {
           sent: false,
