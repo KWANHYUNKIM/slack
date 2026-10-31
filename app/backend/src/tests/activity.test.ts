@@ -670,4 +670,48 @@ describe('Activity: mentions, thread replies, reactions', () => {
       expect(ws[0]).toBe('message:new');
     });
   });
+
+  describe('channel read clears old mentions', () => {
+    it('clears every old top-level mention even when the read cursor is already ahead; thread-reply mentions stay', async () => {
+      const ids: number[] = [];
+      for (let i = 0; i < 12; i++) ids.push((await post(alice, pubId, `old ${i} ${mention(bob)}`)).body.id);
+      const parent = ids[0];
+      const reply = await request(app).post(`/messages/${parent}/reply`).set(auth(alice)).send({ content: `in thread ${mention(bob)}` });
+      const latest = (await post(alice, pubId, 'latest')).body.id;
+      const channelsOf = async () => {
+        await settle();
+        return (await request(app).get('/channels').set(auth(bob))).body.find((c: any) => c.id === pubId);
+      };
+      expect((await channelsOf()).mentionCount).toBe(13);
+
+      // the read cursor is already at the newest message (e.g. read earlier by another client), ahead of every old mention
+      await prisma.channelRead.upsert({
+        where: { userId_channelId: { userId: bob.id, channelId: pubId } },
+        create: { userId: bob.id, channelId: pubId, lastReadMessageId: latest },
+        update: { lastReadMessageId: latest },
+      });
+      expect((await channelsOf()).mentionCount).toBe(13);
+
+      const bobSocket = await connect(bob);
+      const reads = collect(bobSocket, 'activity:read');
+
+      // the client reports a position that is not newer than the cursor (older page / stale last id)
+      const res = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: ids[3] });
+      expect(res.status).toBe(200);
+      await settle();
+
+      expect((await channelsOf()).mentionCount).toBe(1); // only the thread-reply mention remains
+      const left = await dbActivities({ userId: bob.id, readAt: null });
+      expect(left.map((a) => a.messageId)).toEqual([reply.body.id]);
+      await waitFor(() => reads, (e) => e.length >= 1);
+      expect(reads[0].ids).toHaveLength(12);
+
+      // reading up to the newest message is a no-op for the rest; the thread-reply mention is cleared by opening the thread
+      await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: latest });
+      expect((await channelsOf()).mentionCount).toBe(1);
+      await request(app).get(`/messages/${parent}/thread`).set(auth(bob));
+      expect((await channelsOf()).mentionCount).toBe(0);
+      bobSocket.disconnect();
+    });
+  });
 });

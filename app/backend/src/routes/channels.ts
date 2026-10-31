@@ -691,19 +691,18 @@ router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: A
     const currentRead = await prisma.channelRead.findUnique({
       where: { userId_channelId: { userId, channelId } },
     });
-    if (currentRead?.lastReadMessageId && messageId < currentRead.lastReadMessageId) {
-      res.json({ success: true });
-      return;
+    const cursor = currentRead?.lastReadMessageId ?? 0;
+    if (messageId > cursor) {
+      await prisma.channelRead.upsert({
+        where: { userId_channelId: { userId, channelId } },
+        create: { userId, channelId, lastReadMessageId: messageId },
+        update: { lastReadMessageId: messageId },
+      });
     }
 
-    await prisma.channelRead.upsert({
-      where: { userId_channelId: { userId, channelId } },
-      create: { userId, channelId, lastReadMessageId: messageId },
-      update: { lastReadMessageId: messageId },
-    });
-
-    // 읽은 위치까지의 멘션은 읽음 처리한다(사이드바 멘션 배지가 줄어든다)
-    await markChannelMentionsRead(userId, channelId, messageId).catch((err) => logError('Mark channel mentions read failed', err));
+    // 멘션은 읽은 위치와 기존 읽음 커서 중 더 앞선 곳까지 읽음 처리한다. 열 때 baseline이 커서를
+    // 최신으로 올려 두므로, 커서보다 뒤처진 요청이 와도 그 아래의 오래된 멘션은 지워져야 한다.
+    await markChannelMentionsRead(userId, channelId, Math.max(messageId, cursor)).catch((err) => logError('Mark channel mentions read failed', err));
 
     res.json({ success: true });
   } catch (error) {
