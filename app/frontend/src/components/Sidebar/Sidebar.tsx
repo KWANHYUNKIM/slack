@@ -19,6 +19,7 @@ import {
   MessagesSquare,
   Search,
   KeyRound,
+  Laptop,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -34,6 +35,7 @@ import { DesktopNotificationMenuItem } from '@/components/Sidebar/DesktopNotific
 import { getDesktop } from '@/lib/desktop';
 import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
+import { SessionsDialog } from '@/components/Profile/SessionsDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
@@ -70,6 +72,7 @@ export function Sidebar() {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showTokensDialog, setShowTokensDialog] = useState(false);
+  const [showSessionsDialog, setShowSessionsDialog] = useState(false);
   const myCustomStatus = useCustomStatus(user?.id);
   const myDndOn = useIsDnd(user?.id);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
@@ -215,6 +218,7 @@ export function Sidebar() {
       {/* 상태 대화상자는 아바타 메뉴 밖에 둔다(메뉴의 바깥 클릭 처리에 휘말려 닫히지 않게) */}
       {showStatusDialog && <StatusDialog onClose={() => setShowStatusDialog(false)} />}
       {showTokensDialog && <AccessTokensDialog onClose={() => setShowTokensDialog(false)} />}
+      {showSessionsDialog && <SessionsDialog onClose={() => setShowSessionsDialog(false)} />}
       {/* Nav Rail - 70px wide, darker purple */}
       <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
@@ -310,6 +314,10 @@ export function Sidebar() {
                 <Button variant="menu-item" data-testid="access-tokens-menu-item" onClick={() => { setShowAvatarMenu(false); setShowTokensDialog(true); }}>
                   <KeyRound className="h-4 w-4" />
                   {t('userMenu.accessTokens')}
+                </Button>
+                <Button variant="menu-item" data-testid="sessions-menu-item" onClick={() => { setShowAvatarMenu(false); setShowSessionsDialog(true); }}>
+                  <Laptop className="h-4 w-4" />
+                  {t('userMenu.sessions')}
                 </Button>
                 {/* 데스크톱 앱은 웹 푸시 대신 자체 알림 설정을 쓴다 */}
                 {getDesktop() ? (

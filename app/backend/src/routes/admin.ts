@@ -5,12 +5,14 @@ import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../types.js';
-import { getIO, kickUser } from '../websocket/index.js';
+import { getIO, kickUser, kickSession } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
 import { updateChannel } from '../services/channelService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
+import { sessionView } from './sessions.js';
 
 const router = Router();
 
@@ -184,6 +186,80 @@ router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => 
   }
 });
 
+// 대상 사용자 조회와 역할 비교. 문제가 있으면 응답을 보내고 null을 돌려준다(force-logout과 같은 규칙).
+async function loadSessionTarget(req: AuthRequest, res: Response): Promise<{ id: number; name: string } | null> {
+  const userId = parseIntParam(req.params.id);
+  if (!userId) {
+    res.status(400).json({ error: 'Invalid user ID' });
+    return null;
+  }
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, role: true } });
+  if (!target) {
+    res.status(404).json({ error: 'User not found' });
+    return null;
+  }
+  const actorRole = req.user!.role || 'MEMBER';
+  if (userId !== req.user!.userId && actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
+    res.status(403).json({ error: 'Cannot manage sessions of a user with equal or higher role' });
+    return null;
+  }
+  return { id: target.id, name: target.name };
+}
+
+// GET /admin/users/:id/sessions - 사용자의 로그인된 기기 목록
+router.get('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
+  try {
+    const target = await loadSessionTarget(req, res);
+    if (!target) return;
+    const rows = await listActiveSessions(target.id);
+    res.json(rows.map((s) => sessionView(s)));
+  } catch (error) {
+    logError('Admin list sessions error', error);
+    res.status(500).json({ error: 'Failed to list sessions' });
+  }
+});
+
+// DELETE /admin/users/:id/sessions/:sid - 기기 하나 로그아웃
+router.delete('/users/:id/sessions/:sid', async (req: AuthRequest, res: Response) => {
+  try {
+    const target = await loadSessionTarget(req, res);
+    if (!target) return;
+    const sid = String(req.params.sid);
+    const revoked = /^[0-9a-f]{32}$/.test(sid) ? await revokeSession(target.id, sid) : null;
+    if (!revoked) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+    kickSession(target.id, sid);
+    await writeAuditLog({
+      action: 'session.revoked', actorId: req.user!.userId, targetType: 'user', targetId: target.id,
+      targetName: target.name, details: `scope=admin; sid=${sid.slice(0, 8)}`,
+    });
+    res.json({ message: 'Session revoked' });
+  } catch (error) {
+    logError('Admin revoke session error', error);
+    res.status(500).json({ error: 'Failed to revoke session' });
+  }
+});
+
+// DELETE /admin/users/:id/sessions - 사용자의 모든 기기 로그아웃(세션만. 계정과 tokenVersion은 그대로)
+router.delete('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
+  try {
+    const target = await loadSessionTarget(req, res);
+    if (!target) return;
+    const ids = await revokeUserSessions(target.id);
+    ids.forEach((sid) => kickSession(target.id, sid));
+    await writeAuditLog({
+      action: 'session.revoked_all', actorId: req.user!.userId, targetType: 'user', targetId: target.id,
+      targetName: target.name, details: `scope=admin; count=${ids.length}`,
+    });
+    res.json({ revoked: ids.length });
+  } catch (error) {
+    logError('Admin revoke sessions error', error);
+    res.status(500).json({ error: 'Failed to revoke sessions' });
+  }
+});
+
 // POST /admin/users/:id/force-logout - 사용자의 모든 세션을 끊는다(토큰 버전 증가 + 소켓 종료). 계정은 그대로 둔다.
 router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) => {
   try {
@@ -208,7 +284,9 @@ router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) =
       return;
     }
 
+    // 두 방식을 함께 쓴다: tokenVersion은 sid 없는 옛 토큰까지 막고, 세션 폐기는 목록과 감사 기록을 정리한다.
     await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
+    const revokedSids = await revokeUserSessions(userId);
     invalidateTokenCache(userId);
     kickUser(userId);
 
@@ -218,6 +296,7 @@ router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) =
       targetType: 'user',
       targetId: userId,
       targetName: target.name,
+      details: `sessions=${revokedSids.length}`,
     });
 
     res.json({ message: 'User logged out' });

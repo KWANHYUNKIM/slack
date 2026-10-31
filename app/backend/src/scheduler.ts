@@ -7,6 +7,7 @@ import { clearExpired } from './services/statusService.js';
 import { processDueReminders } from './services/reminderService.js';
 import { getAuditRetentionDays } from './config.js';
 import { purgeOldAuditLogs } from './utils/auditLog.js';
+import { purgeSessions } from './services/sessionService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
@@ -156,10 +157,21 @@ export async function purgeAuditLogsIfDue(now: number = Date.now()): Promise<num
   }
 }
 
+const SESSION_PURGE_INTERVAL_MS = 60 * 60 * 1000; // 1시간에 한 번이면 충분하다(만료 판정은 요청 때 따로 한다)
+let nextSessionPurgeAt = 0;
+
+/** 틱마다 불러도 1시간에 한 번만 만료, 유휴 초과, 폐기된 세션 행을 지운다. 지운 행 수를 돌려준다. */
+export async function purgeSessionsIfDue(now: number = Date.now()): Promise<number> {
+  if (now < nextSessionPurgeAt) return 0;
+  nextSessionPurgeAt = now + SESSION_PURGE_INTERVAL_MS;
+  return purgeSessions(new Date(now));
+}
+
 export function startScheduler(): NodeJS.Timeout {
   console.log('Scheduler started — checking every 30s for due messages');
 
   const handle = setInterval(() => {
+    void purgeSessionsIfDue().catch((err) => logError('Scheduler: purgeSessions failed', err));
     void purgeAuditLogsIfDue().catch((err) => logError('Scheduler: purgeAuditLogs failed', err));
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.
     void clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));

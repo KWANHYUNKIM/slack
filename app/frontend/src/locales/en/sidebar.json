@@ -29,7 +29,8 @@
       "tomorrow": "Until tomorrow"
     },
     "pauseError": "Could not change notification pause. Please try again.",
-    "accessTokens": "Personal access tokens"
+    "accessTokens": "Personal access tokens",
+    "sessions": "Signed-in devices"
   },
   "sections": {
     "starred": "Starred",

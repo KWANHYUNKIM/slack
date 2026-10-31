@@ -1167,6 +1167,33 @@ export function adminUpdateUserRole(userId: number, role: 'ADMIN' | 'MEMBER' | '
   });
 }
 
+/** 로그인된 기기 한 개(E7). current는 이 요청을 보낸 기기다. */
+export interface UserSession {
+  id: string;
+  current: boolean;
+  userAgent: string | null;
+  ip: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+}
+
+export function listMySessions() {
+  return request<UserSession[]>('/users/me/sessions');
+}
+
+export function revokeMySession(id: string) {
+  return request<{ message: string; current: boolean }>(`/users/me/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export function revokeOtherSessions() {
+  return request<{ revoked: number }>('/users/me/sessions', { method: 'DELETE' });
+}
+
+export function adminForceLogout(userId: number) {
+  return request<{ message: string }>(`/admin/users/${userId}/force-logout`, { method: 'POST' });
+}
+
 export function adminDeactivateUser(userId: number) {
   return request<AdminUser>(`/admin/users/${userId}/deactivate`, { method: 'POST' });
 }

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 import { JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
+import { isSessionAlive } from '../services/sessionService.js';
 import { validateAccessToken, AccessTokenResult } from '../middleware/auth.js';
 import {
   checkChannelMembership,
@@ -191,6 +192,20 @@ export function initializeWebSocket(httpServer: HttpServer) {
       : [];
     const userMap = new Map(users.map(u => [u.id, u]));
 
+    // 세션(E7): 폐기, 최대 수명, 유휴 만료를 한 번에 조회해 확인한다. 소켓 연결 자체는 활동으로 치지 않는다.
+    const sids = [...new Set(
+      [...io.sockets.sockets.values()]
+        .map(s => (s as AuthenticatedSocket).user?.sid)
+        .filter((sid): sid is string => typeof sid === 'string')
+    )];
+    const sessions = sids.length > 0
+      ? await prisma.session.findMany({
+          where: { id: { in: sids } },
+          select: { id: true, userId: true, lastSeenAt: true, expiresAt: true, revokedAt: true },
+        })
+      : [];
+    const sessionMap = new Map(sessions.map(s => [s.id, s]));
+
     for (const [, socket] of io.sockets.sockets) {
       const authSocket = socket as AuthenticatedSocket;
       const token = authSocket.handshake?.auth?.token;
@@ -212,6 +227,15 @@ export function initializeWebSocket(httpServer: HttpServer) {
             authSocket.emit('error', { message: 'Session revoked' });
             authSocket.disconnect(true);
             continue;
+          }
+          const sid = authSocket.user?.sid;
+          if (sid) {
+            const session = sessionMap.get(sid);
+            if (!session || session.userId !== decoded.userId || !isSessionAlive(session)) {
+              authSocket.emit('error', { message: 'Session revoked' });
+              authSocket.disconnect(true);
+              continue;
+            }
           }
           // Refresh role on socket to reflect admin role changes
           if (authSocket.user && authSocket.user.role !== dbUser.role) {
@@ -760,6 +784,21 @@ export function isUserOnline(userId: number): boolean {
 }
 
 // Forcibly disconnect all sockets for a user (used by admin deactivation)
+/** 폐기된 세션(sid)의 소켓 연결만 끊는다. 같은 사용자의 다른 기기 연결은 그대로 둔다. */
+export function kickSession(userId: number, sid: string): void {
+  const io = getIO();
+  if (!io) return;
+  const userSockets = onlineUsers.get(userId);
+  if (!userSockets) return;
+  for (const socketId of [...userSockets]) {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket && (socket as AuthenticatedSocket).user?.sid === sid) {
+      socket.emit('error', { message: 'Session revoked' });
+      socket.disconnect(true);
+    }
+  }
+}
+
 export function kickUser(userId: number): void {
   const io = getIO();
   if (!io) return;
