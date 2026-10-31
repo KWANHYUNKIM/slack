@@ -210,7 +210,7 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
       }),
     ]);
 
-    await deleteActivitiesForMessage(messageId);
+    void deleteActivitiesForMessage(messageId);
 
     // Broadcast deletion to channel so other clients update in real-time
     const io = getIO();

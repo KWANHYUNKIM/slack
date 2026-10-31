@@ -10,7 +10,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { isUserOnline } from '../websocket/index.js';
+import { isUserOnline, presenceQueue } from '../websocket/index.js';
 
 // Avatar upload setup
 const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
@@ -349,14 +349,15 @@ router.put('/me/status', authMiddleware, async (req: AuthRequest, res: Response)
       status: z.enum(['online', 'away', 'busy', 'offline']),
     }).parse(req.body);
 
-    const user = await prisma.user.update({
+    // 소켓 연결·끊김이 남기는 online/offline 쓰기와 같은 큐에서 순서대로 쓴다(사용자가 고른 상태가 덮이지 않게).
+    const user = await presenceQueue.run(userId, () => prisma.user.update({
       where: { id: userId },
       data: { status },
       select: {
         id: true,
         status: true,
       },
-    });
+    }));
 
     res.json(user);
   } catch (error) {

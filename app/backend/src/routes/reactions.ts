@@ -141,7 +141,7 @@ router.delete('/:id/reactions/:emoji', authMiddleware, requireMessageAccess, asy
       where: { id: reaction.id },
     });
 
-    await removeReactionActivity({ actorId: userId, emoji, messageId });
+    void removeReactionActivity({ actorId: userId, emoji, messageId });
 
     // Broadcast to channel so other users see the removal in real-time
     const channelId = req.channelId;

@@ -18,6 +18,7 @@ import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
   processNewChannelMessage,
   syncActivitiesOnEdit,
@@ -39,15 +40,9 @@ interface FocusedView {
 }
 const userFocusedView = new Map<number, FocusedView | null>();
 
-// 사용자별 온라인/오프라인 DB 기록을 순서대로 실행한다(연결 핸들러가 기다리지 않으므로 순서가 뒤집히지 않게).
-const presenceWrites = new Map<number, Promise<void>>();
-function queuePresenceWrite(userId: number, write: () => Promise<void>): void {
-  const next = (presenceWrites.get(userId) ?? Promise.resolve()).then(write);
-  presenceWrites.set(userId, next);
-  void next.finally(() => {
-    if (presenceWrites.get(userId) === next) presenceWrites.delete(userId);
-  });
-}
+// 사용자별 status 쓰기(연결 시 online, 끊길 때 offline, PUT /users/me/status)를 들어온 순서대로 실행한다.
+// 연결 핸들러는 기다리지 않으므로 순서가 뒤집히지 않게 하고, 테스트는 settleBackgroundWork로 기다린다.
+export const presenceQueue = new KeyedQueue<number>();
 
 export function isUserViewingChannel(userId: number, channelId: number): boolean {
   const view = userFocusedView.get(userId);
@@ -269,25 +264,22 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
       // If this is the first connection, mark user online and broadcast
       if (onlineUsers.get(userId)!.size === 1) {
-        queuePresenceWrite(userId, async () => {
-          try {
-            await prisma.user.update({
-              where: { id: userId },
-              data: { status: 'online' },
-            });
+        presenceQueue.fire(userId, async () => {
+          // 사용자가 고른 상태(away, busy)는 덮지 않는다. 끊길 때 남긴 offline(또는 빈 값)만 online으로 바꾼다.
+          await prisma.user.updateMany({
+            where: { id: userId, OR: [{ status: 'offline' }, { status: null }] },
+            data: { status: 'online' },
+          });
 
-            // Broadcast presence to shared users
-            const sharedUsers = await getSharedUsers(userId);
-            for (const sharedUserId of sharedUsers) {
-              io.to(`user:${sharedUserId}`).emit('presence:update', {
-                userId,
-                status: 'online',
-              });
-            }
-          } catch (err) {
-            logError('Failed to update user presence', err);
+          // Broadcast presence to shared users
+          const sharedUsers = await getSharedUsers(userId);
+          for (const sharedUserId of sharedUsers) {
+            io.to(`user:${sharedUserId}`).emit('presence:update', {
+              userId,
+              status: 'online',
+            });
           }
-        });
+        }, 'Failed to update user presence');
       }
     }
 
@@ -540,7 +532,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
           }),
         ]);
 
-        await deleteActivitiesForMessage(data.messageId);
+        void deleteActivitiesForMessage(data.messageId);
 
         io.to(`channel:${message.channelId}`).emit('message:deleted', {
           messageId: data.messageId,
@@ -819,29 +811,25 @@ export function initializeWebSocket(httpServer: HttpServer) {
             userFocusedView.delete(userId);
 
             // 온라인 기록이 아직 진행 중이면 그 뒤에 쓴다(오프라인이 온라인에 덮이지 않게)
-            queuePresenceWrite(userId, async () => {
-              try {
-                await prisma.user.update({
-                  where: { id: userId },
-                  data: {
-                    status: 'offline',
-                    lastSeen: new Date(),
-                  },
-                });
+            presenceQueue.fire(userId, async () => {
+              await prisma.user.update({
+                where: { id: userId },
+                data: {
+                  status: 'offline',
+                  lastSeen: new Date(),
+                },
+              });
 
-                // Broadcast presence to shared users
-                const sharedUsers = await getSharedUsers(userId);
-                for (const sharedUserId of sharedUsers) {
-                  io.to(`user:${sharedUserId}`).emit('presence:update', {
-                    userId,
-                    status: 'offline',
-                    lastSeen: new Date(),
-                  });
-                }
-              } catch (err) {
-                logError('Failed to update user presence on disconnect', err);
+              // Broadcast presence to shared users
+              const sharedUsers = await getSharedUsers(userId);
+              for (const sharedUserId of sharedUsers) {
+                io.to(`user:${sharedUserId}`).emit('presence:update', {
+                  userId,
+                  status: 'offline',
+                  lastSeen: new Date(),
+                });
               }
-            });
+            }, 'Failed to update user presence on disconnect');
           }
         }
       }
