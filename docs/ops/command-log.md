@@ -104,3 +104,5 @@
 | 11:14 | PR #10 리뷰 10건 → dev-4. 결정: Google STUN 복귀 안 함(규칙 17). 배포는 자체 Docker 기준, STUN_PUBLIC_HOST, UDP 없는 환경은 자체 TURN | | |
 | 11:14 | PR #11 리뷰 10건 → dev-2. 허들 스토어 문자열은 dev-4와 파일이 겹쳐 '표시 쪽 준비 → 총괄이 연결'로 분리 | | |
 | 11:17 | PR #11 리뷰 반영 커밋 0a83299, PR 브랜치에서 tsc·eslint·i18n:check·icu 테스트 재확인 | formatRelative는 지시(floor)와 달리 trunc 채택: 과거 시각에 floor면 90초 전이 2분 전이 되므로 dev-2 판단이 맞음 | |
+| 11:22 | PR #10 리뷰 반영 커밋 27efd52. api.ts는 i18n 변경이 섞여 있어 getHuddleConfig 함수만 옮김. 브랜치에서 tsc와 stun·huddles 27 tests 재확인(dev5 DB) | | |
+| 11:23 | **실수**: docs/architecture/self-contained-assets.md를 STUN PR에도 넣음(PR #2와 add/add 충돌 위험) → STUN PR에서 제거, 문서 PR에 커밋 | | |

@@ -38,7 +38,7 @@
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
 | i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI | - | haiku | 대기 | 2h | | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | - | sonnet | 대기(우선) | 1.5h | | | docs/architecture/self-contained-assets.md |
-| feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | PR #10 (10:50~10:56) | 1.5h | | | Google STUN 제거 |
+| feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | PR #10 (리뷰 반영 완료) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | - | opus | 대기(01a 머지 후) | 2.5h | | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | - | sonnet | 대기 | 2h | | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | - | sonnet | 대기(06 이후) | 1.5h | | | |
@@ -47,3 +47,4 @@
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | - | haiku | 대기 | 45분 | | | PR #11 남은 이슈 |
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
 | test/flaky-activity: 전용 DB에서도 activity·security·dms 테스트 간헐 실패. 백그라운드 활동 생성 타이밍, settleBackgroundWork 누락 지점 조사 | - | opus | **높음** | 1.5h | | | CI 신뢰성 |
+| feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | - | haiku | 대기 | 20분 | | | PR #10 남은 이슈 |

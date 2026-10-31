@@ -21,6 +21,10 @@
 | 웹 푸시 | 브라우저 푸시 서비스(FCM, Mozilla, Apple) | 브라우저 표준이라 대체 불가 | 예외로 문서화. 데스크톱은 Electron 네이티브 알림으로 외부 의존 없음 |
 | `seed.ts`, 메시지 본문 링크 | github.com 등 | 샘플 데이터의 텍스트 | 해당 없음 |
 
+### 내장 STUN 운영 안내 (feat/builtin-stun)
+- 배포 대상은 자체 Docker라 UDP를 쓸 수 있다. 컨테이너에서 `STUN_PORT`(기본 3478/udp)를 열고, 클라이언트에 광고할 공인 호스트를 `STUN_PUBLIC_HOST`로 설정한다. production에서 이 값이 없으면 Host 헤더를 믿지 않고 STUN을 광고하지 않는다(경고 로그). 개발 환경은 요청 Host를 쓴다. 바인드에 실패하면(포트 사용 중 등) STUN은 광고하지 않는다.
+- **UDP를 열 수 없는 환경(Cloud Run 등)이나 서로 다른 NAT 뒤의 사용자끼리 통화해야 하면 자체 TURN 서버(coturn 등)를 직접 운영하고 `TURN_URLS`(쉼표 구분), `TURN_USERNAME`, `TURN_CREDENTIAL`로 설정한다.** 외부 공개 STUN/TURN은 규칙 17에 따라 쓰지 않는다.
+
 ## 3. 재발 방지
 - CI에 검사를 넣는다: `app/frontend/dist`와 `app/backend/src`에서 `https?://` 리터럴을 찾아 허용 목록 밖이면 실패시킨다(`scripts/check-external-urls.sh`).
 - 새 의존성을 리뷰할 때 런타임에 원격 fetch를 하는지 확인한다(PR 템플릿 보안 체크에 항목 추가).
