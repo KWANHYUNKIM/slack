@@ -37,14 +37,14 @@
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #8 남은 이슈 |
 | i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | dev-2 | sonnet | 완료(PR #11 머지) | 2.5h | | | docs/architecture/i18n.md |
 | i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
-| i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 진행 | 2h | 2026-11-01 00:07 | | |
+| i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 리베이스 충돌 해결 중 | 2h | 2026-11-01 00:07 | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
 | i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI | - | haiku | 대기 | 2h | | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | 완료(PR #49 머지) | 2h | 2026-10-31 23:23 | | |
-| mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | PR #68 리뷰 반영 중 | 1.5h | 2026-11-01 00:15 | | |
+| mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | 완료(PR #68 머지) | 1.5h | 2026-11-01 00:15 | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | - | haiku | 대기 | 45분 | | | PR #11 남은 이슈 |
