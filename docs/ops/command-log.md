@@ -176,3 +176,7 @@
 | 2026-10-31 22:24 | PR #30 리뷰 9건 → dev-2 반영 지시. 총괄 결정: 최근 방문은 사용자별 키·로그아웃 시 삭제, 목록 로드 완료 후에만 정리, Esc는 각 모달이 처리하고 전파 중단, 키 라벨 번역 키화 |
 | 2026-10-31 22:26 | 사용자 질문 "바로바로 실행해주면 안되나?" → 자원 규칙(스왑 91%, 한도 1) 초과 여부를 물었고 사용자가 "3명까지 허용" 선택. CLAUDE.md 4장 예외로 동시 3명 운영: dev-2 06 리뷰 반영, dev-3 07-message-permalink, dev-4 08-search-v2(fix/search-nfc 흡수). 무거운 작업(vite·빌드·전체 스위트) 금지 유지, 디스크 5GB 미만이나 정지 단계면 즉시 축소 |
 | 2026-10-31 22:30 | PR #30 머지(16564f2), main에서 frontend tsc·switcher:test 26/26 확인, worktree 제거. 배정: dev-5 09-reminders(sonnet, 스키마 20261031170000_대). 사용자 허용 3명(dev-3 07, dev-4 08, dev-5 09). 10은 07 머지 후 |
+| 2026-10-31 22:35 | dev-3 07 완료 검토: main 리베이스 중 06과 AppLayout.tsx·package.json 충돌 → 양쪽 유지로 해결, tsc·eslint·i18n·외부 URL·permalink 8/8·7/7·switcher 26/26 재확인 → PR #32, /code-review medium |
+| 2026-10-31 22:37 | PR #32 리뷰 9건 → dev-3 반영 지시. 총괄 결정: around 404 변경 되돌림(퍼말링크 검증은 locate만), 라우터 navigate 사용, canReadChannel 헬퍼 공용화, 답글 남은 삭제 부모 링크는 200+deleted, 클립보드 폴백 |
+| 2026-10-31 22:40 | dev-4 08 완료 검토: main 리베이스 중 AppLayout 충돌(06 import와 SearchPage) 양쪽 유지 해결, tsc·eslint·i18n·외부 URL·search-query 23·search 27·dm-groups 23 통과(보고된 dm-groups 1건 실패는 재현 안 됨) → PR #33, /code-review medium |
+| 2026-10-31 22:41 | dev-5 09 완료 검토: main 리베이스, tsc·eslint·i18n·외부 URL·reminders 20/20·remind:test 8/8 → PR #34, /code-review(10건). PR #32(07) 리뷰 반영 확인 후 머지(05feb11). PR #33(08) 리뷰 10건 + 기존 e2e 검색 스펙 수정을 dev-4에, PR #34(09) 리뷰 10건(공용 토스트 통일, 발송 경쟁·재시도, 푸시 번역)을 dev-5에 지시. 07 머지로 10 선행 조건 충족 → dev-3 10-unread-divider 배정. 사용자 허용 3명 운영 |
