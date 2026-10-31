@@ -497,7 +497,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     const channel = get().channels.find((ch) => ch.id === channelId);
     if (channel?.isMember) {
       get().markChannelAsRead(channelId);
-      api.markChannelReadBaseline(channelId).catch(() => {});
+      // 읽음 기준선(baseline)은 MessageList가 안 읽음 기준점을 받은 뒤에 부른다(순서가 바뀌면 기준점이 덮인다)
     }
   },
 

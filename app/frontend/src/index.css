@@ -71,6 +71,11 @@
   --color-slack-pin-indicator: #E8912D;
   --color-slack-code-inline: #E01E5A;
 
+  /* Unread divider / new messages bar */
+  --color-slack-unread: #CD2553;
+  --color-slack-unread-bar: #007a5a;
+  --color-slack-unread-text: #FFFFFF;
+
   /* Mentions */
   --color-slack-mention: rgba(29, 155, 209, 0.1);
   --color-slack-mention-hover: rgba(29, 155, 209, 0.2);

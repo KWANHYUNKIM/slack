@@ -291,5 +291,12 @@
     "notFound": "이 메시지를 찾을 수 없거나 볼 권한이 없습니다",
     "goHome": "홈으로 가기",
     "copyManually": "자동으로 복사하지 못했습니다. 이 링크를 직접 복사하세요: {url}"
+  },
+  "unread": {
+    "divider": "새 메시지",
+    "newMessagesBar": "새 메시지 {count, plural, other {#}}개",
+    "newMessagesBarAtLeast": "새 메시지 {count, plural, other {#}}개 이상",
+    "markRead": "읽음으로 표시",
+    "jumpFailed": "안 읽음 위치를 불러오지 못했습니다"
   }
 }
