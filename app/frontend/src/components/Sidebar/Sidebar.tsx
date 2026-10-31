@@ -17,6 +17,7 @@ import {
   Shield,
   Inbox,
   MessagesSquare,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -40,6 +41,8 @@ import { getChannels, createDMGroup } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import type { AuthUser } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
+import { useSwitcherStore } from '@/stores/useSwitcherStore';
+import { sidebarSections } from '@/lib/switcher';
 // HuddleBar moved to global render in App.tsx
 
 export function Sidebar() {
@@ -52,6 +55,7 @@ export function Sidebar() {
   const { openProfile } = useProfileStore();
   const { permission, isSubscribed, subscribe, unsubscribe } = useNotificationStore();
   const closeSidebar = useMobileStore((s) => s.closeSidebar);
+  const openSwitcher = useSwitcherStore((s) => s.openSwitcher);
   const sidebarCollapsed = useChannelStore((s) => s.sidebarCollapsed);
   const toggleSection = useChannelStore((s) => s.toggleSection);
   const channelsExpanded = !sidebarCollapsed.channels;
@@ -195,15 +199,8 @@ export function Sidebar() {
   };
 
   const collator = getCollator(i18n.language);
-  const sortByName = (a: Channel, b: Channel) => collator.compare(a.name, b.name);
-  const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember).sort(sortByName);
-  const starredDMs = directMessages.filter((dm) => dm.isStarred);
-  const starredGroups = groupDMs.filter((g) => g.isStarred);
-  const plainGroups = groupDMs.filter((g) => !g.isStarred);
-  // 별표를 단 항목은 즐겨찾기 섹션으로 옮겨 간다
-  const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
-  const privateChannels = channels.filter((ch) => ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
-  const plainDMs = directMessages.filter((dm) => !dm.isStarred);
+  const { starredChannels, starredDMs, starredGroups, publicChannels, privateChannels, plainDMs, plainGroups } =
+    sidebarSections({ channels, directMessages, groupDMs }, collator.compare);
   const sectionToggleLabel = (expanded: boolean, label: string) =>
     expanded ? t('sections.collapse', { section: label }) : t('sections.expand', { section: label });
 
@@ -333,6 +330,21 @@ export function Sidebar() {
             <SquarePen className="h-4 w-4" />
           </button>
         </div>
+
+        {/* 대화 찾기: 빠른 전환기(06)를 연다 */}
+        <button
+          type="button"
+          data-testid="sidebar-find-conversation"
+          onClick={() => {
+            closeSidebar();
+            openSwitcher();
+          }}
+          aria-label={t('findConversation')}
+          className="mx-3 mt-2 flex h-8 items-center gap-2 rounded-md bg-white/10 px-3 text-[14px] text-white/70 hover:bg-white/20"
+        >
+          <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="truncate">{t('findConversation')}</span>
+        </button>
 
         {/* Scrollable Content - 0 0 16px 0 padding */}
         <div className="flex-1 overflow-y-auto pb-4">

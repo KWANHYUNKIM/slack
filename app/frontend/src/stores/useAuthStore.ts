@@ -5,6 +5,7 @@ import { clearDownloadToken } from '@/lib/api';
 import { disconnectSocket } from '@/lib/socket';
 import { toUserStatus, type User } from '@/lib/types';
 import { useNotificationStore } from './useNotificationStore';
+import { useSwitcherStore } from './useSwitcherStore';
 
 let storageListenerRegistered = false;
 
@@ -49,6 +50,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Unsubscribe from push notifications before clearing auth
     useNotificationStore.getState().unsubscribe().catch(() => {});
     localStorage.removeItem('token');
+    // 최근 방문(06)은 사용자별 기록이라 로그아웃할 때 현재 사용자의 것을 지운다
+    useSwitcherStore.getState().clearRecents();
     clearDownloadToken();
     disconnectSocket();
     // Hard reload to wipe all in-memory Zustand state (messages, DMs, channels, bookmarks)

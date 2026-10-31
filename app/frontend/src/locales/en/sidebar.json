@@ -82,5 +82,6 @@
     "cancel": "Cancel",
     "expiresAt": "Clears at {time}",
     "saveError": "Could not save your status. Please try again."
-  }
+  },
+  "findConversation": "Find a conversation"
 }

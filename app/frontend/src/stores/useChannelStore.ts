@@ -36,6 +36,10 @@ interface ChannelState {
   dmScrollToMessageId: number | null;
   isLoading: boolean;
   loadError: string | null;
+  /** 목록별 첫 로드 성공 여부(06 최근 방문 정리는 셋 다 true이고 loadError가 없을 때만) */
+  channelsLoaded: boolean;
+  dmsLoaded: boolean;
+  groupsLoaded: boolean;
   /** Per-user collapsed state of the sidebar sections (saved on the server) */
   sidebarCollapsed: api.SidebarCollapsed;
 
@@ -99,6 +103,9 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   dmScrollToMessageId: null,
   isLoading: false,
   loadError: null,
+  channelsLoaded: false,
+  dmsLoaded: false,
+  groupsLoaded: false,
   sidebarCollapsed: { starred: false, channels: false, dms: false },
   starredDmIds: new Set<number>(),
 
@@ -193,7 +200,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         for (const dm of dms) {
           if (dm.isStarred) ids.add(dm.userId); else ids.delete(dm.userId);
         }
-        return { directMessages: dms, starredDmIds: ids };
+        return { directMessages: dms, starredDmIds: ids, dmsLoaded: true };
       });
     } catch {
       set({ loadError: t('channels:errors.loadConversations') });
@@ -203,7 +210,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   fetchGroupDMs: async () => {
     try {
       const groups = await api.getDMGroups();
-      set({ groupDMs: groups.map(toGroupDM) });
+      set({ groupDMs: groups.map(toGroupDM), groupsLoaded: true });
     } catch {
       set({ loadError: t('channels:errors.loadConversations') });
     }
@@ -303,6 +310,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       set({
         channels,
         isLoading: false,
+        channelsLoaded: true,
       });
     } catch {
       set({ isLoading: false, loadError: t('channels:errors.loadChannels') });

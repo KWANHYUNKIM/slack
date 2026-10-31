@@ -26,5 +26,48 @@
   "dates": {
     "today": "오늘",
     "yesterday": "어제"
+  },
+  "quickSwitcher": {
+    "title": "빠른 전환",
+    "inputLabel": "대화로 이동",
+    "placeholder": "채널이나 대화로 이동",
+    "recent": "최근 방문",
+    "results": "검색 결과",
+    "clearRecent": "기록 지우기",
+    "listLabel": "대화 목록",
+    "noResults": "일치하는 대화가 없습니다",
+    "starred": "별표",
+    "unread": "안 읽음",
+    "dnd": "방해금지",
+    "footer": "{keys}로 열기. 위·아래로 이동, Enter로 선택, Esc로 닫기.",
+    "open": "이동…",
+    "kind": {
+      "channel": "채널",
+      "dm": "다이렉트 메시지",
+      "group": "그룹 메시지"
+    }
+  },
+  "shortcuts": {
+    "title": "키보드 단축키",
+    "groups": {
+      "navigation": "이동",
+      "general": "일반"
+    },
+    "items": {
+      "switcher": "빠른 전환 열기",
+      "prevChannel": "이전 대화",
+      "nextChannel": "다음 대화",
+      "prevUnread": "이전 안 읽은 대화",
+      "nextUnread": "다음 안 읽은 대화",
+      "help": "키보드 단축키 보기",
+      "closeTop": "빠른 전환이나 이 대화상자 닫기"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
   }
 }
