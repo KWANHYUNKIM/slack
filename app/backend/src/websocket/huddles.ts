@@ -117,6 +117,7 @@ function endHuddle(io: Server, onlineUsers: Map<number, Set<string>>, huddleId: 
   const senderId = endedBy || huddle.userA.userId;
   const receiverId = senderId === huddle.userA.userId ? huddle.userB.userId : huddle.userA.userId;
 
+  // DLP 예외: 사용자가 쓴 글이 아니라 서버가 만든 허들 시스템 DM이라 검사하지 않는다
   prisma.directMessage.create({
     data: {
       content: `[huddle:ended:${durationStr}]`,
@@ -184,6 +185,7 @@ async function connectHuddle(
 
   // Create "huddle started" DM
   try {
+    // DLP 예외: 사용자가 쓴 글이 아니라 서버가 만든 허들 시스템 DM이라 검사하지 않는다
     const dm = await prisma.directMessage.create({
       data: {
         content: '[huddle:started]',
@@ -346,6 +348,7 @@ export function registerHuddleHandlers(
 
     // Create DM for the invite
     try {
+      // DLP 예외: 사용자가 쓴 글이 아니라 서버가 만든 허들 시스템 DM이라 검사하지 않는다
       const dm = await prisma.directMessage.create({
         data: {
           content: '[huddle:invite]',

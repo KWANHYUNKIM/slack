@@ -221,7 +221,8 @@
     "sendAt": "보낼 시간:",
     "edit": "수정",
     "sendNow": "지금 보내기",
-    "cancel": "예약 취소"
+    "cancel": "예약 취소",
+    "failedDlp": "데이터 보호 규칙({rule})에 걸려 보내지 못했습니다. 삭제한 뒤 새로 작성해 주세요."
   },
   "thread": {
     "replyCount": "답글 {count}개"
@@ -253,7 +254,8 @@
     "sendFailed": "메시지를 보내지 못했습니다. 다시 시도해 주세요.",
     "pushNotConfigured": "서버에 푸시 알림이 설정되어 있지 않습니다",
     "serviceWorkerUnavailable": "서비스 워커를 사용할 수 없습니다",
-    "subscribeFailed": "알림 구독을 등록하지 못했습니다"
+    "subscribeFailed": "알림 구독을 등록하지 못했습니다",
+    "editFailed": "수정을 저장하지 못했습니다. 다시 시도해 주세요."
   },
   "details": {
     "title": "채널 상세",

@@ -3,6 +3,7 @@ import app from './app.js';
 import { initializeWebSocket } from './websocket/index.js';
 import { startScheduler } from './scheduler.js';
 import prisma from './db.js';
+import { ensureBuiltinRules } from './services/dlpService.js';
 import { getStunConfig, getTotpEncryptionKey } from './config.js';
 import { startStunServer, StunServer } from './stun/stunServer.js';
 
@@ -24,6 +25,9 @@ const io = initializeWebSocket(server);
 
 // Start the scheduled message processor
 const schedulerHandle = startScheduler();
+
+// 데이터 유출 방지의 내장 규칙 행을 첫 요청 전에 보장한다(실패해도 탐지는 기본값으로 동작한다)
+void ensureBuiltinRules();
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

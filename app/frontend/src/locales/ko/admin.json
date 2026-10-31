@@ -9,7 +9,8 @@
       "webhooks": "웹훅",
       "audit": "감사 로그",
       "retention": "데이터 보존",
-      "security": "보안"
+      "security": "보안",
+      "dlp": "DLP"
     }
   },
   "channels": {
@@ -165,7 +166,8 @@
       "auditLog": "감사 로그",
       "mcpTool": "MCP 도구",
       "workspace": "워크스페이스",
-      "file": "파일"
+      "file": "파일",
+      "dlpRule": "DLP 규칙"
     },
     "action": {
       "authLogin": "로그인",
@@ -204,7 +206,14 @@
       "mfaDisabled": "2단계 인증 끔",
       "mfaRecoveryUsed": "복구 코드 사용",
       "mfaResetByAdmin": "관리자가 2단계 인증 초기화",
-      "mfaPolicyChanged": "2단계 인증 필수 정책 변경"
+      "mfaPolicyChanged": "2단계 인증 필수 정책 변경",
+      "dlpBlocked": "DLP로 메시지 차단",
+      "dlpWarned": "DLP 경고",
+      "dlpRuleCreated": "DLP 규칙 추가",
+      "dlpRuleUpdated": "DLP 규칙 변경",
+      "dlpRuleDeleted": "DLP 규칙 삭제",
+      "dlpRuleTimeout": "DLP 규칙 시간 초과",
+      "dlpRuleAutoDisabled": "DLP 규칙 자동 꺼짐"
     },
     "filters": {
       "allActions": "모든 작업",
@@ -297,6 +306,75 @@
     "errors": {
       "loadFailed": "보안 설정을 불러오지 못했습니다.",
       "saveFailed": "보안 설정을 저장하지 못했습니다."
+    }
+  },
+  "dlp": {
+    "title": "데이터 유출 방지",
+    "description": "메시지에서 카드 번호 같은 민감한 패턴을 찾아냅니다. 차단 규칙은 메시지를 저장하지 않고, 경고 규칙은 저장하되 감사 로그에 기록합니다. 로그에는 메시지 내용을 남기지 않습니다.",
+    "loadError": "DLP 규칙을 불러오지 못했습니다",
+    "saveError": "규칙을 저장하지 못했습니다",
+    "toggleError": "규칙을 바꾸지 못했습니다",
+    "deleteError": "규칙을 삭제하지 못했습니다",
+    "testError": "패턴을 테스트하지 못했습니다",
+    "builtinBadge": "기본 제공",
+    "builtinPattern": "기본 제공 탐지기",
+    "builtin": {
+      "credit_card": "신용카드 번호",
+      "kr_rrn": "주민등록번호",
+      "aws_access_key": "AWS 액세스 키",
+      "private_key": "개인 키"
+    },
+    "action": {
+      "BLOCK": "차단",
+      "WARN": "경고"
+    },
+    "columns": {
+      "name": "규칙",
+      "pattern": "패턴",
+      "action": "동작",
+      "enabled": "상태"
+    },
+    "on": "켜짐",
+    "off": "꺼짐",
+    "toggleLabel": "{name} 켜기/끄기",
+    "edit": "수정",
+    "editLabel": "{name} 수정",
+    "delete": "삭제",
+    "deleteLabel": "{name} 삭제",
+    "form": {
+      "createHeading": "규칙 추가",
+      "editHeading": "규칙 수정",
+      "name": "이름",
+      "pattern": "패턴(정규식)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "동작",
+      "add": "규칙 추가",
+      "save": "저장",
+      "cancel": "취소",
+      "hint": "최대 {max}자입니다. (a+)+ 같은 중첩 반복, 역참조, 너무 큰 반복 횟수는 받지 않습니다."
+    },
+    "patternProblem": {
+      "empty": "패턴을 입력하세요.",
+      "tooLong": "패턴이 너무 깁니다.",
+      "invalid": "올바른 정규식이 아닙니다.",
+      "backreference": "역참조는 사용할 수 없습니다.",
+      "nestedQuantifier": "중첩 반복은 검사를 매우 느리게 만들 수 있어 사용할 수 없습니다.",
+      "repeatTooLarge": "반복 횟수가 너무 큽니다(최대 200)."
+    },
+    "test": {
+      "heading": "패턴 테스트",
+      "hint": "아무것도 저장되지 않습니다. 위에 패턴을 입력하거나 저장된 규칙을 고른 뒤 예시 글을 입력하세요.",
+      "source": "테스트할 패턴",
+      "sourceDraft": "위 입력란의 패턴",
+      "sample": "예시 글",
+      "run": "테스트",
+      "matched": "일치합니다. 이 글은 걸러집니다.",
+      "notMatched": "일치하지 않습니다.",
+      "timedOut": "검사가 너무 오래 걸려 중단했습니다. 패턴을 단순하게 바꿔 주세요."
+    },
+    "confirmDelete": {
+      "title": "이 규칙을 삭제할까요?",
+      "message": "\"{name}\" 규칙이 삭제되어 더 이상 검사하지 않습니다."
     }
   }
 }

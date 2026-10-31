@@ -1,3 +1,5 @@
+import { ServiceError, serviceErrorBody } from '../services/messageService.js';
+import { enforceDlp, recordDlpWarnings } from '../services/dlpService.js';
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import crypto from 'crypto';
@@ -196,6 +198,9 @@ router.post('/:token', webhookSendLimiter, async (req: Request<{ token: string }
       return;
     }
 
+    // 웹훅으로 들어오는 글도 같은 DLP 검사를 거친다(생성자 이름으로 올라가므로 생성자 기준으로 기록)
+    const dlpWarned = await enforceDlp(webhook.createdBy, content, 'message');
+
     // Create message attributed to webhook creator
     const finalMessage = await prisma.$transaction(async (tx) => {
       const msg = await tx.message.create({
@@ -218,6 +223,8 @@ router.post('/:token', webhookSendLimiter, async (req: Request<{ token: string }
       });
     });
 
+    if (finalMessage) recordDlpWarnings(webhook.createdBy, 'message', finalMessage.id, dlpWarned);
+
     // Broadcast via WebSocket
     const io = getIO();
     if (io && finalMessage) {
@@ -231,6 +238,10 @@ router.post('/:token', webhookSendLimiter, async (req: Request<{ token: string }
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Incoming webhook error', error);

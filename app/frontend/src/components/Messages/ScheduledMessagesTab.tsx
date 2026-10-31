@@ -11,6 +11,8 @@ import {
   type ApiScheduledMessage,
 } from '@/lib/api';
 import { renderMessageContent } from '@/lib/renderMessageContent';
+import { apiErrorMessage, dlpRuleLabel } from '@/lib/apiErrors';
+import { getSocket } from '@/lib/socket';
 import { Button } from '@/components/ui/button';
 
 export function ScheduledMessagesTab() {
@@ -37,6 +39,16 @@ export function ScheduledMessagesTab() {
     loadMessages();
   }, [loadMessages]);
 
+  // 발송 시점에 막힌 예약은 서버가 알려 준다. 목록을 다시 읽어 실패 상태로 보여 준다.
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    socket.on('scheduled:failed', loadMessages);
+    return () => {
+      socket.off('scheduled:failed', loadMessages);
+    };
+  }, [loadMessages]);
+
   const handleCancel = async (id: number) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
     setActionError(null);
@@ -53,9 +65,9 @@ export function ScheduledMessagesTab() {
     setActionError(null);
     try {
       await sendScheduledMessageNow(id);
-    } catch {
+    } catch (err) {
       loadMessages();
-      setActionError(t('messages:scheduled.sendFailed'));
+      setActionError(apiErrorMessage(err, 'messages:scheduled.sendFailed'));
     }
   };
 
@@ -86,8 +98,8 @@ export function ScheduledMessagesTab() {
       const updated = await editScheduledMessage(editingId, data);
       setMessages((prev) => prev.map((m) => (m.id === editingId ? updated : m)));
       setEditingId(null);
-    } catch {
-      setActionError(t('messages:scheduled.saveFailed'));
+    } catch (err) {
+      setActionError(apiErrorMessage(err, 'messages:scheduled.saveFailed'));
     }
   };
 
@@ -172,10 +184,17 @@ export function ScheduledMessagesTab() {
                       {formatDateTime(msg.scheduledAt)}
                     </span>
                   </div>
+                  {msg.failedAt && (
+                    <p role="alert" className="mt-1.5 text-[12px] text-slack-error">
+                      {t('messages:scheduled.failedDlp', { rule: dlpRuleLabel(msg.failReason ?? '') })}
+                    </p>
+                  )}
                 </div>
 
                 {/* Hover actions */}
                 <div className="flex-shrink-0 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  {!msg.failedAt && (
+                  <>
                   <button
                     onClick={() => openEdit(msg)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"
@@ -190,6 +209,8 @@ export function ScheduledMessagesTab() {
                   >
                     <Send className="h-3.5 w-3.5 text-slack-secondary rtl:-scale-x-100" />
                   </button>
+                  </>
+                  )}
                   <button
                     onClick={() => handleCancel(msg.id)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"

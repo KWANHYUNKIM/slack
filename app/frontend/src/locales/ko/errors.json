@@ -59,6 +59,11 @@
     "MFA_SETUP_NOT_STARTED": "설정을 처음부터 다시 시작하세요.",
     "MFA_ENROLLMENT_REQUIRED": "조직에서 2단계 인증을 필수로 정했습니다.",
     "MFA_CODE_REQUIRED": "2단계 인증 코드를 입력하세요.",
-    "MFA_REQUIRED_BY_POLICY": "조직에서 2단계 인증을 필수로 정해 끌 수 없습니다. 기기를 잃어버렸다면 관리자에게 초기화를 요청하세요."
+    "MFA_REQUIRED_BY_POLICY": "조직에서 2단계 인증을 필수로 정해 끌 수 없습니다. 기기를 잃어버렸다면 관리자에게 초기화를 요청하세요.",
+    "DLP_BLOCKED": "데이터 보호 규칙({rule})에 걸려 메시지를 보내지 못했습니다. 민감한 내용을 지우고 다시 시도해 주세요.",
+    "DLP_PATTERN_INVALID": "사용할 수 없는 패턴입니다.",
+    "DLP_RULE_NAME_TAKEN": "같은 이름의 규칙이 이미 있습니다.",
+    "DLP_RULE_BUILTIN": "기본 제공 규칙은 켜고 끄기만 할 수 있습니다.",
+    "DLP_RULE_LIMIT": "규칙 개수 한도에 도달했습니다. 먼저 하나를 삭제하세요."
   }
 }

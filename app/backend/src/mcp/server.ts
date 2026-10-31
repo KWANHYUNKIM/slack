@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { MAX_QUERY_LENGTH } from '../utils/searchQuery.js';
-import { ServiceError, messageContentSchema, reactionEmojiSchema } from '../services/messageService.js';
+import { ServiceError, DlpBlockedError, messageContentSchema, reactionEmojiSchema } from '../services/messageService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { logError } from '../utils/logger.js';
 import {
@@ -76,7 +76,8 @@ async function runTool(
       result = ok(data);
     } catch (error) {
       if (error instanceof ToolAccessError || error instanceof ServiceError) {
-        result = fail(error.message);
+        // DLP로 막힌 쓰기는 어떤 규칙인지 알려 준다(Claude가 내용을 고쳐 다시 보낼 수 있게). 일치한 문자열은 담지 않는다.
+        result = fail(error instanceof DlpBlockedError ? `${error.message}: ${error.rule}` : error.message);
       } else {
         logError(`MCP tool ${tool} error`, error);
         result = fail('Internal error');

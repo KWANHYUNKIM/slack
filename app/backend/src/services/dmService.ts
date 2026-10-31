@@ -7,6 +7,7 @@ import { logError } from '../utils/logger.js';
 import { ServiceError } from './messageService.js';
 import { InvalidFileIdsError, emitToGroup } from './dmGroupService.js';
 import { sendPushToUser } from './pushService.js';
+import { enforceDlp, recordDlpWarnings } from './dlpService.js';
 import { toPublicUser } from './statusService.js';
 import {
   createActivitiesForDm,
@@ -62,6 +63,7 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
   const fromUserId = sender.userId;
   if (!(await canSendDm(sender, toUserId))) throw new ServiceError(400, UNABLE_TO_SEND);
   const { content, fileIds } = input;
+  const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
 
   const dm = await prisma.$transaction(async (tx) => {
     const created = await tx.directMessage.create({
@@ -85,6 +87,8 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
   });
 
+  recordDlpWarnings(fromUserId, 'direct_message', dm.id, dlpWarned);
+
   // Broadcast via WebSocket so the recipient sees the DM in real-time
   const io = getIO();
   if (io) {
@@ -102,6 +106,64 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
   // dm:new 뒤에 활동 생성(await하지 않는다)
   void createActivitiesForDm(dm);
   return dm;
+}
+
+/**
+ * 1:1 DM 스레드 답글 전송의 단일 경로(그룹 DM의 답글은 sendGroupMessage). 답글은 같은 대화(보낸 사람·받는 사람 쌍)로 가고,
+ * 보낸 사람과 받는 사람의 user 룸에 dm:reply를 보낸다. 규칙은 sendDirectMessage와 같다.
+ */
+export async function sendDirectReply(sender: DmSender, parentDm: DirectMessage, input: SendDirectMessageInput) {
+  const fromUserId = sender.userId;
+  const parentId = parentDm.id;
+  const toUserId = parentDm.fromUserId === fromUserId ? parentDm.toUserId : parentDm.fromUserId;
+  if (toUserId === null) throw new ServiceError(400, UNABLE_TO_SEND);
+  if (!(await canSendDm(sender, toUserId))) throw new ServiceError(400, UNABLE_TO_SEND);
+  const { content, fileIds } = input;
+  const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
+
+  const reply = await prisma.$transaction(async (tx) => {
+    const created = await tx.directMessage.create({
+      data: {
+        content,
+        fromUserId,
+        toUserId,
+        threadId: parentId,
+        // Self-DMs are auto-read
+        ...(fromUserId === toUserId && { readAt: new Date() }),
+      },
+    });
+
+    if (fileIds && fileIds.length > 0) {
+      const updated = await tx.file.updateMany({
+        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        data: { dmId: created.id },
+      });
+      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+    }
+
+    return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
+  });
+
+  recordDlpWarnings(fromUserId, 'direct_message', reply.id, dlpWarned);
+
+  // Broadcast to both users so the thread updates in real-time
+  const io = getIO();
+  if (io) {
+    const payload = { ...reply, threadId: parentId };
+    io.to(`user:${fromUserId}`).emit('dm:reply', payload);
+    if (fromUserId !== toUserId) io.to(`user:${toUserId}`).emit('dm:reply', payload);
+  }
+
+  // Push notification for DM thread reply (fire-and-forget)
+  if (fromUserId !== toUserId && !isUserOnline(toUserId)) {
+    sendPushToUser(toUserId, {
+      titleKey: 'dmThread', sender: reply.fromUser?.name, content, plainBody: true,
+      url: `/d/${fromUserId}`,
+    }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
+  }
+
+  void createActivitiesForDm({ ...reply, threadId: parentId });
+  return reply;
 }
 
 /** 수정·삭제 공통 규칙: 지워진 메시지는 없는 것, 작성자만, 그룹 DM은 현재 멤버만 */
@@ -125,12 +187,14 @@ async function emitToParticipants(dm: { fromUserId: number; toUserId: number | n
 /** 내 DM(1:1 또는 그룹) 수정. 참여자 전원(보낸 사람의 다른 탭 포함)에게 dm:updated를 보낸다. */
 export async function editDirectMessage(userId: number, dm: DirectMessage, content: string) {
   await assertCanModifyDm(userId, dm);
+  const dlpWarned = await enforceDlp(userId, content, 'direct_message');
   const updated = await prisma.directMessage.update({
     where: { id: dm.id },
     data: { content, editedAt: new Date() },
     include: { ...DM_INCLUDE_USERS },
   });
 
+  recordDlpWarnings(userId, 'direct_message', updated.id, dlpWarned);
   // 보낸 사람의 다른 탭·기기도 갱신되도록 보낸 사람 본인의 user 룸에도 보낸다(클라이언트는 id로 교체하므로 중복 적용해도 같다)
   await emitToParticipants(updated, 'dm:updated', updated);
   void syncActivitiesOnDmEdit(updated);

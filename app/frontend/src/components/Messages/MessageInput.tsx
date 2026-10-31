@@ -8,7 +8,8 @@ import { Trans, useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
-import { scheduleMessage } from '@/lib/api';
+import { scheduleMessage, ApiError } from '@/lib/api';
+import { dlpBlockedMessage } from '@/lib/apiErrors';
 import { serializeDelta } from '@/lib/serializeDelta';
 import { convertShortcodesForSend } from '@/lib/emoji/emojiData';
 import { LinkModal } from './LinkModal';
@@ -123,8 +124,9 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
 
         setScheduleConfirm(t('input.scheduledFor', { time: formatDateTime(scheduledAt) }));
         setTimeout(() => setScheduleConfirm(null), 4000);
-      } catch {
-        setScheduleError(t('input.scheduleFailed'));
+      } catch (err) {
+        // 데이터 유출 방지 규칙에 걸리면 이유를 번역해 보여 준다. 그 밖에는 일반 문구.
+        setScheduleError(err instanceof ApiError && err.code === 'DLP_BLOCKED' ? dlpBlockedMessage(err.rule) : t('input.scheduleFailed'));
         setTimeout(() => setScheduleError(null), 4000);
       } finally {
         setIsScheduling(false);

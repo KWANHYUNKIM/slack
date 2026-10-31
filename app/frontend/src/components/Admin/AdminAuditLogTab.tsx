@@ -51,6 +51,13 @@ const ACTION_KEYS: Record<string, string> = {
   'retention.workspace_updated': 'retentionWorkspaceUpdated',
   'retention.channel_updated': 'retentionChannelUpdated',
   'retention.channel_cleared': 'retentionChannelCleared',
+  'dlp.blocked': 'dlpBlocked',
+  'dlp.warned': 'dlpWarned',
+  'dlp.rule_created': 'dlpRuleCreated',
+  'dlp.rule_updated': 'dlpRuleUpdated',
+  'dlp.rule_deleted': 'dlpRuleDeleted',
+  'dlp.rule_timeout': 'dlpRuleTimeout',
+  'dlp.rule_auto_disabled': 'dlpRuleAutoDisabled',
 };
 
 const TARGET_KEYS: Record<string, string> = {
@@ -65,6 +72,7 @@ const TARGET_KEYS: Record<string, string> = {
   mcp_tool: 'mcpTool',
   workspace: 'workspace',
   file: 'file',
+  dlp_rule: 'dlpRule',
 };
 
 function actionColor(action: string): string {

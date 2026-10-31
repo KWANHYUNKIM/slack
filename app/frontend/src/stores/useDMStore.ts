@@ -1,4 +1,5 @@
 import { t } from '@/lib/i18n';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import { create } from 'zustand';
 import {
   getConversation, sendDM, editDM, deleteDM, addDMReaction, removeDMReaction,
@@ -179,8 +180,8 @@ export const useDMStore = create<DMState>((set, get) => ({
           isSending: false,
         };
       });
-    } catch {
-      set({ isSending: false, sendError: t('channels:dm.sendError') });
+    } catch (err) {
+      set({ isSending: false, sendError: apiErrorMessage(err, 'channels:dm.sendError') });
     }
   },
 

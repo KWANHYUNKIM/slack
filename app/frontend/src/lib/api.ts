@@ -52,6 +52,8 @@ export class ApiError extends Error {
   /** Machine-readable error code from the server (e.g. CHANNEL_NAME_TAKEN) */
   code?: string;
   reason?: string;
+  /** DLP_BLOCKED일 때 막은 규칙의 이름 */
+  rule?: string;
   /** VALIDATION_FAILED일 때 어떤 필드가 왜 틀렸는지(path, zod 사유 코드) */
   fields?: Array<{ path: string; reason: string }>;
 
@@ -94,7 +96,9 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const errorMsg = Array.isArray(body.error)
       ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
       : body.error || t('errors:client.requestFailed');
-    throw new ApiError(errorMsg, res.status, body.code, body.reason, Array.isArray(body.fields) ? body.fields : undefined);
+    const apiError = new ApiError(errorMsg, res.status, body.code, body.reason, Array.isArray(body.fields) ? body.fields : undefined);
+    if (typeof body.rule === 'string') apiError.rule = body.rule;
+    throw apiError;
   }
 
   return res.json();
@@ -1124,6 +1128,9 @@ export interface ApiScheduledMessage {
   scheduledAt: string;
   createdAt: string;
   sent: boolean;
+  /** 발송 시점에 막혀 보내지 못한 예약(예: 데이터 유출 방지 규칙). failReason은 규칙 이름 */
+  failedAt?: string | null;
+  failReason?: string | null;
   channel: { id: number; name: string };
 }
 
@@ -1389,6 +1396,54 @@ export function adminSetChannelRetention(channelId: number, days: number | null)
 
 export function adminClearChannelRetention(channelId: number) {
   return request<RetentionChannel>(`/admin/retention/channels/${channelId}`, { method: 'DELETE' });
+}
+
+// 데이터 유출 방지(E10)
+export interface DlpRule {
+  id: number;
+  /** 내장 규칙의 식별자(번역된 이름에 쓴다). 사용자 정의 규칙은 null */
+  key: string | null;
+  name: string;
+  pattern: string;
+  action: 'BLOCK' | 'WARN';
+  enabled: boolean;
+  builtin: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: number; name: string } | null;
+}
+
+export interface DlpRuleList {
+  items: DlpRule[];
+  limits: { patternMax: number; nameMax: number; sampleMax: number };
+}
+
+export interface DlpRuleInput {
+  name: string;
+  pattern: string;
+  action: 'BLOCK' | 'WARN';
+  enabled?: boolean;
+}
+
+export function adminListDlpRules() {
+  return request<DlpRuleList>('/admin/dlp-rules');
+}
+
+export function adminCreateDlpRule(data: DlpRuleInput) {
+  return request<DlpRule>('/admin/dlp-rules', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function adminUpdateDlpRule(id: number, data: Partial<DlpRuleInput>) {
+  return request<DlpRule>(`/admin/dlp-rules/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export function adminDeleteDlpRule(id: number) {
+  return request<{ message: string }>(`/admin/dlp-rules/${id}`, { method: 'DELETE' });
+}
+
+/** 저장하지 않은 패턴(pattern) 또는 저장된 규칙(ruleId)이 샘플 글과 일치하는지 */
+export function adminTestDlpRule(data: { pattern?: string; ruleId?: number; sample: string }) {
+  return request<{ matched: boolean; timedOut?: boolean }>('/admin/dlp-rules/test', { method: 'POST', body: JSON.stringify(data) });
 }
 
 export function adminGetInvites() {

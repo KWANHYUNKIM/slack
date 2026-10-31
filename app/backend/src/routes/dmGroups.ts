@@ -9,6 +9,7 @@ import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
+import { ServiceError, serviceErrorBody } from '../services/messageService.js';
 import { getMentionCountsByDmGroup, markDmGroupMentionsRead } from '../services/mentionService.js';
 import {
   MIN_GROUP_OTHERS,
@@ -203,6 +204,10 @@ router.post('/:id/messages', authMiddleware, requireDmGroupMember, async (req: A
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     if (error instanceof InvalidFileIdsError) {
