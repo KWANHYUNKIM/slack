@@ -27,8 +27,8 @@
   "membersPanel": {
     "title": "멤버",
     "addPeople": "사람 추가",
-    "loadError": "멤버를 불러오지 못했어요.",
-    "removeError": "멤버를 내보내지 못했어요",
+    "loadError": "멤버를 불러오지 못했습니다.",
+    "removeError": "멤버를 내보내지 못했습니다.",
     "online": "온라인 — {count}",
     "offline": "오프라인 — {count}",
     "removeDialog": {
@@ -47,8 +47,8 @@
   "dm": {
     "messagePlaceholder": "{name}님에게 메시지 보내기",
     "you": "(나)",
-    "star": "별표 추가",
-    "unstar": "별표 해제",
+    "star": "즐겨찾기에 추가",
+    "unstar": "즐겨찾기에서 제거",
     "loadingMessages": "메시지를 불러오는 중...",
     "selfSpace": "나만의 공간입니다. 메시지를 미리 써 두거나, 할 일 목록을 만들거나, 링크와 파일을 보관해 보세요.",
     "conversationStart": "{name}님과의 대화가 시작되었습니다",
@@ -58,8 +58,8 @@
     "noPins": "고정된 메시지가 없습니다",
     "files": "파일",
     "noFiles": "공유된 파일이 없습니다",
-    "loadError": "메시지를 불러오지 못했어요.",
-    "sendError": "메시지를 보내지 못했어요. 다시 시도해 주세요."
+    "loadError": "메시지를 불러오지 못했습니다.",
+    "sendError": "메시지를 보내지 못했습니다. 다시 시도해 주세요."
   },
   "nameRules": {
     "required": "채널 이름을 입력하세요.",
@@ -79,7 +79,7 @@
     "createWith": "그룹 대화 시작",
     "leave": "대화 나가기",
     "leaveConfirm": "이 대화에서 나갈까요? 나가면 메시지를 더 이상 볼 수 없습니다.",
-    "conversationStart": "{names} 님과의 대화가 여기서 시작됩니다",
+    "conversationStart": "{names}님과의 대화가 여기서 시작됩니다",
     "addError": "사람을 추가하지 못했습니다. 다시 시도해 주세요.",
     "renameError": "대화 이름을 바꾸지 못했습니다. 다시 시도해 주세요.",
     "leaveError": "대화에서 나가지 못했습니다. 다시 시도해 주세요."

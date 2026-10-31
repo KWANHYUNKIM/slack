@@ -111,11 +111,11 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
   sendInvite: async (toUserId: number) => {
     const state = get();
     if (state.huddleId) {
-      set({ error: 'Leave your current huddle first' });
+      set({ error: 'huddle:errors.leaveFirst' });
       return;
     }
     if (state.outgoingInvite) {
-      set({ error: 'Cancel your current invite first' });
+      set({ error: 'huddle:errors.cancelInviteFirst' });
       return;
     }
 
@@ -127,7 +127,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       set({ localStream: stream });
     } catch {
-      set({ error: 'Microphone access denied' });
+      set({ error: 'huddle:errors.micDenied' });
       return;
     }
 
@@ -157,7 +157,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
   acceptInvite: async (inviteId: string) => {
     const state = get();
     if (state.huddleId) {
-      set({ error: 'Leave your current huddle first' });
+      set({ error: 'huddle:errors.leaveFirst' });
       return;
     }
 
@@ -169,7 +169,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       set({ localStream: stream });
     } catch {
-      set({ isConnecting: false, error: 'Microphone access denied' });
+      set({ isConnecting: false, error: 'huddle:errors.micDenied' });
       return;
     }
 
@@ -246,9 +246,9 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
       set({ outgoingInvite: null, localStream: null });
 
       let errorMsg: string | null = null;
-      if (data.reason === 'busy') errorMsg = 'They are in another huddle';
-      else if (data.reason === 'declined') errorMsg = 'Invite was declined';
-      else if (data.reason === 'timeout') errorMsg = 'Invite expired';
+      if (data.reason === 'busy') errorMsg = 'huddle:errors.busy';
+      else if (data.reason === 'declined') errorMsg = 'huddle:errors.declined';
+      else if (data.reason === 'timeout') errorMsg = 'huddle:errors.expired';
 
       if (errorMsg) {
         set({ error: errorMsg });
@@ -295,7 +295,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
           const socket = getSocket();
           if (socket) socket.emit('huddle:leave', { huddleId: data.huddleId });
           get().cleanup();
-          set({ error: 'Microphone access denied' });
+          set({ error: 'huddle:errors.micDenied' });
         });
       return;
     }

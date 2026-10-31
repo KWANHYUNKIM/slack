@@ -1,7 +1,7 @@
 {
   "nav": {
     "activity": "활동",
-    "unreads": "읽지 않음",
+    "unreads": "안 읽음",
     "later": "나중에",
     "files": "파일",
     "admin": "관리자",
@@ -17,18 +17,18 @@
     "disableNotifications": "알림 끄기",
     "enableNotifications": "알림 켜기",
     "signOut": "로그아웃",
-    "updateStatus": "상태 업데이트",
-    "pauseNotifications": "알림 일시 중지",
-    "pausedUntil": "{time}까지 일시 중지됨",
-    "pausedIndefinitely": "상태를 지울 때까지 일시 중지됨",
-    "resumeNotifications": "알림 재개",
+    "updateStatus": "상태 설정",
+    "pauseNotifications": "방해금지 켜기",
+    "pausedUntil": "{time}까지 방해금지",
+    "pausedIndefinitely": "상태가 지워질 때까지 방해금지",
+    "resumeNotifications": "방해금지 해제",
     "pause": {
       "m30": "30분",
       "h1": "1시간",
       "h2": "2시간",
       "tomorrow": "내일까지"
     },
-    "pauseError": "알림 일시 중지를 바꾸지 못했습니다. 다시 시도해 주세요.",
+    "pauseError": "방해금지 설정을 바꾸지 못했습니다. 다시 시도해 주세요.",
     "accessTokens": "개인 액세스 토큰"
   },
   "sections": {
@@ -37,7 +37,7 @@
     "addChannels": "채널 추가",
     "directMessages": "다이렉트 메시지",
     "addTeammates": "팀원 추가",
-    "starredEmpty": "채널이나 대화에 별표를 표시하면 여기에 모입니다.",
+    "starredEmpty": "채널이나 대화를 즐겨찾기에 추가하면 여기에 모입니다.",
     "collapse": "{section} 접기",
     "expand": "{section} 펼치기"
   },
@@ -47,7 +47,7 @@
     "searchPlaceholder": "이름으로 검색...",
     "noUsers": "사용자를 찾을 수 없습니다",
     "close": "닫기",
-    "pickSubtitle": "최대 {max}명까지 고를 수 있어요",
+    "pickSubtitle": "최대 {max}명까지 선택할 수 있습니다",
     "select": "{name} 선택",
     "selectedCount": "{max}명 중 {count}명 선택",
     "start": "대화 시작",
@@ -77,7 +77,7 @@
       "today": "오늘",
       "week": "이번 주"
     },
-    "pauseCheckbox": "상태가 지워질 때까지 알림 일시 중지",
+    "pauseCheckbox": "상태가 지워질 때까지 방해금지",
     "save": "저장",
     "clear": "상태 지우기",
     "cancel": "취소",
