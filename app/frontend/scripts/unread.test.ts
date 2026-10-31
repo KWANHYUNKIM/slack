@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeUnread, hasUnreadOutOfRange, previousTimelineId, type UnreadCandidate } from '../src/lib/unread.ts';
+import { computeUnread, countUnreadFrom, hasUnreadOutOfRange, previousTimelineId, type UnreadCandidate } from '../src/lib/unread.ts';
 
 const ME = 1;
 const msg = (id: number, userId = 2, extra: Partial<UnreadCandidate> = {}): UnreadCandidate => ({ id, userId, ...extra });
@@ -54,4 +54,27 @@ test('mark unread: 바로 앞 타임라인 메시지', () => {
   const list = [msg(1), msg(2, 2, { threadId: 1 }), msg(3, 2, { isDeleted: true }), msg(4)];
   assert.equal(previousTimelineId(list, 4), 1);
   assert.equal(previousTimelineId(list, 1), null);
+});
+
+const range = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => msg(from + i));
+
+test('범위 밖 60개: 열 때 50개만 로드되면 범위 밖, 실시간 10개가 와도 열 때 판정이 기준이다', () => {
+  const atOpen = range(11, 60); // 서버 total 60, 로드 50
+  assert.equal(hasUnreadOutOfRange(atOpen, null, 60), true);
+  // 실시간 10개가 붙은 뒤에 다시 계산하면 판정이 뒤집힌다: 그래서 화면은 열 때 한 번만 판정해 고정한다
+  const later = [...atOpen, ...range(61, 70)];
+  assert.equal(hasUnreadOutOfRange(later, null, 60), false);
+  assert.equal(computeUnread(later, null, ME).dividerBeforeId, 11);
+});
+
+test('모두 읽음 후 새 메시지: 순수 계산은 새 메시지를 첫 안 읽음으로 보지만 화면은 dividerAllowed=false로 막는다', () => {
+  const list = range(1, 5);
+  assert.equal(computeUnread(list, 5, ME).dividerBeforeId, null);
+  assert.equal(computeUnread([...list, msg(6)], 5, ME).dividerBeforeId, 6);
+});
+
+test('mark unread 개수는 서버 규칙(삭제·스레드 답글 제외, 내 것 포함)과 같다', () => {
+  const list = [msg(1), msg(2, 2, { threadId: 1 }), msg(3, ME), msg(4, 2, { isDeleted: true }), msg(5)];
+  assert.equal(countUnreadFrom(list, 1), 3);
+  assert.equal(countUnreadFrom(list, 4), 1);
 });

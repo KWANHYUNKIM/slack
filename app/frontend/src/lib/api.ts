@@ -211,8 +211,8 @@ export function getChannels() {
   return request<ApiChannel[]>('/channels');
 }
 
-export function getChannel(id: number) {
-  return request<ApiChannelDetail>(`/channels/${id}`);
+export function getChannel(id: number, opts?: { withUnread?: boolean }) {
+  return request<ApiChannelDetail>(`/channels/${id}${opts?.withUnread ? '?withUnread=1' : ''}`);
 }
 
 export interface ChannelMetaUpdate {

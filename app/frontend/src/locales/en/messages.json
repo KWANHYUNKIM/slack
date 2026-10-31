@@ -296,6 +296,7 @@
     "divider": "New",
     "newMessagesBar": "{count, plural, one {# new message} other {# new messages}}",
     "newMessagesBarAtLeast": "{count, plural, one {# or more new message} other {# or more new messages}}",
-    "markRead": "Mark as read"
+    "markRead": "Mark as read",
+    "jumpFailed": "Could not load the unread position"
   }
 }

@@ -296,6 +296,7 @@
     "divider": "새 메시지",
     "newMessagesBar": "새 메시지 {count, plural, other {#}}개",
     "newMessagesBarAtLeast": "새 메시지 {count, plural, other {#}}개 이상",
-    "markRead": "읽음으로 표시"
+    "markRead": "읽음으로 표시",
+    "jumpFailed": "안 읽음 위치를 불러오지 못했습니다"
   }
 }
