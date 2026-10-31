@@ -3,7 +3,7 @@
 | 파트 | 담당 | 모델 | 상태 | 예상 시간 | 시작 | 종료 | 비고 |
 |---|---|---|---|---|---|---|---|
 | 00-gap-analysis (Slack ↔ slawk 기능 비교와 파트 분할) | planner-1 | sonnet | 완료 | 60분 | 2026-10-31 08:55 | 2026-10-31 08:58 | 루프 1, 실제 약 3분. 결과: specs/00~03 |
-| 01a-mentions-activity (백엔드) | dev-1 | sonnet | 진행 중 | 1.5h | 2026-10-31 10:05 | | P0, 스키마 변경. PR #5 위에 쌓음 |
+| 01a-mentions-activity (백엔드) | dev-1 | sonnet | PR #8 (high 리뷰 중) | 1.5h | 2026-10-31 10:05 | 2026-10-31 10:11 | P0, 스키마 변경. PR #5 위에 쌓음 |
 | 01b-mentions-activity (프런트) | - | sonnet | 대기(dev-5 이후) | 1h | | | 활동 탭, 배지, @channel |
 | 03-channel-meta-star | - | sonnet | 대기 | 1.5h | | | P0, 스키마 변경 |
 | 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
@@ -17,7 +17,7 @@
 | E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
 | security/deps-upgrade-frontend: quill, react-router 등 | dev-3 | sonnet | PR #4 | 1h | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3 |
-| security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | PR #6 (리뷰 반영 대기, 감속) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
+| security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | PR #6 (리뷰 반영 중) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
 | REA run2: Claude Code 재시작 후 MCP 경로로 재평가 | - | sonnet | 대기(재시작 필요) | 30분 | | | run1과 같은 질문 Q1~Q3 |
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
 | 04-threads-view | - | sonnet | 대기(01 이후) | 2.5h | | | 스키마 변경(ThreadRead) |
@@ -31,3 +31,4 @@
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
 | build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | - | sonnet | 대기 | 1.5h | | | PR #6 리뷰 1번. 웹 배포 전제 |
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만) | 1h | | | PR #7 수동 확인 항목 |
+| feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | - | haiku | 대기 | 30분 | | | PR #8 남은 이슈 |
