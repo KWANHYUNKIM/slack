@@ -59,7 +59,9 @@
       "reactionsWrite": "내 리액션 추가·제거",
       "imRead": "내 DM과 그룹 DM 목록 보기",
       "imHistory": "내 DM 대화 내용 읽기",
-      "imWrite": "내 이름으로 DM 보내기, 고치기, 지우기"
+      "imWrite": "내 이름으로 DM 보내기, 고치기, 지우기",
+      "searchRead": "메시지, 파일, 사람, 채널 검색 (DM 결과는 DM 읽기 권한 필요)",
+      "filesRead": "파일 목록 보기, 텍스트 파일 내용 읽기"
     },
     "expiryLabel": "만료",
     "expiryDays": "{count}일",
