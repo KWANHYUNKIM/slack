@@ -22,6 +22,7 @@
     "autherrors:test": "node --test scripts/auth-errors.test.ts scripts/change-password-errors.test.ts",
     "sessionend:test": "node --test scripts/session-end.test.ts",
     "i18nui:test": "node --test scripts/huddle-errors.test.ts scripts/quill-placeholder.test.ts scripts/trans-markup.test.ts",
+    "qr:test": "node --test scripts/qr.test.ts",
     "rtl:test": "node --test scripts/popover-position.test.ts scripts/pick-locale.test.ts scripts/editor-rtl-css.test.ts ../../scripts/check-physical-direction.test.mjs"
   },
   "dependencies": {
