@@ -21,7 +21,14 @@
 ## REA 실행 기록
 | 실행 | 작업 | 토큰 | 시간 | 달성도 | 상세 |
 |---|---|---|---|---|---|
-| run1 | Slack 데스크톱 앱(Electron) 정적 분석 | 진행 중 | | | `rea-evaluation-run1.md` |
+| run1 | Slack 데스크톱 앱(Electron) 정적 분석, planner-1(opus) | 190,958 (도구 59회) | 17분 30초 | REA 단독: Q1 부분, Q2~Q4 실패, Q5 부분. grep, Chrome과 합치면 Q1·Q3·Q4·Q5 완전, Q2 부분 | `rea-evaluation-run1.md`. **MCP 미연결로 CLI만 사용**. JS 분석은 main.bundle에서 힙 부족(900MiB, 1800MiB 모두 실패). 유용했던 것: Electron fuse 해석, ASAR 무결성 검사 |
 
 ## 판단 (실행이 쌓이면 갱신)
-- 아직 판단할 근거 없음.
+- **run1 잠정 판정: 낮음.**
+  - 우리에게 필요한 이벤트와 API 정보는 데스크톱 번들이 아니라 원격 웹앱(app.slack.com)에 있어서 REA의 로컬 분석 범위 밖이었다.
+  - 핵심 번들은 RAM 8GB에서 분석하지 못했다.
+  - 같은 정보를 grep과 Chrome 관찰로 더 빨리 얻었다.
+  - 토큰은 기준선(REA 없이 한 분석)보다 2~3배 많이 썼다.
+- **잠정인 이유**: MCP 도구가 세션에 연결되지 않아 CLI로만 썼다. REA MCP는 이 세션을 시작한 뒤에 등록돼서, Claude Code를 재시작해야 쓸 수 있다.
+- **다음 단계 run2**: 재시작 후 MCP 경로로 같은 질문 Q1~Q3를 다시 돌려 토큰, 시간, 달성도를 비교한다. 결과가 여전히 낮으면 REA를 빼자고 사용자에게 제안한다.
+- 참고: `rea doctor` 결과(09:32), CLI 6.8.0, MCP 도구 229개, CLI 명령 175개. live server 상태는 unknown(현재 세션에 연결되지 않음).
