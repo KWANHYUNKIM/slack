@@ -182,8 +182,7 @@ body {
 .slawk-editor .ql-editor.ql-blank::before {
   color: var(--color-slack-secondary);
   font-style: normal;
-  left: 12px;
-  right: 12px;
+  inset-inline: 12px;
 }
 
 .slawk-editor .ql-container {
@@ -200,8 +199,8 @@ body {
 }
 
 .slawk-editor .ql-editor blockquote {
-  border-left: 4px solid var(--color-slack-border);
-  padding-left: 12px;
+  border-inline-start: 4px solid var(--color-slack-border);
+  padding-inline-start: 12px;
   margin: 4px 0;
 }
 

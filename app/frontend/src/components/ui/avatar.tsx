@@ -105,7 +105,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         {status && (
           <span
             className={cn(
-              'absolute bottom-0 right-0 block rounded-full ring-2 ring-white',
+              'absolute bottom-0 end-0 block rounded-full ring-2 ring-white',
               statusColors[status],
               size === 'sm' ? 'h-2 w-2' : size === 'md' ? 'h-3 w-3' : 'h-4 w-4'
             )}

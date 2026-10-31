@@ -1,0 +1,2 @@
+# scripts/check-physical-direction.sh 허용 목록. "경로 정규식<TAB>줄 정규식"
+# 좌우가 의미 자체인 줄만 이유와 함께 적는다. 비어 있는 것이 정상이다.

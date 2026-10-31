@@ -5,6 +5,7 @@ import { loadEmojiData } from '@/lib/emoji/emojiData';
 import { useTranslation } from 'react-i18next';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { cn } from '@/lib/utils';
+import { alignInline, isRtlDocument } from '@/lib/popoverPosition';
 import i18n from '@/lib/i18n';
 import { loadEmojiMartI18n } from '@/lib/i18n/emojiI18n';
 
@@ -155,8 +156,7 @@ export function PortalEmojiPicker({
       top = Math.max(0, anchorRect.top - pickerHeight);
     }
 
-    let left = anchorRect.right - pickerWidth;
-    if (left < 0) left = Math.max(0, anchorRect.left);
+    const left = alignInline(anchorRect, pickerWidth, window.innerWidth, isRtlDocument());
 
     setPos({ top, left });
   }, []);

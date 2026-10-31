@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useReminderStore } from '@/stores/useReminderStore';
 import { ReminderMenu } from './ReminderMenu';
+import { alignInline, isRtlDocument } from '@/lib/popoverPosition';
 
 interface MessageActionsMenuProps {
   onPin?: () => void;
@@ -18,7 +19,7 @@ interface MessageActionsMenuProps {
   reminderTarget?: { messageId?: number; dmId?: number };
   onClose: () => void;
   showOwnerActions: boolean;
-  /** Classes applied to the invisible positioning anchor (e.g. absolute -top-4 right-5 mt-9) */
+  /** Classes applied to the invisible positioning anchor (e.g. absolute -top-4 end-5 mt-9) */
   anchorClassName?: string;
   testIdPrefix?: string;
 }
@@ -61,7 +62,7 @@ export function MessageActionsMenu({
       top = Math.max(0, Math.min(anchorRect.top - menuHeight, window.innerHeight - menuHeight));
     }
 
-    setPos({ top, left: Math.max(0, anchorRect.right - menuWidth) });
+    setPos({ top, left: alignInline(anchorRect, menuWidth, window.innerWidth, isRtlDocument()) });
   }, [showReminder]);
 
   // Close on scroll (matches Slack behavior) and click outside
