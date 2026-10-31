@@ -180,7 +180,7 @@ export function GroupMembersPanel({ group, onClose }: GroupMembersPanelProps) {
               onClick={() => setConfirmLeave(true)}
               className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[14px] text-red-600 hover:bg-slack-hover"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 rtl:-scale-x-100" />
               {t('groupDM.leave')}
             </button>
           )}

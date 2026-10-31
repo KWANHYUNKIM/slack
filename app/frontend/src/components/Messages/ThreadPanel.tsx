@@ -498,7 +498,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                   : 'text-slack-disabled',
               )}
             >
-              <SendHorizontal className="h-4 w-4" />
+              <SendHorizontal className="h-4 w-4 rtl:-scale-x-100" />
             </button>
           </EditorToolbar>
         </div>

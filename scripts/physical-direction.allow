@@ -1,0 +1,9 @@
+# scripts/check-physical-direction.sh 허용 목록. "경로 정규식<TAB>줄 정규식" (TAB 필수, 없으면 검사가 오류로 실패한다)
+# 좌우가 의미 자체이거나 물리 속성을 0으로 지우는 줄만 이유와 함께 적는다.
+
+# Quill 기본 CSS의 물리 속성(padding-left 등)을 0/none으로 초기화하는 줄. 바로 아래에 논리 속성을 쓴다.
+index\.css$	^\s*(padding|margin)-(left|right):\s*0;\s*$
+index\.css$	^\s*border-(left|right):\s*none;\s*$
+
+# 측정 전 팝오버를 화면 밖(-9999)에 숨기는 고정 좌표. 방향과 무관하다.
+(emoji-picker|MessageActionsMenu)\.tsx$	top: -9999, left: -9999

@@ -1,6 +1,7 @@
 {
   "language": {
-    "label": "Language"
+    "label": "Language",
+    "pending": "{name} (translation coming soon)"
   },
   "avatar": {
     "alt": "Avatar",

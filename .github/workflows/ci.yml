@@ -135,6 +135,14 @@ jobs:
         working-directory: .
         run: scripts/check-external-urls.sh
 
+      # RTL 대비(i18n-4): 물리 방향 클래스(ml- pl- left- text-left 등)가 새로 들어오면 실패한다. 팝오버 위치 계산 단위 테스트 포함.
+      - name: Check physical direction classes
+        working-directory: .
+        run: scripts/check-physical-direction.sh
+
+      - name: RTL unit tests
+        run: npm run rtl:test
+
       # 데스크톱 연동 순수 함수(window.desktop 감지, 알림 조건, 알림 설정, 배지 숫자) 단위 테스트
       - name: Desktop bridge unit tests
         run: npm run desktop:test

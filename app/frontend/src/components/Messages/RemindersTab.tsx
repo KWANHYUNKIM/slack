@@ -133,7 +133,7 @@ export function RemindersTab() {
                       onClick={() => void useReminderStore.getState().complete(r.id, false)}
                       className="flex h-8 w-8 items-center justify-center rounded hover:bg-slack-border-light"
                     >
-                      <Undo2 className="h-4 w-4" />
+                      <Undo2 className="h-4 w-4 rtl:-scale-x-100" />
                     </button>
                   )}
                   <button
