@@ -45,7 +45,7 @@
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | 완료(PR #49 머지) | 2h | 2026-10-31 23:23 | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | 완료(PR #68 머지) | 1.5h | 2026-11-01 00:15 | | |
-| mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
+| mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | dev-4 | opus | 진행 | 3h | 2026-11-01 03:16 | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | dev-1 | haiku | 완료(PR #90 머지) | 45분 | 2026-11-01 02:11 | 2026-11-01 02:18 | PR #11 남은 이슈 |
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
@@ -75,10 +75,10 @@
 | E6 법적 보존과 eDiscovery: LegalHold 건·대상자, 보존 정리 제외, 관리자 검색·스트리밍 내보내기, 감사 로그 | dev-1 | opus | PR #98 리뷰 반영 중 | 2h | 2026-11-01 02:42 | 2026-11-01 02:55 | 엔터프라이즈 3절, 마이그레이션 060000 |
 | E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 완료(PR #96 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:51 | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
-| E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 PR #99 리뷰 반영 중(dev-4), QR 진행(dev-5) | 1.5h | | | E7b 남은 이슈 |
+| E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 완료(PR #99), QR 완료(PR #101 머지) | 1.5h | | | E7b 남은 이슈 |
 | feat/group-membership-history: 그룹 DM 구성원 이력(가입·탈퇴 시각)으로 eDiscovery·법적 보존이 나간 대상자의 재직 기간 메시지까지 포함 | - | opus | 대기(스키마) | 1.5h | | | PR #98 리뷰 4번 |
 | fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 완료(PR #93 머지) | 45분 | 2026-11-01 02:26 | 2026-11-01 02:30 | PR #91 보고 |
 | refactor/api-401-by-code: 프런트 request()가 401 전체가 아니라 토큰 code(AUTH_INVALID_TOKEN 등)일 때만 로그아웃, 이후 2FA·비밀번호 오류 상태 코드 정리 | dev-4 | sonnet | 완료(PR #97 머지) | 1h | 2026-11-01 02:49 | 2026-11-01 02:56 | PR #89 리뷰 |
-| feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | dev-4 | sonnet | PR #99 리뷰 반영 중 | 45분 | 2026-11-01 02:58 | | PR #86 남은 이슈 |
+| feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | dev-4 | sonnet | 완료(PR #99 머지) | 45분 | 2026-11-01 02:58 | | PR #86 남은 이슈 |
 | test/socket-listen-loopback: websocket 등 host 없는 httpServer.listen()도 127.0.0.1 고정 검토 | dev-3 | haiku | 완료(PR #91 머지) | 30분 | 2026-11-01 02:15 | 2026-11-01 02:24 | PR #87 남은 이슈 |
 | fix/change-password-401: 틀린 비밀번호에 401 → 프런트가 로그아웃 처리. 400/403+code로 변경 | dev-5 | haiku | 완료(PR #86 머지) | 0.5h | 2026-11-01 02:05 | 2026-11-01 02:09 | E7b 보고 |
