@@ -137,3 +137,9 @@
 | 2026-11-01 02:08 | dev-3 | sonnet | test/flaky-code-under-load | 130,970 |
 | 2026-11-01 02:09 | code-review | (리뷰) | PR #86 low | 43,978 |
 | 2026-11-01 02:11 | code-review | (리뷰) | PR #87 low | 48,778 |
+| 2026-11-01 02:12 | dev-4 | opus | E7b main 동기화·결정 반영 | 34,075 |
+| 2026-11-01 02:16 | dev-1 | haiku | fix/i18n-followups | 124,364 |
+| 2026-11-01 02:17 | code-review | (리뷰) | PR #89 high | 145,468 |
+| 2026-11-01 02:18 | code-review | (리뷰) | PR #90 low | (미보고) |
+| 2026-11-01 02:23 | dev-3 | haiku | test/socket-listen-loopback | 106,555 |
+| 2026-11-01 02:25 | code-review | (리뷰) | PR #91 low | 49,707 |
