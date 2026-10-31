@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Această cerere de conectare nu este validă. Începe din nou conectarea din aplicație.",
     "OAUTH_APPS_DISABLED": "Administratorul spațiului tău de lucru a dezactivat conectarea aplicațiilor.",
     "OAUTH_CONNECTION_NOT_FOUND": "Această aplicație nu este conectată.",
-    "OAUTH_NOT_CONFIGURED": "Conectarea aplicațiilor nu este configurată pe acest server. Cere administratorului să seteze adresa publică a serverului."
+    "OAUTH_NOT_CONFIGURED": "Conectarea aplicațiilor nu este configurată pe acest server. Cere administratorului să seteze adresa publică a serverului.",
+    "INVALID_WORKSPACE_ID": "Adresa acestui spațiu de lucru nu este validă.",
+    "WORKSPACE_NOT_FOUND": "Spațiul de lucru nu a fost găsit sau nu aveți acces la el.",
+    "NO_WORKSPACE": "Nu faceți parte încă din niciun spațiu de lucru. Alăturați-vă unuia sau cereți o invitație.",
+    "WORKSPACE_NOT_OPEN": "Acest spațiu de lucru este accesibil doar pe bază de invitație.",
+    "WORKSPACE_ADMIN_REQUIRED": "Doar administratorii spațiului de lucru pot face asta.",
+    "ORG_ADMIN_REQUIRED": "Doar administratorii organizației pot face asta.",
+    "ORG_OWNER_REQUIRED": "Doar proprietarii organizației pot face asta.",
+    "LAST_WORKSPACE_OWNER": "Un spațiu de lucru are nevoie de cel puțin un proprietar. Mai întâi faceți pe altcineva proprietar.",
+    "LAST_WORKSPACE": "Nu puteți arhiva ultimul spațiu de lucru activ.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Această persoană este deja în spațiul de lucru.",
+    "USER_NOT_FOUND": "Persoana nu a fost găsită.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Proprietarul principal al organizației nu poate fi eliminat.",
+    "WORKSPACE_SLUG_TAKEN": "Acest URL de spațiu de lucru este deja folosit.",
+    "WORKSPACE_NAME_TAKEN": "Există deja un spațiu de lucru cu acest nume.",
+    "INVALID_WORKSPACE_SLUG": "Pentru URL-ul spațiului de lucru folosiți între 1 și 21 de litere mici, cifre sau liniuțe.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Nu puteți acorda sau modifica acest rol.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Persoanele nu pot părăsi spațiul de lucru implicit și nici nu pot fi eliminate din acesta. Pentru a elimina pe cineva, dezactivați contul acestuia în setările de administrator.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Spațiul de lucru implicit nu poate fi arhivat."
   }
 }

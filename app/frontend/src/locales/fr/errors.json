@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Cette demande de connexion n'est pas valide. Recommencez la connexion depuis l'application.",
     "OAUTH_APPS_DISABLED": "Votre administrateur d'espace de travail a désactivé les connexions d'applications.",
     "OAUTH_CONNECTION_NOT_FOUND": "Cette application n'est pas connectée.",
-    "OAUTH_NOT_CONFIGURED": "Les connexions d'applications ne sont pas configurées sur ce serveur. Demandez à votre administrateur de définir l'adresse publique du serveur."
+    "OAUTH_NOT_CONFIGURED": "Les connexions d'applications ne sont pas configurées sur ce serveur. Demandez à votre administrateur de définir l'adresse publique du serveur.",
+    "INVALID_WORKSPACE_ID": "Cette adresse d'espace de travail n'est pas valide.",
+    "WORKSPACE_NOT_FOUND": "Espace de travail introuvable, ou vous n'y avez pas accès.",
+    "NO_WORKSPACE": "Vous ne faites encore partie d'aucun espace de travail. Rejoignez-en un ou demandez une invitation.",
+    "WORKSPACE_NOT_OPEN": "Cet espace de travail est accessible uniquement sur invitation.",
+    "WORKSPACE_ADMIN_REQUIRED": "Seuls les administrateurs de l'espace de travail peuvent effectuer cette action.",
+    "ORG_ADMIN_REQUIRED": "Seuls les administrateurs de l'organisation peuvent effectuer cette action.",
+    "ORG_OWNER_REQUIRED": "Seuls les propriétaires de l'organisation peuvent effectuer cette action.",
+    "LAST_WORKSPACE_OWNER": "Un espace de travail doit avoir au moins un propriétaire. Commencez par désigner un autre propriétaire.",
+    "LAST_WORKSPACE": "Vous ne pouvez pas archiver le dernier espace de travail actif.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Cette personne fait déjà partie de l'espace de travail.",
+    "USER_NOT_FOUND": "Personne introuvable.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Le propriétaire principal de l'organisation ne peut pas être supprimé.",
+    "WORKSPACE_SLUG_TAKEN": "Cette URL d'espace de travail est déjà utilisée.",
+    "WORKSPACE_NAME_TAKEN": "Un espace de travail portant ce nom existe déjà.",
+    "INVALID_WORKSPACE_SLUG": "Utilisez de 1 à 21 lettres minuscules, chiffres ou tirets pour l'URL de l'espace de travail.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Vous ne pouvez pas attribuer ni modifier ce rôle.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Les personnes ne peuvent pas quitter ni être retirées de l'espace de travail par défaut. Pour retirer quelqu'un, désactivez son compte dans les paramètres d'administration.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "L'espace de travail par défaut ne peut pas être archivé."
   }
 }

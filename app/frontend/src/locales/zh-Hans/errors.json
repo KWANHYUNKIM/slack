@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "此连接请求无效。请从应用重新开始连接。",
     "OAUTH_APPS_DISABLED": "工作区管理员已关闭应用连接。",
     "OAUTH_CONNECTION_NOT_FOUND": "此应用未连接。",
-    "OAUTH_NOT_CONFIGURED": "此服务器未配置应用连接。请让管理员设置公共服务器地址。"
+    "OAUTH_NOT_CONFIGURED": "此服务器未配置应用连接。请让管理员设置公共服务器地址。",
+    "INVALID_WORKSPACE_ID": "该工作区地址无效。",
+    "WORKSPACE_NOT_FOUND": "找不到该工作区，或者您没有访问权限。",
+    "NO_WORKSPACE": "您还没有加入任何工作区。请加入一个工作区或申请邀请。",
+    "WORKSPACE_NOT_OPEN": "该工作区仅限受邀加入。",
+    "WORKSPACE_ADMIN_REQUIRED": "只有工作区管理员可以执行此操作。",
+    "ORG_ADMIN_REQUIRED": "只有组织管理员可以执行此操作。",
+    "ORG_OWNER_REQUIRED": "只有组织所有者可以执行此操作。",
+    "LAST_WORKSPACE_OWNER": "工作区至少需要一位所有者。请先将其他人设为所有者。",
+    "LAST_WORKSPACE": "无法归档最后一个活动工作区。",
+    "USER_ALREADY_WORKSPACE_MEMBER": "此人已在工作区中。",
+    "USER_NOT_FOUND": "找不到该用户。",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "无法移除组织的主所有者。",
+    "WORKSPACE_SLUG_TAKEN": "该工作区网址已被使用。",
+    "WORKSPACE_NAME_TAKEN": "已存在同名工作区。",
+    "INVALID_WORKSPACE_SLUG": "工作区网址请使用 1 到 21 个小写字母、数字或连字符。",
+    "WORKSPACE_ROLE_FORBIDDEN": "您无法授予或更改此角色。",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "无法退出或被移出默认工作区。如需移除成员，请在管理设置中停用其账户。",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "无法归档默认工作区。"
   }
 }

@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Questa richiesta di collegamento non è valida. Ricomincia il collegamento dall'app.",
     "OAUTH_APPS_DISABLED": "L'amministratore dello spazio di lavoro ha disattivato i collegamenti alle app.",
     "OAUTH_CONNECTION_NOT_FOUND": "Questa app non è collegata.",
-    "OAUTH_NOT_CONFIGURED": "I collegamenti alle app non sono configurati su questo server. Chiedi all'amministratore di impostare l'indirizzo pubblico del server."
+    "OAUTH_NOT_CONFIGURED": "I collegamenti alle app non sono configurati su questo server. Chiedi all'amministratore di impostare l'indirizzo pubblico del server.",
+    "INVALID_WORKSPACE_ID": "Questo indirizzo dell'area di lavoro non è valido.",
+    "WORKSPACE_NOT_FOUND": "Area di lavoro non trovata, oppure non hai accesso.",
+    "NO_WORKSPACE": "Non fai ancora parte di nessuna area di lavoro. Unisciti a una o chiedi un invito.",
+    "WORKSPACE_NOT_OPEN": "Quest'area di lavoro è accessibile solo su invito.",
+    "WORKSPACE_ADMIN_REQUIRED": "Solo gli amministratori dell'area di lavoro possono farlo.",
+    "ORG_ADMIN_REQUIRED": "Solo gli amministratori dell'organizzazione possono farlo.",
+    "ORG_OWNER_REQUIRED": "Solo i proprietari dell'organizzazione possono farlo.",
+    "LAST_WORKSPACE_OWNER": "Un'area di lavoro deve avere almeno un proprietario. Prima rendi proprietario un'altra persona.",
+    "LAST_WORKSPACE": "Non puoi archiviare l'ultima area di lavoro attiva.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Questa persona è già nell'area di lavoro.",
+    "USER_NOT_FOUND": "Persona non trovata.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Non è possibile rimuovere il proprietario principale dell'organizzazione.",
+    "WORKSPACE_SLUG_TAKEN": "Questo URL dell'area di lavoro è già in uso.",
+    "WORKSPACE_NAME_TAKEN": "Esiste già un'area di lavoro con questo nome.",
+    "INVALID_WORKSPACE_SLUG": "Per l'URL dell'area di lavoro usa da 1 a 21 lettere minuscole, numeri o trattini.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Non puoi assegnare o modificare questo ruolo.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Le persone non possono lasciare o essere rimosse dall'area di lavoro predefinita. Per rimuovere qualcuno, disattiva il suo account nelle impostazioni di amministrazione.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "L'area di lavoro predefinita non può essere archiviata."
   }
 }

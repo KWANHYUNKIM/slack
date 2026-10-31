@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "此連線要求無效。請從應用程式重新開始連接。",
     "OAUTH_APPS_DISABLED": "您的工作區管理員已關閉應用程式連接功能。",
     "OAUTH_CONNECTION_NOT_FOUND": "此應用程式尚未連接。",
-    "OAUTH_NOT_CONFIGURED": "此伺服器尚未設定應用程式連接。請管理員設定公開的伺服器位址。"
+    "OAUTH_NOT_CONFIGURED": "此伺服器尚未設定應用程式連接。請管理員設定公開的伺服器位址。",
+    "INVALID_WORKSPACE_ID": "該工作區地址無效。",
+    "WORKSPACE_NOT_FOUND": "找不到該工作區，或您沒有存取權限。",
+    "NO_WORKSPACE": "您尚未加入任何工作區。請加入工作區或申請邀請。",
+    "WORKSPACE_NOT_OPEN": "此工作區僅限受邀加入。",
+    "WORKSPACE_ADMIN_REQUIRED": "只有工作區管理員可以執行此操作。",
+    "ORG_ADMIN_REQUIRED": "只有組織管理員可以執行此操作。",
+    "ORG_OWNER_REQUIRED": "只有組織擁有者可以執行此操作。",
+    "LAST_WORKSPACE_OWNER": "工作區至少需要一位擁有者。請先將其他人設為擁有者。",
+    "LAST_WORKSPACE": "無法封存最後一個使用中的工作區。",
+    "USER_ALREADY_WORKSPACE_MEMBER": "此人已在工作區中。",
+    "USER_NOT_FOUND": "找不到此使用者。",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "無法移除組織的主要擁有者。",
+    "WORKSPACE_SLUG_TAKEN": "此工作區網址已被使用。",
+    "WORKSPACE_NAME_TAKEN": "已有同名的工作區。",
+    "INVALID_WORKSPACE_SLUG": "工作區網址請使用 1 到 21 個小寫字母、數字或連字號。",
+    "WORKSPACE_ROLE_FORBIDDEN": "您無法指派或變更此角色。",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "無法離開或被移出預設工作區。如要移除成員，請在管理設定中停用其帳號。",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "無法封存預設工作區。"
   }
 }

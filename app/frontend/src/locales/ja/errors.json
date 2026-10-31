@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "この接続リクエストは正しくありません。アプリから接続をやり直してください。",
     "OAUTH_APPS_DISABLED": "ワークスペースの管理者がアプリの接続を無効にしています。",
     "OAUTH_CONNECTION_NOT_FOUND": "このアプリは接続されていません。",
-    "OAUTH_NOT_CONFIGURED": "このサーバーではアプリの接続が設定されていません。管理者に公開サーバーアドレスの設定を依頼してください。"
+    "OAUTH_NOT_CONFIGURED": "このサーバーではアプリの接続が設定されていません。管理者に公開サーバーアドレスの設定を依頼してください。",
+    "INVALID_WORKSPACE_ID": "このワークスペースのアドレスは正しくありません。",
+    "WORKSPACE_NOT_FOUND": "ワークスペースが見つからないか、アクセス権がありません。",
+    "NO_WORKSPACE": "まだどのワークスペースにも参加していません。参加するか、招待を依頼してください。",
+    "WORKSPACE_NOT_OPEN": "このワークスペースは招待制です。",
+    "WORKSPACE_ADMIN_REQUIRED": "この操作はワークスペースの管理者のみ行えます。",
+    "ORG_ADMIN_REQUIRED": "この操作は組織の管理者のみ行えます。",
+    "ORG_OWNER_REQUIRED": "この操作は組織の所有者のみ行えます。",
+    "LAST_WORKSPACE_OWNER": "ワークスペースには所有者が1人以上必要です。先に別のメンバーを所有者にしてください。",
+    "LAST_WORKSPACE": "最後のアクティブなワークスペースはアーカイブできません。",
+    "USER_ALREADY_WORKSPACE_MEMBER": "この人はすでにワークスペースに参加しています。",
+    "USER_NOT_FOUND": "ユーザーが見つかりません。",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "組織のメイン所有者は削除できません。",
+    "WORKSPACE_SLUG_TAKEN": "このワークスペースURLはすでに使用されています。",
+    "WORKSPACE_NAME_TAKEN": "同じ名前のワークスペースがすでに存在します。",
+    "INVALID_WORKSPACE_SLUG": "ワークスペースURLには、英小文字・数字・ハイフンを使って1〜21文字で入力してください。",
+    "WORKSPACE_ROLE_FORBIDDEN": "この役割は付与または変更できません。",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "デフォルトのワークスペースから退出したり、削除されたりすることはできません。メンバーを削除するには、管理設定でそのアカウントを無効にしてください。",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "デフォルトのワークスペースはアーカイブできません。"
   }
 }

@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Ez a csatlakozási kérés érvénytelen. Kezdje újra a csatlakoztatást az alkalmazásban.",
     "OAUTH_APPS_DISABLED": "A munkaterület adminisztrátora kikapcsolta az alkalmazáskapcsolatokat.",
     "OAUTH_CONNECTION_NOT_FOUND": "Ez az alkalmazás nincs csatlakoztatva.",
-    "OAUTH_NOT_CONFIGURED": "Az alkalmazáskapcsolatok nincsenek beállítva ezen a kiszolgálón. Kérje meg az adminisztrátort, hogy állítsa be a kiszolgáló nyilvános címét."
+    "OAUTH_NOT_CONFIGURED": "Az alkalmazáskapcsolatok nincsenek beállítva ezen a kiszolgálón. Kérje meg az adminisztrátort, hogy állítsa be a kiszolgáló nyilvános címét.",
+    "INVALID_WORKSPACE_ID": "Ez a munkaterület-cím nem érvényes.",
+    "WORKSPACE_NOT_FOUND": "A munkaterület nem található, vagy nincs hozzáférése.",
+    "NO_WORKSPACE": "Még nem tagja egyetlen munkaterületnek sem. Csatlakozzon egyhez, vagy kérjen meghívót.",
+    "WORKSPACE_NOT_OPEN": "Ez a munkaterület csak meghívással érhető el.",
+    "WORKSPACE_ADMIN_REQUIRED": "Ezt csak a munkaterület adminisztrátorai végezhetik el.",
+    "ORG_ADMIN_REQUIRED": "Ezt csak a szervezet adminisztrátorai végezhetik el.",
+    "ORG_OWNER_REQUIRED": "Ezt csak a szervezet tulajdonosai végezhetik el.",
+    "LAST_WORKSPACE_OWNER": "Egy munkaterületnek legalább egy tulajdonosa kell legyen. Előbb tegyen más személyt tulajdonossá.",
+    "LAST_WORKSPACE": "Az utolsó aktív munkaterület nem archiválható.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Ez a személy már tagja a munkaterületnek.",
+    "USER_NOT_FOUND": "A személy nem található.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "A szervezet elsődleges tulajdonosa nem távolítható el.",
+    "WORKSPACE_SLUG_TAKEN": "Ez a munkaterület-URL már foglalt.",
+    "WORKSPACE_NAME_TAKEN": "Ilyen nevű munkaterület már létezik.",
+    "INVALID_WORKSPACE_SLUG": "A munkaterület URL-jéhez 1–21 kisbetűt, számjegyet vagy kötőjelet használjon.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Ezt a szerepkört nem adhatja meg vagy módosíthatja.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Az emberek nem léphetnek ki az alapértelmezett munkaterületről, és nem távolíthatók el onnan. Valaki eltávolításához tiltsa le a fiókját az adminisztrációs beállításokban.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Az alapértelmezett munkaterület nem archiválható."
   }
 }

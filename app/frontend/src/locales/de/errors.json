@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Diese Verbindungsanfrage ist ungültig. Starte die Verbindung in der App erneut.",
     "OAUTH_APPS_DISABLED": "Dein Arbeitsbereichsadministrator hat App-Verbindungen deaktiviert.",
     "OAUTH_CONNECTION_NOT_FOUND": "Diese App ist nicht verbunden.",
-    "OAUTH_NOT_CONFIGURED": "App-Verbindungen sind auf diesem Server nicht eingerichtet. Bitte deinen Administrator, die öffentliche Serveradresse festzulegen."
+    "OAUTH_NOT_CONFIGURED": "App-Verbindungen sind auf diesem Server nicht eingerichtet. Bitte deinen Administrator, die öffentliche Serveradresse festzulegen.",
+    "INVALID_WORKSPACE_ID": "Diese Workspace-Adresse ist ungültig.",
+    "WORKSPACE_NOT_FOUND": "Workspace nicht gefunden oder du hast keinen Zugriff darauf.",
+    "NO_WORKSPACE": "Du bist noch keinem Workspace beigetreten. Tritt einem bei oder bitte um eine Einladung.",
+    "WORKSPACE_NOT_OPEN": "Dieser Workspace ist nur auf Einladung zugänglich.",
+    "WORKSPACE_ADMIN_REQUIRED": "Das können nur Workspace-Admins tun.",
+    "ORG_ADMIN_REQUIRED": "Das können nur Organisations-Admins tun.",
+    "ORG_OWNER_REQUIRED": "Das können nur Organisationsinhaber tun.",
+    "LAST_WORKSPACE_OWNER": "Ein Workspace braucht mindestens einen Inhaber. Mach zuerst jemand anderen zum Inhaber.",
+    "LAST_WORKSPACE": "Du kannst den letzten aktiven Workspace nicht archivieren.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Diese Person ist bereits im Workspace.",
+    "USER_NOT_FOUND": "Person nicht gefunden.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Der Hauptinhaber der Organisation kann nicht entfernt werden.",
+    "WORKSPACE_SLUG_TAKEN": "Diese Workspace-URL ist bereits vergeben.",
+    "WORKSPACE_NAME_TAKEN": "Ein Workspace mit diesem Namen existiert bereits.",
+    "INVALID_WORKSPACE_SLUG": "Verwende für die Workspace-URL 1 bis 21 Kleinbuchstaben, Ziffern oder Bindestriche.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Du kannst diese Rolle nicht vergeben oder ändern.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Personen können den Standard-Workspace nicht verlassen und nicht daraus entfernt werden. Um jemanden zu entfernen, deaktiviere sein Konto in den Admin-Einstellungen.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Der Standard-Workspace kann nicht archiviert werden."
   }
 }

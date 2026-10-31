@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Hindi wasto ang kahilingang ito sa koneksyon. Simulan muli ang pagkonekta mula sa app.",
     "OAUTH_APPS_DISABLED": "Naka-off na ng administrator ng iyong workspace ang koneksyon ng app.",
     "OAUTH_CONNECTION_NOT_FOUND": "Hindi konektado ang app na ito.",
-    "OAUTH_NOT_CONFIGURED": "Hindi naka-configure ang koneksyon ng app sa server na ito. Hilingin sa administrator na itakda ang pampublikong address ng server."
+    "OAUTH_NOT_CONFIGURED": "Hindi naka-configure ang koneksyon ng app sa server na ito. Hilingin sa administrator na itakda ang pampublikong address ng server.",
+    "INVALID_WORKSPACE_ID": "Hindi wasto ang address ng workspace na iyon.",
+    "WORKSPACE_NOT_FOUND": "Hindi mahanap ang workspace, o wala kang access dito.",
+    "NO_WORKSPACE": "Wala ka pang nasasalihang workspace. Sumali sa isa o humingi ng imbitasyon.",
+    "WORKSPACE_NOT_OPEN": "Imbitasyon lang ang paraan para makasali sa workspace na ito.",
+    "WORKSPACE_ADMIN_REQUIRED": "Mga admin lang ng workspace ang puwedeng gumawa nito.",
+    "ORG_ADMIN_REQUIRED": "Mga admin lang ng organisasyon ang puwedeng gumawa nito.",
+    "ORG_OWNER_REQUIRED": "Mga may-ari lang ng organisasyon ang puwedeng gumawa nito.",
+    "LAST_WORKSPACE_OWNER": "Kailangan ng workspace ng kahit isang may-ari. Gawing may-ari muna ang ibang tao.",
+    "LAST_WORKSPACE": "Hindi mo maaaring i-archive ang huling aktibong workspace.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Nasa workspace na ang taong ito.",
+    "USER_NOT_FOUND": "Hindi mahanap ang tao.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Hindi maaaring tanggalin ang pangunahing may-ari ng organisasyon.",
+    "WORKSPACE_SLUG_TAKEN": "Ginagamit na ang URL ng workspace na iyon.",
+    "WORKSPACE_NAME_TAKEN": "May workspace na may ganitong pangalan.",
+    "INVALID_WORKSPACE_SLUG": "Gumamit ng 1 hanggang 21 maliliit na titik, numero, o gitling para sa URL ng workspace.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Hindi mo maibibigay o mababago ang role na ito.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Hindi maaaring umalis o tanggalin ang mga tao sa default na workspace. Para tanggalin ang isang tao, i-deactivate ang account niya sa mga setting ng admin.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Hindi maaaring i-archive ang default na workspace."
   }
 }

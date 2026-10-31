@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Permintaan koneksi ini tidak valid. Mulai koneksi lagi dari aplikasi.",
     "OAUTH_APPS_DISABLED": "Admin workspace Anda telah menonaktifkan koneksi aplikasi.",
     "OAUTH_CONNECTION_NOT_FOUND": "Aplikasi ini belum terhubung.",
-    "OAUTH_NOT_CONFIGURED": "Koneksi aplikasi belum dikonfigurasi di server ini. Minta admin mengatur alamat server publik."
+    "OAUTH_NOT_CONFIGURED": "Koneksi aplikasi belum dikonfigurasi di server ini. Minta admin mengatur alamat server publik.",
+    "INVALID_WORKSPACE_ID": "Alamat ruang kerja ini tidak valid.",
+    "WORKSPACE_NOT_FOUND": "Ruang kerja tidak ditemukan, atau Anda tidak memiliki akses ke sana.",
+    "NO_WORKSPACE": "Anda belum berada di ruang kerja mana pun. Bergabunglah ke salah satu atau minta undangan.",
+    "WORKSPACE_NOT_OPEN": "Ruang kerja ini hanya bisa dimasuki dengan undangan.",
+    "WORKSPACE_ADMIN_REQUIRED": "Hanya admin ruang kerja yang dapat melakukan ini.",
+    "ORG_ADMIN_REQUIRED": "Hanya admin organisasi yang dapat melakukan ini.",
+    "ORG_OWNER_REQUIRED": "Hanya pemilik organisasi yang dapat melakukan ini.",
+    "LAST_WORKSPACE_OWNER": "Ruang kerja harus memiliki minimal satu pemilik. Jadikan orang lain sebagai pemilik terlebih dahulu.",
+    "LAST_WORKSPACE": "Anda tidak dapat mengarsipkan ruang kerja aktif terakhir.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Orang ini sudah ada di ruang kerja.",
+    "USER_NOT_FOUND": "Pengguna tidak ditemukan.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Pemilik utama organisasi tidak dapat dihapus.",
+    "WORKSPACE_SLUG_TAKEN": "URL ruang kerja ini sudah digunakan.",
+    "WORKSPACE_NAME_TAKEN": "Ruang kerja dengan nama ini sudah ada.",
+    "INVALID_WORKSPACE_SLUG": "Gunakan 1 sampai 21 huruf kecil, angka, atau tanda hubung untuk URL ruang kerja.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Anda tidak dapat memberikan atau mengubah peran ini.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Orang tidak dapat keluar dari ruang kerja default atau dikeluarkan darinya. Untuk menghapus seseorang, nonaktifkan akunnya di pengaturan admin.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Ruang kerja default tidak dapat diarsipkan."
   }
 }
