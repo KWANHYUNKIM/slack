@@ -63,7 +63,7 @@
 ## 9. 데스크톱 앱 (Electron)
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`를 켠다. preload는 `contextBridge`로 꼭 필요한 함수만 노출한다.
 - 앱 안 탐색은 우리 서버 origin으로 제한하고(`will-navigate`, `setWindowOpenHandler`), 외부 링크는 `shell.openExternal`로 브라우저에서 열되 `http`/`https`만 허용한다.
-- 딥링크(`slackclone://`) 인자는 화이트리스트로 검증한다.
+- 딥링크(`teammessenger://`) 인자는 화이트리스트로 검증한다.
 - 자동 업데이트는 서명을 검증하는 electron-updater + GitHub Releases로 한다. 코드 서명 인증서가 없으면 Windows SmartScreen 경고가 뜬다는 점을 릴리스 노트에 적는다.
 - Electron은 최신 안정 버전을 유지한다. 크로미움 취약점 패치를 바로 따라간다.
 

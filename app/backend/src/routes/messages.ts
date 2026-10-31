@@ -5,11 +5,11 @@ import { channelTimelineWhere } from '../db/timeline.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireChannelMembership, requirePublicChannelReadAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
-import { USER_SELECT_BASIC, FILE_SELECT, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
+import { MESSAGE_INCLUDE_FULL } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
 import { ServiceError, messageContentSchema, sendChannelMessage } from '../services/messageService.js';
-import { PARENT_EXCERPT_INCLUDE, blankIfDeleted, toParentExcerpt, withParentExcerpt, onThreadReplyCreated } from '../services/threadService.js';
+import { PARENT_EXCERPT_INCLUDE, blankIfDeleted, toParentExcerpt } from '../services/threadService.js';
 
 const router = Router();
 

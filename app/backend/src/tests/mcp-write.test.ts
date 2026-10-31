@@ -265,6 +265,151 @@ describe('MCP write tools (mcp-2)', () => {
     });
   });
 
+  describe('races and validation', () => {
+    it('handles concurrent identical reactions without server errors', async () => {
+      const claude = await connectClient((await createToken(bob, [...READ, ...WRITE])).token);
+      const msg = (await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: 'race me' })).body;
+
+      // 같은 리액션을 MCP 4번 + REST 4번 동시에: 정확히 하나만 성공한다
+      const results = await Promise.all([
+        ...Array.from({ length: 4 }, () => call(claude, 'add_reaction', { messageId: msg.id, emoji: '🔥' })),
+        ...Array.from({ length: 4 }, () => request(app).post(`/messages/${msg.id}/reactions`).set(auth(bob)).send({ emoji: '🔥' })),
+      ]);
+      const mcpResults = results.slice(0, 4) as Awaited<ReturnType<typeof call>>[];
+      const restResults = results.slice(4) as request.Response[];
+      const succeeded = mcpResults.filter((r) => !r.isError).length + restResults.filter((r) => r.status === 201).length;
+      expect(succeeded).toBe(1);
+      for (const r of mcpResults.filter((x) => x.isError)) expect(r.text).toBe('Reaction already exists');
+      for (const r of restResults.filter((x) => x.status !== 201)) expect(r.status).toBe(400);
+      expect(await prisma.reaction.count({ where: { messageId: msg.id, userId: bob.id, emoji: '🔥' } })).toBe(1);
+
+      // 동시에 지우기: 하나만 성공하고 나머지는 404/"not found"(500이 아니다)
+      const removals = await Promise.all([
+        ...Array.from({ length: 4 }, () => call(claude, 'remove_reaction', { messageId: msg.id, emoji: '🔥' })),
+        ...Array.from({ length: 4 }, () => request(app).delete(`/messages/${msg.id}/reactions/${encodeURIComponent('🔥')}`).set(auth(bob))),
+      ]);
+      const mcpRem = removals.slice(0, 4) as Awaited<ReturnType<typeof call>>[];
+      const restRem = removals.slice(4) as request.Response[];
+      expect(mcpRem.filter((r) => !r.isError).length + restRem.filter((r) => r.status === 200).length).toBe(1);
+      for (const r of mcpRem.filter((x) => x.isError)) expect(r.text).toBe('Reaction not found');
+      for (const r of restRem.filter((x) => x.status !== 200)) expect(r.status).toBe(404);
+      expect(await prisma.reaction.count({ where: { messageId: msg.id } })).toBe(0);
+      await settleBackgroundWork();
+    });
+
+    it('rejects whitespace-only edits like sending does', async () => {
+      const claude = await connectClient((await createToken(alice, [...READ, ...WRITE])).token);
+      const sent = (await call(claude, 'send_message', { channelId: pubId, content: 'keep me' })).data;
+      for (const blank of ['   ', '\n\t ', '']) {
+        const res = await call(claude, 'edit_message', { messageId: sent.id, content: blank });
+        expect(res.isError).toBe(true);
+      }
+      const row = await prisma.message.findUniqueOrThrow({ where: { id: sent.id } });
+      expect(row.content).toBe('keep me');
+      expect(row.editedAt).toBeNull();
+    });
+
+    it('REST thread reply uses the shared service (bad fileIds -> 400, valid reply -> 201 with threadId)', async () => {
+      const parent = (await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: 'reply parent' })).body;
+      const bad = await request(app).post(`/messages/${parent.id}/reply`).set(auth(alice)).send({ content: 'x', fileIds: [987654] });
+      expect(bad.status).toBe(400);
+      expect(bad.body.error).toMatch(/Invalid file IDs/);
+      expect(await prisma.message.count({ where: { threadId: parent.id } })).toBe(0);
+      const ok = await request(app).post(`/messages/${parent.id}/reply`).set(auth(alice)).send({ content: 'fine' });
+      expect(ok.status).toBe(201);
+      expect(ok.body.threadId).toBe(parent.id);
+      const nested = await request(app).post(`/messages/${ok.body.id}/reply`).set(auth(alice)).send({ content: 'nested' });
+      expect(nested.status).toBe(400);
+      await settleBackgroundWork();
+    });
+
+    it('reports the renamed server', async () => {
+      const claude = await connectClient((await createToken(alice, READ)).token);
+      expect(claude.getServerVersion()?.name).toBe('team-messenger');
+    });
+  });
+
+  describe('REST, socket and MCP paths behave the same', () => {
+    it('creates, edits and deletes through each path with equivalent events', async () => {
+      const claude = await connectClient((await createToken(alice, [...READ, ...WRITE])).token);
+      const listener = await listenAs(bob, pubId);
+      const sender = SocketClient(baseUrl, { auth: { token: alice.token } });
+      sockets.push(sender);
+      await new Promise<void>((resolve) => sender.once('connect', () => resolve()));
+      await new Promise<boolean>((resolve) => sender.emit('join:channel', pubId, resolve));
+
+      type Path = { name: string; create: (c: string) => Promise<number>; edit: (id: number, c: string) => Promise<void>; del: (id: number) => Promise<void> };
+      const paths: Path[] = [
+        {
+          name: 'rest',
+          create: async (c) => (await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: c })).body.id,
+          edit: async (id, c) => { expect((await request(app).patch(`/messages/${id}`).set(auth(alice)).send({ content: c })).status).toBe(200); },
+          del: async (id) => { expect((await request(app).delete(`/messages/${id}`).set(auth(alice))).status).toBe(200); },
+        },
+        {
+          name: 'socket',
+          create: async (c) => {
+            const ev = waitForEvent<any>(sender, 'message:new');
+            const ack = await new Promise<any>((resolve) => sender.emit('message:send', { channelId: pubId, content: c }, resolve));
+            expect(ack).toEqual({});
+            return (await ev).id;
+          },
+          edit: async (id, c) => { sender.emit('message:edit', { messageId: id, content: c }); },
+          del: async (id) => { sender.emit('message:delete', { messageId: id }); },
+        },
+        {
+          name: 'mcp',
+          create: async (c) => (await call(claude, 'send_message', { channelId: pubId, content: c })).data.id,
+          edit: async (id, c) => { expect((await call(claude, 'edit_message', { messageId: id, content: c })).isError).toBe(false); },
+          del: async (id) => { expect((await call(claude, 'delete_message', { messageId: id })).isError).toBe(false); },
+        },
+      ];
+
+      for (const path of paths) {
+        const created = waitForEvent<any>(listener, 'message:new');
+        const id = await path.create(`via ${path.name}`);
+        const newEvt = await created;
+        expect(newEvt).toMatchObject({ id, content: `via ${path.name}`, channelId: pubId, threadId: null });
+        expect(newEvt.user.id).toBe(alice.id);
+
+        const updated = waitForEvent<any>(listener, 'message:updated');
+        await path.edit(id, `edited ${path.name}`);
+        const updEvt = await updated;
+        expect(updEvt).toMatchObject({ id, content: `edited ${path.name}` });
+        expect(updEvt.editedAt).not.toBeNull();
+
+        const read = await call(claude, 'read_channel', { channelId: pubId, limit: 5 });
+        expect(read.data.messages.at(-1)).toMatchObject({ id, content: `edited ${path.name}` });
+
+        const deleted = waitForEvent<any>(listener, 'message:deleted');
+        await path.del(id);
+        expect(await deleted).toMatchObject({ messageId: id, channelId: pubId, threadId: null });
+        const row = await prisma.message.findUniqueOrThrow({ where: { id } });
+        expect(row.deletedAt).not.toBeNull();
+      }
+      await settleBackgroundWork();
+    });
+
+    it('applies the same archived-channel and ownership rules on every path', async () => {
+      const sender = SocketClient(baseUrl, { auth: { token: bob.token } });
+      sockets.push(sender);
+      await new Promise<void>((resolve) => sender.once('connect', () => resolve()));
+      const aliceMsg = (await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: 'owned by alice' })).body;
+
+      const err = waitForEvent<any>(sender, 'error');
+      sender.emit('message:edit', { messageId: aliceMsg.id, content: 'nope' });
+      expect(await err).toEqual({ message: 'You can only edit your own messages' });
+      const err2 = waitForEvent<any>(sender, 'error');
+      sender.emit('message:delete', { messageId: aliceMsg.id });
+      expect(await err2).toEqual({ message: 'You can only delete your own messages' });
+
+      const rest = await request(app).patch(`/messages/${aliceMsg.id}`).set(auth(bob)).send({ content: 'nope' });
+      expect(rest.body.error).toBe('You can only edit your own messages');
+      const row = await prisma.message.findUniqueOrThrow({ where: { id: aliceMsg.id } });
+      expect(row.content).toBe('owned by alice');
+    });
+  });
+
   describe('permissions', () => {
     it('rejects writing to private channels the token owner is not in, and hides their existence', async () => {
       const claude = await connectClient((await createToken(alice, [...READ, ...WRITE])).token);

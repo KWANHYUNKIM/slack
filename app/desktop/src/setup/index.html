@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 로컬 화면 전용 CSP. 같은 값을 app:// 프로토콜 응답 헤더로도 내려준다(main.ts SETUP_CSP). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <link rel="stylesheet" href="setup.css" />
+  </head>
+  <body>
+    <!-- 문구는 모두 setup.js가 main에서 받은 번역(en/ko)으로 채운다 -->
+    <main class="card">
+      <h1 id="title"></h1>
+      <p id="description" class="muted"></p>
+      <p id="current" class="muted" hidden></p>
+      <p id="connecting" class="connecting" role="status" aria-live="polite" hidden></p>
+      <form id="form" novalidate>
+        <label id="label" for="server"></label>
+        <input id="server" name="server" type="text" inputmode="url" autocomplete="url" spellcheck="false" autofocus />
+        <p id="hint" class="hint"></p>
+        <p id="error" class="error" role="alert" hidden></p>
+        <div class="actions">
+          <button id="cancel" type="button" class="secondary" hidden></button>
+          <button id="submit" type="submit"></button>
+        </div>
+      </form>
+      <button id="reset" type="button" class="link" hidden></button>
+    </main>
+    <script src="setup.js"></script>
+  </body>
+</html>

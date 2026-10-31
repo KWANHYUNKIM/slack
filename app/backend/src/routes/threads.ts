@@ -6,14 +6,12 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireMessageAccess, requireThreadReadAccess, canAccessDm, canReadChannel } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
-import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES, THREAD_REPLY_INCLUDE } from '../db/selects.js';
+import { MESSAGE_INCLUDE_FULL, THREAD_REPLY_INCLUDE } from '../db/selects.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { isUserOnline } from '../websocket/index.js';
-import { sendPushToUser } from '../services/pushService.js';
-import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, setReplyBroadcast } from '../services/threadService.js';
-import { processNewChannelMessage, markThreadMentionsRead } from '../services/mentionService.js';
-import { ServiceError, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
+import { blankIfDeleted, setReplyBroadcast } from '../services/threadService.js';
+import { markThreadMentionsRead } from '../services/mentionService.js';
+import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 
 const router = Router();
 
@@ -32,70 +30,22 @@ const editMessageSchema = z.object({
 // POST /messages/:id/reply - Reply to message (creates thread)
 router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: AuthRequest, res: Response) => {
   try {
-    const parentId = parseIntParam(req.params.id)!;
-    const userId = req.user!.userId;
     const { content, fileIds, alsoSendToChannel } = replySchema.parse(req.body);
-    const parentMessage = req.message;
-
-    // Prevent nested threads - cannot reply to a reply
-    if (parentMessage.threadId !== null) {
-      res.status(400).json({ error: 'Cannot reply to a reply. Reply to the parent message instead.' });
-      return;
-    }
-
-    // Block replies in archived channels
-    const channel = await prisma.channel.findUnique({
-      where: { id: parentMessage.channelId },
-      select: { archivedAt: true },
+    // 채널 메시지 작성과 같은 서비스: 보관 채널·답글에 답글 검사, 저장, 소켓 이벤트, 활동·푸시
+    const reply = await sendChannelMessage(req.user!.userId, req.message.channelId, {
+      content,
+      threadId: req.message.id,
+      alsoSendToChannel,
+      fileIds,
     });
-    if (channel?.archivedAt) {
-      res.status(403).json({ error: 'This channel has been archived' });
-      return;
-    }
-
-    const reply = await prisma.$transaction(async (tx) => {
-      const msg = await tx.message.create({
-        data: {
-          content,
-          userId,
-          channelId: parentMessage.channelId,
-          threadId: parentId,
-          alsoSendToChannel: !!alsoSendToChannel,
-        },
-      });
-
-      if (fileIds && fileIds.length > 0) {
-        const updated = await tx.file.updateMany({
-          where: { id: { in: fileIds }, userId, messageId: null, dmId: null },
-          data: { messageId: msg.id },
-        });
-        if (updated.count !== fileIds.length) {
-          throw new Error('Invalid file IDs or files already attached');
-        }
-      }
-
-      return tx.message.findUnique({
-        where: { id: msg.id },
-        include: { ...THREAD_REPLY_INCLUDE, ...PARENT_EXCERPT_INCLUDE },
-      });
-    }).then((m) => (m ? withParentExcerpt(m) : m));
-
-    // Broadcast to channel so other users see the thread count update
-    const io = getIO();
-    if (io && reply) {
-      io.to(`channel:${parentMessage.channelId}`).emit('message:new', { ...reply, threadId: parentId });
-    }
-
     res.status(201).json(reply);
-
-    // 응답 뒤에: 스레드 답글·멘션 활동과 푸시(await하지 않는다)
-    if (reply) {
-      void processNewChannelMessage(reply);
-      void onThreadReplyCreated(reply);
-    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
       return;
     }
     logError('Reply error', error);

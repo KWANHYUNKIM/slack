@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # 규칙 17: 소스에 외부 URL 리터럴이 남지 않았는지 검사한다 (docs/architecture/self-contained-assets.md 3절).
-# 대상: app/backend/src(테스트 제외), app/frontend/src(locales 제외), app/frontend/index.html.
+# 대상: app/backend/src(테스트 제외), app/frontend/src(locales 제외), app/frontend/index.html, app/desktop/src(테스트 제외).
 # 잡는 것: http://, https://, 따옴표 또는 src=/href= 뒤의 프로토콜 상대 URL(//host).
 # dist는 번들 라이브러리의 주석, 문서 링크 오탐이 많아 검사하지 않는다. 런타임 요청은 CSP가 막는다.
 # 허용 목록: scripts/external-urls.allow ("경로 정규식<TAB>URL 정규식"). localhost, 127.0.0.1, http://www.w3.org/ (SVG 네임스페이스)는 기본 허용.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ALLOW=scripts/external-urls.allow
-targets=(app/backend/src app/frontend/src app/frontend/index.html)
+targets=(app/backend/src app/frontend/src app/frontend/index.html app/desktop/src)
 for t in "${targets[@]}"; do
   [ -e "$t" ] || { echo "검사 대상이 없다: $t" >&2; exit 1; }
 done
