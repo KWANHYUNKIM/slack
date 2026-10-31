@@ -57,8 +57,8 @@
 | feat/channel-name-skeleton: UTS #39 skeleton 컬럼으로 단일 체계 동형 이름(рау/pay, ɡ/g) 유니크 검사 | - | opus | 대기(스키마) | 2h | | | PR #14 남은 이슈 |
 | 00b-gap-analysis-v2: 실제 Slack(#claude-test)과 현재 main 기능 비교, CRUD 관찰, 차이 우선순위 표와 다음 파트 스펙(06~) | planner-1 | sonnet | 완료(문서 기반, 브라우저 미관찰) | 1h | 2026-10-31 21:42 | 2026-10-31 21:45 | Claude in Chrome 도구 없음 → 04·05·06~10 "검증 필요" 항목 브라우저 재관찰 필요 | 2026-10-31 20:33 사용자 지시 |
 | 06-quick-switcher-shortcuts: Cmd/Ctrl+K 빠른 전환기, 전역 단축키 | dev-2 | sonnet | 완료(PR #30 머지) | 1.5h | 2026-10-31 22:17 | 2026-10-31 22:20 | 00b |
-| 07-message-permalink: 메시지 링크 복사와 딥링크 | dev-3 | sonnet | 진행 | 1.5h | 2026-10-31 22:26 | | 00b |
-| 08-search-v2: from:/in:/날짜 필터, 탭, 하이라이트 | dev-4 | sonnet | 진행 | 2h | 2026-10-31 22:26 | | 00b, 기존 fix/search-nfc 흡수 |
-| 10-unread-divider: 안 읽음 구분선 | - | sonnet | 대기(P0, 07 이후) | 1.5h | | | 00b |
-| 09-reminders: 리마인더 | dev-5 | sonnet | 진행 | 1.5h | 2026-10-31 22:30 | | 00b, 스키마 |
+| 07-message-permalink: 메시지 링크 복사와 딥링크 | dev-3 | sonnet | 완료(PR #32 머지) | 1.5h | 2026-10-31 22:26 | 2026-10-31 22:32 | 00b |
+| 08-search-v2: from:/in:/날짜 필터, 탭, 하이라이트 | dev-4 | sonnet | PR #33 리뷰 반영 중 | 2h | 2026-10-31 22:26 | 2026-10-31 22:37 | 00b, 기존 fix/search-nfc 흡수 |
+| 10-unread-divider: 안 읽음 구분선 | dev-3 | sonnet | 진행 | 1.5h | 2026-10-31 22:43 | | 00b |
+| 09-reminders: 리마인더 | dev-5 | sonnet | PR #34 리뷰 반영 중 | 1.5h | 2026-10-31 22:30 | 2026-10-31 22:39 | 00b, 스키마 |
 | 00c-slack-browser-verify: Claude in Chrome으로 #claude-test CRUD 재관찰, 06~10 "검증 필요" 확인 | - | sonnet | 대기(브라우저 도구 필요) | 1h | | | 사용자 확인 필요 |
