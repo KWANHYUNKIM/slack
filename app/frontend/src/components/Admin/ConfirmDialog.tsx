@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
@@ -6,7 +7,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   /** 번역된 실패 문구. 있으면 대화상자 안에 보여 준다. */
   error?: string;
-  /** 확인 처리 중이면 버튼을 막아 중복 제출을 막는다. */
+  /** 확인 처리 중이면 버튼을 막고, 배경 클릭과 Esc로 닫히지 않게 한다. */
   busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -14,9 +15,25 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({ title, message, confirmLabel, error, busy, onConfirm, onCancel }: ConfirmDialogProps) {
   const { t } = useTranslation();
+
+  // 처리 중에는 Esc로도 닫히지 않는다(요청 결과를 화면에서 놓치지 않게 한다)
+  useEffect(() => {
+    if (busy) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [busy, onCancel]);
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50" onClick={onCancel}>
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+      onClick={busy ? undefined : onCancel}
+    >
       <div
+        role="dialog"
+        aria-modal="true"
         className="w-[400px] rounded-xl bg-white shadow-xl p-5"
         onClick={(e) => e.stopPropagation()}
       >

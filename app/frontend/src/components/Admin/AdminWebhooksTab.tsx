@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Copy, Trash2, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate, formatRelative } from '@/lib/i18n/format';
-import { apiErrorMessage } from '@/lib/apiErrors';
+import { useAdminAction } from '@/hooks/useAdminAction';
 
 export function AdminWebhooksTab() {
   const { t } = useTranslation('admin');
@@ -11,31 +11,24 @@ export function AdminWebhooksTab() {
   const [name, setName] = useState('');
   const [channelId, setChannelId] = useState('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
-  // 만들기·삭제 실패 문구. 실패하면 표 위에 번역된 문구를 보여 준다.
-  const [actionError, setActionError] = useState('');
+  // 만들기와 삭제는 인스턴스를 나눈다. 만들기는 진행 중에 다시 누르지 못하게 busy로 막는다.
+  const createAction = useAdminAction('admin:errors.createWebhook');
+  const deleteAction = useAdminAction('admin:errors.deleteWebhook');
 
   const handleCreate = async () => {
     if (!name || !channelId) return;
-    setActionError('');
-    try {
-      await createWebhook({
-        name,
-        channelId: parseInt(channelId),
-      });
+    const ok = await createAction.run(() => createWebhook({
+      name,
+      channelId: parseInt(channelId),
+    }));
+    if (ok) {
       setName('');
       setChannelId('');
-    } catch (err) {
-      setActionError(apiErrorMessage(err, 'admin:errors.createWebhook'));
     }
   };
 
-  const handleDelete = async (webhookId: number) => {
-    setActionError('');
-    try {
-      await deleteWebhook(webhookId);
-    } catch (err) {
-      setActionError(apiErrorMessage(err, 'admin:errors.deleteWebhook'));
-    }
+  const handleDelete = (webhookId: number) => {
+    void deleteAction.run(() => deleteWebhook(webhookId));
   };
 
   const copyUrl = (token: string, id: number) => {
@@ -94,7 +87,7 @@ export function AdminWebhooksTab() {
           </div>
           <button
             onClick={handleCreate}
-            disabled={!name || !channelId}
+            disabled={!name || !channelId || createAction.busy}
             className="rounded-lg bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('common:actions.create')}
@@ -102,8 +95,11 @@ export function AdminWebhooksTab() {
         </div>
       </div>
 
-      {actionError && (
-        <p role="alert" className="mb-3 text-sm text-slack-error">{actionError}</p>
+      {createAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{createAction.error}</p>
+      )}
+      {deleteAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{deleteAction.error}</p>
       )}
 
       {/* Webhook List */}

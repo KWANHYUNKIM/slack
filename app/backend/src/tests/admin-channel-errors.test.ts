@@ -14,6 +14,7 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
   beforeEach(async () => {
     await prisma.activity.deleteMany();
     await prisma.webhook.deleteMany();
+    await prisma.inviteLink.deleteMany();
     await prisma.message.deleteMany();
     await prisma.channelRead.deleteMany();
     await prisma.channelMember.deleteMany();
@@ -38,6 +39,35 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  describe('DELETE /admin/invites/:id', () => {
+    it('초대 2개를 연속 삭제하다가 한쪽이 실패하면 실패한 쪽만 남고, 재시도하면 지워진다', async () => {
+      const make = () => request(app)
+        .post('/admin/invites')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'MEMBER' });
+      const inviteA = (await make()).body.id as number;
+      const inviteB = (await make()).body.id as number;
+
+      const delA = await request(app).delete(`/admin/invites/${inviteA}`).set('Authorization', `Bearer ${adminToken}`);
+      expect(delA.status).toBe(200);
+
+      jest.spyOn(prisma.inviteLink, 'delete').mockRejectedValueOnce(new Error('lock timeout: internal'));
+      const delB = await request(app).delete(`/admin/invites/${inviteB}`).set('Authorization', `Bearer ${adminToken}`);
+      expect(delB.status).toBe(500);
+      expect(delB.body).toEqual({ error: 'Failed to delete invite' });
+      expect(JSON.stringify(delB.body)).not.toContain('lock timeout');
+
+      // 실패한 초대만 남는다
+      const remaining = await prisma.inviteLink.findMany({ select: { id: true } });
+      expect(remaining.map((r) => r.id)).toEqual([inviteB]);
+
+      jest.restoreAllMocks();
+      const retry = await request(app).delete(`/admin/invites/${inviteB}`).set('Authorization', `Bearer ${adminToken}`);
+      expect(retry.status).toBe(200);
+      expect(await prisma.inviteLink.count()).toBe(0);
+    });
   });
 
   describe('DELETE /admin/channels/:id', () => {
