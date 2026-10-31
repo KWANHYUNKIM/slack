@@ -22,7 +22,10 @@
     "channels": "Channels",
     "addChannels": "Add channels",
     "directMessages": "Direct messages",
-    "addTeammates": "Add teammates"
+    "addTeammates": "Add teammates",
+    "starredEmpty": "Star a channel or conversation to keep it here.",
+    "collapse": "Collapse {section}",
+    "expand": "Expand {section}"
   },
   "teammates": {
     "title": "Direct message",

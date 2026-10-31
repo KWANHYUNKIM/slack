@@ -12,6 +12,7 @@ import { HeaderSearch } from './HeaderSearch';
 import { HeaderNotifications } from './HeaderNotifications';
 import { HeaderTabs } from './HeaderTabs';
 import { MobileSearchOverlay } from './MobileSearchOverlay';
+import { ChannelDetailsModal } from './ChannelDetailsModal';
 import { useMobileStore } from '@/stores/useMobileStore';
 
 interface MessageHeaderProps {
@@ -63,6 +64,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
 
   const [leaveError, setLeaveError] = useState<string | null>(null);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleLeaveChannel = async () => {
     setShowMenu(false);
@@ -110,6 +112,17 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
               <Star className={cn('h-4 w-4', channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-slack-secondary')} />
             </Button>
           )}
+          <button
+            data-testid="channel-topic-button"
+            onClick={() => setShowDetails(true)}
+            title={t('header.editDetails')}
+            className={cn(
+              'ms-2 hidden max-w-[360px] truncate rounded px-1.5 py-0.5 text-[13px] hover:bg-slack-hover sm:block',
+              channel.topic ? 'text-slack-secondary' : 'text-slack-hint',
+            )}
+          >
+            {channel.topic || t('header.addTopic')}
+          </button>
         </div>
 
         {/* Right Section */}
@@ -196,6 +209,10 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
         onTogglePins={onTogglePins}
         onToggleFiles={onToggleFiles}
       />
+
+      {showDetails && (
+        <ChannelDetailsModal channel={channel} onClose={() => setShowDetails(false)} />
+      )}
 
       {/* Mobile search overlay */}
       {showMobileSearch && (

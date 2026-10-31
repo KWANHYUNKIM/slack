@@ -22,7 +22,10 @@
     "channels": "채널",
     "addChannels": "채널 추가",
     "directMessages": "다이렉트 메시지",
-    "addTeammates": "팀원 추가"
+    "addTeammates": "팀원 추가",
+    "starredEmpty": "채널이나 대화에 별표를 표시하면 여기에 모입니다.",
+    "collapse": "{section} 접기",
+    "expand": "{section} 펼치기"
   },
   "teammates": {
     "title": "다이렉트 메시지",

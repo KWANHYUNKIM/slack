@@ -10,7 +10,7 @@ import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
-import { validateChannelName } from '../utils/channelName.js';
+import { validateChannelName, CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
 
 const router = Router();
@@ -111,7 +111,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     // Batch: get memberships and unread counts in parallel (2 queries instead of N+1)
     const channelIds = channels.map(c => c.id);
 
-    const [memberships, unreadRows, mentionMap] = await Promise.all([
+    const [memberships, unreadRows, mentionMap, stars] = await Promise.all([
       prisma.channelMember.findMany({
         where: { userId, channelId: { in: channelIds } },
         select: { channelId: true },
@@ -130,9 +130,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           `
         : Promise.resolve([]),
       getMentionCountsByChannel(userId, channelIds),
+      prisma.channelStar.findMany({
+        where: { userId, channelId: { in: channelIds } },
+        select: { channelId: true },
+      }),
     ]);
 
     const memberSet = new Set(memberships.map(m => m.channelId));
+    const starredSet = new Set(stars.map(st => st.channelId));
     const unreadMap = new Map(unreadRows.map(r => [r.channelId, Number(r.unreadCount)]));
 
     const channelsWithUnread = channels.map((channel) => ({
@@ -140,6 +145,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       unreadCount: memberSet.has(channel.id) ? (unreadMap.get(channel.id) || 0) : 0,
       mentionCount: memberSet.has(channel.id) ? (mentionMap.get(channel.id) || 0) : 0,
       isMember: memberSet.has(channel.id),
+      isStarred: starredSet.has(channel.id),
     }));
 
     res.json(channelsWithUnread);
@@ -188,12 +194,18 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
+    const isStarred = !!(await prisma.channelStar.findUnique({
+      where: { userId_channelId: { userId, channelId } },
+      select: { userId: true },
+    }));
+
     // Non-members viewing public channels get a minimal member list:
     // only user id + name.  The ...m spread that was here previously
     // leaked ChannelMember fields (role, joinedAt) to non-members.
     if (!isMember) {
       const sanitized = {
         ...channel,
+        isStarred,
         members: channel.members.map(m => ({
           user: { id: m.user.id, name: m.user.name },
         })),
@@ -202,10 +214,187 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    res.json(channel);
+    res.json({ ...channel, isStarred });
   } catch (error) {
     logError('Get channel error', error);
     res.status(500).json({ error: 'Failed to get channel' });
+  }
+});
+
+// 토픽·설명: 앞뒤 공백을 지우고, 빈 문자열이나 null은 비우기(null 저장)로 취급한다.
+const metaText = (max: number) =>
+  z.string().max(max)
+    .refine(val => !val.includes('\u0000'), { message: 'Text cannot contain null bytes' })
+    .transform(val => val.trim() || null)
+    .nullable()
+    .optional();
+
+const updateChannelSchema = z.object({
+  name: z.unknown().optional(),
+  topic: metaText(250),
+  description: metaText(500),
+}).strict().refine(
+  data => data.name !== undefined || data.topic !== undefined || data.description !== undefined,
+  { message: 'At least one field must be provided' },
+);
+
+// PATCH /channels/:id - 이름, 토픽, 설명 수정 (채널 OWNER/MODERATOR 또는 워크스페이스 ADMIN 이상)
+router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const channelId = parseIntParam(req.params.id);
+    if (!channelId) {
+      res.status(400).json({ error: 'Invalid channel ID' });
+      return;
+    }
+    const userId = req.user!.userId;
+    const isWorkspaceAdmin = req.user!.role === 'ADMIN' || req.user!.role === 'OWNER';
+
+    const [channel, membership] = await Promise.all([
+      prisma.channel.findUnique({ where: { id: channelId } }),
+      prisma.channelMember.findUnique({ where: { userId_channelId: { userId, channelId } } }),
+    ]);
+    // 비공개 채널의 비멤버에게는 존재 자체를 숨긴다(워크스페이스 관리자는 예외)
+    if (!channel || (!membership && channel.isPrivate && !isWorkspaceAdmin)) {
+      res.status(404).json({ error: 'Channel not found' });
+      return;
+    }
+    const canEdit = isWorkspaceAdmin || membership?.role === 'OWNER' || membership?.role === 'MODERATOR';
+    if (!canEdit) {
+      res.status(403).json({ error: 'Only channel owners, moderators, or workspace admins can edit this channel' });
+      return;
+    }
+    if (channel.archivedAt) {
+      res.status(403).json({ error: 'This channel has been archived' });
+      return;
+    }
+
+    const parsed = updateChannelSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
+      return;
+    }
+
+    const data: { name?: string; topic?: string | null; description?: string | null } = {};
+    const changes: string[] = [];
+
+    if (parsed.data.name !== undefined) {
+      // 생성 경로와 같은 검증. 이미 25자를 넘는 기존 이름이 있어 관리자는 관리자 상한을 쓴다.
+      const nameResult = validateChannelName(
+        parsed.data.name,
+        isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : undefined,
+      );
+      if (!nameResult.ok) {
+        res.status(400).json({ error: nameResult.error, code: nameResult.code });
+        return;
+      }
+      if (nameResult.name !== channel.name) {
+        const existing = await prisma.channel.findFirst({
+          where: { name: { equals: nameResult.name, mode: 'insensitive' }, id: { not: channelId } },
+          select: { id: true },
+        });
+        if (existing) {
+          res.status(409).json({ error: 'A channel with that name already exists' });
+          return;
+        }
+        data.name = nameResult.name;
+        changes.push(`Renamed from #${channel.name} to #${nameResult.name}`);
+      }
+    }
+    if (parsed.data.topic !== undefined && parsed.data.topic !== channel.topic) {
+      data.topic = parsed.data.topic;
+      changes.push(parsed.data.topic === null ? 'Topic cleared' : 'Topic changed');
+    }
+    if (parsed.data.description !== undefined && parsed.data.description !== channel.description) {
+      data.description = parsed.data.description;
+      changes.push(parsed.data.description === null ? 'Description cleared' : 'Description changed');
+    }
+
+    if (Object.keys(data).length === 0) {
+      res.json(channel);
+      return;
+    }
+
+    let updated;
+    try {
+      updated = await prisma.channel.update({
+        where: { id: channelId },
+        data,
+        include: { _count: { select: { members: true, messages: true } } },
+      });
+    } catch (error) {
+      // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(유니크 제약)
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        res.status(409).json({ error: 'A channel with that name already exists' });
+        return;
+      }
+      throw error;
+    }
+
+    await writeAuditLog({
+      action: 'channel.edited',
+      actorId: userId,
+      targetType: 'channel',
+      targetId: channelId,
+      targetName: updated.name,
+      details: changes.join('; '),
+    });
+
+    // DB 커밋 뒤 알림: 채널 룸, 공개 채널은 전체 멤버의 개인 룸(룸에 아직 join하지 않은 탭 포함)
+    const io = getIO();
+    if (io) {
+      const payload = {
+        id: updated.id,
+        name: updated.name,
+        topic: updated.topic,
+        description: updated.description,
+      };
+      let target = io.to(`channel:${channelId}`);
+      if (!updated.isPrivate) {
+        const members = await prisma.channelMember.findMany({
+          where: { channelId },
+          select: { userId: true },
+        });
+        for (const m of members) target = target.to(`user:${m.userId}`);
+      }
+      target.emit('channel:updated', payload);
+    }
+
+    res.json(updated);
+  } catch (error) {
+    logError('Update channel error', error);
+    res.status(500).json({ error: 'Failed to update channel' });
+  }
+});
+
+// PUT /channels/:id/star - 즐겨찾기 추가 (멱등)
+router.put('/:id/star', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
+  try {
+    const channelId = req.channelId!;
+    const userId = req.user!.userId;
+    await prisma.channelStar.upsert({
+      where: { userId_channelId: { userId, channelId } },
+      create: { userId, channelId },
+      update: {},
+    });
+    getIO()?.to(`user:${userId}`).emit('star:updated', { type: 'channel', id: channelId, isStarred: true });
+    res.json({ channelId, isStarred: true });
+  } catch (error) {
+    logError('Star channel error', error);
+    res.status(500).json({ error: 'Failed to star channel' });
+  }
+});
+
+// DELETE /channels/:id/star - 즐겨찾기 해제 (멱등)
+router.delete('/:id/star', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
+  try {
+    const channelId = req.channelId!;
+    const userId = req.user!.userId;
+    await prisma.channelStar.deleteMany({ where: { userId, channelId } });
+    getIO()?.to(`user:${userId}`).emit('star:updated', { type: 'channel', id: channelId, isStarred: false });
+    res.json({ channelId, isStarred: false });
+  } catch (error) {
+    logError('Unstar channel error', error);
+    res.status(500).json({ error: 'Failed to unstar channel' });
   }
 });
 

@@ -80,7 +80,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [showFiles, setShowFiles] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState<ApiDirectMessage[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-  const [isStarred, setIsStarred] = useState(false);
+  const toggleDMStar = useChannelStore((s) => s.toggleDMStar);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
@@ -94,6 +94,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const openSidebar = useMobileStore((s) => s.openSidebar);
   const isSelf = userId === currentUser?.id;
   const dmEntry = useChannelStore((s) => s.directMessages.find((d) => d.userId === userId));
+  const isStarred = dmEntry?.isStarred ?? false;
   const openProfile = useProfileStore((s) => s.openProfile);
   const toggleBookmark = useBookmarkStore((s) => s.toggle);
   const bookmarkedIds = useBookmarkStore((s) => s.bookmarkedIds);
@@ -293,7 +294,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
               variant="toolbar"
               size="icon-xs"
               data-testid="dm-star-button"
-              onClick={() => setIsStarred((v) => !v)}
+              onClick={() => toggleDMStar(userId)}
               title={isStarred ? t('dm.unstar') : t('dm.star')}
               aria-label={isStarred ? t('dm.unstar') : t('dm.star')}
             >

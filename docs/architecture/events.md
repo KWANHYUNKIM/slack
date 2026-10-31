@@ -13,6 +13,13 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | `activity:read` | 서버 -> 클라이언트 | `user:<본인>` | `{ ids: number[] }` | `POST /activity/read`, `/channels/:id/read`, `/dms/:userId/read`로 읽음 처리됐을 때(다른 탭 동기화) |
 | `activity:removed` | 서버 -> 클라이언트 | `user:<받는 사람>` | `{ ids: number[] }` | 원본 메시지 삭제, 편집으로 멘션 제거, 리액션 취소로 활동이 사라졌을 때 |
 
+## 채널 메타·별표 - 파트 03
+
+| 이벤트 | 방향 | 대상 room | payload | 시점 |
+|---|---|---|---|---|
+| `channel:updated` | 서버 -> 클라이언트 | `channel:<id>`, 공개 채널이면 멤버 각자의 `user:<id>` | `{ id, name, topic, description }` | `PATCH /channels/:id`로 이름·주제·설명이 바뀌었을 때(변경 없으면 보내지 않음) |
+| `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'channel' \| 'dm', id, isStarred }` | `PUT/DELETE /channels/:id/star`, `/dms/:userId/star` (다른 탭 동기화) |
+
 ## 기존 이벤트 (slawk에서 이어받음)
 
 | 이벤트 | 방향 | 비고 |

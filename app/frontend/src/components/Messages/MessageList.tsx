@@ -7,6 +7,7 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { markChannelRead } from '@/lib/api';
 import { Message } from './Message';
+import { ChannelIntro } from './ChannelIntro';
 import type { Message as MessageType } from '@/lib/types';
 
 interface MessageListProps {
@@ -155,9 +156,12 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-slack-hint">
+      <div className="flex flex-1 flex-col justify-end">
+        <ChannelIntro channelId={channelId} readOnly={readOnly} />
+        <div className="flex flex-col items-center pb-8 text-slack-hint">
         <p className="text-lg font-medium">{t('list.empty')}</p>
         <p className="text-sm">{readOnly ? t('list.emptyReadOnly') : t('list.emptyFirst')}</p>
+        </div>
       </div>
     );
   }

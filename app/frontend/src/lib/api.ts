@@ -174,6 +174,9 @@ export interface ApiChannel {
   id: number;
   name: string;
   isPrivate: boolean;
+  topic?: string | null;
+  description?: string | null;
+  isStarred?: boolean;
   createdAt: string;
   unreadCount: number;
   mentionCount?: number;
@@ -202,6 +205,52 @@ export function getChannels() {
 
 export function getChannel(id: number) {
   return request<ApiChannelDetail>(`/channels/${id}`);
+}
+
+export interface ChannelMetaUpdate {
+  name?: string;
+  topic?: string | null;
+  description?: string | null;
+}
+
+export function updateChannel(id: number, data: ChannelMetaUpdate) {
+  return request<ApiChannel>(`/channels/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function starChannel(id: number) {
+  return request<{ channelId: number; isStarred: boolean }>(`/channels/${id}/star`, { method: 'PUT' });
+}
+
+export function unstarChannel(id: number) {
+  return request<{ channelId: number; isStarred: boolean }>(`/channels/${id}/star`, { method: 'DELETE' });
+}
+
+export function starDM(userId: number) {
+  return request<{ userId: number; isStarred: boolean }>(`/dms/${userId}/star`, { method: 'PUT' });
+}
+
+export function unstarDM(userId: number) {
+  return request<{ userId: number; isStarred: boolean }>(`/dms/${userId}/star`, { method: 'DELETE' });
+}
+
+export interface SidebarCollapsed {
+  starred: boolean;
+  channels: boolean;
+  dms: boolean;
+}
+
+export function getSidebarPrefs() {
+  return request<{ collapsed: SidebarCollapsed }>('/users/me/sidebar');
+}
+
+export function updateSidebarPrefs(collapsed: Partial<SidebarCollapsed>) {
+  return request<{ collapsed: SidebarCollapsed }>('/users/me/sidebar', {
+    method: 'PATCH',
+    body: JSON.stringify({ collapsed }),
+  });
 }
 
 export function createChannel(name: string, isPrivate = false) {
@@ -552,6 +601,7 @@ export interface ApiDMConversation {
   lastMessage: { content: string; createdAt: string; fromUserId: number } | null;
   unreadCount: number;
   mentionCount?: number;
+  isStarred?: boolean;
 }
 
 export interface ApiDMReaction {

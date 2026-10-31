@@ -107,6 +107,58 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// 사이드바 섹션 접기 상태. 키는 고정 목록만 받는다(임의 JSON 저장 방지).
+const sidebarSchema = z.object({
+  collapsed: z.object({
+    starred: z.boolean().optional(),
+    channels: z.boolean().optional(),
+    dms: z.boolean().optional(),
+  }).strict(),
+});
+
+function normalizeCollapsed(raw: unknown) {
+  const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  return {
+    starred: obj.starred === true,
+    channels: obj.channels === true,
+    dms: obj.dms === true,
+  };
+}
+
+// GET /users/me/sidebar - 섹션 접기 상태 조회
+router.get('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const pref = await prisma.sidebarPref.findUnique({ where: { userId: req.user!.userId } });
+    res.json({ collapsed: normalizeCollapsed(pref?.collapsed) });
+  } catch (error) {
+    logError('Get sidebar pref error', error);
+    res.status(500).json({ error: 'Failed to get sidebar preferences' });
+  }
+});
+
+// PATCH /users/me/sidebar - 섹션 접기 상태 저장 (보낸 키만 병합)
+router.patch('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const parsed = sidebarSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
+      return;
+    }
+    const userId = req.user!.userId;
+    const existing = await prisma.sidebarPref.findUnique({ where: { userId } });
+    const collapsed = { ...normalizeCollapsed(existing?.collapsed), ...parsed.data.collapsed };
+    await prisma.sidebarPref.upsert({
+      where: { userId },
+      create: { userId, collapsed },
+      update: { collapsed },
+    });
+    res.json({ collapsed });
+  } catch (error) {
+    logError('Update sidebar pref error', error);
+    res.status(500).json({ error: 'Failed to update sidebar preferences' });
+  }
+});
+
 // PATCH /users/me - Update current user profile
 router.patch('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

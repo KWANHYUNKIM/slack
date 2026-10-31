@@ -3,30 +3,7 @@ import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
 import type { Channel, DirectMessage } from '@/lib/types';
 
-function getStarredKey(): string {
-  try {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.userId) return `slawk:starred_channels:${payload.userId}`;
-    }
-  } catch { /* ignore */ }
-  return 'slawk:starred_channels';
-}
-
-function loadStarred(): Set<number> {
-  try {
-    const raw = localStorage.getItem(getStarredKey());
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw) as number[]);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveStarred(ids: Set<number>): void {
-  localStorage.setItem(getStarredKey(), JSON.stringify(Array.from(ids)));
-}
+export type SidebarSection = keyof api.SidebarCollapsed;
 
 interface ChannelState {
   channels: Channel[];
@@ -37,7 +14,16 @@ interface ChannelState {
   dmScrollToMessageId: number | null;
   isLoading: boolean;
   loadError: string | null;
+  /** Per-user collapsed state of the sidebar sections (saved on the server) */
+  sidebarCollapsed: api.SidebarCollapsed;
 
+  fetchSidebarPrefs: () => Promise<void>;
+  toggleSection: (section: SidebarSection) => void;
+  toggleDMStar: (userId: number) => void;
+  /** Apply a channel:updated / star:updated payload from another tab or user */
+  applyChannelMeta: (meta: { id: number; name: string; topic: string | null; description: string | null }) => void;
+  applyStar: (target: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => void;
+  updateChannelMeta: (channelId: number, data: api.ChannelMetaUpdate) => Promise<void>;
   fetchChannels: () => Promise<void>;
   fetchDirectMessages: () => Promise<void>;
   createChannel: (name: string, isPrivate?: boolean) => Promise<number>;
@@ -76,6 +62,55 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   dmScrollToMessageId: null,
   isLoading: false,
   loadError: null,
+  sidebarCollapsed: { starred: false, channels: false, dms: false },
+
+  fetchSidebarPrefs: async () => {
+    try {
+      const { collapsed } = await api.getSidebarPrefs();
+      set({ sidebarCollapsed: collapsed });
+    } catch { /* Non-critical: sections stay expanded */ }
+  },
+
+  toggleSection: (section) => {
+    const next = !get().sidebarCollapsed[section];
+    const prev = get().sidebarCollapsed;
+    set({ sidebarCollapsed: { ...prev, [section]: next } });
+    api.updateSidebarPrefs({ [section]: next }).catch(() => {
+      set({ sidebarCollapsed: prev });
+    });
+  },
+
+  applyChannelMeta: (meta) => {
+    set((state) => ({
+      channels: state.channels.map((ch) =>
+        ch.id === meta.id
+          ? { ...ch, name: meta.name, topic: meta.topic, description: meta.description }
+          : ch,
+      ),
+    }));
+  },
+
+  applyStar: ({ type, id, isStarred }) => {
+    if (type === 'channel') {
+      set((state) => ({
+        channels: state.channels.map((ch) => (ch.id === id ? { ...ch, isStarred } : ch)),
+      }));
+    } else {
+      set((state) => ({
+        directMessages: state.directMessages.map((dm) => (dm.userId === id ? { ...dm, isStarred } : dm)),
+      }));
+    }
+  },
+
+  updateChannelMeta: async (channelId, data) => {
+    const updated = await api.updateChannel(channelId, data);
+    get().applyChannelMeta({
+      id: channelId,
+      name: updated.name,
+      topic: updated.topic ?? null,
+      description: updated.description ?? null,
+    });
+  },
 
   fetchDirectMessages: async () => {
     try {
@@ -88,6 +123,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         userStatus: (c.otherUser.status as DirectMessage['userStatus']) || 'offline',
         unreadCount: c.unreadCount,
         mentionCount: c.mentionCount ?? 0,
+        isStarred: c.isStarred ?? false,
       }));
       set({ directMessages: dms });
     } catch {
@@ -98,7 +134,6 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   fetchChannels: async () => {
     set({ isLoading: true, loadError: null });
     try {
-      const starred = loadStarred();
       const apiChannels = await api.getChannels();
       const channels: Channel[] = apiChannels.map((ch) => ({
         id: ch.id,
@@ -108,7 +143,9 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         unreadCount: ch.unreadCount,
         mentionCount: ch.mentionCount ?? 0,
         isMember: ch.isMember,
-        isStarred: starred.has(ch.id),
+        topic: ch.topic ?? null,
+        description: ch.description ?? null,
+        isStarred: ch.isStarred ?? false,
       }));
       set({
         channels,
@@ -185,19 +222,25 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     }
   },
 
+  // Optimistic: flip locally first, roll back if the server rejects it
   toggleStar: (channelId: number) => {
-    const starred = loadStarred();
-    if (starred.has(channelId)) {
-      starred.delete(channelId);
-    } else {
-      starred.add(channelId);
-    }
-    saveStarred(starred);
-    set((state) => ({
-      channels: state.channels.map((ch) =>
-        ch.id === channelId ? { ...ch, isStarred: starred.has(channelId) } : ch,
-      ),
-    }));
+    const current = get().channels.find((ch) => ch.id === channelId);
+    if (!current) return;
+    const next = !current.isStarred;
+    get().applyStar({ type: 'channel', id: channelId, isStarred: next });
+    (next ? api.starChannel(channelId) : api.unstarChannel(channelId)).catch(() => {
+      get().applyStar({ type: 'channel', id: channelId, isStarred: !next });
+    });
+  },
+
+  toggleDMStar: (userId: number) => {
+    const current = get().directMessages.find((dm) => dm.userId === userId);
+    if (!current) return;
+    const next = !current.isStarred;
+    get().applyStar({ type: 'dm', id: userId, isStarred: next });
+    (next ? api.starDM(userId) : api.unstarDM(userId)).catch(() => {
+      get().applyStar({ type: 'dm', id: userId, isStarred: !next });
+    });
   },
 
   startDM: (userId: number, userName: string, userAvatar?: string) => {
