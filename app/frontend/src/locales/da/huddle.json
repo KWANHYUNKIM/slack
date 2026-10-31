@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(slået fra)",
+    "mute": "Slå lyd fra",
+    "unmute": "Slå lyd til",
+    "leave": "Forlad huddle"
+  },
+  "button": {
+    "leaveFirstError": "Forlad din nuværende huddle først",
+    "cancelInviteFirstError": "Annullér din nuværende invitation først",
+    "cancelInvite": "Annullér invitation",
+    "calling": "Ringer op...",
+    "inHuddle": "I huddle",
+    "leaveCurrentFirst": "Forlad den nuværende huddle først",
+    "start": "Start huddle"
+  },
+  "incoming": {
+    "invite": "Huddle-invitation",
+    "secondsLeft": "{count} s",
+    "decline": "Afvis",
+    "accept": "Accepter"
+  },
+  "system": {
+    "youStarted": "Du startede en huddle.",
+    "started": "Startede en huddle.",
+    "ended": "Afsluttet",
+    "youSentInvite": "Du sendte en huddle-invitation.",
+    "sentInvite": "Sendte dig en huddle-invitation.",
+    "huddleStarted": "Huddle startet",
+    "huddleEnded": "Huddle afsluttet ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Forlad din nuværende huddle først",
+    "cancelInviteFirst": "Annullér din nuværende invitation først",
+    "micDenied": "Adgang til mikrofonen blev nægtet",
+    "busy": "De er i en anden huddle",
+    "declined": "Invitationen blev afvist",
+    "expired": "Invitationen er udløbet",
+    "rateLimited": "For mange anmodninger. Prøv igen om lidt",
+    "invalidInvite": "Invitationsanmodningen var ugyldig",
+    "cannotInviteSelf": "Du kan ikke invitere dig selv",
+    "userNotFound": "Brugeren blev ikke fundet",
+    "invalidAccept": "Accept-anmodningen var ugyldig",
+    "inviteNotFound": "Invitationen blev ikke fundet eller er udløbet",
+    "peerOffline": "De er offline",
+    "generic": "Huddlen kunne ikke startes. Prøv igen"
+  }
+}

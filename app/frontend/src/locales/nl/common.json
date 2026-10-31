@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "close": "Sluiten",
+    "send": "Verzenden",
+    "confirm": "Bevestigen",
+    "back": "Terug",
+    "remove": "Verwijderen",
+    "add": "Toevoegen",
+    "create": "Maken",
+    "retry": "Opnieuw proberen",
+    "search": "Zoeken",
+    "copy": "Kopiëren",
+    "done": "Klaar",
+    "next": "Volgende",
+    "more": "Meer"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emoji kunnen niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
+    "retry": "Opnieuw proberen"
+  },
+  "status": {
+    "loading": "Laden...",
+    "saving": "Opslaan...",
+    "deleting": "Verwijderen..."
+  },
+  "dates": {
+    "today": "Vandaag",
+    "yesterday": "Gisteren"
+  },
+  "quickSwitcher": {
+    "title": "Snelwisselaar",
+    "inputLabel": "Ga naar een gesprek",
+    "placeholder": "Ga naar een kanaal of gesprek",
+    "recent": "Recent",
+    "results": "Resultaten",
+    "clearRecent": "Recent wissen",
+    "listLabel": "Gesprekken",
+    "noResults": "Geen overeenkomende gesprekken",
+    "starred": "Met ster",
+    "unread": "Ongelezen",
+    "dnd": "Niet storen",
+    "footer": "{keys} om te openen. Omhoog en omlaag om te bewegen, Enter om te gaan, Esc om te sluiten.",
+    "open": "Ga naar…",
+    "kind": {
+      "channel": "Kanaal",
+      "dm": "Direct bericht",
+      "group": "Groepsbericht"
+    }
+  },
+  "shortcuts": {
+    "title": "Sneltoetsen",
+    "groups": {
+      "navigation": "Navigatie",
+      "general": "Algemeen"
+    },
+    "items": {
+      "switcher": "De snelwisselaar openen",
+      "prevChannel": "Vorig gesprek",
+      "nextChannel": "Volgend gesprek",
+      "prevUnread": "Vorig ongelezen gesprek",
+      "nextUnread": "Volgend ongelezen gesprek",
+      "help": "Sneltoetsen tonen",
+      "closeTop": "De snelwisselaar of dit venster sluiten"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Werkruimte"
+  },
+  "organization": {
+    "defaultName": "Organisatie"
+  }
+}

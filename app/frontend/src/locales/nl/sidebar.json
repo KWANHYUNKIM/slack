@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Activiteit",
+    "unreads": "Ongelezen",
+    "later": "Later",
+    "files": "Bestanden",
+    "admin": "Beheer",
+    "threads": "Threads"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nieuw bericht"
+  },
+  "userMenu": {
+    "profile": "Profiel",
+    "notificationsBlocked": "Meldingen geblokkeerd",
+    "disableNotifications": "Meldingen uitschakelen",
+    "enableNotifications": "Meldingen inschakelen",
+    "signOut": "Afmelden",
+    "updateStatus": "Je status bijwerken",
+    "pauseNotifications": "Meldingen pauzeren",
+    "pausedUntil": "Gepauzeerd tot {time}",
+    "pausedIndefinitely": "Gepauzeerd tot je status wordt gewist",
+    "resumeNotifications": "Meldingen hervatten",
+    "pause": {
+      "m30": "30 minuten",
+      "h1": "1 uur",
+      "h2": "2 uur",
+      "tomorrow": "Tot morgen"
+    },
+    "pauseError": "Het pauzeren van meldingen kon niet worden gewijzigd. Probeer het opnieuw.",
+    "accessTokens": "Persoonlijke toegangstokens",
+    "sessions": "Aangemelde apparaten",
+    "twoFactor": "Tweestapsverificatie",
+    "changePassword": "Wachtwoord wijzigen",
+    "connectedApps": "Verbonden apps"
+  },
+  "sections": {
+    "starred": "Met ster",
+    "channels": "Kanalen",
+    "addChannels": "Kanalen toevoegen",
+    "directMessages": "Directe berichten",
+    "addTeammates": "Teamleden toevoegen",
+    "starredEmpty": "Markeer een kanaal of gesprek met een ster om het hier te houden.",
+    "collapse": "{section} inklappen",
+    "expand": "{section} uitklappen"
+  },
+  "teammates": {
+    "title": "Direct bericht",
+    "subtitle": "Zoek of start een gesprek",
+    "searchPlaceholder": "Zoek op naam...",
+    "noUsers": "Geen gebruikers gevonden",
+    "close": "Sluiten",
+    "pickSubtitle": "Selecteer maximaal {max, plural, one {# persoon} other {# personen}}",
+    "select": "{name} selecteren",
+    "selectedCount": "{count} van {max} geselecteerd",
+    "start": "Gesprek starten",
+    "startGroup": "Groepsgesprek starten"
+  },
+  "you": "(jij)",
+  "notifications": {
+    "someone": "Iemand",
+    "sentAttachment": "Heeft een bijlage verstuurd",
+    "threadTitle": "{name} (thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# lid} other {# leden}}",
+    "createError": "Het groepsgesprek kon niet worden gestart. Probeer het opnieuw."
+  },
+  "statusDialog": {
+    "title": "Een status instellen",
+    "emojiLabel": "Kies een emoji",
+    "textLabel": "Wat is je status?",
+    "textPlaceholder": "Wat is je status?",
+    "durationLabel": "Wissen na",
+    "duration": {
+      "never": "Niet wissen",
+      "m30": "30 minuten",
+      "h1": "1 uur",
+      "h4": "4 uur",
+      "today": "Vandaag",
+      "week": "Deze week"
+    },
+    "pauseCheckbox": "Meldingen pauzeren tot de status wordt gewist",
+    "save": "Opslaan",
+    "clear": "Status wissen",
+    "cancel": "Annuleren",
+    "expiresAt": "Wordt gewist om {time}",
+    "saveError": "Je status kon niet worden opgeslagen. Probeer het opnieuw."
+  },
+  "findConversation": "Zoek een gesprek"
+}

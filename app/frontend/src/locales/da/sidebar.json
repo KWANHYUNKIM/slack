@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktivitet",
+    "unreads": "Ulæste",
+    "later": "Senere",
+    "files": "Filer",
+    "admin": "Admin",
+    "threads": "Tråde"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Ny besked"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Notifikationer blokeret",
+    "disableNotifications": "Deaktivér notifikationer",
+    "enableNotifications": "Aktivér notifikationer",
+    "signOut": "Log ud",
+    "updateStatus": "Opdater din status",
+    "pauseNotifications": "Sæt notifikationer på pause",
+    "pausedUntil": "På pause indtil {time}",
+    "pausedIndefinitely": "På pause, indtil din status ryddes",
+    "resumeNotifications": "Genoptag notifikationer",
+    "pause": {
+      "m30": "30 minutter",
+      "h1": "1 time",
+      "h2": "2 timer",
+      "tomorrow": "Indtil i morgen"
+    },
+    "pauseError": "Pausen for notifikationer kunne ikke ændres. Prøv igen.",
+    "accessTokens": "Personlige adgangstokens",
+    "sessions": "Enheder, der er logget ind",
+    "twoFactor": "Tofaktorgodkendelse",
+    "changePassword": "Skift adgangskode",
+    "connectedApps": "Forbundne apps"
+  },
+  "sections": {
+    "starred": "Stjernemarkeret",
+    "channels": "Kanaler",
+    "addChannels": "Tilføj kanaler",
+    "directMessages": "Direkte beskeder",
+    "addTeammates": "Tilføj teammedlemmer",
+    "starredEmpty": "Stjernemarkér en kanal eller samtale for at holde den her.",
+    "collapse": "Skjul {section}",
+    "expand": "Vis {section}"
+  },
+  "teammates": {
+    "title": "Direkte besked",
+    "subtitle": "Find eller start en samtale",
+    "searchPlaceholder": "Søg på navn...",
+    "noUsers": "Ingen brugere fundet",
+    "close": "Luk",
+    "pickSubtitle": "Vælg op til {max, plural, one {# person} other {# personer}}",
+    "select": "Vælg {name}",
+    "selectedCount": "{count} af {max} valgt",
+    "start": "Start samtale",
+    "startGroup": "Start gruppesamtale"
+  },
+  "you": "(dig)",
+  "notifications": {
+    "someone": "Nogen",
+    "sentAttachment": "Sendte en vedhæftning",
+    "threadTitle": "{name} (tråd)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# medlem} other {# medlemmer}}",
+    "createError": "Gruppesamtalen kunne ikke startes. Prøv igen."
+  },
+  "statusDialog": {
+    "title": "Angiv en status",
+    "emojiLabel": "Vælg en emoji",
+    "textLabel": "Hvad er din status?",
+    "textPlaceholder": "Hvad er din status?",
+    "durationLabel": "Ryd efter",
+    "duration": {
+      "never": "Ryd ikke",
+      "m30": "30 minutter",
+      "h1": "1 time",
+      "h4": "4 timer",
+      "today": "I dag",
+      "week": "Denne uge"
+    },
+    "pauseCheckbox": "Sæt notifikationer på pause, indtil statussen ryddes",
+    "save": "Gem",
+    "clear": "Ryd status",
+    "cancel": "Annuller",
+    "expiresAt": "Ryddes kl. {time}",
+    "saveError": "Din status kunne ikke gemmes. Prøv igen."
+  },
+  "findConversation": "Find en samtale"
+}

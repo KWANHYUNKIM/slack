@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Etkinlik",
+    "markAllRead": "Tümünü okundu olarak işaretle",
+    "loading": "Yükleniyor...",
+    "loadingMore": "Daha fazlası yükleniyor...",
+    "loadFailed": "Etkinlik yüklenemedi.",
+    "empty": "Henüz etkinlik yok.",
+    "unread": "Okunmamış",
+    "menu": "Menü",
+    "someone": "Biri",
+    "directMessage": "bir doğrudan ileti",
+    "messageDeleted": "Silinmiş ileti"
+  },
+  "tabs": {
+    "all": "Tümü",
+    "mentions": "Bahsetmeler",
+    "threads": "Konu zincirleri",
+    "reactions": "Tepkiler"
+  },
+  "describe": {
+    "mention": "{actor}, {where} içinde sizi andı",
+    "channelMention": "{actor}, {where} içinde @channel andı",
+    "hereMention": "{actor}, {where} içinde @here andı",
+    "threadReply": "{actor}, {where} içindeki bir konu zincirini yanıtladı",
+    "reaction": "{actor}, {where} içindeki iletinize {emoji} tepkisi verdi",
+    "reminder": "Hatırlatıcı"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Opret en kanal",
+    "tabBrowse": "Gennemse kanaler",
+    "nameLabel": "Kanalnavn",
+    "namePlaceholder": "f.eks. plan-budget",
+    "visibility": "Synlighed",
+    "public": "Offentlig",
+    "private": "Privat",
+    "publicHint": "Alle i arbejdsområdet kan finde og deltage i denne kanal.",
+    "privateHint": "Kun inviterede medlemmer kan finde og deltage i denne kanal.",
+    "cancel": "Annuller",
+    "create": "Opret",
+    "noChannels": "Ingen kanaler at deltage i",
+    "memberCount": "{count, plural, one {# medlem} other {# medlemmer}}",
+    "joined": "Medlem",
+    "join": "Deltag",
+    "close": "Luk",
+    "errors": {
+      "createFailed": "Kanalen kunne ikke oprettes"
+    }
+  },
+  "errors": {
+    "loadConversations": "Samtalerne kunne ikke indlæses.",
+    "loadChannels": "Kanalerne kunne ikke indlæses."
+  },
+  "membersPanel": {
+    "title": "Medlemmer",
+    "addPeople": "Tilføj personer",
+    "loadError": "Medlemmerne kunne ikke indlæses.",
+    "removeError": "Medlemmet kunne ikke fjernes",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Fjern medlem?",
+      "message": "Fjern <bold>{name}</bold> fra denne kanal?"
+    },
+    "removing": "Fjerner...",
+    "searchByName": "Søg på navn...",
+    "noUsers": "Ingen brugere fundet",
+    "roles": {
+      "owner": "Ejer",
+      "moderator": "Mod"
+    },
+    "removeMember": "Fjern medlem"
+  },
+  "dm": {
+    "messagePlaceholder": "Besked til {name}",
+    "you": "(dig)",
+    "star": "Føj til Stjernemarkeret",
+    "unstar": "Fjern fra Stjernemarkeret",
+    "loadingMessages": "Indlæser beskeder...",
+    "selfSpace": "Dette er dit eget område. Skriv kladder, lav din huskeliste, eller gem links og filer, så de er lige ved hånden.",
+    "conversationStart": "Starten på din samtale med {name}",
+    "sendToBegin": "Send en besked for at begynde.",
+    "edited": "(redigeret)",
+    "pinnedMessages": "Fastgjorte beskeder",
+    "noPins": "Ingen fastgjorte beskeder endnu",
+    "files": "Filer",
+    "noFiles": "Ingen delte filer endnu",
+    "loadError": "Beskederne kunne ikke indlæses.",
+    "sendError": "Beskeden kunne ikke sendes. Prøv igen."
+  },
+  "nameRules": {
+    "required": "Indtast et kanalnavn.",
+    "tooLong": "Kanalnavnet må højst være {max} tegn.",
+    "invalidChars": "Kanalnavne må kun indeholde bogstaver, tal, bindestreger og understregninger, og de skal begynde med et bogstav eller et tal.",
+    "tooManyMarks": "Kanalnavne må ikke have mere end 4 kombinerende tegn i træk.",
+    "mixedScripts": "Kanalnavne må ikke blande alfabeter, der ligner hinanden (f.eks. latinsk med kyrillisk eller græsk), eller cifre fra et andet talsystem.",
+    "taken": "Der findes allerede en kanal med det navn."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# medlem} other {# medlemmer}}",
+    "nameLabel": "Samtalens navn",
+    "namePlaceholder": "Tilføj et navn",
+    "noName": "Intet navn (viser medlemmernes navne)",
+    "rename": "Omdøb samtale",
+    "addPeople": "Tilføj personer",
+    "add": "Tilføj",
+    "createWith": "Start gruppesamtale",
+    "leave": "Forlad samtale",
+    "leaveConfirm": "Forlad denne samtale? Du kan ikke længere se dens beskeder.",
+    "conversationStart": "Dette er starten på din samtale med {names}",
+    "addError": "Personerne kunne ikke tilføjes. Prøv igen.",
+    "renameError": "Samtalen kunne ikke omdøbes. Prøv igen.",
+    "leaveError": "Du kunne ikke forlade samtalen. Prøv igen."
+  }
+}

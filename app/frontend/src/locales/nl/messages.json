@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Iedereen die online is melden",
+    "channelLabel": "@channel",
+    "channelHint": "Iedereen in dit kanaal melden"
+  },
+  "deleteDialog": {
+    "title": "Bericht verwijderen",
+    "body": "Weet je zeker dat je dit bericht wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+  },
+  "editorToolbar": {
+    "attachFile": "Bestand bijvoegen",
+    "emoji": "Emoji",
+    "mention": "Iemand vermelden",
+    "stopRecording": "Opname stoppen",
+    "recordVoice": "Spraakclip opnemen"
+  },
+  "emojiAutocomplete": {
+    "navigate": "om te bewegen",
+    "select": "om te selecteren",
+    "dismiss": "om te sluiten",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "{name} verwijderen"
+  },
+  "fileModal": {
+    "download": "Downloaden",
+    "loadFailed": "De inhoud van het bestand kon niet worden geladen",
+    "truncated": "... (ingekort)",
+    "noPreview": "Geen voorbeeld beschikbaar",
+    "downloadToView": "Download het bestand om het te bekijken"
+  },
+  "files": {
+    "allFiles": "Alle bestanden",
+    "channelFiles": "Kanaalbestanden",
+    "loadFailed": "Bestanden laden is mislukt.",
+    "empty": "Nog geen bestanden geüpload",
+    "download": "Downloaden",
+    "menu": "Menu",
+    "unavailable": "Bestand niet beschikbaar",
+    "preparing": "Bestand voorbereiden"
+  },
+  "format": {
+    "bold": "Vet",
+    "italic": "Cursief",
+    "strike": "Doorhalen",
+    "link": "Link",
+    "orderedList": "Genummerde lijst",
+    "bulletList": "Opsomming",
+    "code": "Code",
+    "codeBlock": "Codeblok",
+    "quote": "Citaat"
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "empty": "Geen nieuwe meldingen",
+    "unreadCount": "{count, plural, one {# ongelezen bericht} other {# ongelezen berichten}}"
+  },
+  "search": {
+    "placeholder": "Zoeken",
+    "searching": "Zoeken...",
+    "noResults": "Geen resultaten gevonden",
+    "previewHint": "{count, plural, one {Top # resultaat} other {Top # resultaten}} · Alles bekijken (Enter)",
+    "truncatedNotice": "Er zijn veel resultaten. Voeg filters toe om ze te beperken.",
+    "retry": "Opnieuw proberen",
+    "ignoredChip": "{token} (genegeerd)",
+    "ignoredLimitChip": "{token} (genegeerd: te veel)",
+    "inChannel": "in #{channel}",
+    "title": "Zoekresultaten",
+    "resultsFor": "Resultaten voor \"{query}\"",
+    "emptyQuery": "Typ een zoekterm, of gebruik filters zoals from:, in:, has:, before:, after:.",
+    "noResultsHint": "Probeer andere trefwoorden of verwijder enkele filters.",
+    "clearFilters": "Alle filters wissen",
+    "removeFilter": "Filter {filter} verwijderen",
+    "loadFailed": "Zoeken is mislukt. Probeer het opnieuw.",
+    "loadMore": "Meer laden",
+    "threadReply": "Threadreactie",
+    "directMessage": "Direct bericht",
+    "groupMessage": "Groepsgesprek",
+    "joined": "Lid",
+    "privateChannel": "Privé",
+    "archivedChannel": "Gearchiveerd",
+    "back": "Terug",
+    "tabs": {
+      "label": "Soorten zoekresultaten",
+      "messages": "Berichten",
+      "files": "Bestanden",
+      "people": "Personen",
+      "channels": "Kanalen"
+    },
+    "sort": {
+      "label": "Sorteren op",
+      "relevance": "Relevantie",
+      "recent": "Meest recent"
+    }
+  },
+  "headerTabs": {
+    "files": "Bestanden",
+    "pins": "Vastgepind"
+  },
+  "lightbox": {
+    "close": "Sluiten"
+  },
+  "later": {
+    "title": "Later",
+    "saved": "Opgeslagen",
+    "scheduled": "Gepland",
+    "loadFailed": "Opgeslagen berichten laden is mislukt.",
+    "empty": "Nog geen opgeslagen berichten. Klik op het bladwijzerpictogram bij een bericht om het op te slaan.",
+    "removeSaved": "Verwijderen uit Opgeslagen",
+    "menu": "Menu",
+    "reminders": "Herinneringen"
+  },
+  "linkModal": {
+    "title": "Link toevoegen",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Weergavetekst",
+    "optional": "(optioneel)",
+    "textPlaceholder": "Linktekst",
+    "close": "Sluiten"
+  },
+  "actionsMenu": {
+    "noActions": "Geen acties beschikbaar",
+    "markUnread": "Als ongelezen markeren",
+    "pin": "Bericht vastzetten",
+    "unpin": "Bericht losmaken",
+    "edit": "Bericht bewerken",
+    "delete": "Bericht verwijderen",
+    "copyLink": "Link kopiëren",
+    "remind": "Herinner me hieraan"
+  },
+  "area": {
+    "selectChannel": "Selecteer een kanaal om berichten te sturen",
+    "openMenu": "Menu openen",
+    "placeholder": "Bericht aan #{channel}",
+    "viewing": "Je bekijkt <bold>#{channel}</bold>",
+    "joinChannel": "Kanaal binnengaan"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Verwijderen uit Met ster",
+    "star": "Toevoegen aan Met ster",
+    "members": "Leden: {count}",
+    "search": "Zoeken",
+    "channelMenu": "Kanaalopties",
+    "leaveChannel": "Kanaal verlaten",
+    "leaveLastMember": "Je kunt het kanaal niet verlaten: je bent het laatste lid.",
+    "dismiss": "Sluiten",
+    "addTopic": "Een onderwerp toevoegen",
+    "editDetails": "Kanaalgegevens bewerken"
+  },
+  "message": {
+    "edited": "(bewerkt)",
+    "pinned": "Vastgepind",
+    "showMore": "Meer tonen",
+    "showLess": "Minder tonen",
+    "repliedToThread": "Gereageerd op een thread: {excerpt}",
+    "deletedPlaceholder": "Dit bericht is verwijderd.",
+    "sendToChannel": "Ook naar het kanaal sturen",
+    "removeFromChannel": "Uit het kanaal verwijderen"
+  },
+  "input": {
+    "uploading": "Uploaden...",
+    "scheduleMessage": "Bericht plannen",
+    "send": "Bericht verzenden",
+    "hint": "Druk op <kbd>Enter</kbd> om te verzenden, <kbd>Shift + Enter</kbd> voor een nieuwe regel",
+    "scheduledFor": "Gepland voor {time}",
+    "scheduleFailed": "Het bericht plannen is mislukt. Probeer het opnieuw."
+  },
+  "list": {
+    "loading": "Berichten laden...",
+    "empty": "Nog geen berichten",
+    "emptyReadOnly": "Dit kanaal heeft geen berichten.",
+    "emptyFirst": "Wees de eerste die een bericht stuurt!"
+  },
+  "reactions": {
+    "tooltip": "{names} reageerde met {emoji}",
+    "add": "Reactie toevoegen",
+    "you": "Jij"
+  },
+  "toolbar": {
+    "addReaction": "Reactie toevoegen",
+    "replyInThread": "Reageren in thread",
+    "removeBookmark": "Bladwijzer verwijderen",
+    "bookmark": "Dit bericht als bladwijzer opslaan",
+    "moreActions": "Meer acties"
+  },
+  "mobileSearch": {
+    "placeholder": "Berichten zoeken...",
+    "hint": "Zoek naar berichten in alle kanalen en gesprekken",
+    "close": "Zoeken sluiten"
+  },
+  "pins": {
+    "title": "Vastgepinde berichten",
+    "loadFailed": "Vastgepinde berichten laden is mislukt.",
+    "empty": "Nog geen vastgepinde berichten"
+  },
+  "schedule": {
+    "menuTitle": "Bericht plannen",
+    "in20": "Over 20 minuten",
+    "in1h": "Over 1 uur",
+    "in3h": "Over 3 uur",
+    "tomorrow9": "Morgen om 9:00",
+    "custom": "Aangepaste tijd...",
+    "modalTitle": "Bericht plannen",
+    "dateTime": "Datum en tijd",
+    "pickFuture": "Kies een tijdstip in de toekomst.",
+    "submit": "Plannen",
+    "submitting": "Plannen...",
+    "close": "Sluiten"
+  },
+  "scheduled": {
+    "loadFailed": "Geplande berichten laden is mislukt.",
+    "cancelFailed": "Het bericht annuleren is mislukt.",
+    "sendFailed": "Het bericht verzenden is mislukt.",
+    "saveFailed": "Wijzigingen opslaan is mislukt.",
+    "empty": "Geen geplande berichten. Gebruik het klokpictogram in het berichtvak om er een te plannen.",
+    "sendAt": "Verzenden op:",
+    "edit": "Bewerken",
+    "sendNow": "Nu verzenden",
+    "cancel": "Annuleren",
+    "failedDlp": "Dit bericht is niet verzonden omdat het overeenkwam met een gegevensbeschermingsregel ({rule}). Verwijder het en schrijf een nieuw bericht."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# reactie} other {# reacties}}"
+  },
+  "unreads": {
+    "title": "Ongelezen",
+    "loadFailed": "Ongelezen berichten laden is mislukt.",
+    "empty": "Geen ongelezen berichten. Je bent helemaal bij! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Reageren...",
+    "loadFailed": "Thread laden is mislukt. Probeer het opnieuw.",
+    "loading": "Thread laden...",
+    "replyFailed": "Reactie verzenden is mislukt. Probeer het opnieuw.",
+    "joinToReply": "Word lid van het kanaal om in threads te reageren",
+    "alsoSendToChannel": "Ook naar het kanaal sturen"
+  },
+  "errors": {
+    "messageEmpty": "Het bericht mag niet leeg zijn.",
+    "pasteUploadFailed": "Het uploaden van de geplakte afbeelding is mislukt. Probeer het opnieuw.",
+    "dropUploadFailed": "Het uploaden van het neergezette bestand is mislukt. Probeer het opnieuw.",
+    "uploadFailed": "Het bestand uploaden is mislukt. Probeer het opnieuw.",
+    "voiceUploadFailed": "Het uploaden van het spraakbericht is mislukt.",
+    "micDenied": "Toegang tot de microfoon geweigerd. Geef toegang tot de microfoon.",
+    "loadFailed": "Berichten laden is mislukt.",
+    "sendTimeout": "Het verzenden van het bericht duurde te lang. Probeer het opnieuw.",
+    "sendFailed": "Bericht verzenden is mislukt. Probeer het opnieuw.",
+    "pushNotConfigured": "Pushmeldingen zijn niet ingesteld op de server",
+    "serviceWorkerUnavailable": "Service worker niet beschikbaar",
+    "subscribeFailed": "Abonnement registreren is mislukt",
+    "editFailed": "De bewerking kon niet worden opgeslagen. Probeer het opnieuw."
+  },
+  "details": {
+    "title": "Kanaalgegevens",
+    "name": "Naam",
+    "topic": "Onderwerp",
+    "topicPlaceholder": "Waar gaat dit kanaal over?",
+    "description": "Beschrijving",
+    "descriptionPlaceholder": "Een beschrijving toevoegen",
+    "createdBy": "Gemaakt door {name}",
+    "readOnly": "Alleen kanaaleigenaren, moderators en beheerders van de werkruimte kunnen deze gegevens bewerken.",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "saveFailed": "Kanaalgegevens opslaan is mislukt."
+  },
+  "intro": {
+    "title": "Welkom in #{name}",
+    "noDescription": "Nog geen beschrijving.",
+    "editDescription": "Beschrijving bewerken"
+  },
+  "threads": {
+    "title": "Threads",
+    "menu": "Menu",
+    "loadFailed": "Threads laden is mislukt.",
+    "empty": "Nog geen threads",
+    "emptyHint": "Threads die je start of waarop je reageert, verschijnen hier.",
+    "newReplies": "{count, plural, one {# nieuwe reactie} other {# nieuwe reacties}}",
+    "replyCount": "{count, plural, one {# reactie} other {# reacties}}",
+    "olderReplies": "Open de thread om eerdere reacties te zien",
+    "replyPlaceholder": "Reageren...",
+    "send": "Verzenden",
+    "replyFailed": "Reactie verzenden is mislukt. Probeer het opnieuw.",
+    "alsoSendToChannel": "Ook naar het kanaal sturen",
+    "openThread": "Thread openen",
+    "loadMore": "Meer laden",
+    "loading": "Laden..."
+  },
+  "permalink": {
+    "copied": "Link gekopieerd",
+    "notFound": "Dit bericht kan niet worden gevonden, of je hebt geen toestemming om het te bekijken",
+    "goHome": "Naar de startpagina",
+    "copyManually": "Automatisch kopiëren is niet gelukt. Kopieer deze link: {url}"
+  },
+  "unread": {
+    "divider": "Nieuw",
+    "newMessagesBar": "{count, plural, one {# nieuw bericht} other {# nieuwe berichten}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# of meer nieuw bericht} other {# of meer nieuwe berichten}}",
+    "markRead": "Als gelezen markeren",
+    "jumpFailed": "De positie van het eerste ongelezen bericht kon niet worden geladen"
+  },
+  "reminder": {
+    "set": "Herinnering instellen",
+    "customLabel": "Datum en tijd van de herinnering",
+    "preset": {
+      "in20": "Over 20 minuten",
+      "in1h": "Over 1 uur",
+      "in3h": "Over 3 uur",
+      "tomorrow": "Morgen",
+      "nextWeek": "Volgende week",
+      "custom": "Aangepast..."
+    },
+    "status": {
+      "pending": "Komend",
+      "done": "Afgerond"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 uur",
+      "tomorrow": "Morgen"
+    },
+    "loadFailed": "Herinneringen laden is mislukt.",
+    "empty": "Geen herinneringen. Gebruik het menu met meer acties bij een bericht of typ /remind om er een toe te voegen.",
+    "emptyDone": "Geen afgeronde herinneringen.",
+    "dueAt": "Gepland voor {time}",
+    "firedAt": "Was gepland voor {time}",
+    "completedAt": "Afgerond op {time}",
+    "messageDeleted": "Verwijderd bericht",
+    "complete": "Als afgerond markeren",
+    "reopen": "Als niet afgerond markeren",
+    "delete": "Herinnering verwijderen",
+    "toast": {
+      "created": "Herinnering ingesteld",
+      "due": "Herinnering: {text}",
+      "createFailed": "Herinnering instellen is mislukt. Probeer het opnieuw."
+    },
+    "command": {
+      "syntax": "Gebruik: /remind me [tekst] in [aantal] [minuten|uur|dagen]",
+      "tooShort": "De herinnering moet minstens 1 minuut in de toekomst liggen.",
+      "tooLong": "De herinnering moet binnen één jaar liggen.",
+      "created": "Herinnering ingesteld voor {time}"
+    },
+    "pastTime": "Kies een tijdstip in de toekomst.",
+    "loadMore": "Meer laden"
+  }
+}

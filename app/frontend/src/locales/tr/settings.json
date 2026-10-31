@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Dil",
+    "pending": "{name} (çeviri yakında)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Bildirimler duraklatıldı"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Kapat",
+    "loading": "Yükleniyor...",
+    "notFound": "Profil bulunamadı",
+    "uploadPhoto": "Fotoğraf yükle",
+    "uploading": "Yükleniyor...",
+    "name": "Ad",
+    "bio": "Hakkında",
+    "bioPlaceholder": "Kendinizden bahsedin",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "status": "Durum",
+    "joined": "Katılma tarihi",
+    "message": "İleti",
+    "edit": "Profili düzenle",
+    "statusValue": {
+      "online": "çevrimiçi",
+      "away": "uzakta",
+      "offline": "çevrimdışı"
+    },
+    "errors": {
+      "loadFailed": "Profil yüklenemedi.",
+      "saveFailed": "Profil kaydedilemedi. Lütfen yeniden deneyin.",
+      "notImage": "Lütfen bir resim dosyası seçin.",
+      "tooLarge": "Resim 5 MB'ın altında olmalıdır.",
+      "uploadFailed": "Fotoğraf yüklenemedi. Lütfen yeniden deneyin."
+    },
+    "statusUntil": "{time} saatine kadar"
+  },
+  "crop": {
+    "title": "Fotoğrafınızı kırpın",
+    "close": "Kapat",
+    "zoom": "Yakınlaştır",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "failed": "Kırpma başarısız"
+  },
+  "accessTokens": {
+    "title": "Kişisel erişim belirteçleri",
+    "description": "Belirteçler, Claude ve diğer MCP istemcilerinin çalışma alanınızda sizin yetkilerinizle okuma ve, izin verirseniz, yazma yapmasını sağlar. Parolanız gibi saklayın.",
+    "nameLabel": "Belirteç adı",
+    "namePlaceholder": "ör. dizüstü bilgisayarımdaki Claude Code",
+    "scopesLabel": "Yetkiler",
+    "scope": {
+      "channelsRead": "Kanalları listele",
+      "channelsHistory": "İletileri, konu zincirlerini ve etkinliği oku",
+      "usersRead": "Kişileri görüntüle",
+      "chatWrite": "Kendi iletilerinizi gönderin, düzenleyin ve silin",
+      "reactionsWrite": "Kendi tepkilerinizi ekleyin ve kaldırın",
+      "imRead": "Doğrudan iletilerinizi ve grup sohbetlerinizi listeleyin",
+      "imHistory": "Doğrudan ileti geçmişinizi okuyun",
+      "imWrite": "Doğrudan iletilerinizi gönderin, düzenleyin ve silin",
+      "searchRead": "İletileri, dosyaları, kişileri ve kanalları ara (doğrudan ileti sonuçları için doğrudan ileti geçmişi gerekir)",
+      "filesRead": "Dosyaları listele ve metin dosyası içeriklerini oku"
+    },
+    "expiryLabel": "Sona erme",
+    "expiryDays": "{count, plural, one {# gün} other {# gün}}",
+    "expiryNever": "Sona ermez",
+    "neverWarning": "Sona erme tarihi olmayan belirteçler, siz iptal edene kadar geçerli kalır.",
+    "create": "Belirteç oluştur",
+    "createdNotice": "Yeni belirtecinizi şimdi kopyalayın. Bir daha göremeyeceksiniz.",
+    "copy": "Belirteci kopyala",
+    "copyCommand": "Komutu kopyala",
+    "copied": "Panoya kopyalandı",
+    "connectHint": "Claude Code'dan bağlanın:",
+    "dismiss": "Tamam, belirteci gizle",
+    "loading": "Yükleniyor...",
+    "empty": "Kişisel erişim belirteciniz yok.",
+    "expires": "{date} tarihinde sona erer",
+    "expired": "Süresi doldu",
+    "noExpiry": "Sona ermez",
+    "lastUsed": "Son kullanım: {date}",
+    "neverUsed": "Hiç kullanılmadı",
+    "rename": "Yeniden adlandır",
+    "renameLabel": "{name} belirtecini yeniden adlandır",
+    "revoke": "İptal et",
+    "revokeLabel": "{name} belirtecini iptal et",
+    "revokeConfirm": "Şimdi iptal et",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "errors": {
+      "loadFailed": "Belirteçler yüklenemedi.",
+      "createFailed": "Belirteç oluşturulamadı. Lütfen yeniden deneyin.",
+      "renameFailed": "Belirteç yeniden adlandırılamadı.",
+      "revokeFailed": "Belirteç iptal edilemedi.",
+      "copyFailed": "Kopyalanamadı. Metni seçip elle kopyalayın.",
+      "limitReached": "En fazla {max} etkin belirteciniz olabilir. Artık kullanmadığınız birini iptal edip yeniden deneyin.",
+      "codeRequired": "Belirteç oluşturmak için iki adımlı doğrulama kodunuzu girin.",
+      "invalidCode": "İki adımlı doğrulama kodu yanlış."
+    },
+    "codeLabel": "İki adımlı doğrulama kodu",
+    "codeHint": "Belirteç oluşturmak için kimlik doğrulama uygulamanızdaki bir kodu girin."
+  },
+  "sessions": {
+    "title": "Oturum açılmış cihazlar",
+    "description": "Bu cihazlar hesabınızda oturum açık durumda. Tanımadığınız veya artık kullanmadığınız cihazların oturumunu kapatın.",
+    "loading": "Yükleniyor...",
+    "empty": "Oturum açılmış cihaz yok.",
+    "thisDevice": "Bu cihaz",
+    "unknownDevice": "Bilinmeyen cihaz",
+    "signedInAt": "{date} tarihinde oturum açıldı",
+    "lastActive": "Son etkinlik: {date}",
+    "signOut": "Oturumu kapat",
+    "signOutLabel": "{device} oturumunu kapat",
+    "signOutThisLabel": "Bu cihazın oturumunu kapat ({device})",
+    "signOutOthers": "Diğer tüm cihazlardan oturumu kapat",
+    "signOutOthersConfirm": "{count, plural, one {# diğer cihazın oturumunu kapat} other {# diğer cihazın oturumunu kapat}}",
+    "revoked": "Cihazın oturumu kapatıldı",
+    "revokedOthers": "Diğer tüm cihazların oturumu kapatıldı",
+    "errors": {
+      "loadFailed": "Cihazlar yüklenemedi.",
+      "revokeFailed": "Oturum kapatılamadı. Lütfen yeniden deneyin."
+    },
+    "device": {
+      "desktop": "Masaüstü uygulaması",
+      "desktopOn": "{os} üzerinde masaüstü uygulaması",
+      "browser": "{browser}",
+      "browserOn": "{os} üzerinde {browser}",
+      "unknownOn": "{os} üzerinde bilinmeyen cihaz"
+    }
+  },
+  "changePassword": {
+    "title": "Parolayı değiştir",
+    "description": "Mevcut parolanızı girin ve yeni bir parola seçin.",
+    "currentLabel": "Mevcut parola",
+    "newLabel": "Yeni parola",
+    "confirmLabel": "Yeni parolayı onayla",
+    "sessionsNote": "Parolanızı değiştirdiğinizde diğer oturum açık cihazlarınızın oturumu kapatılır.",
+    "submit": "Parolayı değiştir",
+    "submitting": "Değiştiriliyor...",
+    "cancel": "İptal",
+    "successToast": "Parolanız değiştirildi",
+    "errors": {
+      "currentRequired": "Mevcut parolanızı girin.",
+      "failed": "Parolanız değiştirilemedi. Yeniden deneyin."
+    }
+  },
+  "twoFactor": {
+    "title": "İki adımlı doğrulama",
+    "description": "Giriş yaparken parolanıza ek olarak kimlik doğrulama uygulamanızdan bir kod istensin.",
+    "loading": "Yükleniyor...",
+    "statusOn": "Açık",
+    "statusOff": "Kapalı",
+    "enabledSince": "{date} tarihinde açıldı",
+    "recoveryRemaining": "{count, plural, one {# kurtarma kodu kaldı} other {# kurtarma kodu kaldı}}",
+    "unavailable": "İki adımlı doğrulama bu sunucuda kapalı. Yöneticinize başvurun.",
+    "requiredNotice": "Kuruluşunuz iki adımlı doğrulama gerektiriyor.",
+    "close": "Kapat",
+    "setup": {
+      "start": "İki adımlı doğrulamayı kurun",
+      "starting": "Hazırlanıyor...",
+      "step1": "1. Bu hesabı kimlik doğrulama uygulamanıza ekleyin. Bağlantıyı telefonunuzda açın veya kurulum anahtarını elle girin.",
+      "uriLabel": "Kurulum bağlantısı",
+      "openInApp": "Kimlik doğrulama uygulamasında aç",
+      "qrLabel": "Kimlik doğrulama uygulaması için QR kodu",
+      "qrHint": "Bu QR kodunu kimlik doğrulama uygulamanızla tarayın veya aşağıdaki bağlantıyı ya da anahtarı kullanın.",
+      "keyLabel": "Kurulum anahtarı",
+      "copyKey": "Kurulum anahtarını kopyala",
+      "copyUri": "Kurulum bağlantısını kopyala",
+      "copied": "Kopyalandı",
+      "step2": "2. Uygulamanızın gösterdiği 6 haneli kodu girin.",
+      "codeLabel": "Doğrulama kodu",
+      "codePlaceholder": "123456",
+      "verify": "Aç",
+      "verifying": "Kontrol ediliyor...",
+      "cancel": "İptal",
+      "passwordLabel": "3. Mevcut parolanızı girin.",
+      "sessionsNote": "Bunu açtığınızda diğer oturum açık cihazlarınızın oturumu kapatılır."
+    },
+    "recovery": {
+      "title": "Kurtarma kodlarınızı kaydedin",
+      "description": "Cihazınızı kaybederseniz giriş yapmak için bir kurtarma kodu kullanın. Her kod yalnızca bir kez çalışır. Bir daha gösterilmeyecek.",
+      "download": "İndir",
+      "copy": "Tümünü kopyala",
+      "fileHeader": "Kurtarma kodları. Her kod yalnızca bir kez çalışır. Güvenli bir yerde saklayın.",
+      "confirmSaved": "Kurtarma kodlarımı kaydettim",
+      "fileName": "kurtarma-kodlari.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Parola",
+      "codeLabel": "Doğrulama veya kurtarma kodu",
+      "cancel": "İptal",
+      "passwordInvalid": "Geçerli bir parola girin.",
+      "codeInvalid": "Geçerli bir doğrulama veya kurtarma kodu girin."
+    },
+    "regenerate": {
+      "start": "Yeni kurtarma kodları oluştur",
+      "title": "Yeni kurtarma kodları oluştur",
+      "description": "Yeni kodlar oluşturduğunuzda eski kurtarma kodlarınız hemen çalışmaz hale gelir. Parolanızı ve kimlik doğrulama uygulamanızdaki bir kodu (veya bir kurtarma kodunu) girin.",
+      "submit": "Yeni kodlar oluştur",
+      "submitting": "Oluşturuluyor...",
+      "lowNotice": "{count, plural, one {Yalnızca # kurtarma kodu kaldı} other {Yalnızca # kurtarma kodu kaldı}}. Tükenmeden yeni kodlar oluşturun.",
+      "toast": "Yeni kurtarma kodları hazır"
+    },
+    "disable": {
+      "title": "İki adımlı doğrulamayı kapat",
+      "description": "Parolanızı ve kimlik doğrulama uygulamanızdaki bir kodu (veya bir kurtarma kodunu) girin.",
+      "start": "Kapat",
+      "submit": "İki adımlı doğrulamayı kapat",
+      "submitting": "Kapatılıyor...",
+      "blockedByPolicy": "Kuruluşunuz iki adımlı doğrulama gerektiriyor, bu yüzden kapatamazsınız. Cihazınızı kaybettiyseniz sıfırlaması için bir yöneticiye başvurun."
+    },
+    "enabledToast": "İki adımlı doğrulama açık",
+    "disabledToast": "İki adımlı doğrulama kapalı",
+    "errors": {
+      "loadFailed": "İki adımlı doğrulama ayarları yüklenemedi.",
+      "setupFailed": "Kurulum başlatılamadı. Yeniden deneyin.",
+      "enableFailed": "İki adımlı doğrulama açılamadı.",
+      "regenerateFailed": "Yeni kurtarma kodları oluşturulamadı.",
+      "disableFailed": "İki adımlı doğrulama kapatılamadı.",
+      "copyFailed": "Panoya kopyalanamadı."
+    }
+  },
+  "connectedApps": {
+    "title": "Bağlı uygulamalar",
+    "description": "OAuth oturum açma akışıyla hesabınızı kullanmasına izin verdiğiniz uygulamalar. Sizin yetkilerinizle çalışırlar. Artık kullanmadığınız uygulamaların bağlantısını kesin.",
+    "loading": "Yükleniyor...",
+    "empty": "Hesabınıza bağlı uygulama yok.",
+    "redirectsTo": "{hosts} adresine döner",
+    "connectedAt": "{date} tarihinde bağlandı",
+    "lastUsed": "Son kullanım: {date}",
+    "neverUsed": "Hiç kullanılmadı",
+    "disconnect": "Bağlantıyı kes",
+    "disconnectLabel": "{name} bağlantısını kes",
+    "disconnectConfirm": "Şimdi bağlantıyı kes",
+    "cancel": "İptal",
+    "disconnected": "Uygulamanın bağlantısı kesildi",
+    "close": "Kapat",
+    "errors": {
+      "loadFailed": "Bağlı uygulamalar yüklenemedi.",
+      "disconnectFailed": "Uygulamanın bağlantısı kesilemedi."
+    },
+    "unnamedApp": "Adsız uygulama"
+  }
+}

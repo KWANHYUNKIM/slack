@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Çevrimiçi olan herkese bildirim gönder",
+    "channelLabel": "@channel",
+    "channelHint": "Bu kanaldaki herkese bildirim gönder"
+  },
+  "deleteDialog": {
+    "title": "İletiyi sil",
+    "body": "Bu iletiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+  },
+  "editorToolbar": {
+    "attachFile": "Dosya ekle",
+    "emoji": "Emoji",
+    "mention": "Birini an",
+    "stopRecording": "Kaydı durdur",
+    "recordVoice": "Ses kaydı al"
+  },
+  "emojiAutocomplete": {
+    "navigate": "gezinmek için",
+    "select": "seçmek için",
+    "dismiss": "kapatmak için",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "{name} dosyasını kaldır"
+  },
+  "fileModal": {
+    "download": "İndir",
+    "loadFailed": "Dosya içeriği yüklenemedi",
+    "truncated": "... (kısaltıldı)",
+    "noPreview": "Önizleme yok",
+    "downloadToView": "Görüntülemek için dosyayı indirin"
+  },
+  "files": {
+    "allFiles": "Tüm dosyalar",
+    "channelFiles": "Kanal dosyaları",
+    "loadFailed": "Dosyalar yüklenemedi.",
+    "empty": "Henüz dosya yüklenmedi",
+    "download": "İndir",
+    "menu": "Menü",
+    "unavailable": "Dosya kullanılamıyor",
+    "preparing": "Dosya hazırlanıyor"
+  },
+  "format": {
+    "bold": "Kalın",
+    "italic": "İtalik",
+    "strike": "Üstü çizili",
+    "link": "Bağlantı",
+    "orderedList": "Numaralı liste",
+    "bulletList": "Madde işaretli liste",
+    "code": "Kod",
+    "codeBlock": "Kod bloğu",
+    "quote": "Alıntı"
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "empty": "Yeni bildirim yok",
+    "unreadCount": "{count, plural, one {# okunmamış ileti} other {# okunmamış ileti}}"
+  },
+  "search": {
+    "placeholder": "Ara",
+    "searching": "Aranıyor...",
+    "noResults": "Sonuç bulunamadı",
+    "previewHint": "{count, plural, one {İlk # sonuç} other {İlk # sonuç}} · Tümünü gör (Enter)",
+    "truncatedNotice": "Çok fazla sonuç var. Daraltmak için filtre ekleyin.",
+    "retry": "Yeniden dene",
+    "ignoredChip": "{token} (yok sayıldı)",
+    "ignoredLimitChip": "{token} (yok sayıldı: çok fazla)",
+    "inChannel": "#{channel} kanalında",
+    "title": "Arama sonuçları",
+    "resultsFor": "\"{query}\" için sonuçlar",
+    "emptyQuery": "Bir arama terimi yazın veya from:, in:, has:, before:, after: gibi filtreleri kullanın.",
+    "noResultsHint": "Farklı anahtar kelimeler deneyin veya bazı filtreleri kaldırın.",
+    "clearFilters": "Tüm filtreleri temizle",
+    "removeFilter": "{filter} filtresini kaldır",
+    "loadFailed": "Arama başarısız. Lütfen yeniden deneyin.",
+    "loadMore": "Daha fazla yükle",
+    "threadReply": "Konu zinciri yanıtı",
+    "directMessage": "Doğrudan ileti",
+    "groupMessage": "Grup sohbeti",
+    "joined": "Katıldınız",
+    "privateChannel": "Özel",
+    "archivedChannel": "Arşivlenmiş",
+    "back": "Geri",
+    "tabs": {
+      "label": "Arama sonucu türleri",
+      "messages": "İletiler",
+      "files": "Dosyalar",
+      "people": "Kişiler",
+      "channels": "Kanallar"
+    },
+    "sort": {
+      "label": "Sırala",
+      "relevance": "Uygunluk",
+      "recent": "En yeni"
+    }
+  },
+  "headerTabs": {
+    "files": "Dosyalar",
+    "pins": "Sabitlenenler"
+  },
+  "lightbox": {
+    "close": "Kapat"
+  },
+  "later": {
+    "title": "Daha sonra",
+    "saved": "Kaydedilenler",
+    "scheduled": "Zamanlanmış",
+    "loadFailed": "Kaydedilen iletiler yüklenemedi.",
+    "empty": "Henüz kaydedilmiş ileti yok. Kaydetmek istediğiniz iletinin yanındaki yer imi simgesine tıklayın.",
+    "removeSaved": "Kaydedilenlerden kaldır",
+    "menu": "Menü",
+    "reminders": "Hatırlatıcılar"
+  },
+  "linkModal": {
+    "title": "Bağlantı ekle",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Görünen metin",
+    "optional": "(isteğe bağlı)",
+    "textPlaceholder": "Bağlantı metni",
+    "close": "Kapat"
+  },
+  "actionsMenu": {
+    "noActions": "Kullanılabilir işlem yok",
+    "markUnread": "Okunmamış olarak işaretle",
+    "pin": "İletiyi sabitle",
+    "unpin": "İletinin sabitlemesini kaldır",
+    "edit": "İletiyi düzenle",
+    "delete": "İletiyi sil",
+    "copyLink": "Bağlantıyı kopyala",
+    "remind": "Bunu bana hatırlat"
+  },
+  "area": {
+    "selectChannel": "İleti göndermeye başlamak için bir kanal seçin",
+    "openMenu": "Menüyü aç",
+    "placeholder": "#{channel} kanalına ileti",
+    "viewing": "<bold>#{channel}</bold> kanalını görüntülüyorsunuz",
+    "joinChannel": "Kanala katıl"
+  },
+  "header": {
+    "menu": "Menü",
+    "unstar": "Yıldızlılardan kaldır",
+    "star": "Yıldızlılara ekle",
+    "members": "Üyeler: {count}",
+    "search": "Ara",
+    "channelMenu": "Kanal seçenekleri",
+    "leaveChannel": "Kanaldan ayrıl",
+    "leaveLastMember": "Kanaldan ayrılamazsınız: son üye sizsiniz.",
+    "dismiss": "Kapat",
+    "addTopic": "Konu ekle",
+    "editDetails": "Kanal ayrıntılarını düzenle"
+  },
+  "message": {
+    "edited": "(düzenlendi)",
+    "pinned": "Sabitlendi",
+    "showMore": "Daha fazla göster",
+    "showLess": "Daha az göster",
+    "repliedToThread": "Bir konu zincirini yanıtladı: {excerpt}",
+    "deletedPlaceholder": "Bu ileti silindi.",
+    "sendToChannel": "Kanala da gönder",
+    "removeFromChannel": "Kanaldan kaldır"
+  },
+  "input": {
+    "uploading": "Yükleniyor...",
+    "scheduleMessage": "İletiyi zamanla",
+    "send": "İleti gönder",
+    "hint": "Göndermek için <kbd>Enter</kbd>, yeni satır için <kbd>Shift + Enter</kbd> tuşlarına basın",
+    "scheduledFor": "{time} için zamanlandı",
+    "scheduleFailed": "İleti zamanlanamadı. Lütfen yeniden deneyin."
+  },
+  "list": {
+    "loading": "İletiler yükleniyor...",
+    "empty": "Henüz ileti yok",
+    "emptyReadOnly": "Bu kanalda ileti yok.",
+    "emptyFirst": "İlk ileti gönderen siz olun!"
+  },
+  "reactions": {
+    "tooltip": "{names}, {emoji} tepkisi verdi",
+    "add": "Tepki ekle",
+    "you": "Siz"
+  },
+  "toolbar": {
+    "addReaction": "Tepki ekle",
+    "replyInThread": "Konu zincirinde yanıtla",
+    "removeBookmark": "Yer imini kaldır",
+    "bookmark": "Bu iletiye yer imi ekle",
+    "moreActions": "Diğer işlemler"
+  },
+  "mobileSearch": {
+    "placeholder": "İletileri ara...",
+    "hint": "Tüm kanallarda ve sohbetlerde ileti arayın",
+    "close": "Aramayı kapat"
+  },
+  "pins": {
+    "title": "Sabitlenmiş iletiler",
+    "loadFailed": "Sabitlenmiş iletiler yüklenemedi.",
+    "empty": "Henüz sabitlenmiş ileti yok"
+  },
+  "schedule": {
+    "menuTitle": "İletiyi zamanla",
+    "in20": "20 dakika sonra",
+    "in1h": "1 saat sonra",
+    "in3h": "3 saat sonra",
+    "tomorrow9": "Yarın saat 09:00'da",
+    "custom": "Özel zaman...",
+    "modalTitle": "İletiyi zamanla",
+    "dateTime": "Tarih ve saat",
+    "pickFuture": "Gelecek bir zaman seçin.",
+    "submit": "Zamanla",
+    "submitting": "Zamanlanıyor...",
+    "close": "Kapat"
+  },
+  "scheduled": {
+    "loadFailed": "Zamanlanmış iletiler yüklenemedi.",
+    "cancelFailed": "İleti iptal edilemedi.",
+    "sendFailed": "İleti gönderilemedi.",
+    "saveFailed": "Değişiklikler kaydedilemedi.",
+    "empty": "Zamanlanmış ileti yok. Bir ileti zamanlamak için ileti yazma alanındaki saat simgesini kullanın.",
+    "sendAt": "Gönderim zamanı:",
+    "edit": "Düzenle",
+    "sendNow": "Şimdi gönder",
+    "cancel": "İptal",
+    "failedDlp": "Bu ileti bir veri koruma kuralıyla ({rule}) eşleştiği için gönderilmedi. Silin ve yeni bir ileti yazın."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# yanıt} other {# yanıt}}"
+  },
+  "unreads": {
+    "title": "Okunmamışlar",
+    "loadFailed": "Okunmamış iletiler yüklenemedi.",
+    "empty": "Okunmamış ileti yok. Hepsini okudunuz! 🎉",
+    "menu": "Menü"
+  },
+  "threadPanel": {
+    "title": "Konu zinciri",
+    "replyPlaceholder": "Yanıtla...",
+    "loadFailed": "Konu zinciri yüklenemedi. Lütfen yeniden deneyin.",
+    "loading": "Konu zinciri yükleniyor...",
+    "replyFailed": "Yanıt gönderilemedi. Lütfen yeniden deneyin.",
+    "joinToReply": "Konu zincirlerinde yanıt vermek için kanala katılın",
+    "alsoSendToChannel": "Kanala da gönder"
+  },
+  "errors": {
+    "messageEmpty": "İleti boş olamaz.",
+    "pasteUploadFailed": "Yapıştırılan resim yüklenemedi. Lütfen yeniden deneyin.",
+    "dropUploadFailed": "Bırakılan dosya yüklenemedi. Lütfen yeniden deneyin.",
+    "uploadFailed": "Dosya yüklenemedi. Lütfen yeniden deneyin.",
+    "voiceUploadFailed": "Sesli ileti yüklenemedi.",
+    "micDenied": "Mikrofon erişimi reddedildi. Lütfen mikrofon erişimine izin verin.",
+    "loadFailed": "İletiler yüklenemedi.",
+    "sendTimeout": "İleti gönderimi zaman aşımına uğradı. Lütfen yeniden deneyin.",
+    "sendFailed": "İleti gönderilemedi. Lütfen yeniden deneyin.",
+    "pushNotConfigured": "Anlık bildirimler sunucuda ayarlanmamış",
+    "serviceWorkerUnavailable": "Hizmet çalışanı kullanılamıyor",
+    "subscribeFailed": "Abonelik kaydedilemedi",
+    "editFailed": "Düzenleme kaydedilemedi. Lütfen yeniden deneyin."
+  },
+  "details": {
+    "title": "Kanal ayrıntıları",
+    "name": "Ad",
+    "topic": "Konu",
+    "topicPlaceholder": "Bu kanal ne hakkında?",
+    "description": "Açıklama",
+    "descriptionPlaceholder": "Bir açıklama ekleyin",
+    "createdBy": "Oluşturan: {name}",
+    "readOnly": "Bu ayrıntıları yalnızca kanal sahipleri, modlar ve çalışma alanı yöneticileri düzenleyebilir.",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "saveFailed": "Kanal ayrıntıları kaydedilemedi."
+  },
+  "intro": {
+    "title": "#{name} kanalına hoş geldiniz",
+    "noDescription": "Henüz açıklama yok.",
+    "editDescription": "Açıklamayı düzenle"
+  },
+  "threads": {
+    "title": "Konu zincirleri",
+    "menu": "Menü",
+    "loadFailed": "Konu zincirleri yüklenemedi.",
+    "empty": "Henüz konu zinciri yok",
+    "emptyHint": "Başlattığınız veya yanıtladığınız konu zincirleri burada görünür.",
+    "newReplies": "{count, plural, one {# yeni yanıt} other {# yeni yanıt}}",
+    "replyCount": "{count, plural, one {# yanıt} other {# yanıt}}",
+    "olderReplies": "Önceki yanıtları görmek için konu zincirini açın",
+    "replyPlaceholder": "Yanıtla...",
+    "send": "Gönder",
+    "replyFailed": "Yanıt gönderilemedi. Lütfen yeniden deneyin.",
+    "alsoSendToChannel": "Kanala da gönder",
+    "openThread": "Konu zincirini aç",
+    "loadMore": "Daha fazla yükle",
+    "loading": "Yükleniyor..."
+  },
+  "permalink": {
+    "copied": "Bağlantı kopyalandı",
+    "notFound": "Bu ileti bulunamadı veya görüntüleme izniniz yok",
+    "goHome": "Ana sayfaya git",
+    "copyManually": "Otomatik olarak kopyalanamadı. Bu bağlantıyı kopyalayın: {url}"
+  },
+  "unread": {
+    "divider": "Yeni",
+    "newMessagesBar": "{count, plural, one {# yeni ileti} other {# yeni ileti}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# veya daha fazla yeni ileti} other {# veya daha fazla yeni ileti}}",
+    "markRead": "Okundu olarak işaretle",
+    "jumpFailed": "Okunmamış konum yüklenemedi"
+  },
+  "reminder": {
+    "set": "Hatırlatıcı ayarla",
+    "customLabel": "Hatırlatıcı tarihi ve saati",
+    "preset": {
+      "in20": "20 dakika sonra",
+      "in1h": "1 saat sonra",
+      "in3h": "3 saat sonra",
+      "tomorrow": "Yarın",
+      "nextWeek": "Gelecek hafta",
+      "custom": "Özel..."
+    },
+    "status": {
+      "pending": "Yaklaşan",
+      "done": "Tamamlandı"
+    },
+    "snooze": {
+      "m10": "10 dk",
+      "h1": "1 saat",
+      "tomorrow": "Yarın"
+    },
+    "loadFailed": "Hatırlatıcılar yüklenemedi.",
+    "empty": "Hatırlatıcı yok. Bir iletideki diğer işlemler menüsünü kullanın veya bir tane eklemek için /remind yazın.",
+    "emptyDone": "Tamamlanmış hatırlatıcı yok.",
+    "dueAt": "Zamanı: {time}",
+    "firedAt": "Zamanı geldi: {time}",
+    "completedAt": "Tamamlandı: {time}",
+    "messageDeleted": "Silinmiş ileti",
+    "complete": "Tamamlandı olarak işaretle",
+    "reopen": "Tamamlanmadı olarak işaretle",
+    "delete": "Hatırlatıcıyı sil",
+    "toast": {
+      "created": "Hatırlatıcı ayarlandı",
+      "due": "Hatırlatıcı: {text}",
+      "createFailed": "Hatırlatıcı ayarlanamadı. Lütfen yeniden deneyin."
+    },
+    "command": {
+      "syntax": "Kullanım: /remind me [metin] in [sayı] [dakika|saat|gün]",
+      "tooShort": "Hatırlatıcı en az 1 dakika sonra olmalıdır.",
+      "tooLong": "Hatırlatıcı bir yıl içinde olmalıdır.",
+      "created": "Hatırlatıcı {time} için ayarlandı"
+    },
+    "pastTime": "Gelecek bir zaman seçin.",
+    "loadMore": "Daha fazla yükle"
+  }
+}

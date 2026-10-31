@@ -15,7 +15,7 @@ import {
 import { TIER1_LOCALES, TIER2_LOCALES, isBetaLocale } from '../src/lib/i18n/tiers.ts';
 
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales');
-const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl'];
+const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da'];
 
 function loadLocale(locale) {
   const dir = join(LOCALES_DIR, locale);
@@ -43,7 +43,7 @@ async function makeI18n(resources = RESOURCES) {
 const SAMPLES = [
   {
     key: 'common:actions.save',
-    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz' },
+    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz', nl: 'Opslaan', tr: 'Kaydet', sv: 'Spara', da: 'Gem' },
   },
   {
     key: 'auth:login.submit',
@@ -61,11 +61,15 @@ const SAMPLES = [
       ru: 'Войти по эл. почте',
       uk: 'Увійти через ел. пошту',
       pl: 'Zaloguj się adresem e-mail',
+      nl: 'Aanmelden met e-mail',
+      tr: 'E-postayla giriş yap',
+      sv: 'Logga in med e-post',
+      da: 'Log ind med e-mail',
     },
   },
   {
     key: 'sidebar:nav.activity',
-    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność' },
+    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność', nl: 'Activiteit', tr: 'Etkinlik', sv: 'Aktivitet', da: 'Aktivitet' },
   },
   {
     key: 'messages:input.send',
@@ -83,6 +87,10 @@ const SAMPLES = [
       ru: 'Отправить сообщение',
       uk: 'Надіслати повідомлення',
       pl: 'Wyślij wiadomość',
+      nl: 'Bericht verzenden',
+      tr: 'İleti gönder',
+      sv: 'Skicka meddelande',
+      da: 'Send besked',
     },
   },
   {
@@ -102,6 +110,10 @@ const SAMPLES = [
       ru: '2 участника',
       uk: '2 учасники',
       pl: '2 członkowie',
+      nl: '2 leden',
+      tr: '2 üye',
+      sv: '2 medlemmar',
+      da: '2 medlemmer',
     },
   },
   {
@@ -120,11 +132,15 @@ const SAMPLES = [
       ru: 'Объект не найден.',
       uk: "Об'єкт не знайдено.",
       pl: 'Nie znaleziono elementu.',
+      nl: 'Het item is niet gevonden.',
+      tr: 'Öğe bulunamadı.',
+      sv: 'Objektet hittades inte.',
+      da: 'Elementet blev ikke fundet.',
     },
   },
   {
     key: 'settings:language.label',
-    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język' },
+    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język', nl: 'Taal', tr: 'Dil', sv: 'Språk', da: 'Sprog' },
   },
   {
     key: 'sidebar:userMenu.pausedUntil',
@@ -143,13 +159,38 @@ const SAMPLES = [
       ru: 'Приостановлено до 9:00',
       uk: 'Призупинено до 9:00',
       pl: 'Wstrzymano do 9:00',
+      nl: 'Gepauzeerd tot 9:00',
+      tr: '9:00 saatine kadar duraklatıldı',
+      sv: 'Pausad till 9:00',
+      da: 'På pause indtil 9:00',
     },
   },
 ];
 
 // 복수형 경계 값(1, 2, 5, 0, 11, 12, 21, 22, 111)으로 CLDR 분기가 맞게 고르는지 확인한다.
 // ru·uk·pl은 one/few/many/other를 모두 쓰고, it은 one/other만 쓴다.
+// nl·tr·sv·da는 one/other 두 분기만 쓴다. 경계 값(0, 1, 2, 5, 11, 12, 21, 22, 111)으로 확인한다.
 const PLURAL_CASES = [
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'nl',
+    cases: { 0: '0 leden', 1: '1 lid', 2: '2 leden', 5: '5 leden', 11: '11 leden', 12: '12 leden', 21: '21 leden', 22: '22 leden', 111: '111 leden' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'tr',
+    cases: { 0: '0 üye', 1: '1 üye', 2: '2 üye', 5: '5 üye', 11: '11 üye', 12: '12 üye', 21: '21 üye', 22: '22 üye', 111: '111 üye' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'sv',
+    cases: { 0: '0 medlemmar', 1: '1 medlem', 2: '2 medlemmar', 5: '5 medlemmar', 11: '11 medlemmar', 12: '12 medlemmar', 21: '21 medlemmar', 22: '22 medlemmar', 111: '111 medlemmar' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'da',
+    cases: { 0: '0 medlemmer', 1: '1 medlem', 2: '2 medlemmer', 5: '5 medlemmer', 11: '11 medlemmer', 12: '12 medlemmer', 21: '21 medlemmer', 22: '22 medlemmer', 111: '111 medlemmer' },
+  },
   {
     key: 'channels:dialog.memberCount',
     lng: 'ru',
@@ -182,9 +223,9 @@ const PLURAL_CASES = [
   },
 ];
 
-test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
+test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→nl→tr→sv→da→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
   const i18n = await makeI18n();
-  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'ko', 'en']) {
+  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'ko', 'en']) {
     await i18n.changeLanguage(lng);
     for (const sample of SAMPLES) {
       assert.equal(i18n.t(sample.key, sample.options), sample.values[lng], `${lng} ${sample.key}`);
@@ -195,7 +236,7 @@ test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→k
 test('같은 키를 여러 번 바꿔 읽어도 값이 흔들리지 않는다(반복 확인)', async () => {
   const i18n = await makeI18n();
   for (let round = 0; round < 3; round += 1) {
-    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'ko', 'zh-Hans', 'en']) {
+    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'ko', 'zh-Hans', 'en']) {
       await i18n.changeLanguage(lng);
       assert.equal(i18n.t('settings:language.label'), SAMPLES[6].values[lng]);
     }
@@ -327,4 +368,52 @@ test('초기 설정 객체는 호출할 때마다 새로 만들어져 리소스�
   assert.notEqual(a.resources, b.resources);
   assert.equal(a.fallbackLng, 'en');
   assert.equal(a.partialBundledLanguages, true);
+});
+
+// 2등급 4개 언어(nl, tr, sv, da) 번역 리소스 CRUD: 사이드바 nav.unreads로 읽기, 수정, 삭제(영어 대체), 다시 만들기를 반복한다.
+test('신규 4개 언어(nl, tr, sv, da)도 번역 리소스 CRUD가 같게 동작한다', async () => {
+  const i18n = await makeI18n();
+  for (const [lng, unreads] of [
+    ['nl', 'Ongelezen'],
+    ['tr', 'Okunmamışlar'],
+    ['sv', 'Olästa'],
+    ['da', 'Ulæste'],
+  ]) {
+    await i18n.changeLanguage(lng);
+    const bundle = () => structuredClone(RESOURCES[lng].sidebar);
+    const setBundle = (value) => {
+      i18n.removeResourceBundle(lng, 'sidebar');
+      i18n.addResourceBundle(lng, 'sidebar', value, true, true);
+    };
+
+    // Read
+    assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} read`);
+
+    // Update
+    const updated = bundle();
+    updated.nav.unreads = 'TEST';
+    setBundle(updated);
+    assert.equal(i18n.t('sidebar:nav.unreads'), 'TEST', `${lng} update`);
+
+    // Delete: 키를 지우면 영어 원문(Unreads)으로 대체된다
+    const removed = bundle();
+    delete removed.nav.unreads;
+    setBundle(removed);
+    assert.equal(i18n.t('sidebar:nav.unreads'), 'Unreads', `${lng} delete`);
+
+    // Create: 다시 추가하면 번역이 돌아온다
+    setBundle(bundle());
+    assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} create`);
+  }
+});
+
+// 터키어 대소문자: 로캘 기준 변환은 İ/ı를 구분한다. 채널 이름 소문자화(toLocaleLowerCase)가 tr에서 İ→i가 되는지 확인한다.
+test('터키어 번역의 İ는 로캘 기준 소문자화에서 i가 되고, 점 없는 ı와 섞이지 않는다', async () => {
+  const i18n = await makeI18n();
+  await i18n.changeLanguage('tr');
+  const cancel = i18n.t('common:actions.cancel');
+  assert.equal(cancel, 'İptal');
+  assert.equal(cancel.toLocaleLowerCase('tr'), 'iptal');
+  assert.equal('I'.toLocaleLowerCase('tr'), 'ı');
+  assert.equal('i'.toLocaleUpperCase('tr'), 'İ');
 });

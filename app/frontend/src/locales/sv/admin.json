@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Adminpanel",
+    "openSidebar": "Öppna sidofältet",
+    "tabs": {
+      "members": "Medlemmar",
+      "invites": "Inbjudningar",
+      "channels": "Kanaler",
+      "webhooks": "Webhooks",
+      "audit": "Granskningslogg",
+      "retention": "Datalagring",
+      "security": "Säkerhet",
+      "dlp": "DLP",
+      "legalHolds": "Juridiska spärrar"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanal",
+      "members": "Medlemmar",
+      "messages": "Meddelanden",
+      "created": "Skapad"
+    },
+    "actions": {
+      "rename": "Byt namn på kanal",
+      "archive": "Arkivera kanal",
+      "delete": "Ta bort kanal",
+      "unarchive": "Ta bort från arkiv",
+      "deletePermanently": "Ta bort permanent"
+    },
+    "emptyActive": "Inga aktiva kanaler",
+    "archivedHeading": "Arkiverade kanaler ({count})",
+    "archivedOn": "arkiverad {date}",
+    "messageCount": "{count, plural, one {# meddelande} other {# meddelanden}}",
+    "deleteDialog": {
+      "title": "Ta bort kanal",
+      "message": "Är du säker på att du vill ta bort #{name} permanent? Alla meddelanden går förlorade. Det här går inte att ångra."
+    },
+    "archiveDialog": {
+      "title": "Arkivera kanal",
+      "confirm": "Arkivera",
+      "message": "Arkivera #{name}? Den döljs i sidofältet men meddelandena sparas. Du kan ta bort den från arkivet senare."
+    },
+    "unarchiveDialog": {
+      "title": "Ta bort kanal från arkiv",
+      "confirm": "Ta bort från arkiv",
+      "message": "Ta bort #{name} från arkivet? Den visas igen i sidofältet för alla medlemmar."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Sök medlemmar...",
+    "columns": {
+      "user": "Användare",
+      "email": "E-post",
+      "role": "Roll",
+      "status": "Status",
+      "actions": "Åtgärder"
+    },
+    "you": "(du)",
+    "roles": {
+      "owner": "Ägare",
+      "admin": "Admin",
+      "member": "Medlem",
+      "guest": "Gäst"
+    },
+    "status": {
+      "active": "Aktiv",
+      "deactivated": "Inaktiverad"
+    },
+    "actions": {
+      "transfer": "Överför ägarskap",
+      "reactivate": "Aktivera igen",
+      "deactivate": "Inaktivera",
+      "forceLogout": "Tvinga utloggning",
+      "resetMfa": "Återställ 2FA"
+    },
+    "empty": "Inga användare hittades",
+    "dialogs": {
+      "transfer": {
+        "title": "Överför ägarskapet för arbetsytan",
+        "confirm": "Överför",
+        "message": "Är du säker på att du vill överföra ägarskapet för arbetsytan till {name}? Du blir nedflyttad till Admin."
+      },
+      "deactivate": {
+        "title": "Inaktivera användare",
+        "confirm": "Inaktivera",
+        "message": "Är du säker på att du vill inaktivera {name}? Användaren loggas ut direkt och kan inte logga in."
+      },
+      "reactivate": {
+        "title": "Aktivera användare igen",
+        "confirm": "Aktivera igen",
+        "message": "Är du säker på att du vill aktivera {name} igen? Användaren kan logga in igen."
+      },
+      "forceLogout": {
+        "title": "Tvinga utloggning",
+        "confirm": "Logga ut",
+        "message": "Logga ut {name} från alla enheter nu? Kontot förblir aktivt och användaren kan logga in igen."
+      },
+      "resetMfa": {
+        "title": "Återställ tvåstegsverifiering",
+        "confirm": "Återställ",
+        "message": "Ta bort tvåstegsverifieringen för {name}? Användaren loggas ut från alla enheter och kan logga in med bara lösenordet."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Tvåstegsverifiering är på"
+    }
+  },
+  "invites": {
+    "createHeading": "Skapa inbjudningslänk",
+    "fields": {
+      "role": "Roll",
+      "maxUses": "Max antal användningar",
+      "expiresIn": "Går ut om"
+    },
+    "unlimited": "Obegränsat",
+    "expiry": {
+      "1d": "1 dag",
+      "7d": "7 dagar",
+      "30d": "30 dagar",
+      "never": "Aldrig"
+    },
+    "expired": "Utgången",
+    "columns": {
+      "url": "Inbjudningslänk",
+      "uses": "Användningar",
+      "expires": "Går ut",
+      "createdBy": "Skapad av"
+    },
+    "copyUrl": "Kopiera inbjudningslänk",
+    "full": "(full)",
+    "delete": "Ta bort inbjudan",
+    "empty": "Inga inbjudningslänkar ännu"
+  },
+  "webhooks": {
+    "createHeading": "Skapa webhook",
+    "fields": {
+      "name": "Webhookens namn",
+      "channel": "Kanal"
+    },
+    "namePlaceholder": "Min integration",
+    "selectChannel": "Välj kanal...",
+    "columns": {
+      "name": "Namn",
+      "url": "Webhook-URL",
+      "lastUsed": "Senast använd"
+    },
+    "never": "Aldrig",
+    "justNow": "Just nu",
+    "inactive": "Inaktiv",
+    "copyUrl": "Kopiera webhook-URL",
+    "delete": "Ta bort webhook",
+    "empty": "Inga webhooks konfigurerade ännu"
+  },
+  "audit": {
+    "empty": "Inga granskningsloggposter matchar. Registrerade händelser visas här.",
+    "loadMore": "Läs in fler",
+    "targets": {
+      "user": "Användare",
+      "channel": "Kanal",
+      "invite": "Inbjudan",
+      "webhook": "Webhook",
+      "message": "Meddelande",
+      "directMessage": "Direktmeddelande",
+      "token": "Åtkomsttoken",
+      "auditLog": "Granskningslogg",
+      "mcpTool": "MCP-verktyg",
+      "workspace": "Arbetsyta",
+      "file": "Fil",
+      "dlpRule": "DLP-regel",
+      "legalHold": "Juridisk spärr"
+    },
+    "action": {
+      "authLogin": "Inloggad",
+      "authLoginFailed": "Inloggningen misslyckades",
+      "authLogout": "Utloggad",
+      "authPasswordChanged": "Lösenordet ändrades",
+      "userRoleChanged": "Rollen ändrades",
+      "userDeactivated": "Inaktiverad",
+      "userForceLogout": "Utloggad av administratör",
+      "userReactivated": "Aktiverad igen",
+      "ownershipTransferred": "Ägarskap överfört",
+      "ownerBootstrapped": "Ägare skapad",
+      "channelCreated": "Kanal skapad",
+      "channelEdited": "Kanal redigerad",
+      "channelArchived": "Kanal arkiverad",
+      "channelUnarchived": "Kanal borttagen från arkiv",
+      "channelDeleted": "Kanal borttagen",
+      "channelMemberAdded": "Medlem tillagd",
+      "channelMemberRemoved": "Medlem borttagen",
+      "inviteCreated": "Inbjudan skapad",
+      "inviteDeleted": "Inbjudan borttagen",
+      "webhookCreated": "Webhook skapad",
+      "webhookDeleted": "Webhook borttagen",
+      "tokenCreate": "Token skapad",
+      "tokenRevoke": "Token återkallad",
+      "mcpToolCall": "MCP-verktygsanrop",
+      "auditExported": "Granskningslogg exporterad",
+      "authLoginLocked": "Konto låst",
+      "sessionRevoked": "Enhet utloggad",
+      "sessionRevokedAll": "Alla enheter utloggade",
+      "retentionPurged": "Utgången data borttagen",
+      "retentionWorkspaceUpdated": "Lagringspolicyn ändrades",
+      "retentionChannelUpdated": "Kanalens lagring ändrades",
+      "retentionChannelCleared": "Kanalens lagring återställdes",
+      "mfaEnabled": "Tvåstegsverifiering påslagen",
+      "mfaDisabled": "Tvåstegsverifiering avstängd",
+      "mfaRecoveryUsed": "Återställningskod användes",
+      "mfaRecoveryRegenerated": "Återställningskoder skapades på nytt",
+      "mfaResetByAdmin": "Tvåstegsverifiering återställd av admin",
+      "mfaPolicyChanged": "Kravet på tvåstegsverifiering ändrades",
+      "dlpBlocked": "Meddelande blockerat av DLP",
+      "dlpWarned": "DLP-varning",
+      "dlpRuleCreated": "DLP-regel skapad",
+      "dlpRuleUpdated": "DLP-regel ändrad",
+      "dlpRuleDeleted": "DLP-regel borttagen",
+      "dlpRuleTimeout": "DLP-regel tidsgränsen överskreds",
+      "dlpRuleAutoDisabled": "DLP-regel avstängd automatiskt",
+      "legalHoldCreated": "Juridisk spärr skapad",
+      "legalHoldUpdated": "Juridisk spärr redigerad",
+      "legalHoldCustodianAdded": "Person tillagd i juridisk spärr",
+      "legalHoldCustodianRemoved": "Person borttagen från juridisk spärr",
+      "legalHoldReleased": "Juridisk spärr släppt",
+      "ediscoverySearched": "eDiscovery-sökning",
+      "ediscoveryExportRequested": "eDiscovery-export begärd",
+      "ediscoveryExported": "eDiscovery exporterad"
+    },
+    "filters": {
+      "allActions": "Alla åtgärder",
+      "actionsSelected": "{count, plural, one {# åtgärd} other {# åtgärder}}",
+      "actor": "Utförare",
+      "allActors": "Alla utförare",
+      "targetType": "Måltyp",
+      "allTargets": "Alla mål",
+      "from": "Från",
+      "to": "Till",
+      "apply": "Använd",
+      "reset": "Återställ"
+    },
+    "export": {
+      "csv": "Exportera CSV",
+      "json": "Exportera JSON"
+    },
+    "unknownActor": "Okänd"
+  },
+  "errors": {
+    "archiveChannel": "Det gick inte att arkivera kanalen",
+    "createInvite": "Det gick inte att skapa inbjudan",
+    "createWebhook": "Det gick inte att skapa webhooken",
+    "deactivateUser": "Det gick inte att inaktivera användaren",
+    "deleteChannel": "Det gick inte att ta bort kanalen",
+    "deleteInvite": "Det gick inte att ta bort inbjudan",
+    "deleteWebhook": "Det gick inte att ta bort webhooken",
+    "editChannel": "Det gick inte att redigera kanalen",
+    "exportAuditLog": "Det gick inte att exportera granskningsloggen",
+    "fetchAuditLog": "Det gick inte att hämta granskningsloggen",
+    "fetchChannels": "Det gick inte att hämta kanalerna",
+    "fetchInvites": "Det gick inte att hämta inbjudningarna",
+    "fetchUsers": "Det gick inte att hämta användarna",
+    "fetchWebhooks": "Det gick inte att hämta webhooks",
+    "forceLogout": "Det gick inte att logga ut användaren",
+    "reactivateUser": "Det gick inte att aktivera användaren igen",
+    "removeChannelMember": "Det gick inte att ta bort kanalmedlemmen",
+    "transferOwnership": "Det gick inte att överföra ägarskapet",
+    "unarchiveChannel": "Det gick inte att ta bort kanalen från arkivet",
+    "updateRole": "Det gick inte att uppdatera rollen",
+    "resetMfa": "Det gick inte att återställa tvåstegsverifieringen"
+  },
+  "retention": {
+    "title": "Datalagring",
+    "description": "Tar automatiskt bort meddelanden efter ett angivet antal dagar. Filer tas bort tillsammans med sina meddelanden. Rensningen körs en gång per dygn. Påminnelser behålls och visar \"borttaget meddelande\".",
+    "loadError": "Det gick inte att läsa in lagringspolicyn",
+    "saveError": "Det gick inte att spara lagringspolicyn",
+    "resetError": "Det gick inte att återställa kanalpolicyn",
+    "workspace": {
+      "heading": "Arbetsytans standard",
+      "hint": "Gäller för varje kanal utan egen inställning, samt för direktmeddelanden och gruppkonversationer."
+    },
+    "mode": {
+      "forever": "Behåll för alltid",
+      "days": "Ta bort efter ett antal dagar",
+      "inherit": "Använd arbetsytans standard"
+    },
+    "daysLabel": "Dagar",
+    "daysHint": "{min} till {max} dagar",
+    "effective": {
+      "forever": "Behålls för alltid",
+      "days": "{count, plural, one {# dag} other {# dagar}}"
+    },
+    "channels": {
+      "heading": "Kanaler",
+      "columns": {
+        "channel": "Kanal",
+        "policy": "Policy",
+        "effective": "Gäller"
+      },
+      "legalHold": "Juridisk spärr",
+      "reset": "Återställ till standard",
+      "empty": "Inga kanaler"
+    },
+    "save": "Spara",
+    "saved": "Sparat",
+    "confirm": {
+      "title": "Ta bort gamla meddelanden permanent?",
+      "message": "Vid nästa rensning tas meddelanden som är äldre än {count, plural, one {# dag} other {# dagar}} bort permanent tillsammans med sina filer. Det här går inte att ångra.",
+      "confirm": "Tillämpa policy"
+    }
+  },
+  "security": {
+    "title": "Tvåstegsverifiering",
+    "requireMfa": "Kräv tvåstegsverifiering för alla",
+    "requireMfaHint": "Medlemmar utan tvåstegsverifiering kan bara nå konfigurationsskärmen tills de slår på den.",
+    "unavailable": "Tvåstegsverifiering är avstängd på den här servern eftersom ingen krypteringsnyckel är angiven (TOTP_ENCRYPTION_KEY). Kravet tillämpas inte.",
+    "saved": "Säkerhetsinställningarna sparades",
+    "loading": "Läser in...",
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in säkerhetsinställningarna.",
+      "saveFailed": "Det gick inte att spara säkerhetsinställningarna."
+    },
+    "allowOAuthApps": "Tillåt medlemmar att ansluta OAuth-appar",
+    "allowOAuthAppsHint": "Låter medlemmar ansluta appar som Claude via OAuth-inloggningen. Om du stänger av detta kopplas alla appar bort direkt."
+  },
+  "dlp": {
+    "title": "Förhindra dataläckage",
+    "description": "Upptäcker känsliga mönster i meddelanden, till exempel kortnummer. En blockeringsregel stoppar meddelandet från att sparas. En varningsregel sparar det och loggar det i granskningsloggen. Meddelandets text skrivs aldrig till loggen.",
+    "loadError": "Det gick inte att läsa in DLP-reglerna",
+    "saveError": "Det gick inte att spara regeln",
+    "toggleError": "Det gick inte att ändra regeln",
+    "deleteError": "Det gick inte att ta bort regeln",
+    "testError": "Det gick inte att testa mönstret",
+    "builtinBadge": "Inbyggd",
+    "builtinPattern": "Inbyggd detektor",
+    "builtin": {
+      "credit_card": "Kortnummer",
+      "kr_rrn": "Koreanskt personnummer",
+      "aws_access_key": "AWS-åtkomstnyckel",
+      "private_key": "Privat nyckel"
+    },
+    "action": {
+      "BLOCK": "Blockera",
+      "WARN": "Varna"
+    },
+    "columns": {
+      "name": "Regel",
+      "pattern": "Mönster",
+      "action": "Åtgärd",
+      "enabled": "Status"
+    },
+    "on": "På",
+    "off": "Av",
+    "toggleLabel": "Slå på eller av {name}",
+    "edit": "Redigera",
+    "editLabel": "Redigera {name}",
+    "delete": "Ta bort",
+    "deleteLabel": "Ta bort {name}",
+    "form": {
+      "createHeading": "Lägg till en regel",
+      "editHeading": "Redigera regel",
+      "name": "Namn",
+      "pattern": "Mönster (reguljärt uttryck)",
+      "patternPlaceholder": "PROJEKT-\\d{4}",
+      "action": "Åtgärd",
+      "add": "Lägg till regel",
+      "save": "Spara",
+      "cancel": "Avbryt",
+      "hint": "Upp till {max} tecken. Kapslade upprepningar som (a+)+, bakåtreferenser och mycket höga upprepningsantal avvisas."
+    },
+    "patternProblem": {
+      "empty": "Ange ett mönster.",
+      "tooLong": "Mönstret är för långt.",
+      "invalid": "Det här är inte ett giltigt reguljärt uttryck.",
+      "backreference": "Bakåtreferenser är inte tillåtna.",
+      "nestedQuantifier": "Kapslade upprepningar kan göra kontrollen mycket långsam och är inte tillåtna.",
+      "repeatTooLarge": "Upprepningsantalet är för stort (högst 200)."
+    },
+    "test": {
+      "heading": "Testa ett mönster",
+      "hint": "Inget sparas. Ange ett mönster ovan, eller välj en sparad regel, och skriv sedan exempeltext.",
+      "source": "Mönster att testa",
+      "sourceDraft": "Mönster i formuläret ovan",
+      "sample": "Exempeltext",
+      "run": "Testa",
+      "matched": "Träff. Den här texten skulle fångas.",
+      "notMatched": "Ingen träff.",
+      "timedOut": "Kontrollen tog för lång tid och stoppades. Förenkla mönstret."
+    },
+    "confirmDelete": {
+      "title": "Ta bort den här regeln?",
+      "message": "Regeln \"{name}\" tas bort och kontrolleras inte längre."
+    }
+  },
+  "legalHolds": {
+    "description": "Bevara allt en person har skrivit eller tagit emot, även när datalagringen skulle ta bort det. Administratörer kan söka i och exportera de bevarade uppgifterna för juridisk granskning.",
+    "statusFilter": "Visa",
+    "status": {
+      "active": "Aktiv",
+      "released": "Släppt",
+      "all": "Alla"
+    },
+    "empty": "Inga juridiska spärrar",
+    "selectHint": "Välj en juridisk spärr för att hantera dess personer och söka i dess data.",
+    "loadMore": "Läs in fler",
+    "custodianCount": "{count, plural, one {# person} other {# personer}}",
+    "createdOn": "Skapad {date}",
+    "releasedOn": "Släppt {date}",
+    "createdBy": "Skapad av {name} {date}",
+    "releasedBy": "Släppt av {name} {date}",
+    "unknownUser": "Okänd användare",
+    "edit": "Redigera",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "fields": {
+      "name": "Namn",
+      "description": "Beskrivning (valfri)"
+    },
+    "create": {
+      "open": "Ny spärr",
+      "submit": "Skapa spärr",
+      "hint": "Du kan lägga till personer när spärren har skapats."
+    },
+    "custodians": {
+      "heading": "Personer i spärren",
+      "pick": "Välj en person",
+      "add": "Lägg till",
+      "remove": "Ta bort {name} från den här spärren",
+      "empty": "Ingen finns i den här spärren ännu.",
+      "deactivated": "Inaktiverad"
+    },
+    "release": {
+      "open": "Släpp spärren",
+      "title": "Släpp den här juridiska spärren?",
+      "message": "\"{name}\" slutar bevara data. Personer som inte finns i någon annan aktiv spärr går tillbaka till den vanliga lagringspolicyn, och deras gamla meddelanden kan tas bort vid nästa rensning. Spärren och listan över personer finns kvar i journalen. Det här går inte att ångra.",
+      "confirm": "Släpp"
+    },
+    "discovery": {
+      "heading": "Sök och exportera",
+      "hint": "Omfattar meddelanden som personerna i spärren skrev i valfri kanal (inklusive privata), direkt- och gruppmeddelanden de deltog i samt filuppgifter. Borttagna meddelanden ingår och är markerade.",
+      "query": "Nyckelord",
+      "from": "Från",
+      "to": "Till",
+      "search": "Sök",
+      "export": "Exportera (JSONL)",
+      "exportHint": "Exporterar resultaten från den senaste sökningen. Varje sökning och export registreras i granskningsloggen.",
+      "searchFirst": "Sök med de här filtren först. Exporten använder filtren från sökningen som visas nedan.",
+      "kinds": {
+        "channel": "Kanalmeddelanden",
+        "dm": "Direktmeddelanden",
+        "file": "Filer"
+      },
+      "empty": "Inga resultat",
+      "deleted": "Borttagen",
+      "edited": "Redigerad",
+      "reply": "Trådsvar",
+      "groupDm": "Gruppmeddelande #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Det gick inte att läsa in juridiska spärrar",
+      "create": "Det gick inte att skapa den juridiska spärren",
+      "update": "Det gick inte att uppdatera den juridiska spärren",
+      "custodians": "Det gick inte att ändra personerna i spärren",
+      "release": "Det gick inte att släppa den juridiska spärren",
+      "search": "Sökningen misslyckades",
+      "export": "Exporten misslyckades"
+    }
+  }
+}

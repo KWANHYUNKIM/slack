@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Een kanaal maken",
+    "tabBrowse": "Kanalen verkennen",
+    "nameLabel": "Kanaalnaam",
+    "namePlaceholder": "bijv. plan-budget",
+    "visibility": "Zichtbaarheid",
+    "public": "Openbaar",
+    "private": "Privé",
+    "publicHint": "Iedereen in de werkruimte kan dit kanaal vinden en er lid van worden.",
+    "privateHint": "Alleen uitgenodigde leden kunnen dit kanaal vinden en er lid van worden.",
+    "cancel": "Annuleren",
+    "create": "Maken",
+    "noChannels": "Er zijn geen kanalen om lid van te worden",
+    "memberCount": "{count, plural, one {# lid} other {# leden}}",
+    "joined": "Lid",
+    "join": "Deelnemen",
+    "close": "Sluiten",
+    "errors": {
+      "createFailed": "Het kanaal kon niet worden gemaakt"
+    }
+  },
+  "errors": {
+    "loadConversations": "Gesprekken laden is mislukt.",
+    "loadChannels": "Kanalen laden is mislukt."
+  },
+  "membersPanel": {
+    "title": "Leden",
+    "addPeople": "Personen toevoegen",
+    "loadError": "Leden laden is mislukt.",
+    "removeError": "Lid verwijderen is mislukt",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Lid verwijderen?",
+      "message": "<bold>{name}</bold> uit dit kanaal verwijderen?"
+    },
+    "removing": "Verwijderen...",
+    "searchByName": "Zoek op naam...",
+    "noUsers": "Geen gebruikers gevonden",
+    "roles": {
+      "owner": "Eigenaar",
+      "moderator": "Mod"
+    },
+    "removeMember": "Lid verwijderen"
+  },
+  "dm": {
+    "messagePlaceholder": "Bericht aan {name}",
+    "you": "(jij)",
+    "star": "Toevoegen aan Met ster",
+    "unstar": "Verwijderen uit Met ster",
+    "loadingMessages": "Berichten laden...",
+    "selfSpace": "Dit is je eigen ruimte. Schrijf concepten, zet je to-do's op een lijst of bewaar links en bestanden.",
+    "conversationStart": "Begin van je gesprek met {name}",
+    "sendToBegin": "Stuur een bericht om te beginnen.",
+    "edited": "(bewerkt)",
+    "pinnedMessages": "Vastgezette berichten",
+    "noPins": "Nog geen vastgezette berichten",
+    "files": "Bestanden",
+    "noFiles": "Nog geen bestanden gedeeld",
+    "loadError": "Berichten laden is mislukt.",
+    "sendError": "Bericht verzenden is mislukt. Probeer het opnieuw."
+  },
+  "nameRules": {
+    "required": "Voer een kanaalnaam in.",
+    "tooLong": "De kanaalnaam mag maximaal {max} tekens bevatten.",
+    "invalidChars": "Kanaalnamen mogen alleen letters, cijfers, koppeltekens en underscores bevatten, en moeten beginnen met een letter of cijfer.",
+    "tooManyMarks": "Kanaalnamen mogen niet meer dan 4 combinerende tekens achter elkaar hebben.",
+    "mixedScripts": "Kanaalnamen mogen geen op elkaar lijkende alfabetten combineren (zoals Latijns met Cyrillisch of Grieks) of cijfers uit een ander talstelsel.",
+    "taken": "Er bestaat al een kanaal met die naam."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# lid} other {# leden}}",
+    "nameLabel": "Naam van het gesprek",
+    "namePlaceholder": "Een naam toevoegen",
+    "noName": "Geen naam (toont de namen van de leden)",
+    "rename": "Gesprek hernoemen",
+    "addPeople": "Personen toevoegen",
+    "add": "Toevoegen",
+    "createWith": "Groepsgesprek starten",
+    "leave": "Gesprek verlaten",
+    "leaveConfirm": "Dit gesprek verlaten? Je ziet de berichten daarin dan niet meer.",
+    "conversationStart": "Dit is het begin van je gesprek met {names}",
+    "addError": "Personen konden niet worden toegevoegd. Probeer het opnieuw.",
+    "renameError": "Het gesprek kon niet worden hernoemd. Probeer het opnieuw.",
+    "leaveError": "Het gesprek kon niet worden verlaten. Probeer het opnieuw."
+  }
+}

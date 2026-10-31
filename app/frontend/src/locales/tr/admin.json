@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Yönetici paneli",
+    "openSidebar": "Kenar çubuğunu aç",
+    "tabs": {
+      "members": "Üyeler",
+      "invites": "Davetler",
+      "channels": "Kanallar",
+      "webhooks": "Webhook'lar",
+      "audit": "Denetim günlüğü",
+      "retention": "Veri saklama",
+      "security": "Güvenlik",
+      "dlp": "DLP",
+      "legalHolds": "Yasal saklamalar"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanal",
+      "members": "Üyeler",
+      "messages": "İletiler",
+      "created": "Oluşturulma"
+    },
+    "actions": {
+      "rename": "Kanalı yeniden adlandır",
+      "archive": "Kanalı arşivle",
+      "delete": "Kanalı sil",
+      "unarchive": "Kanalın arşivini kaldır",
+      "deletePermanently": "Kalıcı olarak sil"
+    },
+    "emptyActive": "Etkin kanal yok",
+    "archivedHeading": "Arşivlenmiş kanallar ({count})",
+    "archivedOn": "{date} tarihinde arşivlendi",
+    "messageCount": "{count, plural, one {# ileti} other {# ileti}}",
+    "deleteDialog": {
+      "title": "Kanalı sil",
+      "message": "#{name} kanalını kalıcı olarak silmek istediğinizden emin misiniz? Tüm iletiler kaybolur. Bu işlem geri alınamaz."
+    },
+    "archiveDialog": {
+      "title": "Kanalı arşivle",
+      "confirm": "Arşivle",
+      "message": "#{name} kanalı arşivlensin mi? Kenar çubuğunda gizlenir ancak iletiler korunur. Daha sonra arşivden çıkarabilirsiniz."
+    },
+    "unarchiveDialog": {
+      "title": "Kanalın arşivini kaldır",
+      "confirm": "Arşivden çıkar",
+      "message": "#{name} kanalının arşivi kaldırılsın mı? Tüm üyeler için kenar çubuğunda yeniden görünür."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Üyeleri ara...",
+    "columns": {
+      "user": "Kullanıcı",
+      "email": "E-posta",
+      "role": "Rol",
+      "status": "Durum",
+      "actions": "İşlemler"
+    },
+    "you": "(siz)",
+    "roles": {
+      "owner": "Sahip",
+      "admin": "Yönetici",
+      "member": "Üye",
+      "guest": "Misafir"
+    },
+    "status": {
+      "active": "Etkin",
+      "deactivated": "Devre dışı"
+    },
+    "actions": {
+      "transfer": "Sahipliği devret",
+      "reactivate": "Yeniden etkinleştir",
+      "deactivate": "Devre dışı bırak",
+      "forceLogout": "Oturumu zorla kapat",
+      "resetMfa": "2FA'yı sıfırla"
+    },
+    "empty": "Kullanıcı bulunamadı",
+    "dialogs": {
+      "transfer": {
+        "title": "Çalışma alanı sahipliğini devret",
+        "confirm": "Devret",
+        "message": "Çalışma alanı sahipliğini {name} kişisine devretmek istediğinizden emin misiniz? Yönetici rolüne düşürüleceksiniz."
+      },
+      "deactivate": {
+        "title": "Kullanıcıyı devre dışı bırak",
+        "confirm": "Devre dışı bırak",
+        "message": "{name} kullanıcısını devre dışı bırakmak istediğinizden emin misiniz? Hemen oturumu kapatılır ve giriş yapamaz."
+      },
+      "reactivate": {
+        "title": "Kullanıcıyı yeniden etkinleştir",
+        "confirm": "Yeniden etkinleştir",
+        "message": "{name} kullanıcısını yeniden etkinleştirmek istediğinizden emin misiniz? Yeniden giriş yapabilecek."
+      },
+      "forceLogout": {
+        "title": "Oturumu zorla kapat",
+        "confirm": "Oturumu kapat",
+        "message": "{name} kişisinin tüm cihazlardaki oturumu şimdi kapatılsın mı? Hesabı etkin kalır ve yeniden giriş yapabilir."
+      },
+      "resetMfa": {
+        "title": "İki adımlı doğrulamayı sıfırla",
+        "confirm": "Sıfırla",
+        "message": "{name} için iki adımlı doğrulama kaldırılsın mı? Tüm cihazlardaki oturumu kapatılır ve yalnızca parolasıyla giriş yapabilir."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "İki adımlı doğrulama açık"
+    }
+  },
+  "invites": {
+    "createHeading": "Davet bağlantısı oluştur",
+    "fields": {
+      "role": "Rol",
+      "maxUses": "En fazla kullanım",
+      "expiresIn": "Sona erme süresi"
+    },
+    "unlimited": "Sınırsız",
+    "expiry": {
+      "1d": "1 gün",
+      "7d": "7 gün",
+      "30d": "30 gün",
+      "never": "Asla"
+    },
+    "expired": "Süresi doldu",
+    "columns": {
+      "url": "Davet URL'si",
+      "uses": "Kullanım",
+      "expires": "Sona erer",
+      "createdBy": "Oluşturan"
+    },
+    "copyUrl": "Davet URL'sini kopyala",
+    "full": "(dolu)",
+    "delete": "Daveti sil",
+    "empty": "Henüz davet bağlantısı yok"
+  },
+  "webhooks": {
+    "createHeading": "Webhook oluştur",
+    "fields": {
+      "name": "Webhook adı",
+      "channel": "Kanal"
+    },
+    "namePlaceholder": "Entegrasyonum",
+    "selectChannel": "Kanal seçin...",
+    "columns": {
+      "name": "Ad",
+      "url": "Webhook URL'si",
+      "lastUsed": "Son kullanım"
+    },
+    "never": "Hiçbir zaman",
+    "justNow": "Az önce",
+    "inactive": "Etkin değil",
+    "copyUrl": "Webhook URL'sini kopyala",
+    "delete": "Webhook'u sil",
+    "empty": "Henüz yapılandırılmış webhook yok"
+  },
+  "audit": {
+    "empty": "Eşleşen denetim günlüğü kaydı yok. Kaydedilen işlemler burada görünür.",
+    "loadMore": "Daha fazla yükle",
+    "targets": {
+      "user": "Kullanıcı",
+      "channel": "Kanal",
+      "invite": "Davet",
+      "webhook": "Webhook",
+      "message": "İleti",
+      "directMessage": "Doğrudan ileti",
+      "token": "Erişim belirteci",
+      "auditLog": "Denetim günlüğü",
+      "mcpTool": "MCP aracı",
+      "workspace": "Çalışma alanı",
+      "file": "Dosya",
+      "dlpRule": "DLP kuralı",
+      "legalHold": "Yasal saklama"
+    },
+    "action": {
+      "authLogin": "Giriş yapıldı",
+      "authLoginFailed": "Giriş başarısız",
+      "authLogout": "Oturum kapatıldı",
+      "authPasswordChanged": "Parola değiştirildi",
+      "userRoleChanged": "Rol değiştirildi",
+      "userDeactivated": "Devre dışı bırakıldı",
+      "userForceLogout": "Oturumu zorla kapatıldı",
+      "userReactivated": "Yeniden etkinleştirildi",
+      "ownershipTransferred": "Sahiplik devredildi",
+      "ownerBootstrapped": "Sahip oluşturuldu",
+      "channelCreated": "Kanal oluşturuldu",
+      "channelEdited": "Kanal düzenlendi",
+      "channelArchived": "Kanal arşivlendi",
+      "channelUnarchived": "Kanalın arşivi kaldırıldı",
+      "channelDeleted": "Kanal silindi",
+      "channelMemberAdded": "Üye eklendi",
+      "channelMemberRemoved": "Üye kaldırıldı",
+      "inviteCreated": "Davet oluşturuldu",
+      "inviteDeleted": "Davet silindi",
+      "webhookCreated": "Webhook oluşturuldu",
+      "webhookDeleted": "Webhook silindi",
+      "tokenCreate": "Belirteç oluşturuldu",
+      "tokenRevoke": "Belirteç iptal edildi",
+      "mcpToolCall": "MCP aracı çağrısı",
+      "auditExported": "Denetim günlüğü dışa aktarıldı",
+      "authLoginLocked": "Hesap kilitlendi",
+      "sessionRevoked": "Cihazın oturumu kapatıldı",
+      "sessionRevokedAll": "Tüm cihazların oturumu kapatıldı",
+      "retentionPurged": "Süresi dolan veriler silindi",
+      "retentionWorkspaceUpdated": "Saklama ilkesi değiştirildi",
+      "retentionChannelUpdated": "Kanal saklaması değiştirildi",
+      "retentionChannelCleared": "Kanal saklaması sıfırlandı",
+      "mfaEnabled": "İki adımlı doğrulama açıldı",
+      "mfaDisabled": "İki adımlı doğrulama kapatıldı",
+      "mfaRecoveryUsed": "Kurtarma kodu kullanıldı",
+      "mfaRecoveryRegenerated": "Kurtarma kodları yeniden oluşturuldu",
+      "mfaResetByAdmin": "İki adımlı doğrulama yönetici tarafından sıfırlandı",
+      "mfaPolicyChanged": "İki adımlı doğrulama gereksinimi değiştirildi",
+      "dlpBlocked": "İleti DLP tarafından engellendi",
+      "dlpWarned": "DLP uyarısı",
+      "dlpRuleCreated": "DLP kuralı oluşturuldu",
+      "dlpRuleUpdated": "DLP kuralı değiştirildi",
+      "dlpRuleDeleted": "DLP kuralı silindi",
+      "dlpRuleTimeout": "DLP kuralı zaman aşımına uğradı",
+      "dlpRuleAutoDisabled": "DLP kuralı otomatik olarak kapatıldı",
+      "legalHoldCreated": "Yasal saklama oluşturuldu",
+      "legalHoldUpdated": "Yasal saklama düzenlendi",
+      "legalHoldCustodianAdded": "Yasal saklamaya kişi eklendi",
+      "legalHoldCustodianRemoved": "Yasal saklamadan kişi çıkarıldı",
+      "legalHoldReleased": "Yasal saklama kaldırıldı",
+      "ediscoverySearched": "eDiscovery araması",
+      "ediscoveryExportRequested": "eDiscovery dışa aktarma istendi",
+      "ediscoveryExported": "eDiscovery dışa aktarıldı"
+    },
+    "filters": {
+      "allActions": "Tüm işlemler",
+      "actionsSelected": "{count, plural, one {# işlem} other {# işlem}}",
+      "actor": "İşlemi yapan",
+      "allActors": "Tüm işlemi yapanlar",
+      "targetType": "Hedef türü",
+      "allTargets": "Tüm hedefler",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "apply": "Uygula",
+      "reset": "Sıfırla"
+    },
+    "export": {
+      "csv": "CSV dışa aktar",
+      "json": "JSON dışa aktar"
+    },
+    "unknownActor": "Bilinmiyor"
+  },
+  "errors": {
+    "archiveChannel": "Kanal arşivlenemedi",
+    "createInvite": "Davet oluşturulamadı",
+    "createWebhook": "Webhook oluşturulamadı",
+    "deactivateUser": "Kullanıcı devre dışı bırakılamadı",
+    "deleteChannel": "Kanal silinemedi",
+    "deleteInvite": "Davet silinemedi",
+    "deleteWebhook": "Webhook silinemedi",
+    "editChannel": "Kanal düzenlenemedi",
+    "exportAuditLog": "Denetim günlüğü dışa aktarılamadı",
+    "fetchAuditLog": "Denetim günlüğü alınamadı",
+    "fetchChannels": "Kanallar alınamadı",
+    "fetchInvites": "Davetler alınamadı",
+    "fetchUsers": "Kullanıcılar alınamadı",
+    "fetchWebhooks": "Webhook'lar alınamadı",
+    "forceLogout": "Kullanıcının oturumu kapatılamadı",
+    "reactivateUser": "Kullanıcı yeniden etkinleştirilemedi",
+    "removeChannelMember": "Kanal üyesi kaldırılamadı",
+    "transferOwnership": "Sahiplik devredilemedi",
+    "unarchiveChannel": "Kanalın arşivi kaldırılamadı",
+    "updateRole": "Rol güncellenemedi",
+    "resetMfa": "İki adımlı doğrulama sıfırlanamadı"
+  },
+  "retention": {
+    "title": "Veri saklama",
+    "description": "İletileri belirli bir gün sayısından sonra otomatik olarak siler. Dosyalar iletileriyle birlikte silinir. Temizleme günde bir kez çalışır. Hatırlatıcılar korunur ve \"silinmiş ileti\" olarak gösterilir.",
+    "loadError": "Saklama ilkesi yüklenemedi",
+    "saveError": "Saklama ilkesi kaydedilemedi",
+    "resetError": "Kanal ilkesi sıfırlanamadı",
+    "workspace": {
+      "heading": "Çalışma alanı varsayılanı",
+      "hint": "Kendi ayarı olmayan her kanala ve doğrudan iletilere ile grup sohbetlerine uygulanır."
+    },
+    "mode": {
+      "forever": "Süresiz sakla",
+      "days": "Belirli gün sayısından sonra sil",
+      "inherit": "Çalışma alanı varsayılanını kullan"
+    },
+    "daysLabel": "Gün",
+    "daysHint": "{min} ila {max} gün",
+    "effective": {
+      "forever": "Süresiz saklanır",
+      "days": "{count, plural, one {# gün} other {# gün}}"
+    },
+    "channels": {
+      "heading": "Kanallar",
+      "columns": {
+        "channel": "Kanal",
+        "policy": "İlke",
+        "effective": "Uygulanır"
+      },
+      "legalHold": "Yasal saklama",
+      "reset": "Varsayılana sıfırla",
+      "empty": "Kanal yok"
+    },
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "confirm": {
+      "title": "Eski iletiler kalıcı olarak silinsin mi?",
+      "message": "Bir sonraki temizlemede, {count, plural, one {# günden} other {# günden}} eski iletiler dosyalarıyla birlikte kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+      "confirm": "İlkeyi uygula"
+    }
+  },
+  "security": {
+    "title": "İki adımlı doğrulama",
+    "requireMfa": "Herkes için iki adımlı doğrulamayı zorunlu kıl",
+    "requireMfaHint": "İki adımlı doğrulaması olmayan üyeler, açana kadar yalnızca kurulum ekranına erişebilir.",
+    "unavailable": "Bu sunucuda şifreleme anahtarı (TOTP_ENCRYPTION_KEY) ayarlanmadığı için iki adımlı doğrulama kapalı. Gereksinim uygulanmıyor.",
+    "saved": "Güvenlik ayarları kaydedildi",
+    "loading": "Yükleniyor...",
+    "errors": {
+      "loadFailed": "Güvenlik ayarları yüklenemedi.",
+      "saveFailed": "Güvenlik ayarları kaydedilemedi."
+    },
+    "allowOAuthApps": "Üyelerin OAuth uygulamalarını bağlamasına izin ver",
+    "allowOAuthAppsHint": "Üyelerin Claude gibi uygulamaları OAuth oturum açma akışıyla bağlamasına izin verir. Bunu kapatmak tüm uygulamaların bağlantısını hemen keser."
+  },
+  "dlp": {
+    "title": "Veri kaybı önleme",
+    "description": "İletilerdeki kart numaraları gibi hassas kalıpları algılar. Engelleme kuralı iletinin kaydedilmesini durdurur. Uyarı kuralı iletiyi kaydeder ve denetim günlüğüne yazar. İleti metni günlüğe hiçbir zaman yazılmaz.",
+    "loadError": "DLP kuralları yüklenemedi",
+    "saveError": "Kural kaydedilemedi",
+    "toggleError": "Kural değiştirilemedi",
+    "deleteError": "Kural silinemedi",
+    "testError": "Desen test edilemedi",
+    "builtinBadge": "Yerleşik",
+    "builtinPattern": "Yerleşik algılayıcı",
+    "builtin": {
+      "credit_card": "Kredi kartı numarası",
+      "kr_rrn": "Kore vatandaşlık numarası",
+      "aws_access_key": "AWS erişim anahtarı",
+      "private_key": "Özel anahtar"
+    },
+    "action": {
+      "BLOCK": "Engelle",
+      "WARN": "Uyar"
+    },
+    "columns": {
+      "name": "Kural",
+      "pattern": "Desen",
+      "action": "İşlem",
+      "enabled": "Durum"
+    },
+    "on": "Açık",
+    "off": "Kapalı",
+    "toggleLabel": "{name} kuralını aç veya kapat",
+    "edit": "Düzenle",
+    "editLabel": "{name} kuralını düzenle",
+    "delete": "Sil",
+    "deleteLabel": "{name} kuralını sil",
+    "form": {
+      "createHeading": "Kural ekle",
+      "editHeading": "Kuralı düzenle",
+      "name": "Ad",
+      "pattern": "Desen (düzenli ifade)",
+      "patternPlaceholder": "PROJE-\\d{4}",
+      "action": "İşlem",
+      "add": "Kural ekle",
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "hint": "En fazla {max} karakter. (a+)+ gibi iç içe tekrarlar, geriye dönük başvurular ve çok büyük tekrar sayıları reddedilir."
+    },
+    "patternProblem": {
+      "empty": "Bir desen girin.",
+      "tooLong": "Desen çok uzun.",
+      "invalid": "Bu geçerli bir düzenli ifade değil.",
+      "backreference": "Geriye dönük başvurulara izin verilmiyor.",
+      "nestedQuantifier": "İç içe tekrarlar kontrolü çok yavaşlatabilir ve izin verilmiyor.",
+      "repeatTooLarge": "Tekrar sayısı çok büyük (en fazla 200)."
+    },
+    "test": {
+      "heading": "Bir deseni test et",
+      "hint": "Hiçbir şey kaydedilmez. Yukarıya bir desen girin veya kayıtlı bir kural seçin, ardından örnek metin yazın.",
+      "source": "Test edilecek desen",
+      "sourceDraft": "Yukarıdaki formdaki desen",
+      "sample": "Örnek metin",
+      "run": "Test et",
+      "matched": "Eşleşti. Bu metin yakalanırdı.",
+      "notMatched": "Eşleşme yok.",
+      "timedOut": "Kontrol çok uzun sürdü ve durduruldu. Deseni basitleştirin."
+    },
+    "confirmDelete": {
+      "title": "Bu kural silinsin mi?",
+      "message": "\"{name}\" kuralı kaldırılacak ve artık kontrol edilmeyecek."
+    }
+  },
+  "legalHolds": {
+    "description": "Veri saklama ilkesi silecek olsa bile bir kişinin yazdığı veya aldığı her şeyi korur. Yöneticiler, hukuki inceleme için korunan verileri arayıp dışa aktarabilir.",
+    "statusFilter": "Göster",
+    "status": {
+      "active": "Etkin",
+      "released": "Kaldırıldı",
+      "all": "Tümü"
+    },
+    "empty": "Yasal saklama yok",
+    "selectHint": "Kişilerini yönetmek ve verilerinde arama yapmak için bir yasal saklama seçin.",
+    "loadMore": "Daha fazla yükle",
+    "custodianCount": "{count, plural, one {# kişi} other {# kişi}}",
+    "createdOn": "{date} tarihinde oluşturuldu",
+    "releasedOn": "{date} tarihinde kaldırıldı",
+    "createdBy": "{name} tarafından {date} tarihinde oluşturuldu",
+    "releasedBy": "{name} tarafından {date} tarihinde kaldırıldı",
+    "unknownUser": "Bilinmeyen kullanıcı",
+    "edit": "Düzenle",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "fields": {
+      "name": "Ad",
+      "description": "Açıklama (isteğe bağlı)"
+    },
+    "create": {
+      "open": "Yeni saklama",
+      "submit": "Saklama oluştur",
+      "hint": "Saklamayı oluşturduktan sonra kişi ekleyebilirsiniz."
+    },
+    "custodians": {
+      "heading": "Saklamadaki kişiler",
+      "pick": "Bir kişi seçin",
+      "add": "Ekle",
+      "remove": "{name} kişisini bu saklamadan çıkar",
+      "empty": "Bu saklamada henüz kimse yok.",
+      "deactivated": "Devre dışı"
+    },
+    "release": {
+      "open": "Saklamayı kaldır",
+      "title": "Bu yasal saklama kaldırılsın mı?",
+      "message": "\"{name}\" verileri korumayı bırakacak. Başka etkin bir saklamada olmayan kişiler normal saklama ilkesine geri döner ve eski iletileri bir sonraki temizlemede silinebilir. Saklama ve kişi listesi kayıtta kalır. Bu işlem geri alınamaz.",
+      "confirm": "Kaldır"
+    },
+    "discovery": {
+      "heading": "Arama ve dışa aktarma",
+      "hint": "Saklamadaki kişilerin herhangi bir kanalda (özel kanallar dahil) yazdığı iletileri, katıldıkları doğrudan ve grup iletilerini ile dosya ayrıntılarını kapsar. Silinmiş iletiler de dahil edilir ve işaretlenir.",
+      "query": "Anahtar kelime",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "search": "Ara",
+      "export": "Dışa aktar (JSONL)",
+      "exportHint": "Son aramanın sonuçlarını dışa aktarır. Her arama ve dışa aktarma denetim günlüğüne kaydedilir.",
+      "searchFirst": "Önce bu filtrelerle arama yapın. Dışa aktarma, aşağıda gösterilen aramanın filtrelerini kullanır.",
+      "kinds": {
+        "channel": "Kanal iletileri",
+        "dm": "Doğrudan iletiler",
+        "file": "Dosyalar"
+      },
+      "empty": "Sonuç yok",
+      "deleted": "Silindi",
+      "edited": "Düzenlendi",
+      "reply": "Konu zinciri yanıtı",
+      "groupDm": "Grup sohbeti #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Yasal saklamalar yüklenemedi",
+      "create": "Yasal saklama oluşturulamadı",
+      "update": "Yasal saklama güncellenemedi",
+      "custodians": "Saklamadaki kişiler değiştirilemedi",
+      "release": "Yasal saklama kaldırılamadı",
+      "search": "Arama başarısız",
+      "export": "Dışa aktarma başarısız"
+    }
+  }
+}

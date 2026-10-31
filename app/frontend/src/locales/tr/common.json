@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "send": "Gönder",
+    "confirm": "Onayla",
+    "back": "Geri",
+    "remove": "Kaldır",
+    "add": "Ekle",
+    "create": "Oluştur",
+    "retry": "Yeniden dene",
+    "search": "Ara",
+    "copy": "Kopyala",
+    "done": "Tamam",
+    "next": "İleri",
+    "more": "Daha fazla"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emoji yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.",
+    "retry": "Yeniden dene"
+  },
+  "status": {
+    "loading": "Yükleniyor...",
+    "saving": "Kaydediliyor...",
+    "deleting": "Siliniyor..."
+  },
+  "dates": {
+    "today": "Bugün",
+    "yesterday": "Dün"
+  },
+  "quickSwitcher": {
+    "title": "Hızlı geçiş",
+    "inputLabel": "Bir sohbete git",
+    "placeholder": "Bir kanala veya sohbete git",
+    "recent": "Son kullanılanlar",
+    "results": "Sonuçlar",
+    "clearRecent": "Son kullanılanları temizle",
+    "listLabel": "Sohbetler",
+    "noResults": "Eşleşen sohbet yok",
+    "starred": "Yıldızlı",
+    "unread": "Okunmamış",
+    "dnd": "Rahatsız etmeyin",
+    "footer": "Açmak için {keys}. Hareket ettirmek için Yukarı ve Aşağı, gitmek için Enter, kapatmak için Esc.",
+    "open": "Git…",
+    "kind": {
+      "channel": "Kanal",
+      "dm": "Doğrudan ileti",
+      "group": "Grup iletisi"
+    }
+  },
+  "shortcuts": {
+    "title": "Klavye kısayolları",
+    "groups": {
+      "navigation": "Gezinme",
+      "general": "Genel"
+    },
+    "items": {
+      "switcher": "Hızlı geçişi aç",
+      "prevChannel": "Önceki sohbet",
+      "nextChannel": "Sonraki sohbet",
+      "prevUnread": "Önceki okunmamış sohbet",
+      "nextUnread": "Sonraki okunmamış sohbet",
+      "help": "Klavye kısayollarını göster",
+      "closeTop": "Hızlı geçişi veya bu pencereyi kapat"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Çalışma alanı"
+  },
+  "organization": {
+    "defaultName": "Kuruluş"
+  }
+}

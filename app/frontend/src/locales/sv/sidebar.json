@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktivitet",
+    "unreads": "Olästa",
+    "later": "Senare",
+    "files": "Filer",
+    "admin": "Admin",
+    "threads": "Trådar"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nytt meddelande"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Aviseringar blockerade",
+    "disableNotifications": "Inaktivera aviseringar",
+    "enableNotifications": "Aktivera aviseringar",
+    "signOut": "Logga ut",
+    "updateStatus": "Uppdatera din status",
+    "pauseNotifications": "Pausa aviseringar",
+    "pausedUntil": "Pausad till {time}",
+    "pausedIndefinitely": "Pausad tills din status rensas",
+    "resumeNotifications": "Återuppta aviseringar",
+    "pause": {
+      "m30": "30 minuter",
+      "h1": "1 timme",
+      "h2": "2 timmar",
+      "tomorrow": "Till imorgon"
+    },
+    "pauseError": "Det gick inte att ändra pausen för aviseringar. Försök igen.",
+    "accessTokens": "Personliga åtkomsttokens",
+    "sessions": "Inloggade enheter",
+    "twoFactor": "Tvåstegsverifiering",
+    "changePassword": "Byt lösenord",
+    "connectedApps": "Anslutna appar"
+  },
+  "sections": {
+    "starred": "Stjärnmärkta",
+    "channels": "Kanaler",
+    "addChannels": "Lägg till kanaler",
+    "directMessages": "Direktmeddelanden",
+    "addTeammates": "Lägg till kollegor",
+    "starredEmpty": "Stjärnmärk en kanal eller konversation för att behålla den här.",
+    "collapse": "Fäll ihop {section}",
+    "expand": "Expandera {section}"
+  },
+  "teammates": {
+    "title": "Direktmeddelande",
+    "subtitle": "Hitta eller starta en konversation",
+    "searchPlaceholder": "Sök på namn...",
+    "noUsers": "Inga användare hittades",
+    "close": "Stäng",
+    "pickSubtitle": "Välj upp till {max, plural, one {# person} other {# personer}}",
+    "select": "Välj {name}",
+    "selectedCount": "{count} av {max} valda",
+    "start": "Starta konversation",
+    "startGroup": "Starta gruppkonversation"
+  },
+  "you": "(du)",
+  "notifications": {
+    "someone": "Någon",
+    "sentAttachment": "Skickade en bilaga",
+    "threadTitle": "{name} (tråd)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# medlem} other {# medlemmar}}",
+    "createError": "Det gick inte att starta gruppkonversationen. Försök igen."
+  },
+  "statusDialog": {
+    "title": "Ange en status",
+    "emojiLabel": "Välj en emoji",
+    "textLabel": "Vad är din status?",
+    "textPlaceholder": "Vad är din status?",
+    "durationLabel": "Rensa efter",
+    "duration": {
+      "never": "Rensa inte",
+      "m30": "30 minuter",
+      "h1": "1 timme",
+      "h4": "4 timmar",
+      "today": "Idag",
+      "week": "Den här veckan"
+    },
+    "pauseCheckbox": "Pausa aviseringar tills statusen rensas",
+    "save": "Spara",
+    "clear": "Rensa status",
+    "cancel": "Avbryt",
+    "expiresAt": "Rensas kl. {time}",
+    "saveError": "Det gick inte att spara din status. Försök igen."
+  },
+  "findConversation": "Hitta en konversation"
+}
