@@ -73,3 +73,5 @@
 | 2026-10-31 22:55 | dev-1 | haiku | fix/auth-error-logging + admin-store-rethrow | 91,979 |
 | 2026-10-31 22:58 | code-review | (리뷰) | PR #38 medium | 61,048 |
 | 2026-10-31 22:56 | dev-3 | sonnet | PR #36 리뷰 반영 | 37,503 |
+| 2026-10-31 22:58 | dev-5 | sonnet | PR #34 리뷰 반영 | 70,933 |
+| 2026-10-31 23:00 | dev-1 | haiku | PR #38 리뷰 반영 | 34,800 |
