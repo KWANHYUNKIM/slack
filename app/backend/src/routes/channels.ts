@@ -671,15 +671,36 @@ const markReadSchema = z.object({
   messageId: z.number().int().positive(),
 });
 
+// 읽음 커서를 조건부 UPDATE 한 번으로 앞당긴다. 읽고-쓰기로 나누면 동시 요청(120, 100)이 커서를 뒤로 돌린다.
+// 행이 없으면 만들고, 동시에 다른 요청이 먼저 만들었으면(P2002) 한 번 더 조건부 갱신한다. 움직였으면 true.
+async function advanceReadCursor(userId: number, channelId: number, messageId: number): Promise<boolean> {
+  const advance = () => prisma.channelRead.updateMany({
+    where: { userId, channelId, OR: [{ lastReadMessageId: null }, { lastReadMessageId: { lt: messageId } }] },
+    data: { lastReadMessageId: messageId },
+  });
+  if ((await advance()).count > 0) return true;
+  const existing = await prisma.channelRead.findUnique({ where: { userId_channelId: { userId, channelId } }, select: { id: true } });
+  if (existing) return false;
+  try {
+    await prisma.channelRead.create({ data: { userId, channelId, lastReadMessageId: messageId } });
+    return true;
+  } catch (err) {
+    if ((err as { code?: string }).code !== 'P2002') throw err;
+    return (await advance()).count > 0;
+  }
+}
+
 router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = req.channelId!;
     const userId = req.user!.userId;
     const { messageId } = markReadSchema.parse(req.body);
 
-    // Verify the message exists in this channel
+    // 같은 채널 소속인지만 확인한다. 삭제된 메시지 id도 받아 주어야 마지막으로 본 메시지가 지워진 뒤에도
+    // 읽음 처리가 된다. 다른 채널의 id는 존재 여부를 숨기려고 똑같이 404로 거부한다.
     const message = await prisma.message.findFirst({
-      where: { id: messageId, channelId, deletedAt: null },
+      where: { id: messageId, channelId },
+      select: { id: true },
     });
 
     if (!message) {
@@ -687,22 +708,11 @@ router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: A
       return;
     }
 
-    // Prevent going backward — only advance the read position
-    const currentRead = await prisma.channelRead.findUnique({
-      where: { userId_channelId: { userId, channelId } },
-    });
-    const cursor = currentRead?.lastReadMessageId ?? 0;
-    if (messageId > cursor) {
-      await prisma.channelRead.upsert({
-        where: { userId_channelId: { userId, channelId } },
-        create: { userId, channelId, lastReadMessageId: messageId },
-        update: { lastReadMessageId: messageId },
-      });
+    // 커서는 앞으로만 간다. 커서가 실제로 움직였을 때만, 요청한 위치까지의 멘션을 읽음 처리한다.
+    const moved = await advanceReadCursor(userId, channelId, messageId);
+    if (moved) {
+      await markChannelMentionsRead(userId, channelId, messageId).catch((err) => logError('Mark channel mentions read failed', err));
     }
-
-    // 멘션은 읽은 위치와 기존 읽음 커서 중 더 앞선 곳까지 읽음 처리한다. 열 때 baseline이 커서를
-    // 최신으로 올려 두므로, 커서보다 뒤처진 요청이 와도 그 아래의 오래된 멘션은 지워져야 한다.
-    await markChannelMentionsRead(userId, channelId, Math.max(messageId, cursor)).catch((err) => logError('Mark channel mentions read failed', err));
 
     res.json({ success: true });
   } catch (error) {
@@ -740,9 +750,23 @@ router.post('/:id/read/baseline', authMiddleware, requireChannelMembership, asyn
       select: { id: true },
     });
 
-    await prisma.channelRead.create({
-      data: { userId, channelId, lastReadMessageId: latestMessage?.id ?? null },
-    });
+    try {
+      await prisma.channelRead.create({
+        data: { userId, channelId, lastReadMessageId: latestMessage?.id ?? null },
+      });
+    } catch (err) {
+      // 동시에 다른 요청이 먼저 기준선을 만들었다
+      if ((err as { code?: string }).code === 'P2002') {
+        res.json({ success: true });
+        return;
+      }
+      throw err;
+    }
+
+    // 커서를 최신으로 옮겼으니 그 아래 오래된 멘션도 읽음 처리한다. 맨 아래로 스크롤하지 않아도 /read 없이 정리된다.
+    if (latestMessage) {
+      await markChannelMentionsRead(userId, channelId, latestMessage.id).catch((err) => logError('Mark channel mentions read failed', err));
+    }
 
     res.json({ success: true });
   } catch (error) {
