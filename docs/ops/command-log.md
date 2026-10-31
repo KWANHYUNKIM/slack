@@ -317,3 +317,9 @@
 | 2026-11-01 05:06 | dev-2 검토: 에이전트가 같은 보고를 반복 전송(끝나지 않은 백그라운드 감시) → TaskStop으로 중지, 남은 프로세스·포트 없음 확인. spa-routes 8, tsc, eslint → PR #120, /code-review medium |
 | 2026-11-01 05:08 | PR #120 리뷰 9건 → dev-2: DefaultRedirect 가드 되돌림, 체크 초기화는 사용자 변경 카운터로(ThreadsPage 포함), 목록 방식 유지하되 양방향 정적 테스트, API와 안 겹치는 경로 제거, sendIndex 공용, 테스트 경로 import.meta.url, E2E 직접 주소 단계 복원. 전역 text/html 미들웨어는 다운로드 링크 위험으로 기각 |
 | 2026-11-01 05:12 | PR #120 리뷰 반영 검토: spa-routes 10, alsosend 2, tsc, lint → 머지 |
+| 2026-11-01 05:14 | 배정: dev-2 e2e/vite-proxy-target(haiku, 서버 미기동, 보고 1회). 진행 3명(dev-4 E1a 재리뷰 반영, dev-5 i18n-5c, dev-2) |
+| 2026-11-01 05:18 | PR #122(i18n-5c) 리뷰 지적 0 → 머지(11/31) |
+| 2026-11-01 05:20 | E1a 재리뷰 반영 검토: #122 위로 리베이스(충돌 0), 2등급 8개 언어에 새 키 2개 총괄 추가(i18n 경고 0), e1-migration 13·user-role-writes 2·auth 25·channels 14·admin 48·bootstrap-owner 20·retention 35, tsc, 물리 방향 188, 외부 URL → 머지(7ecd8ef). 20261102010000을 slackclone, slackclone_dev, dev1·2·3·5에 적용 |
+| 2026-11-01 05:21 | vite 프록시 검토: API 대상은 이 컴퓨터 주소만 허용하도록 총괄 보완(+테스트), vitedev 11 → PR #123, /code-review low |
+| 2026-11-01 05:22 | 배정: dev-4 E1b(opus, 마이그레이션 필요 시 20261102015000, 서버 미기동, 보고 1회) |
+| 2026-11-01 05:24 | PR #123 리뷰 2건(https 대상, BASE_URL 기본 포트)을 총괄이 수정(https 대상이면 설정 로드 거부 확인) → 머지 |
