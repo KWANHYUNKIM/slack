@@ -199,3 +199,5 @@
 | 2026-10-31 23:37 | D2 완료 검토: release.yml·release-please, action SHA 고정, 서명 조건부. 총괄 결정: electron-updater 자동 업데이트는 런타임 외부 https라 규칙 17 예외가 아니므로 제외 유지(문서 불일치는 후속 정리). YAML 파싱·release-tag 4/4 → PR #51, /code-review |
 | 2026-10-31 23:39 | PR #49(mcp-2) 머지(e09cc77): REST·소켓·MCP 쓰기 경로가 messageService 하나를 사용. PR #51(D2) 리뷰 10건 → dev-4 반영 지시(총괄 결정: release-please를 저장소 루트 단일 패키지로, draft 생성 후 publish에서 공개, 서명 인증서 OS별 분리, bootstrap-sha로 첫 실행 범위 제한, `!`는 MAJOR). 파일 토큰 완료 검토: files 49·security 49 → PR #52, /code-review. 진행: dev-4 D2 반영, dev-5 docker |
 | 2026-10-31 23:40 | 배정: dev-2 mcp-2b(MCP DM 도구, dmService 추출). 사용자 허용 3명(dev-2, dev-4, dev-5) |
+| 2026-10-31 23:42 | PR #52 리뷰 10건 → dev-3 반영 지시. 총괄 결정: 토큰 없으면 URL 대신 자리표시자, 만료 전 일괄 갱신(기존 토큰 유지), 거부 캐시 60초, 요청 중 집합·세대 번호, 라이트박스는 fileId 저장, 구독은 파일 컴포넌트로 한정, 서버 일괄 접근 확인 findMany, ETag/304로 캐시 보완 |
+| 2026-10-31 23:43 | PR #51(D2) 머지: release.yml·release-please(루트 단일 패키지, draft 후 공개, OS별 서명, bootstrap-sha), release-tag 9/9·YAML·JSON 파싱 확인. 실제 러너 실행은 결제 문제로 미확인(첫 실행 로그 확인 필요). 진행: dev-2 mcp-2b, dev-3 PR #52 반영, dev-5 docker |
