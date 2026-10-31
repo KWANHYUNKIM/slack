@@ -82,8 +82,8 @@
 | fix/channel-purge-order: 채널 메시지 정리(deleteMessages, blankParents)도 DB 처리 행(RETURNING) 기준으로 저장소 파일을 사후 삭제할지, 본체 삭제 실패 재시도 방식 통일 | dev-3 | sonnet | 완료(PR #112 머지) | 45분 | 2026-11-01 04:14 | | PR #106 남은 이슈 |
 | spec/E1-multi-workspace: E1 조직·멀티 워크스페이스 스펙과 파트 분할(E2·E3·E8·E9 의존 정리), Enterprise Grid 조사 | planner-1 | opus | 완료(D1~D11 제안안 확정) | 1.5h | 2026-11-01 03:54 | 2026-11-01 04:03 | 엔터프라이즈 3절 |
 | E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | dev-4 | opus | 완료(PR #115 머지) | 2h | 2026-11-01 04:22 | 2026-11-01 04:19 | docs/specs/E1-multi-workspace.md 9절 |
-| E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | dev-4 | opus | PR #128 재리뷰 반영 중 | 2h | 2026-11-01 05:22 | 2026-11-01 05:18 | E1 스펙 |
-| E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | - | opus | 대기(E1b 후) | 2h | | | E1 스펙 |
+| E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | dev-4 | opus | 완료(PR #128 머지) | 2h | 2026-11-01 05:22 | 2026-11-01 05:18 | E1 스펙 |
+| E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | dev-4 | opus | 진행 | 2h | 2026-11-01 06:03 | | E1 스펙 |
 | E1d DM·검색·활동·MCP 워크스페이스 범위 | - | sonnet | 대기(E1c 후) | 2h | | | E1 스펙 |
 | E1e 조직 거버넌스 설정 분리 | - | sonnet | 대기(E1d 후) | 2h | | | E1 스펙 |
 | E1f 프런트 전환기와 /w/:id URL | - | sonnet | 대기(E1c 후, E1d와 병렬 가능) | 2h | | | E1 스펙 |
