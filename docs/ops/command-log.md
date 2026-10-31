@@ -300,3 +300,5 @@
 | 2026-11-01 04:18 | PR #107 재리뷰 반영 검토: main(#106) 리베이스, dev4 DB에 090000 적용, oauth 42·mcp 30·mfa 32·dm-groups 24·retention 27·error-code-coverage 11, tsc, lint, i18n, 물리 방향, 외부 URL. .env.example에 운영 PUBLIC_URL 필수 안내(총괄) → 머지(0c51f1f). 080000을 slackclone, slackclone_dev, dev1·3·5에 적용(dev2는 E2E 진행 중이라 끝난 뒤) |
 | 2026-11-01 04:19 | PR #112 리뷰 8건 → dev-3: 저장소 삭제 아웃박스(같은 트랜잭션에서 기록), 트랜잭션 timeout, 재시도 전량·예산 포함, 채널 파일 DELETE 분리 조건, raw DELETE RETURNING 공유, blankParents UPDATE RETURNING, 실제 오류 원인 기록·영구 실패 즉시 제거, 주석 갱신 |
 | 2026-11-01 04:22 | 배정: dev-4 E1a 스키마와 백필(opus, 마이그레이션 20261102010000, retentionService·설정 표 불가침). 진행 3명(dev-2 E2E, dev-3 #112, dev-4 E1a) |
+| 2026-11-01 04:27 | PR #112 검토: 첫 리베이스에서 스키마 충돌이 났는데 같은 명령 안에서 generate·tsc까지 이어 실행(스키마 검증 실패로 DB 변경 없음) → 중단 후 커밋 2개를 합쳐 다시 리베이스, 충돌(OAuth 모델과 StorageDeletionRetry) 양쪽 보존, 이후 단계는 분리 실행. dev3 DB에 080000 적용, retention 35·file-detach 8·legal-holds 10·ediscovery 9·oauth 42, tsc → 머지(0ded45d). 110000을 slackclone, slackclone_dev, dev1·5에 적용(dev2·4는 진행 중 파트 검토 때) |
+| 2026-11-01 04:29 | 배정: dev-5 i18n-5a(haiku, 2등급 기반·검사 확장·ja·zh-Hans·es). 31개 일괄은 분량 과다(ko 66KB × 31)라 분할. 진행 3명(dev-2 E2E, dev-4 E1a, dev-5) |
