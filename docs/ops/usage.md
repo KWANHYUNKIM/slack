@@ -75,3 +75,10 @@
 | 2026-10-31 22:56 | dev-3 | sonnet | PR #36 리뷰 반영 | 37,503 |
 | 2026-10-31 22:58 | dev-5 | sonnet | PR #34 리뷰 반영 | 70,933 |
 | 2026-10-31 23:00 | dev-1 | haiku | PR #38 리뷰 반영 | 34,800 |
+| 2026-10-31 23:07 | dev-3 | sonnet | feat/dm-unread-divider | 133,935 |
+| 2026-10-31 23:08 | dev-1 | haiku | admin-store-actions + mentions-scheduled-webhook | 164,888 |
+| 2026-10-31 23:09 | code-review | (리뷰) | PR #41 medium | 91,242 |
+| 2026-10-31 23:09 | code-review | (리뷰) | PR #42 medium | (포크, 미보고) |
+| 2026-10-31 23:10 | dev-2 | opus | mcp-1 server+PAT | 211,643 |
+| 2026-10-31 23:13 | code-review | (리뷰) | PR #43 medium | 96,264 |
+| 2026-10-31 23:15 | dev-3 | sonnet | PR #41 리뷰 반영 | 36,648 |
