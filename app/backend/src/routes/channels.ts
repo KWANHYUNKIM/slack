@@ -813,23 +813,20 @@ const markReadSchema = z.object({
   messageId: z.number().int().positive(),
 });
 
-// 읽음 커서를 조건부 UPDATE 한 번으로 앞당긴다. 읽고-쓰기로 나누면 동시 요청(120, 100)이 커서를 뒤로 돌린다.
-// 행이 없으면 만들고, 동시에 다른 요청이 먼저 만들었으면(P2002) 한 번 더 조건부 갱신한다. 움직였으면 true.
+// 읽음 커서를 SQL 문장 하나로 앞당긴다(upsert + 조건부 갱신). 읽고-쓰기나 "갱신 시도 후 조회 후 생성"으로 나누면
+// 그 사이에 다른 요청이 행을 만들어 큰 id의 갱신이 사라지거나 커서가 뒤로 돈다.
+// 존재 확인도 같은 문장에 넣는다: 확인 뒤 메시지가 하드 삭제돼도 FK 오류(500) 없이 움직이지 않은 것(false)으로 끝난다.
 async function advanceReadCursor(userId: number, channelId: number, messageId: number): Promise<boolean> {
-  const advance = () => prisma.channelRead.updateMany({
-    where: { userId, channelId, OR: [{ lastReadMessageId: null }, { lastReadMessageId: { lt: messageId } }] },
-    data: { lastReadMessageId: messageId },
-  });
-  if ((await advance()).count > 0) return true;
-  const existing = await prisma.channelRead.findUnique({ where: { userId_channelId: { userId, channelId } }, select: { id: true } });
-  if (existing) return false;
-  try {
-    await prisma.channelRead.create({ data: { userId, channelId, lastReadMessageId: messageId } });
-    return true;
-  } catch (err) {
-    if ((err as { code?: string }).code !== 'P2002') throw err;
-    return (await advance()).count > 0;
-  }
+  const now = new Date();
+  const rows = await prisma.$queryRaw<{ id: number }[]>`
+    INSERT INTO "ChannelRead" ("userId", "channelId", "lastReadMessageId", "updatedAt")
+    SELECT ${userId}, ${channelId}, ${messageId}, ${now}
+    WHERE EXISTS (SELECT 1 FROM "Message" WHERE id = ${messageId})
+    ON CONFLICT ("userId", "channelId") DO UPDATE
+      SET "lastReadMessageId" = EXCLUDED."lastReadMessageId", "updatedAt" = EXCLUDED."updatedAt"
+      WHERE "ChannelRead"."lastReadMessageId" IS NULL OR "ChannelRead"."lastReadMessageId" < EXCLUDED."lastReadMessageId"
+    RETURNING id`;
+  return rows.length > 0;
 }
 
 router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
@@ -876,33 +873,22 @@ router.post('/:id/read/baseline', authMiddleware, requireChannelMembership, asyn
     const channelId = req.channelId!;
     const userId = req.user!.userId;
 
-    const existing = await prisma.channelRead.findUnique({
-      where: { userId_channelId: { userId, channelId } },
-    });
-
-    if (existing) {
-      res.json({ success: true });
-      return;
-    }
-
-    // No record yet — find the latest message to use as the baseline
+    // 기준선이 이미 있으면 아무것도 하지 않는다. 최신 메시지를 기준선으로 삼아 한 문장으로 만든다(동시 요청은 DO NOTHING).
     const latestMessage = await prisma.message.findFirst({
       where: channelTimelineWhere(channelId, { liveOnly: true }),
       orderBy: { id: 'desc' },
       select: { id: true },
     });
 
-    try {
-      await prisma.channelRead.create({
-        data: { userId, channelId, lastReadMessageId: latestMessage?.id ?? null },
-      });
-    } catch (err) {
-      // 동시에 다른 요청이 먼저 기준선을 만들었다
-      if ((err as { code?: string }).code === 'P2002') {
-        res.json({ success: true });
-        return;
-      }
-      throw err;
+    const latestId = latestMessage?.id ?? null;
+    const created = await prisma.$queryRaw<{ id: number }[]>`
+      INSERT INTO "ChannelRead" ("userId", "channelId", "lastReadMessageId", "updatedAt")
+      SELECT ${userId}, ${channelId}, (SELECT id FROM "Message" WHERE id = ${latestId}), ${new Date()}
+      ON CONFLICT ("userId", "channelId") DO NOTHING
+      RETURNING id`;
+    if (created.length === 0) {
+      res.json({ success: true });
+      return;
     }
 
     // 커서를 최신으로 옮겼으니 그 아래 오래된 멘션도 읽음 처리한다. 맨 아래로 스크롤하지 않아도 /read 없이 정리된다.
