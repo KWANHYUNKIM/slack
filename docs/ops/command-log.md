@@ -148,3 +148,8 @@
 | 17:53 | 공유 작업 트리 점검: main과 다른 것은 문서 3개뿐(api.ts는 함수 위치만 다름, ci.yml은 예전 되돌림 커밋으로 빠져 있던 것) → 문서 PR 머지 후 공유 트리를 main으로 정리 | 이후 개발자는 main 기준 깨끗한 트리에서 시작 | |
 | 18:26 | 사용자 지시: "직접해주라"(공유 트리 정리) | `checkout -f`/`reset --hard`+`clean`은 권한 단계에서 두 번 거부(되돌릴 수 없는 삭제) → 되돌릴 수 있는 방식으로: `git stash push -u`(stash@{0} 백업) 후 main 전환, ff-only로 35b89b7 | prisma generate, be·fe tsc 통과. .env·node_modules 유지 |
 | 2026-10-31 19:46 | 사용자 질문: "전부다 다됐어? 지금 커맨더 뭐해? 프로젝트 다된거야?" → 점검 결과: 머지된 PR #1~#17, 열린 PR 0, 실행 중 에이전트 0. 보드의 대기 파트 약 30개(02 group-dm, 03 channel-meta-star, 04, 05, D1·D2 데스크톱, MCP 1~4, i18n 2~5, 자체 포함 자산 등)가 남아 프로젝트는 미완료. 보드의 머지된 PR 상태를 '완료'로 정리. 자원 정상(여유 30%, 스왑 86%)이라 루프 재개, 스왑이 90% 가까워 한도 3 대신 2개만 동시 배정 |
+| 2026-10-31 19:50 | 배정: dev-2 chore/self-contained-assets(sonnet), dev-3 03-channel-meta-star(sonnet). 둘 다 worktree 격리, 전용 DB dev2·dev3 |
+| 2026-10-31 19:52 | 사용자 지시: "바로바로 loop 돌려서 해주라" → /loop 자율 모드 시작. 자원 감속(여유 29%, 스왑 95%, 한도 1). 이미 2명 실행 중이라 추가 배정 없이 완료를 기다림. 다음 배정은 한 명씩 |
+| 2026-10-31 19:55 | dev-2 완료 검토: CSP 외부 출처 제거, mocks 삭제, 외부 URL 검사 스크립트·CI. GCS가 서버 스트리밍인지(files.ts:389) 확인 후 승인 → PR #19, /code-review medium 실행. Playwright 미실행(포트 점유) |
+| 2026-10-31 19:58 | PR #19 리뷰 10건 → dev-2에게 반영 지시. 총괄 결정: 외부 아바타 URL은 API에서 거부(규칙 17), connect-src는 self만, 검사 스크립트 http·프로토콜 상대 URL·pipefail·allow 고정 매칭 |
+| 2026-10-31 20:08 | dev-2 리뷰 반영 확인(아바타 정규식, connect-src self, 스크립트 rc=0 직접 실행) → PR #19 squash 머지(055f230). Playwright no-external-requests는 포트 점유로 미실행, verify/e2e-smoke에서 실행. 머지된 worktree 11개 제거(수정 파일 남은 3개는 보존). 디스크 여유 7GB, 스왑 93%로 감속 한도 1, dev-3 진행 중이라 추가 배정 없음 |
