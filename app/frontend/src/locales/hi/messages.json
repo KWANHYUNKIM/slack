@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "ऑनलाइन सभी लोगों को सूचित करें",
+    "channelLabel": "@channel",
+    "channelHint": "इस चैनल के सभी लोगों को सूचित करें"
+  },
+  "deleteDialog": {
+    "title": "संदेश हटाएं",
+    "body": "क्या आप सच में यह संदेश हटाना चाहते हैं? इसे वापस नहीं लिया जा सकता।"
+  },
+  "editorToolbar": {
+    "attachFile": "फ़ाइल जोड़ें",
+    "emoji": "इमोजी",
+    "mention": "किसी को उल्लेख करें",
+    "stopRecording": "रिकॉर्डिंग रोकें",
+    "recordVoice": "वॉइस क्लिप रिकॉर्ड करें"
+  },
+  "emojiAutocomplete": {
+    "navigate": "चुनने के लिए",
+    "select": "चुनने के लिए",
+    "dismiss": "बंद करने के लिए",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "{name} हटाएं"
+  },
+  "fileModal": {
+    "download": "डाउनलोड करें",
+    "loadFailed": "फ़ाइल की सामग्री लोड नहीं हो सकी",
+    "truncated": "... (छोटा किया गया)",
+    "noPreview": "कोई पूर्वावलोकन उपलब्ध नहीं है",
+    "downloadToView": "देखने के लिए फ़ाइल डाउनलोड करें"
+  },
+  "files": {
+    "allFiles": "सभी फ़ाइलें",
+    "channelFiles": "चैनल की फ़ाइलें",
+    "loadFailed": "फ़ाइलें लोड नहीं हो सकीं।",
+    "empty": "अभी तक कोई फ़ाइल अपलोड नहीं हुई है",
+    "download": "डाउनलोड करें",
+    "menu": "मेनू",
+    "unavailable": "फ़ाइल उपलब्ध नहीं है",
+    "preparing": "फ़ाइल तैयार हो रही है"
+  },
+  "format": {
+    "bold": "बोल्ड",
+    "italic": "इटैलिक",
+    "strike": "आर-पार लकीर",
+    "link": "लिंक",
+    "orderedList": "क्रमांकित सूची",
+    "bulletList": "बुलेट सूची",
+    "code": "कोड",
+    "codeBlock": "कोड ब्लॉक",
+    "quote": "उद्धरण"
+  },
+  "notifications": {
+    "title": "सूचनाएं",
+    "empty": "कोई नई सूचना नहीं",
+    "unreadCount": "{count, plural, one {# बिना पढ़ा संदेश} other {# बिना पढ़े संदेश}}"
+  },
+  "search": {
+    "placeholder": "खोजें",
+    "searching": "खोज हो रही है...",
+    "noResults": "कोई परिणाम नहीं मिला",
+    "previewHint": "{count, plural, one {शीर्ष # परिणाम} other {शीर्ष # परिणाम}} · सभी देखें (Enter)",
+    "truncatedNotice": "बहुत सारे परिणाम हैं। उन्हें सीमित करने के लिए फ़िल्टर जोड़ें।",
+    "retry": "फिर से कोशिश करें",
+    "ignoredChip": "{token} (अनदेखा)",
+    "ignoredLimitChip": "{token} (अनदेखा: बहुत ज़्यादा)",
+    "inChannel": "#{channel} में",
+    "title": "खोज परिणाम",
+    "resultsFor": "\"{query}\" के परिणाम",
+    "emptyQuery": "खोज शब्द लिखें, या from:, in:, has:, before:, after: जैसे फ़िल्टर इस्तेमाल करें।",
+    "noResultsHint": "अलग कीवर्ड आज़माएं या कुछ फ़िल्टर हटाएं।",
+    "clearFilters": "सभी फ़िल्टर साफ़ करें",
+    "removeFilter": "फ़िल्टर {filter} हटाएं",
+    "loadFailed": "खोज विफल रही। कृपया फिर से कोशिश करें।",
+    "loadMore": "और लोड करें",
+    "threadReply": "थ्रेड का जवाब",
+    "directMessage": "सीधा संदेश",
+    "groupMessage": "समूह बातचीत",
+    "joined": "जॉइन किया",
+    "privateChannel": "निजी",
+    "archivedChannel": "आर्काइव किया गया",
+    "back": "वापस",
+    "tabs": {
+      "label": "खोज परिणाम के प्रकार",
+      "messages": "संदेश",
+      "files": "फ़ाइलें",
+      "people": "लोग",
+      "channels": "चैनल"
+    },
+    "sort": {
+      "label": "इसके अनुसार क्रम दें",
+      "relevance": "प्रासंगिकता",
+      "recent": "सबसे नया"
+    }
+  },
+  "headerTabs": {
+    "files": "फ़ाइलें",
+    "pins": "पिन"
+  },
+  "lightbox": {
+    "close": "बंद करें"
+  },
+  "later": {
+    "title": "बाद में",
+    "saved": "सहेजे गए",
+    "scheduled": "निर्धारित",
+    "loadFailed": "सहेजे गए संदेश लोड नहीं हो सके।",
+    "empty": "अभी कोई सहेजा गया संदेश नहीं है। किसी भी संदेश को सहेजने के लिए उस पर बुकमार्क आइकन दबाएं।",
+    "removeSaved": "सहेजे गए से हटाएं",
+    "menu": "मेनू",
+    "reminders": "रिमाइंडर"
+  },
+  "linkModal": {
+    "title": "लिंक जोड़ें",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "दिखने वाला पाठ",
+    "optional": "(वैकल्पिक)",
+    "textPlaceholder": "लिंक का पाठ",
+    "close": "बंद करें"
+  },
+  "actionsMenu": {
+    "noActions": "कोई कार्रवाई उपलब्ध नहीं है",
+    "markUnread": "बिना पढ़ा चिह्नित करें",
+    "pin": "संदेश पिन करें",
+    "unpin": "संदेश अनपिन करें",
+    "edit": "संदेश संपादित करें",
+    "delete": "संदेश हटाएं",
+    "copyLink": "लिंक कॉपी करें",
+    "remind": "इस संदेश के बारे में मुझे याद दिलाएं"
+  },
+  "area": {
+    "selectChannel": "संदेश भेजना शुरू करने के लिए एक चैनल चुनें",
+    "openMenu": "मेनू खोलें",
+    "placeholder": "#{channel} में संदेश लिखें",
+    "viewing": "आप <bold>#{channel}</bold> देख रहे हैं",
+    "joinChannel": "चैनल जॉइन करें"
+  },
+  "header": {
+    "menu": "मेनू",
+    "unstar": "स्टार किए गए से हटाएं",
+    "star": "स्टार किए गए में जोड़ें",
+    "members": "सदस्य: {count}",
+    "search": "खोजें",
+    "channelMenu": "चैनल विकल्प",
+    "leaveChannel": "चैनल छोड़ें",
+    "leaveLastMember": "चैनल नहीं छोड़ा जा सकता — आप आखिरी सदस्य हैं।",
+    "dismiss": "बंद करें",
+    "addTopic": "विषय जोड़ें",
+    "editDetails": "चैनल का विवरण संपादित करें"
+  },
+  "message": {
+    "edited": "(संपादित)",
+    "pinned": "पिन किया गया",
+    "showMore": "और दिखाएं",
+    "showLess": "कम दिखाएं",
+    "repliedToThread": "थ्रेड पर जवाब दिया: {excerpt}",
+    "deletedPlaceholder": "यह संदेश हटा दिया गया था।",
+    "sendToChannel": "चैनल में भी भेजें",
+    "removeFromChannel": "चैनल से हटाएं"
+  },
+  "input": {
+    "uploading": "अपलोड हो रहा है...",
+    "scheduleMessage": "संदेश निर्धारित करें",
+    "send": "संदेश भेजें",
+    "hint": "भेजने के लिए <kbd>Enter</kbd> दबाएं, नई लाइन के लिए <kbd>Shift + Enter</kbd> दबाएं",
+    "scheduledFor": "{time} के लिए निर्धारित",
+    "scheduleFailed": "संदेश निर्धारित नहीं हो सका। कृपया फिर से कोशिश करें।"
+  },
+  "list": {
+    "loading": "संदेश लोड हो रहे हैं...",
+    "empty": "अभी कोई संदेश नहीं है",
+    "emptyReadOnly": "इस चैनल में कोई संदेश नहीं है।",
+    "emptyFirst": "संदेश भेजने वाले पहले व्यक्ति बनें!"
+  },
+  "reactions": {
+    "tooltip": "{names} ने {emoji} से प्रतिक्रिया दी",
+    "add": "प्रतिक्रिया जोड़ें",
+    "you": "आप"
+  },
+  "toolbar": {
+    "addReaction": "प्रतिक्रिया जोड़ें",
+    "replyInThread": "थ्रेड में जवाब दें",
+    "removeBookmark": "बुकमार्क हटाएं",
+    "bookmark": "इस संदेश को बुकमार्क करें",
+    "moreActions": "और कार्रवाइयां"
+  },
+  "mobileSearch": {
+    "placeholder": "संदेश खोजें...",
+    "hint": "सभी चैनलों और बातचीत में संदेश खोजें",
+    "close": "खोज बंद करें"
+  },
+  "pins": {
+    "title": "पिन किए गए संदेश",
+    "loadFailed": "पिन किए गए संदेश लोड नहीं हो सके।",
+    "empty": "अभी कोई पिन किया गया संदेश नहीं है"
+  },
+  "schedule": {
+    "menuTitle": "संदेश निर्धारित करें",
+    "in20": "20 मिनट में",
+    "in1h": "1 घंटे में",
+    "in3h": "3 घंटे में",
+    "tomorrow9": "कल सुबह 9:00 बजे",
+    "custom": "अपना समय चुनें...",
+    "modalTitle": "संदेश निर्धारित करें",
+    "dateTime": "तारीख और समय",
+    "pickFuture": "भविष्य का कोई समय चुनें।",
+    "submit": "निर्धारित करें",
+    "submitting": "निर्धारित हो रहा है...",
+    "close": "बंद करें"
+  },
+  "scheduled": {
+    "loadFailed": "निर्धारित संदेश लोड नहीं हो सके।",
+    "cancelFailed": "संदेश रद्द नहीं हो सका।",
+    "sendFailed": "संदेश भेजा नहीं जा सका।",
+    "saveFailed": "बदलाव सहेजे नहीं जा सके।",
+    "empty": "कोई निर्धारित संदेश नहीं है। संदेश लिखने वाले बॉक्स में घड़ी आइकन इस्तेमाल करके एक निर्धारित करें।",
+    "sendAt": "भेजने का समय:",
+    "edit": "संपादित करें",
+    "sendNow": "अभी भेजें",
+    "cancel": "रद्द करें",
+    "failedDlp": "यह संदेश नहीं भेजा गया क्योंकि यह एक डेटा सुरक्षा नियम ({rule}) से मेल खाता है। इसे हटाएं और नया लिखें।"
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# जवाब} other {# जवाब}}"
+  },
+  "unreads": {
+    "title": "बिना पढ़े",
+    "loadFailed": "बिना पढ़े संदेश लोड नहीं हो सके।",
+    "empty": "कोई बिना पढ़ा संदेश नहीं है। आप सब देख चुके हैं! 🎉",
+    "menu": "मेनू"
+  },
+  "threadPanel": {
+    "title": "थ्रेड",
+    "replyPlaceholder": "जवाब लिखें...",
+    "loadFailed": "थ्रेड लोड नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "loading": "थ्रेड लोड हो रहा है...",
+    "replyFailed": "जवाब नहीं भेजा जा सका। कृपया फिर से कोशिश करें।",
+    "joinToReply": "थ्रेड में जवाब देने के लिए चैनल जॉइन करें",
+    "alsoSendToChannel": "चैनल में भी भेजें"
+  },
+  "errors": {
+    "messageEmpty": "संदेश खाली नहीं हो सकता।",
+    "pasteUploadFailed": "चिपकाई गई छवि अपलोड नहीं हो सकी। कृपया फिर से कोशिश करें।",
+    "dropUploadFailed": "छोड़ी गई फ़ाइल अपलोड नहीं हो सकी। कृपया फिर से कोशिश करें।",
+    "uploadFailed": "फ़ाइल अपलोड नहीं हो सकी। कृपया फिर से कोशिश करें।",
+    "voiceUploadFailed": "वॉइस संदेश अपलोड नहीं हो सका।",
+    "micDenied": "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया माइक्रोफ़ोन की अनुमति दें।",
+    "loadFailed": "संदेश लोड नहीं हो सके।",
+    "sendTimeout": "संदेश भेजने में समय समाप्त हो गया। कृपया फिर से कोशिश करें।",
+    "sendFailed": "संदेश नहीं भेजा जा सका। कृपया फिर से कोशिश करें।",
+    "pushNotConfigured": "सर्वर पर पुश सूचनाएं सेट नहीं हैं",
+    "serviceWorkerUnavailable": "सर्विस वर्कर उपलब्ध नहीं है",
+    "subscribeFailed": "सदस्यता पंजीकृत नहीं हो सकी",
+    "editFailed": "संपादन सहेजा नहीं जा सका। कृपया फिर से कोशिश करें।"
+  },
+  "details": {
+    "title": "चैनल का विवरण",
+    "name": "नाम",
+    "topic": "विषय",
+    "topicPlaceholder": "यह चैनल किस बारे में है?",
+    "description": "विवरण",
+    "descriptionPlaceholder": "विवरण जोड़ें",
+    "createdBy": "{name} ने बनाया",
+    "readOnly": "केवल चैनल के मालिक, मॉडरेटर और वर्कस्पेस एडमिन ही इन विवरणों को बदल सकते हैं।",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "saveFailed": "चैनल का विवरण सहेजा नहीं जा सका।"
+  },
+  "intro": {
+    "title": "#{name} में आपका स्वागत है",
+    "noDescription": "अभी कोई विवरण नहीं है।",
+    "editDescription": "विवरण संपादित करें"
+  },
+  "threads": {
+    "title": "थ्रेड",
+    "menu": "मेनू",
+    "loadFailed": "थ्रेड लोड नहीं हो सके।",
+    "empty": "अभी कोई थ्रेड नहीं है",
+    "emptyHint": "आपके शुरू किए या जवाब दिए गए थ्रेड यहां दिखेंगे।",
+    "newReplies": "{count, plural, one {# नया जवाब} other {# नए जवाब}}",
+    "replyCount": "{count, plural, one {# जवाब} other {# जवाब}}",
+    "olderReplies": "पिछले जवाब देखने के लिए थ्रेड खोलें",
+    "replyPlaceholder": "जवाब लिखें...",
+    "send": "भेजें",
+    "replyFailed": "जवाब नहीं भेजा जा सका। कृपया फिर से कोशिश करें।",
+    "alsoSendToChannel": "चैनल में भी भेजें",
+    "openThread": "थ्रेड खोलें",
+    "loadMore": "और लोड करें",
+    "loading": "लोड हो रहा है..."
+  },
+  "permalink": {
+    "copied": "लिंक कॉपी हो गया",
+    "notFound": "यह संदेश नहीं मिल सकता, या आपको इसे देखने की अनुमति नहीं है",
+    "goHome": "होम पर जाएं",
+    "copyManually": "अपने-आप कॉपी नहीं हो सका। यह लिंक कॉपी करें: {url}"
+  },
+  "unread": {
+    "divider": "नया",
+    "newMessagesBar": "{count, plural, one {# नया संदेश} other {# नए संदेश}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# या उससे ज़्यादा नया संदेश} other {# या उससे ज़्यादा नए संदेश}}",
+    "markRead": "पढ़ा हुआ चिह्नित करें",
+    "jumpFailed": "बिना पढ़े संदेश की स्थिति लोड नहीं हो सकी"
+  },
+  "reminder": {
+    "set": "रिमाइंडर सेट करें",
+    "customLabel": "रिमाइंडर की तारीख और समय",
+    "preset": {
+      "in20": "20 मिनट में",
+      "in1h": "1 घंटे में",
+      "in3h": "3 घंटे में",
+      "tomorrow": "कल",
+      "nextWeek": "अगले हफ़्ते",
+      "custom": "अपना समय..."
+    },
+    "status": {
+      "pending": "आने वाला",
+      "done": "पूरा हुआ"
+    },
+    "snooze": {
+      "m10": "10 मिनट",
+      "h1": "1 घंटा",
+      "tomorrow": "कल"
+    },
+    "loadFailed": "रिमाइंडर लोड नहीं हो सके।",
+    "empty": "कोई रिमाइंडर नहीं है। जोड़ने के लिए किसी संदेश के \"और कार्रवाइयां\" मेनू का उपयोग करें या /remind टाइप करें।",
+    "emptyDone": "कोई पूरा हुआ रिमाइंडर नहीं है।",
+    "dueAt": "{time} पर देय",
+    "firedAt": "{time} पर देय था",
+    "completedAt": "{time} पर पूरा हुआ",
+    "messageDeleted": "हटाया गया संदेश",
+    "complete": "पूरा चिह्नित करें",
+    "reopen": "पूरा नहीं चिह्नित करें",
+    "delete": "रिमाइंडर हटाएं",
+    "toast": {
+      "created": "रिमाइंडर सेट हो गया",
+      "due": "रिमाइंडर: {text}",
+      "createFailed": "रिमाइंडर सेट नहीं हो सका। कृपया फिर से कोशिश करें।"
+    },
+    "command": {
+      "syntax": "उपयोग: /remind me [पाठ] in [संख्या] [minutes|hours|days]",
+      "tooShort": "रिमाइंडर कम से कम 1 मिनट बाद का होना चाहिए।",
+      "tooLong": "रिमाइंडर एक साल के भीतर का होना चाहिए।",
+      "created": "रिमाइंडर {time} के लिए सेट किया गया"
+    },
+    "pastTime": "भविष्य का कोई समय चुनें।",
+    "loadMore": "और लोड करें"
+  }
+}

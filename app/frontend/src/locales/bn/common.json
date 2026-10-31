@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল",
+    "delete": "মুছুন",
+    "edit": "সম্পাদনা",
+    "close": "বন্ধ করুন",
+    "send": "পাঠান",
+    "confirm": "নিশ্চিত করুন",
+    "back": "পিছনে",
+    "remove": "সরান",
+    "add": "যোগ করুন",
+    "create": "তৈরি করুন",
+    "retry": "আবার চেষ্টা করুন",
+    "search": "খুঁজুন",
+    "copy": "কপি করুন",
+    "done": "সম্পন্ন",
+    "next": "পরবর্তী",
+    "more": "আরও"
+  },
+  "emojiPicker": {
+    "loadFailed": "ইমোজি লোড করা যায়নি। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
+    "retry": "আবার চেষ্টা করুন"
+  },
+  "status": {
+    "loading": "লোড হচ্ছে...",
+    "saving": "সংরক্ষণ হচ্ছে...",
+    "deleting": "মোছা হচ্ছে..."
+  },
+  "dates": {
+    "today": "আজ",
+    "yesterday": "গতকাল"
+  },
+  "quickSwitcher": {
+    "title": "দ্রুত সুইচার",
+    "inputLabel": "একটি কথোপকথনে যান",
+    "placeholder": "একটি চ্যানেল বা কথোপকথনে যান",
+    "recent": "সাম্প্রতিক",
+    "results": "ফলাফল",
+    "clearRecent": "সাম্প্রতিক মুছুন",
+    "listLabel": "কথোপকথন",
+    "noResults": "মিলে যাওয়া কোনো কথোপকথন নেই",
+    "starred": "তারকাচিহ্নিত",
+    "unread": "অপঠিত",
+    "dnd": "বিরক্ত করবেন না",
+    "footer": "খুলতে {keys}। সরাতে উপর ও নিচের তীর, যেতে Enter, বন্ধ করতে Esc।",
+    "open": "যান…",
+    "kind": {
+      "channel": "চ্যানেল",
+      "dm": "সরাসরি বার্তা",
+      "group": "গ্রুপ বার্তা"
+    }
+  },
+  "shortcuts": {
+    "title": "কীবোর্ড শর্টকাট",
+    "groups": {
+      "navigation": "নেভিগেশন",
+      "general": "সাধারণ"
+    },
+    "items": {
+      "switcher": "দ্রুত সুইচার খুলুন",
+      "prevChannel": "আগের কথোপকথন",
+      "nextChannel": "পরের কথোপকথন",
+      "prevUnread": "আগের অপঠিত কথোপকথন",
+      "nextUnread": "পরের অপঠিত কথোপকথন",
+      "help": "কীবোর্ড শর্টকাট দেখান",
+      "closeTop": "দ্রুত সুইচার বা এই ডায়ালগ বন্ধ করুন"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "ওয়ার্কস্পেস"
+  },
+  "organization": {
+    "defaultName": "সংগঠন"
+  }
+}

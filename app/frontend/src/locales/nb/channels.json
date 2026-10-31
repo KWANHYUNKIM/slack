@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Opprett en kanal",
+    "tabBrowse": "Bla gjennom kanaler",
+    "nameLabel": "Kanalnavn",
+    "namePlaceholder": "f.eks. plan-budget",
+    "visibility": "Synlighet",
+    "public": "Offentlig",
+    "private": "Privat",
+    "publicHint": "Alle i arbeidsområdet kan finne og bli med i denne kanalen.",
+    "privateHint": "Bare inviterte medlemmer kan finne og bli med i denne kanalen.",
+    "cancel": "Avbryt",
+    "create": "Opprett",
+    "noChannels": "Ingen kanaler å bli med i",
+    "memberCount": "{count, plural, one {# medlem} other {# medlemmer}}",
+    "joined": "Med",
+    "join": "Bli med",
+    "close": "Lukk",
+    "errors": {
+      "createFailed": "Kunne ikke opprette kanalen"
+    }
+  },
+  "errors": {
+    "loadConversations": "Kunne ikke laste samtaler.",
+    "loadChannels": "Kunne ikke laste kanaler."
+  },
+  "membersPanel": {
+    "title": "Medlemmer",
+    "addPeople": "Legg til personer",
+    "loadError": "Kunne ikke laste medlemmer.",
+    "removeError": "Kunne ikke fjerne medlemmet",
+    "online": "Pålogget — {count}",
+    "offline": "Frakoblet — {count}",
+    "removeDialog": {
+      "title": "Fjerne medlemmet?",
+      "message": "Vil du fjerne <bold>{name}</bold> fra denne kanalen?"
+    },
+    "removing": "Fjerner...",
+    "searchByName": "Søk etter navn...",
+    "noUsers": "Fant ingen brukere",
+    "roles": {
+      "owner": "Eier",
+      "moderator": "Mod"
+    },
+    "removeMember": "Fjern medlem"
+  },
+  "dm": {
+    "messagePlaceholder": "Melding til {name}",
+    "you": "(deg)",
+    "star": "Legg til i Stjernemerkede",
+    "unstar": "Fjern fra Stjernemerkede",
+    "loadingMessages": "Laster meldinger...",
+    "selfSpace": "Dette er din plass. Skriv utkast, lag huskelister, eller ha lenker og filer klare.",
+    "conversationStart": "Starten på samtalen din med {name}",
+    "sendToBegin": "Send en melding for å begynne.",
+    "edited": "(redigert)",
+    "pinnedMessages": "Festede meldinger",
+    "noPins": "Ingen festede meldinger ennå",
+    "files": "Filer",
+    "noFiles": "Ingen filer delt ennå",
+    "loadError": "Kunne ikke laste meldinger.",
+    "sendError": "Meldingen kunne ikke sendes. Prøv igjen."
+  },
+  "nameRules": {
+    "required": "Skriv inn et kanalnavn.",
+    "tooLong": "Kanalnavnet kan ikke ha mer enn {max} tegn.",
+    "invalidChars": "Kanalnavn kan bare inneholde bokstaver, tall, bindestrek og understrek, og må starte med en bokstav eller et tall.",
+    "tooManyMarks": "Kanalnavn kan ikke ha mer enn 4 kombinerende tegn på rad.",
+    "mixedScripts": "Kanalnavn kan ikke blande alfabeter som ser like ut (for eksempel latinsk med kyrillisk eller gresk) eller siffer fra et annet tallsystem.",
+    "taken": "Det finnes allerede en kanal med det navnet."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# medlem} other {# medlemmer}}",
+    "nameLabel": "Navn på samtalen",
+    "namePlaceholder": "Legg til et navn",
+    "noName": "Uten navn (viser medlemmenes navn)",
+    "rename": "Gi samtalen nytt navn",
+    "addPeople": "Legg til personer",
+    "add": "Legg til",
+    "createWith": "Start gruppesamtale",
+    "leave": "Forlat samtalen",
+    "leaveConfirm": "Forlate denne samtalen? Du vil ikke lenger se meldingene.",
+    "conversationStart": "Dette er starten på samtalen din med {names}",
+    "addError": "Kunne ikke legge til personer. Prøv igjen.",
+    "renameError": "Kunne ikke gi samtalen nytt navn. Prøv igjen.",
+    "leaveError": "Kunne ikke forlate samtalen. Prøv igjen."
+  }
+}

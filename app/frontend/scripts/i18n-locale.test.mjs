@@ -15,7 +15,7 @@ import {
 import { TIER1_LOCALES, TIER2_LOCALES, isBetaLocale } from '../src/lib/i18n/tiers.ts';
 
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales');
-const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil'];
+const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb'];
 
 function loadLocale(locale) {
   const dir = join(LOCALES_DIR, locale);
@@ -43,7 +43,7 @@ async function makeI18n(resources = RESOURCES) {
 const SAMPLES = [
   {
     key: 'common:actions.save',
-    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz', nl: 'Opslaan', tr: 'Kaydet', sv: 'Spara', da: 'Gem', vi: 'Lưu', id: 'Simpan', ms: 'Simpan', fil: 'I-save' },
+    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz', nl: 'Opslaan', tr: 'Kaydet', sv: 'Spara', da: 'Gem', vi: 'Lưu', id: 'Simpan', ms: 'Simpan', fil: 'I-save', hi: 'सहेजें', bn: 'সংরক্ষণ করুন', th: 'บันทึก', nb: 'Lagre' },
   },
   {
     key: 'auth:login.submit',
@@ -69,11 +69,15 @@ const SAMPLES = [
       id: 'Masuk dengan Email',
       ms: 'Log masuk dengan Emel',
       fil: 'Mag-sign in gamit ang Email',
+      hi: 'ईमेल से साइन इन करें',
+      bn: 'ইমেল দিয়ে সাইন ইন করুন',
+      th: 'เข้าสู่ระบบด้วยอีเมล',
+      nb: 'Logg inn med e-post',
     },
   },
   {
     key: 'sidebar:nav.activity',
-    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność', nl: 'Activiteit', tr: 'Etkinlik', sv: 'Aktivitet', da: 'Aktivitet', vi: 'Hoạt động', id: 'Aktivitas', ms: 'Aktiviti', fil: 'Aktibidad' },
+    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność', nl: 'Activiteit', tr: 'Etkinlik', sv: 'Aktivitet', da: 'Aktivitet', vi: 'Hoạt động', id: 'Aktivitas', ms: 'Aktiviti', fil: 'Aktibidad', hi: 'गतिविधि', bn: 'কার্যকলাপ', th: 'กิจกรรม', nb: 'Aktivitet' },
   },
   {
     key: 'messages:input.send',
@@ -99,6 +103,10 @@ const SAMPLES = [
       id: 'Kirim pesan',
       ms: 'Hantar mesej',
       fil: 'Ipadala ang mensahe',
+      hi: 'संदेश भेजें',
+      bn: 'বার্তা পাঠান',
+      th: 'ส่งข้อความ',
+      nb: 'Send melding',
     },
   },
   {
@@ -126,6 +134,10 @@ const SAMPLES = [
       id: '2 anggota',
       ms: '2 ahli',
       fil: '2 miyembro',
+      hi: '2 सदस्य',
+      bn: '২ জন সদস্য',
+      th: '2 สมาชิก',
+      nb: '2 medlemmer',
     },
   },
   {
@@ -152,11 +164,15 @@ const SAMPLES = [
       id: 'Item tidak ditemukan.',
       ms: 'Item tidak ditemui.',
       fil: 'Hindi nahanap ang item.',
+      hi: 'आइटम नहीं मिला।',
+      bn: 'আইটেমটি পাওয়া যায়নি।',
+      th: 'ไม่พบรายการที่ต้องการ',
+      nb: 'Fant ikke elementet.',
     },
   },
   {
     key: 'settings:language.label',
-    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język', nl: 'Taal', tr: 'Dil', sv: 'Språk', da: 'Sprog', vi: 'Ngôn ngữ', id: 'Bahasa', ms: 'Bahasa', fil: 'Wika' },
+    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język', nl: 'Taal', tr: 'Dil', sv: 'Språk', da: 'Sprog', vi: 'Ngôn ngữ', id: 'Bahasa', ms: 'Bahasa', fil: 'Wika', hi: 'भाषा', bn: 'ভাষা', th: 'ภาษา', nb: 'Språk' },
   },
   {
     key: 'sidebar:userMenu.pausedUntil',
@@ -183,6 +199,10 @@ const SAMPLES = [
       id: 'Dijeda sampai 9:00',
       ms: 'Dijeda sehingga 9:00',
       fil: 'Naka-pause hanggang 9:00',
+      hi: '9:00 तक रुकी हुई',
+      bn: '9:00 পর্যন্ত বিরতিতে',
+      th: 'หยุดชั่วคราวจนถึง 9:00',
+      nb: 'På pause til 9:00',
     },
   },
 ];
@@ -263,11 +283,33 @@ const PLURAL_CASES = [
     lng: 'pl',
     cases: { 1: '1 odpowiedź', 2: '2 odpowiedzi', 5: '5 odpowiedzi', 12: '12 odpowiedzi', 22: '22 odpowiedzi' },
   },
+  // hi·bn·nb는 one/other 두 분기, th는 other 분기만 쓴다(CLDR). 힌디·벵골어 명사는 단수와 복수가 같다.
+// bn은 Intl 기본 숫자 체계(벵골 숫자 ০-৯)를 따른다. 런타임 Intl 결과를 기준으로 한다.
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'hi',
+    cases: { 0: '0 सदस्य', 1: '1 सदस्य', 2: '2 सदस्य', 5: '5 सदस्य', 11: '11 सदस्य', 12: '12 सदस्य', 21: '21 सदस्य', 22: '22 सदस्य', 111: '111 सदस्य' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'bn',
+    cases: { 0: '০ জন সদস্য', 1: '১ জন সদস্য', 2: '২ জন সদস্য', 5: '৫ জন সদস্য', 11: '১১ জন সদস্য', 12: '১২ জন সদস্য', 21: '২১ জন সদস্য', 22: '২২ জন সদস্য', 111: '১১১ জন সদস্য' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'nb',
+    cases: { 0: '0 medlemmer', 1: '1 medlem', 2: '2 medlemmer', 5: '5 medlemmer', 11: '11 medlemmer', 12: '12 medlemmer', 21: '21 medlemmer', 22: '22 medlemmer', 111: '111 medlemmer' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'th',
+    cases: { 0: '0 สมาชิก', 1: '1 สมาชิก', 2: '2 สมาชิก', 5: '5 สมาชิก', 11: '11 สมาชิก', 12: '12 สมาชิก', 21: '21 สมาชิก', 22: '22 สมาชิก', 111: '111 สมาชิก' },
+  },
 ];
 
 test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→nl→tr→sv→da→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
   const i18n = await makeI18n();
-  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'ko', 'en']) {
+  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'ko', 'en']) {
     await i18n.changeLanguage(lng);
     for (const sample of SAMPLES) {
       assert.equal(i18n.t(sample.key, sample.options), sample.values[lng], `${lng} ${sample.key}`);
@@ -278,7 +320,7 @@ test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→n
 test('같은 키를 여러 번 바꿔 읽어도 값이 흔들리지 않는다(반복 확인)', async () => {
   const i18n = await makeI18n();
   for (let round = 0; round < 3; round += 1) {
-    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'ko', 'zh-Hans', 'en']) {
+    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'ko', 'zh-Hans', 'en']) {
       await i18n.changeLanguage(lng);
       assert.equal(i18n.t('settings:language.label'), SAMPLES[6].values[lng]);
     }
@@ -447,6 +489,56 @@ test('신규 4개 언어(nl, tr, sv, da)도 번역 리소스 CRUD가 같게 동�
     setBundle(bundle());
     assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} create`);
   }
+});
+
+// 3차 2등급 4개 언어(hi, bn, th, nb) 번역 리소스 CRUD: 읽기, 수정, 삭제(영어 대체), 다시 만들기를 두 바퀴 반복한다.
+test('신규 4개 언어(hi, bn, th, nb)도 번역 리소스 CRUD가 같게 동작하고 반복해도 흔들리지 않는다', async () => {
+  const i18n = await makeI18n();
+  for (let round = 0; round < 2; round += 1) {
+    for (const [lng, unreads] of [
+      ['hi', 'बिना पढ़े'],
+      ['bn', 'অপঠিত'],
+      ['th', 'ยังไม่ได้อ่าน'],
+      ['nb', 'Uleste'],
+    ]) {
+      await i18n.changeLanguage(lng);
+      const bundle = () => structuredClone(RESOURCES[lng].sidebar);
+      const setBundle = (value) => {
+        i18n.removeResourceBundle(lng, 'sidebar');
+        i18n.addResourceBundle(lng, 'sidebar', value, true, true);
+      };
+
+      // Read
+      assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} read round ${round}`);
+
+      // Update
+      const updated = bundle();
+      updated.nav.unreads = 'TEST';
+      setBundle(updated);
+      assert.equal(i18n.t('sidebar:nav.unreads'), 'TEST', `${lng} update round ${round}`);
+
+      // Delete: 키를 지우면 영어 원문(Unreads)으로 대체된다
+      const removed = bundle();
+      delete removed.nav.unreads;
+      setBundle(removed);
+      assert.equal(i18n.t('sidebar:nav.unreads'), 'Unreads', `${lng} delete round ${round}`);
+
+      // Create: 다시 추가하면 번역이 돌아온다
+      setBundle(bundle());
+      assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} create round ${round}`);
+    }
+  }
+});
+
+// 태국어는 단어 사이에 공백이 없어서 자리표시자 앞뒤 공백을 문장마다 따로 맞춘다. 보간이 그 공백을 그대로 지키는지 확인한다.
+test('태국어 자리표시자는 번역문의 공백을 그대로 두고 보간되며, 복수형은 other 분기 하나로 정해진다', async () => {
+  const i18n = await makeI18n();
+  await i18n.changeLanguage('th');
+  assert.equal(i18n.t('messages:filePreview.remove', { name: 'report.pdf' }), 'นำ report.pdf ออก');
+  assert.equal(i18n.t('messages:search.inChannel', { channel: 'general' }), 'ใน #general');
+  // 태국어 분기는 other 하나뿐이므로 1과 2가 같은 형태여야 한다
+  assert.equal(i18n.t('messages:thread.replyCount', { count: 1 }), '1 การตอบกลับ');
+  assert.equal(i18n.t('messages:thread.replyCount', { count: 2 }), '2 การตอบกลับ');
 });
 
 // 터키어 대소문자: 로캘 기준 변환은 İ/ı를 구분한다. 채널 이름 소문자화(toLocaleLowerCase)가 tr에서 İ→i가 되는지 확인한다.

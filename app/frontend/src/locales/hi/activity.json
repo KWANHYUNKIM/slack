@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "गतिविधि",
+    "markAllRead": "सभी को पढ़ा हुआ चिह्नित करें",
+    "loading": "लोड हो रहा है...",
+    "loadingMore": "और लोड हो रहा है...",
+    "loadFailed": "गतिविधि लोड नहीं हो सकी।",
+    "empty": "अभी कोई गतिविधि नहीं है।",
+    "unread": "बिना पढ़े",
+    "menu": "मेनू",
+    "someone": "कोई",
+    "directMessage": "एक सीधा संदेश",
+    "messageDeleted": "हटाया गया संदेश"
+  },
+  "tabs": {
+    "all": "सभी",
+    "mentions": "उल्लेख",
+    "threads": "थ्रेड",
+    "reactions": "प्रतिक्रियाएं"
+  },
+  "describe": {
+    "mention": "{actor} ने {where} में आपका उल्लेख किया",
+    "channelMention": "{actor} ने {where} में @channel का उल्लेख किया",
+    "hereMention": "{actor} ने {where} में @here का उल्लेख किया",
+    "threadReply": "{actor} ने {where} में एक थ्रेड पर जवाब दिया",
+    "reaction": "{actor} ने {where} में आपके संदेश पर {emoji} प्रतिक्रिया दी",
+    "reminder": "रिमाइंडर"
+  }
+}

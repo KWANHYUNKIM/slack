@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(म्यूट)",
+    "mute": "म्यूट करें",
+    "unmute": "अनम्यूट करें",
+    "leave": "हडल छोड़ें"
+  },
+  "button": {
+    "leaveFirstError": "पहले अपना मौजूदा हडल छोड़ें",
+    "cancelInviteFirstError": "पहले अपना मौजूदा आमंत्रण रद्द करें",
+    "cancelInvite": "आमंत्रण रद्द करें",
+    "calling": "कॉल हो रही है...",
+    "inHuddle": "हडल में",
+    "leaveCurrentFirst": "पहले मौजूदा हडल छोड़ें",
+    "start": "हडल शुरू करें"
+  },
+  "incoming": {
+    "invite": "हडल आमंत्रण",
+    "secondsLeft": "{count} सेकंड",
+    "decline": "अस्वीकार करें",
+    "accept": "स्वीकार करें"
+  },
+  "system": {
+    "youStarted": "आपने एक हडल शुरू किया।",
+    "started": "एक हडल शुरू हुआ।",
+    "ended": "समाप्त",
+    "youSentInvite": "आपने हडल आमंत्रण भेजा।",
+    "sentInvite": "आपको एक हडल आमंत्रण भेजा।",
+    "huddleStarted": "हडल शुरू हुआ",
+    "huddleEnded": "हडल समाप्त हुआ ({duration})",
+    "durationSeconds": "{seconds} सेकंड",
+    "durationMinutesSeconds": "{minutes} मिनट {seconds} सेकंड"
+  },
+  "errors": {
+    "leaveFirst": "पहले अपना मौजूदा हडल छोड़ें",
+    "cancelInviteFirst": "पहले अपना मौजूदा आमंत्रण रद्द करें",
+    "micDenied": "माइक्रोफ़ोन की अनुमति नहीं मिली",
+    "busy": "वे किसी दूसरे हडल में हैं",
+    "declined": "आमंत्रण अस्वीकार किया गया",
+    "expired": "आमंत्रण की समय सीमा समाप्त हो गई",
+    "rateLimited": "बहुत सारे अनुरोध। कुछ देर बाद फिर से कोशिश करें",
+    "invalidInvite": "आमंत्रण अनुरोध अमान्य था",
+    "cannotInviteSelf": "आप खुद को आमंत्रित नहीं कर सकते",
+    "userNotFound": "उपयोगकर्ता नहीं मिला",
+    "invalidAccept": "स्वीकार करने का अनुरोध अमान्य था",
+    "inviteNotFound": "आमंत्रण नहीं मिला या उसकी समय सीमा समाप्त हो गई",
+    "peerOffline": "वे ऑफ़लाइन हैं",
+    "generic": "हडल शुरू नहीं हो सका। कृपया फिर से कोशिश करें"
+  }
+}

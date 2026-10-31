@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "delete": "Slett",
+    "edit": "Rediger",
+    "close": "Lukk",
+    "send": "Send",
+    "confirm": "Bekreft",
+    "back": "Tilbake",
+    "remove": "Fjern",
+    "add": "Legg til",
+    "create": "Opprett",
+    "retry": "Prøv igjen",
+    "search": "Søk",
+    "copy": "Kopier",
+    "done": "Ferdig",
+    "next": "Neste",
+    "more": "Mer"
+  },
+  "emojiPicker": {
+    "loadFailed": "Kunne ikke laste emoji. Sjekk tilkoblingen og prøv igjen.",
+    "retry": "Prøv igjen"
+  },
+  "status": {
+    "loading": "Laster inn...",
+    "saving": "Lagrer...",
+    "deleting": "Sletter..."
+  },
+  "dates": {
+    "today": "I dag",
+    "yesterday": "I går"
+  },
+  "quickSwitcher": {
+    "title": "Hurtigbytter",
+    "inputLabel": "Hopp til en samtale",
+    "placeholder": "Hopp til en kanal eller samtale",
+    "recent": "Nylige",
+    "results": "Resultater",
+    "clearRecent": "Tøm nylige",
+    "listLabel": "Samtaler",
+    "noResults": "Ingen samtaler samsvarer",
+    "starred": "Stjernemerkede",
+    "unread": "Uleste",
+    "dnd": "Ikke forstyrr",
+    "footer": "{keys} for å åpne. Opp og ned for å flytte, Enter for å gå, Esc for å lukke.",
+    "open": "Hopp til…",
+    "kind": {
+      "channel": "Kanal",
+      "dm": "Direktemelding",
+      "group": "Gruppemelding"
+    }
+  },
+  "shortcuts": {
+    "title": "Tastatursnarveier",
+    "groups": {
+      "navigation": "Navigasjon",
+      "general": "Generelt"
+    },
+    "items": {
+      "switcher": "Åpne hurtigbytteren",
+      "prevChannel": "Forrige samtale",
+      "nextChannel": "Neste samtale",
+      "prevUnread": "Forrige uleste samtale",
+      "nextUnread": "Neste uleste samtale",
+      "help": "Vis tastatursnarveier",
+      "closeTop": "Lukk hurtigbytteren eller denne dialogen"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Arbeidsområde"
+  },
+  "organization": {
+    "defaultName": "Organisasjon"
+  }
+}

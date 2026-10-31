@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(dempet)",
+    "mute": "Demp",
+    "unmute": "Slå på lyden",
+    "leave": "Forlat huddle"
+  },
+  "button": {
+    "leaveFirstError": "Forlat den gjeldende huddlen først",
+    "cancelInviteFirstError": "Avbryt den gjeldende invitasjonen først",
+    "cancelInvite": "Avbryt invitasjon",
+    "calling": "Ringer...",
+    "inHuddle": "I huddle",
+    "leaveCurrentFirst": "Forlat gjeldende huddle først",
+    "start": "Start huddle"
+  },
+  "incoming": {
+    "invite": "Huddle-invitasjon",
+    "secondsLeft": "{count} s",
+    "decline": "Avslå",
+    "accept": "Godta"
+  },
+  "system": {
+    "youStarted": "Du startet en huddle.",
+    "started": "Startet en huddle.",
+    "ended": "Avsluttet",
+    "youSentInvite": "Du sendte en huddle-invitasjon.",
+    "sentInvite": "Sendte deg en huddle-invitasjon.",
+    "huddleStarted": "Huddle startet",
+    "huddleEnded": "Huddle avsluttet ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Forlat den gjeldende huddlen først",
+    "cancelInviteFirst": "Avbryt den gjeldende invitasjonen først",
+    "micDenied": "Tilgang til mikrofonen er avslått",
+    "busy": "De er i en annen huddle",
+    "declined": "Invitasjonen ble avslått",
+    "expired": "Invitasjonen har utløpt",
+    "rateLimited": "For mange forespørsler. Prøv igjen om litt",
+    "invalidInvite": "Invitasjonsforespørselen var ugyldig",
+    "cannotInviteSelf": "Du kan ikke invitere deg selv",
+    "userNotFound": "Fant ikke brukeren",
+    "invalidAccept": "Forespørselen om å godta var ugyldig",
+    "inviteNotFound": "Fant ikke invitasjonen, eller den har utløpt",
+    "peerOffline": "De er frakoblet",
+    "generic": "Kunne ikke starte huddlen. Prøv igjen"
+  }
+}
