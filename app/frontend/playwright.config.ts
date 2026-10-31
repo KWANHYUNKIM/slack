@@ -5,8 +5,14 @@ import { devApiTargetPort, resolveDevApiTarget, resolveDevPort } from './scripts
 // VITE_DEV_API_TARGET(백엔드 주소, 기본 http://localhost:3000), VITE_DEV_PORT(개발 서버, 기본 5173), BASE_URL(테스트 대상 주소, 우선).
 const apiTarget = resolveDevApiTarget(process.env.VITE_DEV_API_TARGET);
 const devPort = resolveDevPort(process.env.VITE_DEV_PORT);
+// 테스트가 띄우는 백엔드는 평문 HTTP다. https 대상은 이 설정으로 띄울 수 없으므로 시작 시 막는다.
+if (apiTarget.startsWith('https:')) {
+  throw new Error('playwright.config.ts는 백엔드를 HTTP로 띄운다. VITE_DEV_API_TARGET은 http://로 지정하라.');
+}
 const baseUrl = process.env.BASE_URL || `http://localhost:${devPort}`;
-const webPort = Number(new URL(baseUrl).port || devPort);
+// BASE_URL에 포트가 없으면 스킴 기본 포트(80/443)를 쓴다. 개발 서버도 그 포트로 띄운다.
+const parsedBase = new URL(baseUrl);
+const webPort = Number(parsedBase.port || (parsedBase.protocol === 'https:' ? 443 : 80));
 
 export default defineConfig({
   testDir: './tests',
