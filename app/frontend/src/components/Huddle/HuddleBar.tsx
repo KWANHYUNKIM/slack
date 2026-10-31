@@ -8,12 +8,12 @@ export function HuddleBar() {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    if (!huddleId) {
-      setElapsed(0);
-      return;
-    }
+    if (!huddleId) return;
     const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      setElapsed(0);
+    };
   }, [huddleId]);
 
   if (!huddleId || !peer) return null;

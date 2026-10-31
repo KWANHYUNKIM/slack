@@ -7,6 +7,7 @@ import {
   addReaction as apiAddReaction, removeReaction as apiRemoveReaction,
   addDMReaction, removeDMReaction,
   type ApiDirectMessage,
+  type ApiMessage,
 } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { cn } from '@/lib/utils';
@@ -32,8 +33,10 @@ interface ThreadPanelProps {
   readOnly?: boolean;
 }
 
-function normalizeToMessage(msg: any, isDM: boolean): MessageType {
-  const user = msg.user ?? msg.fromUser;
+function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
+  // DMs carry fromUser/fromUserId, channel messages carry user/userId
+  const isDMMessage = 'fromUserId' in msg;
+  const user = isDMMessage ? msg.fromUser : msg.user;
   const reactionMap = new Map<string, Reaction>();
   for (const r of msg.reactions ?? []) {
     const userName = r.user?.name ?? '';
@@ -54,12 +57,12 @@ function normalizeToMessage(msg: any, isDM: boolean): MessageType {
   return {
     id: msg.id,
     content: msg.content,
-    userId: isDM ? msg.fromUserId : msg.userId,
+    userId: isDMMessage ? msg.fromUserId : msg.userId,
     user: { id: user.id, name: user.name, avatar: user.avatar },
-    channelId: msg.channelId ?? 0,
+    channelId: isDMMessage ? 0 : msg.channelId,
     createdAt: new Date(msg.createdAt),
     reactions: Array.from(reactionMap.values()),
-    files: (msg.files ?? []).map((f: any) => ({
+    files: (msg.files ?? []).map((f) => ({
       id: f.id,
       filename: f.filename,
       originalName: f.originalName ?? f.filename,
@@ -102,8 +105,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     fetchFn
       .then((data) => {
         if (cancelled) return;
-        setParentMessage(normalizeToMessage(data.parent, isDM));
-        setReplies(data.replies.map((r: any) => normalizeToMessage(r, isDM)));
+        setParentMessage(normalizeToMessage(data.parent));
+        setReplies(data.replies.map((r) => normalizeToMessage(r)));
       })
       .catch(() => {
         if (!cancelled) setLoadError('Failed to load thread. Please try again.');
@@ -123,7 +126,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     if (isDM) {
       const handleDMReply = (reply: ApiDirectMessage & { threadId: number }) => {
         if (reply.threadId !== messageId) return;
-        const normalized = normalizeToMessage(reply, true);
+        const normalized = normalizeToMessage(reply);
         setReplies((prev) => {
           if (prev.some((r) => r.id === normalized.id)) return prev;
           return [...prev, normalized];
@@ -132,9 +135,9 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       socket.on('dm:reply', handleDMReply);
       return () => { socket.off('dm:reply', handleDMReply); };
     } else {
-      const handleNewMessage = (msg: any) => {
+      const handleNewMessage = (msg: ApiMessage) => {
         if (msg.threadId !== messageId) return;
-        const normalized = normalizeToMessage(msg, false);
+        const normalized = normalizeToMessage(msg);
         setReplies((prev) => {
           if (prev.some((r) => r.id === normalized.id)) return prev;
           return [...prev, normalized];
@@ -174,7 +177,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   const handleEditMessage = useCallback(async (msgId: number, content: string) => {
     if (isDM) {
       const updated = await editDM(msgId, content);
-      const normalized = normalizeToMessage(updated, true);
+      const normalized = normalizeToMessage(updated);
       if (parentMessage && msgId === parentMessage.id) {
         setParentMessage(normalized);
       } else {
@@ -288,7 +291,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       } else {
         apiReply = await replyToMessage(messageId, content, fileIdsParam);
       }
-      const reply = normalizeToMessage(apiReply, isDM);
+      const reply = normalizeToMessage(apiReply);
       setReplies((prev) => {
         if (prev.some((r) => r.id === reply.id)) return prev;
         return [...prev, reply];
@@ -327,7 +330,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 <Message
                   message={parentMessage}
                   showAvatar={true}
-                  isCompact={false}
                   variant="thread"
                   readOnly={readOnly}
                   onEditMessage={handleEditMessage}
@@ -348,7 +350,6 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 key={reply.id}
                 message={reply}
                 showAvatar={true}
-                isCompact={false}
                 variant="thread"
                 readOnly={readOnly}
                 onEditMessage={handleEditMessage}

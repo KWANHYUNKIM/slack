@@ -9,6 +9,7 @@ import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { AvatarCropModal } from './AvatarCropModal';
 import { format } from 'date-fns';
+import { toUserStatus } from '@/lib/types';
 
 interface ProfileModalProps {
   userId?: number; // If provided, view another user's profile; otherwise view own
@@ -131,7 +132,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   alt={profile.name}
                   fallback={profile.name}
                   size="lg"
-                  status={profile.status as any}
+                  status={toUserStatus(profile.status)}
                 />
                 {isOwnProfile && isEditing && (
                   <button

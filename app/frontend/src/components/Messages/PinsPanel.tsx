@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Pin } from 'lucide-react';
 import { format } from 'date-fns';
 import { getPinnedMessages, type ApiMessage } from '@/lib/api';
@@ -17,18 +17,22 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const fetchPins = useCallback(() => {
-    setIsLoading(true);
-    setLoadError(null);
-    getPinnedMessages(channelId)
-      .then((data) => setPins(data))
-      .catch(() => setLoadError('Failed to load pinned messages.'))
-      .finally(() => setIsLoading(false));
-  }, [channelId]);
-
   useEffect(() => {
-    fetchPins();
-  }, [fetchPins]);
+    let cancelled = false;
+    getPinnedMessages(channelId)
+      .then((data) => {
+        if (!cancelled) setPins(data);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError('Failed to load pinned messages.');
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [channelId]);
 
   // Listen for message:updated events — refresh pins when a message in this
   // channel is pinned or unpinned so the panel stays current without a reload.

@@ -1,10 +1,18 @@
+const USER_STATUSES = ['online', 'away', 'dnd', 'offline'] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
+
+/** Narrow a server-provided status string; unknown values give undefined. */
+export function toUserStatus(status: string | undefined): UserStatus | undefined {
+  return USER_STATUSES.find((s) => s === status);
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
   avatar?: string | null;
   role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
-  status?: 'online' | 'away' | 'dnd' | 'offline';
+  status?: UserStatus;
   displayName?: string;
 }
 
@@ -25,7 +33,7 @@ export interface DirectMessage {
   userId: number;
   userName: string;
   userAvatar: string;
-  userStatus: 'online' | 'away' | 'dnd' | 'offline';
+  userStatus: UserStatus;
   unreadCount: number;
 }
 
@@ -45,11 +53,17 @@ export interface MessageFile {
   url: string;
 }
 
+/** Author info embedded in a message (the API does not send email or role). */
+export type MessageUser = Pick<User, 'id' | 'name' | 'avatar' | 'displayName'>;
+
+/** Entry in the @mention dropdown; the @here pseudo-user has no email. */
+export type MentionUser = Pick<User, 'id' | 'name' | 'avatar'>;
+
 export interface Message {
   id: number;
   content: string;
   userId: number;
-  user: User;
+  user: MessageUser;
   channelId: number;
   createdAt: Date;
   updatedAt?: Date;

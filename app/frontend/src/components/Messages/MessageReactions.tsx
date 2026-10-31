@@ -11,10 +11,14 @@ const SHORTCODE_ALIASES: Record<string, string> = {
   mind_blown: 'exploding_head',
 };
 
+type EmojiDataShape = { emojis?: Record<string, { skins?: { native?: string }[] }> };
+const emojiData: EmojiDataShape = data as EmojiDataShape;
+
 function shortcodeToNative(emoji: string): string {
   const key = SHORTCODE_ALIASES[emoji] ?? emoji;
-  const emojiData = (data as any).emojis?.[key];
-  if (emojiData?.skins?.[0]?.native) return emojiData.skins[0].native;
+  const emojiEntry = emojiData.emojis?.[key];
+  const native = emojiEntry?.skins?.[0]?.native;
+  if (native) return native;
   return emoji;
 }
 

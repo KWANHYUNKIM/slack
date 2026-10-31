@@ -39,13 +39,14 @@ function formatFileSize(bytes: number): string {
 }
 
 export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose }: FilePreviewModalProps) {
+  const isText = isTextFile(mimetype, fileName);
   const [textContent, setTextContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // The modal is mounted per file, so start in the loading state for text files
+  const [loading, setLoading] = useState(isText);
   const [error, setError] = useState<string | null>(null);
 
   const fileUrl = getFileUrl(fileId);
   const downloadUrl = getAuthFileUrl(`/files/${fileId}/download`, { download: true });
-  const isText = isTextFile(mimetype, fileName);
   const isPdfFile = isPdf(mimetype);
 
   useEffect(() => {
@@ -58,7 +59,6 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
 
   useEffect(() => {
     if (!isText) return;
-    setLoading(true);
     fetch(fileUrl)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load file');

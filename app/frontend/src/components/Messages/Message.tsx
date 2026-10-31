@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { FileIcon, Download, Pin, Mic } from 'lucide-react';
+import { FileIcon, Download, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
@@ -26,7 +26,6 @@ import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 interface MessageProps {
   message: MessageType;
   showAvatar: boolean;
-  isCompact: boolean;
   onOpenThread?: (messageId: number) => void;
   readOnly?: boolean;
   variant?: 'default' | 'thread';
@@ -36,7 +35,7 @@ interface MessageProps {
   onRemoveReaction?: (id: number, emoji: string) => void;
 }
 
-export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction }: MessageProps) {
+export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction }: MessageProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -50,7 +49,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
   const isBookmarked = useBookmarkStore((s) => s.bookmarkedIds.has(message.id));
   const { togglePin } = useMessageActions();
   const setUnreadCount = useChannelStore((s) => s.setUnreadCount);
-  const { isHovered, setIsHovered, onMouseEnter, onMouseLeave, onTouchStart } = useMessageHover();
+  const { isHovered, onMouseEnter, onMouseLeave, onTouchStart } = useMessageHover();
   const isThread = variant === 'thread';
   const effectiveAddReaction = onAddReaction ?? addReaction;
   const effectiveRemoveReaction = onRemoveReaction ?? removeReaction;
@@ -353,7 +352,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
         {message.threadCount > 0 && (
           <ThreadIndicator
             replyCount={message.threadCount}
-            author={{ id: message.user.id, name: message.user.name, avatar: message.user.avatar }}
+            author={{ id: message.user.id, name: message.user.name, avatar: message.user.avatar ?? null }}
             participants={message.threadParticipants}
             onClick={() => onOpenThread?.(message.id)}
           />
@@ -388,7 +387,7 @@ export function Message({ message, showAvatar, isCompact, onOpenThread, readOnly
           } : undefined}
           onPin={!isThread ? () => {
             setShowMoreMenu(false);
-            togglePin(message.id, message.isPinned);
+            togglePin(message.id, message.isPinned ?? false);
           } : undefined}
           isPinned={message.isPinned}
           showOwnerActions={isOwner}
