@@ -63,17 +63,28 @@ export function matchLocale(tag: string): string | null {
   return null;
 }
 
+/**
+ * matchLocale에 더해, 번역 파일이 아직 없는 RTL 언어(ar, he, fa, ur)는 기본 언어 코드를 그대로 쓴다.
+ * 문자열은 en으로 대체되고, 방향(rtl)과 Intl 서식은 선택한 언어를 따른다(i18n-4).
+ */
+function resolveLocale(tag: string): string | null {
+  const matched = matchLocale(tag);
+  if (matched) return matched;
+  const base = tag ? tag.split('-')[0].toLowerCase() : '';
+  return RTL_LANGUAGES.has(base) ? base : null;
+}
+
 /** 사용자 설정(localStorage) → navigator.languages → en 순서로 로캘을 정한다. */
 export function detectLocale(): string {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    const matched = stored ? matchLocale(stored) : null;
+    const matched = stored ? resolveLocale(stored) : null;
     if (matched) return matched;
   } catch {
     // localStorage를 못 쓰는 환경이면 다음 단계로 넘어간다
   }
   for (const tag of navigator.languages ?? []) {
-    const matched = matchLocale(tag);
+    const matched = resolveLocale(tag);
     if (matched) return matched;
   }
   return FALLBACK_LOCALE;
@@ -106,7 +117,7 @@ let changeSeq = 0;
 
 export async function changeLocale(locale: string) {
   const seq = ++changeSeq;
-  const target = matchLocale(locale) ?? FALLBACK_LOCALE;
+  const target = resolveLocale(locale) ?? FALLBACK_LOCALE;
   try {
     await loadNamespaces(target);
     // 더 늦게 요청된 변경이 있으면 이 요청은 버린다

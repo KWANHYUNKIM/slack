@@ -140,7 +140,7 @@ function renderLines(text: string, keyOffset: number): React.ReactNode[] {
       }
       const quoteContent = quoteLines.join('\n');
       nodes.push(
-        <blockquote key={key++} className="border-l-4 border-slack-border-dark pl-3 my-0.5 text-slack-secondary italic">
+        <blockquote key={key++} className="border-s-4 border-slack-border-dark ps-3 my-0.5 text-slack-secondary italic">
           {renderInline(quoteContent, key * 100)}
         </blockquote>
       );
@@ -152,7 +152,7 @@ function renderLines(text: string, keyOffset: number): React.ReactNode[] {
         i++;
       }
       nodes.push(
-        <ol key={key++} className="list-decimal pl-6 my-0.5">
+        <ol key={key++} className="list-decimal ps-6 my-0.5">
           {items.map((item, idx) => (
             <li key={idx} className="text-[15px] leading-[22px]">{renderInline(item, (key + idx) * 100)}</li>
           ))}
@@ -167,7 +167,7 @@ function renderLines(text: string, keyOffset: number): React.ReactNode[] {
         i++;
       }
       nodes.push(
-        <ul key={key++} className="list-disc pl-6 my-0.5">
+        <ul key={key++} className="list-disc ps-6 my-0.5">
           {items.map((item, idx) => (
             <li key={idx} className="text-[15px] leading-[22px]">{renderInline(item, (key + idx) * 100)}</li>
           ))}
