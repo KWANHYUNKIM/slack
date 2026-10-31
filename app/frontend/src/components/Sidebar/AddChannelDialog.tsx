@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { Channel } from '@/lib/types';
+import { CHANNEL_NAME_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 
 interface AddChannelDialogProps {
   open: boolean;
@@ -43,6 +44,14 @@ export function AddChannelDialog({
   }
 
   if (!open) return null;
+
+  // 정규화는 렌더마다 한 번만 한다(글자 수 표시와 제출이 같은 값을 쓴다)
+  const normalizedName = normalizeChannelName(newChannelName);
+  const nameLength = [...normalizedName].length;
+  const nameErrorFor = (name: string) => {
+    const reason = name.length > 0 ? checkChannelName(name) : null;
+    return reason ? channelNameErrorMessage(t, reason) : '';
+  };
 
   const handleClose = () => {
     setNewChannelName('');
@@ -89,18 +98,14 @@ export function AddChannelDialog({
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                const name = newChannelName.trim().toLowerCase();
-                if (!name) return;
-                if (name.length > 25) {
-                  setCreateChannelError(t('dialog.errors.tooLong'));
-                  return;
-                }
-                if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
-                  setCreateChannelError(t('dialog.errors.invalidChars'));
+                if (!normalizedName) return;
+                const nameError = nameErrorFor(normalizedName);
+                if (nameError) {
+                  setCreateChannelError(nameError);
                   return;
                 }
                 try {
-                  await onCreateChannel(name, isPrivate);
+                  await onCreateChannel(normalizedName, isPrivate);
                   setNewChannelName('');
                   setCreateChannelError('');
                 } catch (err) {
@@ -117,16 +122,10 @@ export function AddChannelDialog({
                 type="text"
                 value={newChannelName}
                 onChange={(e) => {
+                  // 입력 중에는 NFKC를 적용하지 않는다(한글 조합 중 글자를 깨뜨릴 수 있음). 검증과 제출 때만 정규화한다.
                   const val = e.target.value.toLowerCase();
                   setNewChannelName(val);
-                  const trimmed = val.trim().toLowerCase();
-                  if (trimmed.length > 25) {
-                    setCreateChannelError(t('dialog.errors.tooLong'));
-                  } else if (trimmed.length > 0 && !/^[a-z0-9][a-z0-9-]*$/.test(trimmed)) {
-                    setCreateChannelError(t('dialog.errors.invalidChars'));
-                  } else if (createChannelError) {
-                    setCreateChannelError('');
-                  }
+                  setCreateChannelError(nameErrorFor(normalizeChannelName(val)));
                 }}
                 placeholder={t('dialog.namePlaceholder')}
                 autoFocus
@@ -140,9 +139,9 @@ export function AddChannelDialog({
                 ) : <span />}
                 <span className={cn(
                   'text-[12px]',
-                  newChannelName.trim().length > 25 ? 'text-slack-error' : 'text-slack-hint'
+                  nameLength > CHANNEL_NAME_MAX ? 'text-slack-error' : 'text-slack-hint'
                 )}>
-                  {newChannelName.trim().length}/25
+                  {nameLength}/{CHANNEL_NAME_MAX}
                 </span>
               </div>
 

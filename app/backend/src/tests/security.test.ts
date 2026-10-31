@@ -356,16 +356,15 @@ describe('Security - Input Validation', () => {
       expect(res.status).toBe(201);
     });
 
-    // The API currently accepts only [a-z0-9-] (same rule as the frontend dialog),
-    // so non-ASCII names are rejected rather than stored.
-    it('should reject channel names with non-ASCII characters', async () => {
+    // 유니코드 글자는 허용한다(feat/channel-name-unicode). 위험 문자는 channel-name-unicode.test.ts에서 검증.
+    it('should accept channel names with non-ASCII letters', async () => {
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ name: 'channel-日本語' });
 
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBeDefined();
+      expect(res.status).toBe(201);
+      expect(res.body.name).toBe('channel-日本語');
     });
   });
 
