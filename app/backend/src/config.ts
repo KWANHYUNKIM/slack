@@ -55,3 +55,16 @@ export function getAuditRetentionDays(): number {
   const days = Number.parseInt(process.env.AUDIT_LOG_RETENTION_DAYS ?? '', 10);
   return Number.isInteger(days) && days > 0 ? days : 0;
 }
+
+// 세션 정책(E7). 환경 변수는 호출 시점에 읽는다(테스트가 바꿔 가며 확인한다).
+// 최대 수명 기본 7일: 기존 JWT 만료(7d)와 같아서 이번 변경으로 로그인 유지 기간이 달라지지 않는다.
+// 유휴 만료 기본 96시간: 주말(약 72시간)을 건너뛰고 월요일에 돌아와도 유지되고, 일주일 방치된 기기는 잘린다.
+export function getSessionMaxAgeDays(): number {
+  const days = Number.parseFloat(process.env.SESSION_MAX_AGE_DAYS ?? '');
+  return Number.isFinite(days) && days > 0 ? Math.min(days, 365) : 7;
+}
+
+export function getSessionIdleTimeoutHours(): number {
+  const hours = Number.parseFloat(process.env.SESSION_IDLE_TIMEOUT_HOURS ?? '');
+  return Number.isFinite(hours) && hours > 0 ? Math.min(hours, 24 * 365) : 96;
+}

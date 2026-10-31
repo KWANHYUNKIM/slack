@@ -8,12 +8,19 @@ import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import { loginFieldErrorKey } from '@/lib/authErrors';
+import { SESSION_ENDED_FLAG } from '@/lib/socket';
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  // 다른 기기에서 로그아웃되었거나 세션이 끝나 이 화면으로 왔으면 한 번만 안내한다
+  const [sessionEnded] = useState(() => {
+    const flag = sessionStorage.getItem(SESSION_ENDED_FLAG) === '1';
+    sessionStorage.removeItem(SESSION_ENDED_FLAG);
+    return flag;
+  });
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
@@ -49,6 +56,11 @@ export function LoginPage() {
       <div className="w-full max-w-[400px] px-4">
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {sessionEnded && !error && (
+            <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800" role="status" data-testid="session-ended-notice">
+              {t('login.sessionEnded')}
+            </div>
+          )}
           {error && (
             <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert">
               {error}

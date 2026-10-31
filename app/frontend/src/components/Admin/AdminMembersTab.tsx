@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
+import * as api from '@/lib/api';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Avatar } from '@/components/ui/avatar';
@@ -20,7 +21,7 @@ export function AdminMembersTab() {
   const currentUser = useAuthStore((s) => s.user);
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'deactivate' | 'reactivate' | 'transfer';
+    type: 'deactivate' | 'reactivate' | 'transfer' | 'forceLogout';
     userId: number;
     userName: string;
   } | null>(null);
@@ -39,9 +40,11 @@ export function AdminMembersTab() {
     const { type, userId } = confirmAction;
     const fallbackKey = type === 'transfer'
       ? 'admin:errors.transferOwnership'
+      : type === 'forceLogout' ? 'admin:errors.forceLogout'
       : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
     const ok = await dialogAction.run(() => {
       if (type === 'transfer') return transferOwnership(userId);
+      if (type === 'forceLogout') return api.adminForceLogout(userId).then(() => undefined);
       if (type === 'deactivate') return deactivateUser(userId);
       return reactivateUser(userId);
     }, fallbackKey);
@@ -155,6 +158,15 @@ export function AdminMembersTab() {
                           className="text-xs font-medium text-amber-600 hover:text-amber-700"
                         >
                           {t('members.actions.transfer')}
+                        </button>
+                      )}
+                      {modifiable && !isDeactivated && (
+                        <button
+                          data-testid="force-logout-button"
+                          onClick={() => setConfirmAction({ type: 'forceLogout', userId: user.id, userName: user.name })}
+                          className="text-xs font-medium text-slack-secondary hover:text-slack-primary"
+                        >
+                          {t('members.actions.forceLogout')}
                         </button>
                       )}
                       {modifiable && (

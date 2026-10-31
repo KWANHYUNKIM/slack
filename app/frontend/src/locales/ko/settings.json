@@ -97,5 +97,33 @@
       "copyFailed": "복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요.",
       "limitReached": "활성 토큰은 최대 {max}개까지 만들 수 있습니다. 쓰지 않는 토큰을 폐기한 뒤 다시 시도하세요."
     }
+  },
+  "sessions": {
+    "title": "로그인된 기기",
+    "description": "내 계정에 로그인되어 있는 기기입니다. 모르는 기기나 더 쓰지 않는 기기는 로그아웃하세요.",
+    "loading": "불러오는 중...",
+    "empty": "로그인된 기기가 없습니다.",
+    "thisDevice": "이 기기",
+    "unknownDevice": "알 수 없는 기기",
+    "signedInAt": "{date}에 로그인",
+    "lastActive": "마지막 활동 {date}",
+    "signOut": "로그아웃",
+    "signOutLabel": "{device} 로그아웃",
+    "signOutThisLabel": "이 기기 로그아웃 ({device})",
+    "signOutOthers": "다른 모든 기기에서 로그아웃",
+    "signOutOthersConfirm": "다른 기기 {count}대 로그아웃",
+    "revoked": "기기를 로그아웃했습니다",
+    "revokedOthers": "다른 모든 기기에서 로그아웃했습니다",
+    "errors": {
+      "loadFailed": "기기 목록을 불러오지 못했습니다.",
+      "revokeFailed": "로그아웃하지 못했습니다. 다시 시도해 주세요."
+    },
+    "device": {
+      "desktop": "데스크톱 앱",
+      "desktopOn": "{os} 데스크톱 앱",
+      "browser": "{browser}",
+      "browserOn": "{os}의 {browser}",
+      "unknownOn": "{os}의 알 수 없는 기기"
+    }
   }
 }
