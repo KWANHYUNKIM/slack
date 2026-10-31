@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktivität",
+    "markAllRead": "Alle als gelesen markieren",
+    "loading": "Wird geladen ...",
+    "loadingMore": "Weitere werden geladen ...",
+    "loadFailed": "Aktivität konnte nicht geladen werden.",
+    "empty": "Noch keine Aktivität.",
+    "unread": "Ungelesen",
+    "menu": "Menü",
+    "someone": "Jemand",
+    "directMessage": "eine Direktnachricht",
+    "messageDeleted": "Gelöschte Nachricht"
+  },
+  "tabs": {
+    "all": "Alle",
+    "mentions": "Erwähnungen",
+    "threads": "Threads",
+    "reactions": "Reaktionen"
+  },
+  "describe": {
+    "mention": "{actor} hat dich in {where} erwähnt",
+    "channelMention": "{actor} hat @channel in {where} erwähnt",
+    "hereMention": "{actor} hat @here in {where} erwähnt",
+    "threadReply": "{actor} hat in {where} in einem Thread geantwortet",
+    "reaction": "{actor} hat auf deine Nachricht in {where} mit {emoji} reagiert",
+    "reminder": "Erinnerung"
+  }
+}

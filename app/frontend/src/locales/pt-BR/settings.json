@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Idioma",
+    "pending": "{name} (tradução em breve)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notificações pausadas"
+  },
+  "profile": {
+    "title": "Perfil",
+    "close": "Fechar",
+    "loading": "Carregando...",
+    "notFound": "Perfil não encontrado",
+    "uploadPhoto": "Enviar foto",
+    "uploading": "Enviando...",
+    "name": "Nome",
+    "bio": "Bio",
+    "bioPlaceholder": "Conte um pouco sobre você",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "status": "Status",
+    "joined": "Entrou em",
+    "message": "Mensagem",
+    "edit": "Editar perfil",
+    "statusValue": {
+      "online": "online",
+      "away": "ausente",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Falha ao carregar o perfil.",
+      "saveFailed": "Falha ao salvar o perfil. Tente novamente.",
+      "notImage": "Selecione um arquivo de imagem.",
+      "tooLarge": "A imagem deve ter menos de 5 MB.",
+      "uploadFailed": "Falha ao enviar a foto. Tente novamente."
+    },
+    "statusUntil": "Até {time}"
+  },
+  "crop": {
+    "title": "Recortar sua foto",
+    "close": "Fechar",
+    "zoom": "Zoom",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "failed": "Falha ao recortar"
+  },
+  "accessTokens": {
+    "title": "Tokens de acesso pessoal",
+    "description": "Os tokens permitem que o Claude e outros clientes MCP leiam e, se você permitir, escrevam no seu espaço de trabalho com as suas permissões. Trate-os como uma senha.",
+    "nameLabel": "Nome do token",
+    "namePlaceholder": "ex.: Claude Code no meu notebook",
+    "scopesLabel": "Permissões",
+    "scope": {
+      "channelsRead": "Listar canais",
+      "channelsHistory": "Ler mensagens, threads e atividades",
+      "usersRead": "Ver pessoas",
+      "chatWrite": "Publicar, editar e excluir suas mensagens",
+      "reactionsWrite": "Adicionar e remover suas reações",
+      "imRead": "Listar suas mensagens diretas e conversas em grupo",
+      "imHistory": "Ler o histórico das suas mensagens diretas",
+      "imWrite": "Enviar, editar e excluir suas mensagens diretas",
+      "searchRead": "Pesquisar mensagens, arquivos, pessoas e canais (resultados de mensagens diretas exigem o histórico de mensagens diretas)",
+      "filesRead": "Listar arquivos e ler o conteúdo de arquivos de texto"
+    },
+    "expiryLabel": "Expira em",
+    "expiryDays": "{count, plural, one {# dia} other {# dias}}",
+    "expiryNever": "Sem expiração",
+    "neverWarning": "Tokens sem expiração continuam válidos até você revogá-los.",
+    "create": "Gerar token",
+    "createdNotice": "Copie seu novo token agora. Você não poderá vê-lo novamente.",
+    "copy": "Copiar token",
+    "copyCommand": "Copiar comando",
+    "copied": "Copiado para a área de transferência",
+    "connectHint": "Conecte-se pelo Claude Code:",
+    "dismiss": "Concluído, ocultar token",
+    "loading": "Carregando...",
+    "empty": "Você não tem tokens de acesso pessoal.",
+    "expires": "Expira em {date}",
+    "expired": "Expirado",
+    "noExpiry": "Sem expiração",
+    "lastUsed": "Último uso em {date}",
+    "neverUsed": "Nunca usado",
+    "rename": "Renomear",
+    "renameLabel": "Renomear o token {name}",
+    "revoke": "Revogar",
+    "revokeLabel": "Revogar o token {name}",
+    "revokeConfirm": "Revogar agora",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "errors": {
+      "loadFailed": "Falha ao carregar os tokens.",
+      "createFailed": "Falha ao criar o token. Tente novamente.",
+      "renameFailed": "Falha ao renomear o token.",
+      "revokeFailed": "Falha ao revogar o token.",
+      "copyFailed": "Não foi possível copiar. Selecione o texto e copie manualmente.",
+      "limitReached": "Você pode ter até {max} tokens ativos. Revogue um que não usa mais e tente novamente.",
+      "codeRequired": "Digite seu código de dois fatores para criar um token.",
+      "invalidCode": "O código de dois fatores está incorreto."
+    },
+    "codeLabel": "Código de dois fatores",
+    "codeHint": "Digite um código do seu aplicativo autenticador para criar um token."
+  },
+  "sessions": {
+    "title": "Dispositivos conectados",
+    "description": "Estes dispositivos estão conectados à sua conta. Desconecte os que você não reconhece ou não usa mais.",
+    "loading": "Carregando...",
+    "empty": "Nenhum dispositivo conectado.",
+    "thisDevice": "Este dispositivo",
+    "unknownDevice": "Dispositivo desconhecido",
+    "signedInAt": "Conectado em {date}",
+    "lastActive": "Ativo por último em {date}",
+    "signOut": "Sair",
+    "signOutLabel": "Desconectar {device}",
+    "signOutThisLabel": "Desconectar este dispositivo ({device})",
+    "signOutOthers": "Desconectar todos os outros dispositivos",
+    "signOutOthersConfirm": "{count, plural, one {Desconectar # outro dispositivo} other {Desconectar # outros dispositivos}}",
+    "revoked": "Dispositivo desconectado",
+    "revokedOthers": "Desconectado de todos os outros dispositivos",
+    "errors": {
+      "loadFailed": "Falha ao carregar os dispositivos.",
+      "revokeFailed": "Falha ao desconectar. Tente novamente."
+    },
+    "device": {
+      "desktop": "Aplicativo de desktop",
+      "desktopOn": "Aplicativo de desktop no {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} no {os}",
+      "unknownOn": "Dispositivo desconhecido no {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Alterar senha",
+    "description": "Digite sua senha atual e escolha uma nova.",
+    "currentLabel": "Senha atual",
+    "newLabel": "Nova senha",
+    "confirmLabel": "Confirmar nova senha",
+    "sessionsNote": "Ao alterar sua senha, seus outros dispositivos conectados serão desconectados.",
+    "submit": "Alterar senha",
+    "submitting": "Alterando...",
+    "cancel": "Cancelar",
+    "successToast": "Sua senha foi alterada",
+    "errors": {
+      "currentRequired": "Digite sua senha atual.",
+      "failed": "Não foi possível alterar sua senha. Tente novamente."
+    }
+  },
+  "twoFactor": {
+    "title": "Autenticação em dois fatores",
+    "description": "Peça um código do seu aplicativo autenticador, além da senha, ao entrar.",
+    "loading": "Carregando...",
+    "statusOn": "Ativada",
+    "statusOff": "Desativada",
+    "enabledSince": "Ativada em {date}",
+    "recoveryRemaining": "{count, plural, one {# código de recuperação restante} other {# códigos de recuperação restantes}}",
+    "unavailable": "A autenticação em dois fatores não está disponível neste servidor. Fale com o administrador.",
+    "requiredNotice": "Sua organização exige a autenticação em dois fatores.",
+    "close": "Fechar",
+    "setup": {
+      "start": "Configurar a autenticação em dois fatores",
+      "starting": "Preparando...",
+      "step1": "1. Adicione esta conta ao seu aplicativo autenticador. Abra o link no celular ou digite a chave de configuração manualmente.",
+      "uriLabel": "Link de configuração",
+      "openInApp": "Abrir no aplicativo autenticador",
+      "qrLabel": "Código QR para o aplicativo autenticador",
+      "qrHint": "Escaneie este código QR com o seu aplicativo autenticador, ou use o link ou a chave abaixo.",
+      "keyLabel": "Chave de configuração",
+      "copyKey": "Copiar chave de configuração",
+      "copyUri": "Copiar link de configuração",
+      "copied": "Copiado",
+      "step2": "2. Digite o código de 6 dígitos exibido pelo seu aplicativo.",
+      "codeLabel": "Código de autenticação",
+      "codePlaceholder": "123456",
+      "verify": "Ativar",
+      "verifying": "Verificando...",
+      "cancel": "Cancelar",
+      "passwordLabel": "3. Digite sua senha atual.",
+      "sessionsNote": "Ao ativar, seus outros dispositivos conectados serão desconectados."
+    },
+    "recovery": {
+      "title": "Salve seus códigos de recuperação",
+      "description": "Use um código de recuperação para entrar se perder o dispositivo. Cada código funciona apenas uma vez. Eles não serão mostrados novamente.",
+      "download": "Baixar",
+      "copy": "Copiar todos",
+      "fileHeader": "Códigos de recuperação. Cada código funciona apenas uma vez. Guarde-os em local seguro.",
+      "confirmSaved": "Salvei meus códigos de recuperação",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Senha",
+      "codeLabel": "Código de autenticação ou de recuperação",
+      "cancel": "Cancelar",
+      "passwordInvalid": "Digite uma senha válida.",
+      "codeInvalid": "Digite um código de autenticação ou de recuperação válido."
+    },
+    "regenerate": {
+      "start": "Gerar novos códigos de recuperação",
+      "title": "Gerar novos códigos de recuperação",
+      "description": "Seus códigos de recuperação antigos deixam de funcionar assim que você gerar novos. Digite sua senha e um código do seu aplicativo autenticador (ou um código de recuperação).",
+      "submit": "Gerar novos códigos",
+      "submitting": "Gerando...",
+      "lowNotice": "{count, plural, one {Resta apenas # código de recuperação} other {Restam apenas # códigos de recuperação}}. Gere novos antes que acabem.",
+      "toast": "Os novos códigos de recuperação estão prontos"
+    },
+    "disable": {
+      "title": "Desativar a autenticação em dois fatores",
+      "description": "Digite sua senha e um código do seu aplicativo autenticador (ou um código de recuperação).",
+      "start": "Desativar",
+      "submit": "Desativar a autenticação em dois fatores",
+      "submitting": "Desativando...",
+      "blockedByPolicy": "Sua organização exige a autenticação em dois fatores, por isso você não pode desativá-la. Se perdeu o dispositivo, peça a um administrador que a redefina."
+    },
+    "enabledToast": "A autenticação em dois fatores está ativada",
+    "disabledToast": "A autenticação em dois fatores está desativada",
+    "errors": {
+      "loadFailed": "Não foi possível carregar as configurações de dois fatores.",
+      "setupFailed": "Não foi possível iniciar a configuração. Tente novamente.",
+      "enableFailed": "Não foi possível ativar a autenticação em dois fatores.",
+      "regenerateFailed": "Não foi possível gerar novos códigos de recuperação.",
+      "disableFailed": "Não foi possível desativar a autenticação em dois fatores.",
+      "copyFailed": "Não foi possível copiar para a área de transferência."
+    }
+  },
+  "connectedApps": {
+    "title": "Aplicativos conectados",
+    "description": "Aplicativos que você autorizou a usar sua conta pelo fluxo de login OAuth. Eles agem com as suas permissões. Desconecte os que você não usa mais.",
+    "loading": "Carregando...",
+    "empty": "Nenhum aplicativo está conectado à sua conta.",
+    "redirectsTo": "Redireciona para {hosts}",
+    "connectedAt": "Conectado em {date}",
+    "lastUsed": "Último uso em {date}",
+    "neverUsed": "Nunca usado",
+    "disconnect": "Desconectar",
+    "disconnectLabel": "Desconectar {name}",
+    "disconnectConfirm": "Desconectar agora",
+    "cancel": "Cancelar",
+    "disconnected": "Aplicativo desconectado",
+    "close": "Fechar",
+    "errors": {
+      "loadFailed": "Falha ao carregar os aplicativos conectados.",
+      "disconnectFailed": "Falha ao desconectar o aplicativo."
+    },
+    "unnamedApp": "Aplicativo sem nome"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "動態",
+    "unreads": "未讀",
+    "later": "稍後處理",
+    "files": "檔案",
+    "admin": "管理",
+    "threads": "討論串"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "新訊息"
+  },
+  "userMenu": {
+    "profile": "個人資料",
+    "notificationsBlocked": "通知已封鎖",
+    "disableNotifications": "關閉通知",
+    "enableNotifications": "開啟通知",
+    "signOut": "登出",
+    "updateStatus": "更新您的狀態",
+    "pauseNotifications": "暫停通知",
+    "pausedUntil": "暫停至 {time}",
+    "pausedIndefinitely": "暫停至您清除狀態為止",
+    "resumeNotifications": "恢復通知",
+    "pause": {
+      "m30": "30 分鐘",
+      "h1": "1 小時",
+      "h2": "2 小時",
+      "tomorrow": "直到明天"
+    },
+    "pauseError": "無法變更通知暫停設定，請再試一次。",
+    "accessTokens": "個人存取權杖",
+    "sessions": "已登入的裝置",
+    "twoFactor": "雙重驗證",
+    "changePassword": "變更密碼",
+    "connectedApps": "已連接的應用程式"
+  },
+  "sections": {
+    "starred": "已加星號",
+    "channels": "頻道",
+    "addChannels": "新增頻道",
+    "directMessages": "私訊",
+    "addTeammates": "新增同事",
+    "starredEmpty": "將頻道或對話加上星號，即可固定在這裡。",
+    "collapse": "收合{section}",
+    "expand": "展開{section}"
+  },
+  "teammates": {
+    "title": "私訊",
+    "subtitle": "尋找或開始對話",
+    "searchPlaceholder": "依名稱搜尋...",
+    "noUsers": "找不到使用者",
+    "close": "關閉",
+    "pickSubtitle": "最多可選取 {max, plural, other {# 人}}",
+    "select": "選取 {name}",
+    "selectedCount": "已選取 {count}/{max}",
+    "start": "開始對話",
+    "startGroup": "開始群組對話"
+  },
+  "you": "（您）",
+  "notifications": {
+    "someone": "某人",
+    "sentAttachment": "傳送了附件",
+    "threadTitle": "{name}（討論串）"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# 位成員}}",
+    "createError": "無法開始群組對話，請再試一次。"
+  },
+  "statusDialog": {
+    "title": "設定狀態",
+    "emojiLabel": "選擇表情符號",
+    "textLabel": "您的狀態是什麼？",
+    "textPlaceholder": "您的狀態是什麼？",
+    "durationLabel": "清除時間",
+    "duration": {
+      "never": "不清除",
+      "m30": "30 分鐘",
+      "h1": "1 小時",
+      "h4": "4 小時",
+      "today": "今天",
+      "week": "本週"
+    },
+    "pauseCheckbox": "暫停通知，直到狀態被清除",
+    "save": "儲存",
+    "clear": "清除狀態",
+    "cancel": "取消",
+    "expiresAt": "將於 {time} 清除",
+    "saveError": "無法儲存您的狀態，請再試一次。"
+  },
+  "findConversation": "尋找對話"
+}

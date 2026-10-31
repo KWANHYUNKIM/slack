@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Langue",
+    "pending": "{name} (traduction bientôt disponible)",
+    "beta": "Bêta",
+    "betaOption": "{name} (bêta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notifications suspendues"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "notFound": "Profil introuvable",
+    "uploadPhoto": "Téléverser une photo",
+    "uploading": "Téléversement...",
+    "name": "Nom",
+    "bio": "Biographie",
+    "bioPlaceholder": "Présentez-vous en quelques mots",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "status": "Statut",
+    "joined": "Inscrit le",
+    "message": "Message",
+    "edit": "Modifier le profil",
+    "statusValue": {
+      "online": "en ligne",
+      "away": "absent",
+      "offline": "hors ligne"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement du profil.",
+      "saveFailed": "Échec de l'enregistrement du profil. Veuillez réessayer.",
+      "notImage": "Veuillez sélectionner un fichier image.",
+      "tooLarge": "L'image doit faire moins de 5 Mo.",
+      "uploadFailed": "Échec du téléversement de la photo. Veuillez réessayer."
+    },
+    "statusUntil": "Jusqu'à {time}"
+  },
+  "crop": {
+    "title": "Recadrer votre photo",
+    "close": "Fermer",
+    "zoom": "Zoom",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "failed": "Échec du recadrage"
+  },
+  "accessTokens": {
+    "title": "Jetons d'accès personnels",
+    "description": "Les jetons permettent à Claude et à d'autres clients MCP de lire votre espace de travail et, si vous l'autorisez, d'y écrire, avec vos autorisations. Traitez-les comme un mot de passe.",
+    "nameLabel": "Nom du jeton",
+    "namePlaceholder": "ex. Claude Code sur mon ordinateur portable",
+    "scopesLabel": "Autorisations",
+    "scope": {
+      "channelsRead": "Lister les canaux",
+      "channelsHistory": "Lire les messages, les fils et l'activité",
+      "usersRead": "Consulter les personnes",
+      "chatWrite": "Publier, modifier et supprimer vos messages",
+      "reactionsWrite": "Ajouter et retirer vos réactions",
+      "imRead": "Lister vos messages privés et conversations de groupe",
+      "imHistory": "Lire l'historique de vos messages privés",
+      "imWrite": "Envoyer, modifier et supprimer vos messages privés",
+      "searchRead": "Rechercher des messages, des fichiers, des personnes et des canaux (les résultats des messages privés nécessitent l'historique des messages privés)",
+      "filesRead": "Lister les fichiers et lire le contenu des fichiers texte"
+    },
+    "expiryLabel": "Expire",
+    "expiryDays": "{count, plural, one {# jour} other {# jours}}",
+    "expiryNever": "Sans expiration",
+    "neverWarning": "Les jetons sans date d'expiration restent valides jusqu'à ce que vous les révoquiez.",
+    "create": "Générer un jeton",
+    "createdNotice": "Copiez votre nouveau jeton maintenant. Vous ne pourrez plus le voir ensuite.",
+    "copy": "Copier le jeton",
+    "copyCommand": "Copier la commande",
+    "copied": "Copié dans le presse-papiers",
+    "connectHint": "Connectez-vous depuis Claude Code :",
+    "dismiss": "Terminé, masquer le jeton",
+    "loading": "Chargement...",
+    "empty": "Vous n'avez aucun jeton d'accès personnel.",
+    "expires": "Expire le {date}",
+    "expired": "Expiré",
+    "noExpiry": "Sans expiration",
+    "lastUsed": "Dernière utilisation : {date}",
+    "neverUsed": "Jamais utilisé",
+    "rename": "Renommer",
+    "renameLabel": "Renommer le jeton {name}",
+    "revoke": "Révoquer",
+    "revokeLabel": "Révoquer le jeton {name}",
+    "revokeConfirm": "Révoquer maintenant",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "errors": {
+      "loadFailed": "Échec du chargement des jetons.",
+      "createFailed": "Échec de la création du jeton. Veuillez réessayer.",
+      "renameFailed": "Échec du renommage du jeton.",
+      "revokeFailed": "Échec de la révocation du jeton.",
+      "copyFailed": "Copie impossible. Sélectionnez le texte et copiez-le manuellement.",
+      "limitReached": "Vous pouvez avoir jusqu'à {max} jetons actifs. Révoquez ceux que vous n'utilisez plus, puis réessayez.",
+      "codeRequired": "Saisissez votre code de double authentification pour créer un jeton.",
+      "invalidCode": "Le code de double authentification est incorrect."
+    },
+    "codeLabel": "Code de double authentification",
+    "codeHint": "Saisissez un code de votre application d'authentification pour créer un jeton."
+  },
+  "sessions": {
+    "title": "Appareils connectés",
+    "description": "Ces appareils sont connectés à votre compte. Déconnectez ceux que vous ne reconnaissez pas ou que vous n'utilisez plus.",
+    "loading": "Chargement...",
+    "empty": "Aucun appareil connecté.",
+    "thisDevice": "Cet appareil",
+    "unknownDevice": "Appareil inconnu",
+    "signedInAt": "Connecté le {date}",
+    "lastActive": "Dernière activité le {date}",
+    "signOut": "Se déconnecter",
+    "signOutLabel": "Déconnecter {device}",
+    "signOutThisLabel": "Déconnecter cet appareil ({device})",
+    "signOutOthers": "Déconnecter tous les autres appareils",
+    "signOutOthersConfirm": "{count, plural, one {Déconnecter # autre appareil} other {Déconnecter # autres appareils}}",
+    "revoked": "Appareil déconnecté",
+    "revokedOthers": "Tous les autres appareils ont été déconnectés",
+    "errors": {
+      "loadFailed": "Échec du chargement des appareils.",
+      "revokeFailed": "Échec de la déconnexion. Veuillez réessayer."
+    },
+    "device": {
+      "desktop": "Application de bureau",
+      "desktopOn": "Application de bureau sur {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} sur {os}",
+      "unknownOn": "Appareil inconnu sur {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Modifier le mot de passe",
+    "description": "Saisissez votre mot de passe actuel, puis choisissez-en un nouveau.",
+    "currentLabel": "Mot de passe actuel",
+    "newLabel": "Nouveau mot de passe",
+    "confirmLabel": "Confirmer le nouveau mot de passe",
+    "sessionsNote": "Lorsque vous modifiez votre mot de passe, vos autres appareils connectés sont déconnectés.",
+    "submit": "Modifier le mot de passe",
+    "submitting": "Modification...",
+    "cancel": "Annuler",
+    "successToast": "Votre mot de passe a été modifié",
+    "errors": {
+      "currentRequired": "Saisissez votre mot de passe actuel.",
+      "failed": "Impossible de modifier votre mot de passe. Réessayez."
+    }
+  },
+  "twoFactor": {
+    "title": "Double authentification",
+    "description": "Lors de la connexion, demandez un code de votre application d'authentification en plus de votre mot de passe.",
+    "loading": "Chargement...",
+    "statusOn": "Activée",
+    "statusOff": "Désactivée",
+    "enabledSince": "Activée le {date}",
+    "recoveryRemaining": "{count, plural, one {# code de récupération restant} other {# codes de récupération restants}}",
+    "unavailable": "La double authentification n'est pas disponible sur ce serveur. Demandez à votre administrateur.",
+    "requiredNotice": "Votre organisation exige la double authentification.",
+    "close": "Fermer",
+    "setup": {
+      "start": "Configurer la double authentification",
+      "starting": "Préparation...",
+      "step1": "1. Ajoutez ce compte à votre application d'authentification. Ouvrez le lien sur votre téléphone ou saisissez la clé de configuration manuellement.",
+      "uriLabel": "Lien de configuration",
+      "openInApp": "Ouvrir dans l'application d'authentification",
+      "qrLabel": "Code QR pour l'application d'authentification",
+      "qrHint": "Scannez ce code QR avec votre application d'authentification, ou utilisez le lien ou la clé ci-dessous.",
+      "keyLabel": "Clé de configuration",
+      "copyKey": "Copier la clé de configuration",
+      "copyUri": "Copier le lien de configuration",
+      "copied": "Copié",
+      "step2": "2. Saisissez le code à 6 chiffres affiché par votre application.",
+      "codeLabel": "Code d'authentification",
+      "codePlaceholder": "123456",
+      "verify": "Activer",
+      "verifying": "Vérification...",
+      "cancel": "Annuler",
+      "passwordLabel": "3. Saisissez votre mot de passe actuel.",
+      "sessionsNote": "Lorsque vous activez cette option, vos autres appareils connectés sont déconnectés."
+    },
+    "recovery": {
+      "title": "Enregistrez vos codes de récupération",
+      "description": "Utilisez un code de récupération pour vous connecter si vous perdez votre appareil. Chaque code ne fonctionne qu'une fois. Ils ne seront plus affichés.",
+      "download": "Télécharger",
+      "copy": "Tout copier",
+      "fileHeader": "Codes de récupération. Chaque code ne fonctionne qu'une fois. Conservez-les en lieu sûr.",
+      "confirmSaved": "J'ai enregistré mes codes de récupération",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Mot de passe",
+      "codeLabel": "Code d'authentification ou de récupération",
+      "cancel": "Annuler",
+      "passwordInvalid": "Saisissez un mot de passe valide.",
+      "codeInvalid": "Saisissez un code d'authentification ou de récupération valide."
+    },
+    "regenerate": {
+      "start": "Générer de nouveaux codes de récupération",
+      "title": "Générer de nouveaux codes de récupération",
+      "description": "Vos anciens codes de récupération cessent de fonctionner dès que vous en générez de nouveaux. Saisissez votre mot de passe et un code de votre application d'authentification (ou un code de récupération).",
+      "submit": "Générer de nouveaux codes",
+      "submitting": "Génération...",
+      "lowNotice": "{count, plural, one {Il ne reste plus que # code de récupération} other {Il ne reste plus que # codes de récupération}}. Générez-en de nouveaux avant d'en manquer.",
+      "toast": "Les nouveaux codes de récupération sont prêts"
+    },
+    "disable": {
+      "title": "Désactiver la double authentification",
+      "description": "Saisissez votre mot de passe et un code de votre application d'authentification (ou un code de récupération).",
+      "start": "Désactiver",
+      "submit": "Désactiver la double authentification",
+      "submitting": "Désactivation...",
+      "blockedByPolicy": "Votre organisation exige la double authentification, vous ne pouvez donc pas la désactiver. Si vous avez perdu votre appareil, demandez à un administrateur de la réinitialiser."
+    },
+    "enabledToast": "La double authentification est activée",
+    "disabledToast": "La double authentification est désactivée",
+    "errors": {
+      "loadFailed": "Impossible de charger les paramètres de double authentification.",
+      "setupFailed": "Impossible de démarrer la configuration. Réessayez.",
+      "enableFailed": "Impossible d'activer la double authentification.",
+      "regenerateFailed": "Impossible de générer de nouveaux codes de récupération.",
+      "disableFailed": "Impossible de désactiver la double authentification.",
+      "copyFailed": "Impossible de copier dans le presse-papiers."
+    }
+  },
+  "connectedApps": {
+    "title": "Applications connectées",
+    "description": "Applications que vous avez autorisées à utiliser votre compte via la connexion OAuth. Elles agissent avec vos autorisations. Déconnectez celles que vous n'utilisez plus.",
+    "loading": "Chargement...",
+    "empty": "Aucune application n'est connectée à votre compte.",
+    "redirectsTo": "Redirige vers {hosts}",
+    "connectedAt": "Connectée le {date}",
+    "lastUsed": "Dernière utilisation : {date}",
+    "neverUsed": "Jamais utilisée",
+    "disconnect": "Déconnecter",
+    "disconnectLabel": "Déconnecter {name}",
+    "disconnectConfirm": "Déconnecter maintenant",
+    "cancel": "Annuler",
+    "disconnected": "Application déconnectée",
+    "close": "Fermer",
+    "errors": {
+      "loadFailed": "Échec du chargement des applications connectées.",
+      "disconnectFailed": "Échec de la déconnexion de l'application."
+    },
+    "unnamedApp": "Application sans nom"
+  }
+}

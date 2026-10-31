@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "管理面板",
+    "openSidebar": "開啟側邊欄",
+    "tabs": {
+      "members": "成員",
+      "invites": "邀請",
+      "channels": "頻道",
+      "webhooks": "Webhook",
+      "audit": "稽核紀錄",
+      "retention": "資料保留",
+      "security": "安全性",
+      "dlp": "DLP",
+      "legalHolds": "法律保留"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "頻道",
+      "members": "成員",
+      "messages": "訊息",
+      "created": "建立時間"
+    },
+    "actions": {
+      "rename": "重新命名頻道",
+      "archive": "封存頻道",
+      "delete": "刪除頻道",
+      "unarchive": "取消封存頻道",
+      "deletePermanently": "永久刪除"
+    },
+    "emptyActive": "沒有使用中的頻道",
+    "archivedHeading": "已封存的頻道（{count}）",
+    "archivedOn": "封存於 {date}",
+    "messageCount": "{count, plural, other {# 則訊息}}",
+    "deleteDialog": {
+      "title": "刪除頻道",
+      "message": "確定要永久刪除 #{name} 嗎？所有訊息都會遺失，且此操作無法復原。"
+    },
+    "archiveDialog": {
+      "title": "封存頻道",
+      "confirm": "封存",
+      "message": "要封存 #{name} 嗎？它會從側邊欄隱藏，但訊息會保留。之後仍可取消封存。"
+    },
+    "unarchiveDialog": {
+      "title": "取消封存頻道",
+      "confirm": "取消封存",
+      "message": "要取消封存 #{name} 嗎？所有成員的側邊欄都會重新顯示此頻道。"
+    }
+  },
+  "members": {
+    "searchPlaceholder": "搜尋成員...",
+    "columns": {
+      "user": "使用者",
+      "email": "電子郵件",
+      "role": "角色",
+      "status": "狀態",
+      "actions": "操作"
+    },
+    "you": "（您）",
+    "roles": {
+      "owner": "擁有者",
+      "admin": "管理員",
+      "member": "成員",
+      "guest": "訪客"
+    },
+    "status": {
+      "active": "使用中",
+      "deactivated": "已停用"
+    },
+    "actions": {
+      "transfer": "轉移擁有權",
+      "reactivate": "重新啟用",
+      "deactivate": "停用",
+      "forceLogout": "強制登出",
+      "resetMfa": "重設雙重驗證"
+    },
+    "empty": "找不到使用者",
+    "dialogs": {
+      "transfer": {
+        "title": "轉移工作區擁有權",
+        "confirm": "轉移",
+        "message": "確定要將工作區擁有權轉移給 {name} 嗎？您將被降為管理員。"
+      },
+      "deactivate": {
+        "title": "停用使用者",
+        "confirm": "停用",
+        "message": "確定要停用 {name} 嗎？對方將立即登出，且無法登入。"
+      },
+      "reactivate": {
+        "title": "重新啟用使用者",
+        "confirm": "重新啟用",
+        "message": "確定要重新啟用 {name} 嗎？對方將可以再次登入。"
+      },
+      "forceLogout": {
+        "title": "強制登出",
+        "confirm": "登出",
+        "message": "要立即將 {name} 登出所有裝置嗎？其帳號會保持啟用，對方仍可再次登入。"
+      },
+      "resetMfa": {
+        "title": "重設雙重驗證",
+        "confirm": "重設",
+        "message": "要移除 {name} 的雙重驗證嗎？對方將被登出所有裝置，之後只需密碼即可登入。"
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "已開啟雙重驗證"
+    }
+  },
+  "invites": {
+    "createHeading": "建立邀請連結",
+    "fields": {
+      "role": "角色",
+      "maxUses": "最多使用次數",
+      "expiresIn": "有效期限"
+    },
+    "unlimited": "不限",
+    "expiry": {
+      "1d": "1 天",
+      "7d": "7 天",
+      "30d": "30 天",
+      "never": "永不過期"
+    },
+    "expired": "已過期",
+    "columns": {
+      "url": "邀請網址",
+      "uses": "使用次數",
+      "expires": "到期時間",
+      "createdBy": "建立者"
+    },
+    "copyUrl": "複製邀請網址",
+    "full": "（已用完）",
+    "delete": "刪除邀請",
+    "empty": "目前沒有邀請連結"
+  },
+  "webhooks": {
+    "createHeading": "建立 Webhook",
+    "fields": {
+      "name": "Webhook 名稱",
+      "channel": "頻道"
+    },
+    "namePlaceholder": "我的整合",
+    "selectChannel": "選擇頻道...",
+    "columns": {
+      "name": "名稱",
+      "url": "Webhook 網址",
+      "lastUsed": "上次使用"
+    },
+    "never": "從未",
+    "justNow": "剛剛",
+    "inactive": "未啟用",
+    "copyUrl": "複製 Webhook 網址",
+    "delete": "刪除 Webhook",
+    "empty": "尚未設定任何 Webhook"
+  },
+  "audit": {
+    "empty": "沒有符合的稽核紀錄。已記錄的操作會顯示在這裡。",
+    "loadMore": "載入更多",
+    "targets": {
+      "user": "使用者",
+      "channel": "頻道",
+      "invite": "邀請",
+      "webhook": "Webhook",
+      "message": "訊息",
+      "directMessage": "私訊",
+      "token": "存取權杖",
+      "auditLog": "稽核紀錄",
+      "mcpTool": "MCP 工具",
+      "workspace": "工作區",
+      "file": "檔案",
+      "dlpRule": "DLP 規則",
+      "legalHold": "法律保留"
+    },
+    "action": {
+      "authLogin": "已登入",
+      "authLoginFailed": "登入失敗",
+      "authLogout": "已登出",
+      "authPasswordChanged": "已變更密碼",
+      "userRoleChanged": "已變更角色",
+      "userDeactivated": "已停用",
+      "userForceLogout": "強制登出",
+      "userReactivated": "已重新啟用",
+      "ownershipTransferred": "已轉移擁有權",
+      "ownerBootstrapped": "已建立擁有者",
+      "channelCreated": "已建立頻道",
+      "channelEdited": "已編輯頻道",
+      "channelArchived": "已封存頻道",
+      "channelUnarchived": "已取消封存頻道",
+      "channelDeleted": "已刪除頻道",
+      "channelMemberAdded": "已新增成員",
+      "channelMemberRemoved": "已移除成員",
+      "inviteCreated": "已建立邀請",
+      "inviteDeleted": "已刪除邀請",
+      "webhookCreated": "已建立 Webhook",
+      "webhookDeleted": "已刪除 Webhook",
+      "tokenCreate": "已建立權杖",
+      "tokenRevoke": "已撤銷權杖",
+      "mcpToolCall": "MCP 工具呼叫",
+      "auditExported": "已匯出稽核紀錄",
+      "authLoginLocked": "帳號已鎖定",
+      "sessionRevoked": "已登出裝置",
+      "sessionRevokedAll": "已登出所有裝置",
+      "retentionPurged": "已刪除過期資料",
+      "retentionWorkspaceUpdated": "已變更保留政策",
+      "retentionChannelUpdated": "已變更頻道保留設定",
+      "retentionChannelCleared": "已重設頻道保留設定",
+      "mfaEnabled": "已開啟雙重驗證",
+      "mfaDisabled": "已關閉雙重驗證",
+      "mfaRecoveryUsed": "已使用還原碼",
+      "mfaRecoveryRegenerated": "已產生新的還原碼",
+      "mfaResetByAdmin": "管理員已重設雙重驗證",
+      "mfaPolicyChanged": "已變更雙重驗證要求",
+      "dlpBlocked": "DLP 已封鎖訊息",
+      "dlpWarned": "DLP 警告",
+      "dlpRuleCreated": "已建立 DLP 規則",
+      "dlpRuleUpdated": "已變更 DLP 規則",
+      "dlpRuleDeleted": "已刪除 DLP 規則",
+      "dlpRuleTimeout": "DLP 規則逾時",
+      "dlpRuleAutoDisabled": "DLP 規則已自動關閉",
+      "legalHoldCreated": "已建立法律保留",
+      "legalHoldUpdated": "已編輯法律保留",
+      "legalHoldCustodianAdded": "已將人員加入法律保留",
+      "legalHoldCustodianRemoved": "已將人員移出法律保留",
+      "legalHoldReleased": "已解除法律保留",
+      "ediscoverySearched": "電子取證搜尋",
+      "ediscoveryExportRequested": "已要求電子取證匯出",
+      "ediscoveryExported": "已完成電子取證匯出"
+    },
+    "filters": {
+      "allActions": "所有操作",
+      "actionsSelected": "{count, plural, other {# 項操作}}",
+      "actor": "執行者",
+      "allActors": "所有執行者",
+      "targetType": "對象類型",
+      "allTargets": "所有對象",
+      "from": "開始",
+      "to": "結束",
+      "apply": "套用",
+      "reset": "重設"
+    },
+    "export": {
+      "csv": "匯出 CSV",
+      "json": "匯出 JSON"
+    },
+    "unknownActor": "未知"
+  },
+  "errors": {
+    "archiveChannel": "無法封存頻道",
+    "createInvite": "無法建立邀請",
+    "createWebhook": "無法建立 Webhook",
+    "deactivateUser": "無法停用使用者",
+    "deleteChannel": "無法刪除頻道",
+    "deleteInvite": "無法刪除邀請",
+    "deleteWebhook": "無法刪除 Webhook",
+    "editChannel": "無法編輯頻道",
+    "exportAuditLog": "無法匯出稽核紀錄",
+    "fetchAuditLog": "無法取得稽核紀錄",
+    "fetchChannels": "無法取得頻道",
+    "fetchInvites": "無法取得邀請",
+    "fetchUsers": "無法取得使用者",
+    "fetchWebhooks": "無法取得 Webhook",
+    "forceLogout": "無法強制登出使用者",
+    "reactivateUser": "無法重新啟用使用者",
+    "removeChannelMember": "無法移除頻道成員",
+    "transferOwnership": "無法轉移擁有權",
+    "unarchiveChannel": "無法取消封存頻道",
+    "updateRole": "無法更新角色",
+    "resetMfa": "無法重設雙重驗證"
+  },
+  "retention": {
+    "title": "資料保留",
+    "description": "在設定的天數後自動刪除訊息。檔案會與其所屬的訊息一併刪除。清理每天執行一次。提醒會保留，並顯示為「已刪除的訊息」。",
+    "loadError": "無法載入保留政策",
+    "saveError": "無法儲存保留政策",
+    "resetError": "無法重設頻道政策",
+    "workspace": {
+      "heading": "工作區預設值",
+      "hint": "適用於未設定個別規則的所有頻道，以及私訊和群組私訊。"
+    },
+    "mode": {
+      "forever": "永久保留",
+      "days": "在指定天數後刪除",
+      "inherit": "使用工作區預設值"
+    },
+    "daysLabel": "天數",
+    "daysHint": "{min} 到 {max} 天",
+    "effective": {
+      "forever": "永久保留",
+      "days": "{count, plural, other {# 天}}"
+    },
+    "channels": {
+      "heading": "頻道",
+      "columns": {
+        "channel": "頻道",
+        "policy": "政策",
+        "effective": "套用"
+      },
+      "legalHold": "法律保留",
+      "reset": "重設為預設值",
+      "empty": "沒有頻道"
+    },
+    "save": "儲存",
+    "saved": "已儲存",
+    "confirm": {
+      "title": "要永久刪除舊訊息嗎？",
+      "message": "下次清理時，超過 {count, plural, other {# 天}}的訊息會連同其檔案一併永久刪除。此操作無法復原。",
+      "confirm": "套用政策"
+    }
+  },
+  "security": {
+    "title": "雙重驗證",
+    "requireMfa": "要求所有人使用雙重驗證",
+    "requireMfaHint": "未設定雙重驗證的成員，只能進入設定畫面，直到他們開啟為止。",
+    "unavailable": "因為未設定加密金鑰（TOTP_ENCRYPTION_KEY），此伺服器已關閉雙重驗證。目前不會強制執行此要求。",
+    "saved": "已儲存安全性設定",
+    "loading": "載入中...",
+    "errors": {
+      "loadFailed": "無法載入安全性設定。",
+      "saveFailed": "無法儲存安全性設定。"
+    },
+    "allowOAuthApps": "允許成員連接 OAuth 應用程式",
+    "allowOAuthAppsHint": "允許成員透過 OAuth 登入流程連接 Claude 等應用程式。關閉此功能會立即中斷所有應用程式的連接。"
+  },
+  "dlp": {
+    "title": "資料外洩防護",
+    "description": "偵測訊息中的敏感格式，例如信用卡號。封鎖規則會阻止訊息儲存；警告規則會儲存訊息，並將其記錄在稽核紀錄中。稽核紀錄從不寫入訊息內容。",
+    "loadError": "無法載入 DLP 規則",
+    "saveError": "無法儲存規則",
+    "toggleError": "無法變更規則",
+    "deleteError": "無法刪除規則",
+    "testError": "無法測試比對模式",
+    "builtinBadge": "內建",
+    "builtinPattern": "內建偵測器",
+    "builtin": {
+      "credit_card": "信用卡號",
+      "kr_rrn": "韓國居民登錄號碼",
+      "aws_access_key": "AWS 存取金鑰",
+      "private_key": "私密金鑰"
+    },
+    "action": {
+      "BLOCK": "封鎖",
+      "WARN": "警告"
+    },
+    "columns": {
+      "name": "規則",
+      "pattern": "比對模式",
+      "action": "動作",
+      "enabled": "狀態"
+    },
+    "on": "開啟",
+    "off": "關閉",
+    "toggleLabel": "開啟或關閉 {name}",
+    "edit": "編輯",
+    "editLabel": "編輯 {name}",
+    "delete": "刪除",
+    "deleteLabel": "刪除 {name}",
+    "form": {
+      "createHeading": "新增規則",
+      "editHeading": "編輯規則",
+      "name": "名稱",
+      "pattern": "比對模式（正規表示式）",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "動作",
+      "add": "新增規則",
+      "save": "儲存",
+      "cancel": "取消",
+      "hint": "最多 {max} 個字元。會拒絕巢狀重複（例如 (a+)+）、反向參照，以及重複次數過大的寫法。"
+    },
+    "patternProblem": {
+      "empty": "請輸入比對模式。",
+      "tooLong": "比對模式太長。",
+      "invalid": "這不是有效的正規表示式。",
+      "backreference": "不允許使用反向參照。",
+      "nestedQuantifier": "巢狀重複可能使檢查非常緩慢，因此不允許。",
+      "repeatTooLarge": "重複次數太大（最多 200）。"
+    },
+    "test": {
+      "heading": "測試比對模式",
+      "hint": "不會儲存任何內容。請在上方輸入比對模式，或選擇已儲存的規則，然後輸入範例文字。",
+      "source": "要測試的比對模式",
+      "sourceDraft": "上方表單中的比對模式",
+      "sample": "範例文字",
+      "run": "測試",
+      "matched": "符合。此文字會被攔截。",
+      "notMatched": "不符合。",
+      "timedOut": "檢查耗時過長，已停止。請簡化比對模式。"
+    },
+    "confirmDelete": {
+      "title": "要刪除此規則嗎？",
+      "message": "規則「{name}」將被移除，之後不再檢查。"
+    }
+  },
+  "legalHolds": {
+    "description": "即使資料保留政策會刪除，也會保留某人撰寫或收到的所有資料。管理員可以搜尋並匯出這些保留的資料，以供法律審查。",
+    "statusFilter": "顯示",
+    "status": {
+      "active": "有效",
+      "released": "已解除",
+      "all": "全部"
+    },
+    "empty": "沒有法律保留",
+    "selectHint": "請選擇法律保留，以管理其人員並搜尋其資料。",
+    "loadMore": "載入更多",
+    "custodianCount": "{count, plural, other {# 人}}",
+    "createdOn": "建立於 {date}",
+    "releasedOn": "解除於 {date}",
+    "createdBy": "由 {name} 於 {date} 建立",
+    "releasedBy": "由 {name} 於 {date} 解除",
+    "unknownUser": "未知的使用者",
+    "edit": "編輯",
+    "save": "儲存",
+    "cancel": "取消",
+    "fields": {
+      "name": "名稱",
+      "description": "說明（選填）"
+    },
+    "create": {
+      "open": "新增保留",
+      "submit": "建立保留",
+      "hint": "建立保留後即可新增人員。"
+    },
+    "custodians": {
+      "heading": "保留中的人員",
+      "pick": "選擇人員",
+      "add": "新增",
+      "remove": "將 {name} 移出此保留",
+      "empty": "目前沒有人員在此保留中。",
+      "deactivated": "已停用"
+    },
+    "release": {
+      "open": "解除保留",
+      "title": "要解除此法律保留嗎？",
+      "message": "「{name}」將停止保留資料。未在其他有效保留中的人員會回到一般保留政策，其舊訊息可能會在下次清理時被刪除。此保留與其人員名單會保留在紀錄中。此操作無法復原。",
+      "confirm": "解除"
+    },
+    "discovery": {
+      "heading": "搜尋與匯出",
+      "hint": "涵蓋保留人員在任何頻道（包括私人頻道）撰寫的訊息、其參與的私訊和群組私訊，以及檔案詳細資料。已刪除的訊息也會包含在內，並加上標示。",
+      "query": "關鍵字",
+      "from": "寄件者",
+      "to": "收件者",
+      "search": "搜尋",
+      "export": "匯出（JSONL）",
+      "exportHint": "匯出上一次搜尋的結果。每次搜尋和匯出都會記錄在稽核紀錄中。",
+      "searchFirst": "請先使用這些篩選條件進行搜尋。匯出會使用下方所顯示搜尋的篩選條件。",
+      "kinds": {
+        "channel": "頻道訊息",
+        "dm": "私訊",
+        "file": "檔案"
+      },
+      "empty": "沒有結果",
+      "deleted": "已刪除",
+      "edited": "已編輯",
+      "reply": "討論串回覆",
+      "groupDm": "群組私訊 #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "無法載入法律保留",
+      "create": "無法建立法律保留",
+      "update": "無法更新法律保留",
+      "custodians": "無法變更保留中的人員",
+      "release": "無法解除法律保留",
+      "search": "搜尋失敗",
+      "export": "匯出失敗"
+    }
+  }
+}

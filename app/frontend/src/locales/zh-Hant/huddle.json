@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "（已靜音）",
+    "mute": "靜音",
+    "unmute": "取消靜音",
+    "leave": "離開語音會議"
+  },
+  "button": {
+    "leaveFirstError": "請先離開目前的語音會議",
+    "cancelInviteFirstError": "請先取消目前的邀請",
+    "cancelInvite": "取消邀請",
+    "calling": "撥打中...",
+    "inHuddle": "會議中",
+    "leaveCurrentFirst": "請先離開目前的語音會議",
+    "start": "開始語音會議"
+  },
+  "incoming": {
+    "invite": "語音會議邀請",
+    "secondsLeft": "{count} 秒",
+    "decline": "拒絕",
+    "accept": "接受"
+  },
+  "system": {
+    "youStarted": "您開始了一場語音會議。",
+    "started": "開始了一場語音會議。",
+    "ended": "已結束",
+    "youSentInvite": "您傳送了語音會議邀請。",
+    "sentInvite": "傳送了語音會議邀請給您。",
+    "huddleStarted": "語音會議已開始",
+    "huddleEnded": "語音會議已結束（{duration}）",
+    "durationSeconds": "{seconds} 秒",
+    "durationMinutesSeconds": "{minutes} 分 {seconds} 秒"
+  },
+  "errors": {
+    "leaveFirst": "請先離開目前的語音會議",
+    "cancelInviteFirst": "請先取消目前的邀請",
+    "micDenied": "未允許存取麥克風",
+    "busy": "對方正在另一場語音會議中",
+    "declined": "邀請已被拒絕",
+    "expired": "邀請已過期",
+    "rateLimited": "請求過於頻繁，請稍後再試",
+    "invalidInvite": "邀請要求無效",
+    "cannotInviteSelf": "您不能邀請自己",
+    "userNotFound": "找不到使用者",
+    "invalidAccept": "接受要求無效",
+    "inviteNotFound": "找不到邀請或邀請已過期",
+    "peerOffline": "對方目前離線",
+    "generic": "無法開始語音會議，請再試一次"
+  }
+}

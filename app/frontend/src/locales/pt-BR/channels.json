@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Criar um canal",
+    "tabBrowse": "Navegar pelos canais",
+    "nameLabel": "Nome do canal",
+    "namePlaceholder": "ex.: orcamento-projeto",
+    "visibility": "Visibilidade",
+    "public": "Público",
+    "private": "Privado",
+    "publicHint": "Qualquer pessoa do espaço de trabalho pode encontrar e entrar neste canal.",
+    "privateHint": "Somente membros convidados podem encontrar e entrar neste canal.",
+    "cancel": "Cancelar",
+    "create": "Criar",
+    "noChannels": "Nenhum canal disponível para entrar",
+    "memberCount": "{count, plural, one {# membro} other {# membros}}",
+    "joined": "Já participa",
+    "join": "Entrar",
+    "close": "Fechar",
+    "errors": {
+      "createFailed": "Falha ao criar o canal"
+    }
+  },
+  "errors": {
+    "loadConversations": "Falha ao carregar as conversas.",
+    "loadChannels": "Falha ao carregar os canais."
+  },
+  "membersPanel": {
+    "title": "Membros",
+    "addPeople": "Adicionar pessoas",
+    "loadError": "Falha ao carregar os membros.",
+    "removeError": "Falha ao remover o membro",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Remover membro?",
+      "message": "Remover <bold>{name}</bold> deste canal?"
+    },
+    "removing": "Removendo...",
+    "searchByName": "Pesquisar por nome...",
+    "noUsers": "Nenhum usuário encontrado",
+    "roles": {
+      "owner": "Proprietário",
+      "moderator": "Moderador"
+    },
+    "removeMember": "Remover membro"
+  },
+  "dm": {
+    "messagePlaceholder": "Mensagem para {name}",
+    "you": "(você)",
+    "star": "Adicionar aos com estrela",
+    "unstar": "Remover dos com estrela",
+    "loadingMessages": "Carregando mensagens...",
+    "selfSpace": "Este é o seu espaço. Escreva rascunhos, liste suas tarefas ou guarde links e arquivos por perto.",
+    "conversationStart": "Início da sua conversa com {name}",
+    "sendToBegin": "Envie uma mensagem para começar.",
+    "edited": "(editada)",
+    "pinnedMessages": "Mensagens fixadas",
+    "noPins": "Nenhuma mensagem fixada ainda",
+    "files": "Arquivos",
+    "noFiles": "Nenhum arquivo compartilhado ainda",
+    "loadError": "Falha ao carregar as mensagens.",
+    "sendError": "Falha ao enviar a mensagem. Tente novamente."
+  },
+  "nameRules": {
+    "required": "Digite um nome de canal.",
+    "tooLong": "O nome do canal deve ter no máximo {max} caracteres.",
+    "invalidChars": "Os nomes de canal podem conter apenas letras, números, hífens e sublinhados, e devem começar com uma letra ou um número.",
+    "tooManyMarks": "Os nomes de canal não podem ter mais de 4 marcas diacríticas combinadas seguidas.",
+    "mixedScripts": "Os nomes de canal não podem misturar alfabetos parecidos (como latino com cirílico ou grego) nem algarismos de outro sistema numérico.",
+    "taken": "Já existe um canal com esse nome."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# membro} other {# membros}}",
+    "nameLabel": "Nome da conversa",
+    "namePlaceholder": "Adicione um nome",
+    "noName": "Sem nome (mostra os nomes dos membros)",
+    "rename": "Renomear conversa",
+    "addPeople": "Adicionar pessoas",
+    "add": "Adicionar",
+    "createWith": "Iniciar conversa em grupo",
+    "leave": "Sair da conversa",
+    "leaveConfirm": "Sair desta conversa? Você não verá mais as mensagens dela.",
+    "conversationStart": "Este é o início da sua conversa com {names}",
+    "addError": "Não foi possível adicionar pessoas. Tente novamente.",
+    "renameError": "Não foi possível renomear a conversa. Tente novamente.",
+    "leaveError": "Não foi possível sair da conversa. Tente novamente."
+  }
+}

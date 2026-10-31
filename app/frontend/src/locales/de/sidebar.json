@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktivität",
+    "unreads": "Ungelesen",
+    "later": "Später",
+    "files": "Dateien",
+    "admin": "Verwaltung",
+    "threads": "Threads"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Neue Nachricht"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Benachrichtigungen blockiert",
+    "disableNotifications": "Benachrichtigungen deaktivieren",
+    "enableNotifications": "Benachrichtigungen aktivieren",
+    "signOut": "Abmelden",
+    "updateStatus": "Status aktualisieren",
+    "pauseNotifications": "Benachrichtigungen pausieren",
+    "pausedUntil": "Pausiert bis {time}",
+    "pausedIndefinitely": "Pausiert, bis dein Status gelöscht wird",
+    "resumeNotifications": "Benachrichtigungen fortsetzen",
+    "pause": {
+      "m30": "30 Minuten",
+      "h1": "1 Stunde",
+      "h2": "2 Stunden",
+      "tomorrow": "Bis morgen"
+    },
+    "pauseError": "Die Benachrichtigungspause konnte nicht geändert werden. Bitte versuche es erneut.",
+    "accessTokens": "Persönliche Zugriffstoken",
+    "sessions": "Angemeldete Geräte",
+    "twoFactor": "Zwei-Faktor-Authentifizierung",
+    "changePassword": "Passwort ändern",
+    "connectedApps": "Verbundene Apps"
+  },
+  "sections": {
+    "starred": "Markiert",
+    "channels": "Kanäle",
+    "addChannels": "Kanäle hinzufügen",
+    "directMessages": "Direktnachrichten",
+    "addTeammates": "Teammitglieder hinzufügen",
+    "starredEmpty": "Markiere einen Kanal oder eine Unterhaltung, damit sie hier angezeigt wird.",
+    "collapse": "{section} einklappen",
+    "expand": "{section} ausklappen"
+  },
+  "teammates": {
+    "title": "Direktnachricht",
+    "subtitle": "Unterhaltung suchen oder starten",
+    "searchPlaceholder": "Nach Namen suchen ...",
+    "noUsers": "Keine Benutzer gefunden",
+    "close": "Schließen",
+    "pickSubtitle": "Wähle bis zu {max, plural, one {# Person} other {# Personen}} aus",
+    "select": "{name} auswählen",
+    "selectedCount": "{count} von {max} ausgewählt",
+    "start": "Unterhaltung starten",
+    "startGroup": "Gruppenunterhaltung starten"
+  },
+  "you": "(du)",
+  "notifications": {
+    "someone": "Jemand",
+    "sentAttachment": "hat einen Anhang gesendet",
+    "threadTitle": "{name} (Thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+    "createError": "Die Gruppenunterhaltung konnte nicht gestartet werden. Bitte versuche es erneut."
+  },
+  "statusDialog": {
+    "title": "Status festlegen",
+    "emojiLabel": "Emoji auswählen",
+    "textLabel": "Wie ist dein Status?",
+    "textPlaceholder": "Wie ist dein Status?",
+    "durationLabel": "Löschen nach",
+    "duration": {
+      "never": "Nicht löschen",
+      "m30": "30 Minuten",
+      "h1": "1 Stunde",
+      "h4": "4 Stunden",
+      "today": "Heute",
+      "week": "Diese Woche"
+    },
+    "pauseCheckbox": "Benachrichtigungen pausieren, bis der Status gelöscht wird",
+    "save": "Speichern",
+    "clear": "Status löschen",
+    "cancel": "Abbrechen",
+    "expiresAt": "Wird um {time} gelöscht",
+    "saveError": "Dein Status konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "findConversation": "Unterhaltung finden"
+}

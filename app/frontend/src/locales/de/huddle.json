@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(stummgeschaltet)",
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "leave": "Huddle verlassen"
+  },
+  "button": {
+    "leaveFirstError": "Verlasse zuerst dein aktuelles Huddle",
+    "cancelInviteFirstError": "Brich zuerst deine aktuelle Einladung ab",
+    "cancelInvite": "Einladung abbrechen",
+    "calling": "Wird angerufen ...",
+    "inHuddle": "Im Huddle",
+    "leaveCurrentFirst": "Verlasse zuerst das aktuelle Huddle",
+    "start": "Huddle starten"
+  },
+  "incoming": {
+    "invite": "Huddle-Einladung",
+    "secondsLeft": "{count} s",
+    "decline": "Ablehnen",
+    "accept": "Annehmen"
+  },
+  "system": {
+    "youStarted": "Du hast ein Huddle gestartet.",
+    "started": "Hat ein Huddle gestartet.",
+    "ended": "Beendet",
+    "youSentInvite": "Du hast eine Huddle-Einladung gesendet.",
+    "sentInvite": "Hat dir eine Huddle-Einladung gesendet.",
+    "huddleStarted": "Huddle gestartet",
+    "huddleEnded": "Huddle beendet ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Verlasse zuerst dein aktuelles Huddle",
+    "cancelInviteFirst": "Brich zuerst deine aktuelle Einladung ab",
+    "micDenied": "Zugriff auf das Mikrofon verweigert",
+    "busy": "Die Person ist in einem anderen Huddle",
+    "declined": "Die Einladung wurde abgelehnt",
+    "expired": "Die Einladung ist abgelaufen",
+    "rateLimited": "Zu viele Anfragen. Bitte warte einen Moment",
+    "invalidInvite": "Die Einladungsanfrage war ungültig",
+    "cannotInviteSelf": "Du kannst dich nicht selbst einladen",
+    "userNotFound": "Benutzer nicht gefunden",
+    "invalidAccept": "Die Annahmeanfrage war ungültig",
+    "inviteNotFound": "Einladung nicht gefunden oder abgelaufen",
+    "peerOffline": "Die Person ist offline",
+    "generic": "Das Huddle konnte nicht gestartet werden. Bitte versuche es erneut"
+  }
+}

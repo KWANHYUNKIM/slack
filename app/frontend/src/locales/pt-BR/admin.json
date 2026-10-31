@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Painel de administração",
+    "openSidebar": "Abrir barra lateral",
+    "tabs": {
+      "members": "Membros",
+      "invites": "Convites",
+      "channels": "Canais",
+      "webhooks": "Webhooks",
+      "audit": "Registro de auditoria",
+      "retention": "Retenção de dados",
+      "security": "Segurança",
+      "dlp": "DLP",
+      "legalHolds": "Retenções legais"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Canal",
+      "members": "Membros",
+      "messages": "Mensagens",
+      "created": "Criado em"
+    },
+    "actions": {
+      "rename": "Renomear canal",
+      "archive": "Arquivar canal",
+      "delete": "Excluir canal",
+      "unarchive": "Desarquivar canal",
+      "deletePermanently": "Excluir permanentemente"
+    },
+    "emptyActive": "Nenhum canal ativo",
+    "archivedHeading": "Canais arquivados ({count})",
+    "archivedOn": "arquivado em {date}",
+    "messageCount": "{count, plural, one {# mensagem} other {# mensagens}}",
+    "deleteDialog": {
+      "title": "Excluir canal",
+      "message": "Tem certeza de que deseja excluir permanentemente o #{name}? Todas as mensagens serão perdidas. Esta ação não pode ser desfeita."
+    },
+    "archiveDialog": {
+      "title": "Arquivar canal",
+      "confirm": "Arquivar",
+      "message": "Arquivar o #{name}? Ele ficará oculto na barra lateral, mas as mensagens serão preservadas. Você poderá desarquivá-lo depois."
+    },
+    "unarchiveDialog": {
+      "title": "Desarquivar canal",
+      "confirm": "Desarquivar",
+      "message": "Desarquivar o #{name}? Ele voltará a aparecer na barra lateral de todos os membros."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Pesquisar membros...",
+    "columns": {
+      "user": "Usuário",
+      "email": "E-mail",
+      "role": "Função",
+      "status": "Status",
+      "actions": "Ações"
+    },
+    "you": "(você)",
+    "roles": {
+      "owner": "Proprietário",
+      "admin": "Administrador",
+      "member": "Membro",
+      "guest": "Convidado"
+    },
+    "status": {
+      "active": "Ativo",
+      "deactivated": "Desativado"
+    },
+    "actions": {
+      "transfer": "Transferir propriedade",
+      "reactivate": "Reativar",
+      "deactivate": "Desativar",
+      "forceLogout": "Forçar saída",
+      "resetMfa": "Redefinir 2FA"
+    },
+    "empty": "Nenhum usuário encontrado",
+    "dialogs": {
+      "transfer": {
+        "title": "Transferir a propriedade do espaço de trabalho",
+        "confirm": "Transferir",
+        "message": "Tem certeza de que deseja transferir a propriedade do espaço de trabalho para {name}? Você será rebaixado para Administrador."
+      },
+      "deactivate": {
+        "title": "Desativar usuário",
+        "confirm": "Desativar",
+        "message": "Tem certeza de que deseja desativar {name}? A pessoa será desconectada imediatamente e não poderá entrar."
+      },
+      "reactivate": {
+        "title": "Reativar usuário",
+        "confirm": "Reativar",
+        "message": "Tem certeza de que deseja reativar {name}? A pessoa poderá entrar novamente."
+      },
+      "forceLogout": {
+        "title": "Forçar saída",
+        "confirm": "Sair",
+        "message": "Desconectar {name} de todos os dispositivos agora? A conta continuará ativa e a pessoa poderá entrar novamente."
+      },
+      "resetMfa": {
+        "title": "Redefinir a autenticação em dois fatores",
+        "confirm": "Redefinir",
+        "message": "Remover a autenticação em dois fatores de {name}? A pessoa será desconectada de todos os dispositivos e poderá entrar apenas com a senha."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "A autenticação em dois fatores está ativada"
+    }
+  },
+  "invites": {
+    "createHeading": "Criar link de convite",
+    "fields": {
+      "role": "Função",
+      "maxUses": "Máximo de usos",
+      "expiresIn": "Expira em"
+    },
+    "unlimited": "Ilimitado",
+    "expiry": {
+      "1d": "1 dia",
+      "7d": "7 dias",
+      "30d": "30 dias",
+      "never": "Nunca"
+    },
+    "expired": "Expirado",
+    "columns": {
+      "url": "URL do convite",
+      "uses": "Usos",
+      "expires": "Expira em",
+      "createdBy": "Criado por"
+    },
+    "copyUrl": "Copiar URL do convite",
+    "full": "(esgotado)",
+    "delete": "Excluir convite",
+    "empty": "Nenhum link de convite ainda"
+  },
+  "webhooks": {
+    "createHeading": "Criar webhook",
+    "fields": {
+      "name": "Nome do webhook",
+      "channel": "Canal"
+    },
+    "namePlaceholder": "Minha integração",
+    "selectChannel": "Selecionar canal...",
+    "columns": {
+      "name": "Nome",
+      "url": "URL do webhook",
+      "lastUsed": "Último uso"
+    },
+    "never": "Nunca",
+    "justNow": "Agora mesmo",
+    "inactive": "Inativo",
+    "copyUrl": "Copiar URL do webhook",
+    "delete": "Excluir webhook",
+    "empty": "Nenhum webhook configurado ainda"
+  },
+  "audit": {
+    "empty": "Nenhum registro de auditoria encontrado. As ações registradas aparecem aqui.",
+    "loadMore": "Carregar mais",
+    "targets": {
+      "user": "Usuário",
+      "channel": "Canal",
+      "invite": "Convite",
+      "webhook": "Webhook",
+      "message": "Mensagem",
+      "directMessage": "Mensagem direta",
+      "token": "Token de acesso",
+      "auditLog": "Registro de auditoria",
+      "mcpTool": "Ferramenta MCP",
+      "workspace": "Espaço de trabalho",
+      "file": "Arquivo",
+      "dlpRule": "Regra DLP",
+      "legalHold": "Retenção legal"
+    },
+    "action": {
+      "authLogin": "Entrou",
+      "authLoginFailed": "Falha no login",
+      "authLogout": "Saiu",
+      "authPasswordChanged": "Senha alterada",
+      "userRoleChanged": "Função alterada",
+      "userDeactivated": "Desativado",
+      "userForceLogout": "Saída forçada",
+      "userReactivated": "Reativado",
+      "ownershipTransferred": "Propriedade transferida",
+      "ownerBootstrapped": "Proprietário criado",
+      "channelCreated": "Canal criado",
+      "channelEdited": "Canal editado",
+      "channelArchived": "Canal arquivado",
+      "channelUnarchived": "Canal desarquivado",
+      "channelDeleted": "Canal excluído",
+      "channelMemberAdded": "Membro adicionado",
+      "channelMemberRemoved": "Membro removido",
+      "inviteCreated": "Convite criado",
+      "inviteDeleted": "Convite excluído",
+      "webhookCreated": "Webhook criado",
+      "webhookDeleted": "Webhook excluído",
+      "tokenCreate": "Token criado",
+      "tokenRevoke": "Token revogado",
+      "mcpToolCall": "Chamada de ferramenta MCP",
+      "auditExported": "Registro de auditoria exportado",
+      "authLoginLocked": "Conta bloqueada",
+      "sessionRevoked": "Dispositivo desconectado",
+      "sessionRevokedAll": "Todos os dispositivos desconectados",
+      "retentionPurged": "Dados expirados excluídos",
+      "retentionWorkspaceUpdated": "Política de retenção alterada",
+      "retentionChannelUpdated": "Retenção do canal alterada",
+      "retentionChannelCleared": "Retenção do canal redefinida",
+      "mfaEnabled": "Autenticação em dois fatores ativada",
+      "mfaDisabled": "Autenticação em dois fatores desativada",
+      "mfaRecoveryUsed": "Código de recuperação usado",
+      "mfaRecoveryRegenerated": "Códigos de recuperação gerados novamente",
+      "mfaResetByAdmin": "Autenticação em dois fatores redefinida pelo administrador",
+      "mfaPolicyChanged": "Exigência de dois fatores alterada",
+      "dlpBlocked": "Mensagem bloqueada pela DLP",
+      "dlpWarned": "Aviso da DLP",
+      "dlpRuleCreated": "Regra DLP criada",
+      "dlpRuleUpdated": "Regra DLP alterada",
+      "dlpRuleDeleted": "Regra DLP excluída",
+      "dlpRuleTimeout": "Regra DLP expirou por tempo limite",
+      "dlpRuleAutoDisabled": "Regra DLP desativada automaticamente",
+      "legalHoldCreated": "Retenção legal criada",
+      "legalHoldUpdated": "Retenção legal editada",
+      "legalHoldCustodianAdded": "Pessoa adicionada à retenção legal",
+      "legalHoldCustodianRemoved": "Pessoa removida da retenção legal",
+      "legalHoldReleased": "Retenção legal liberada",
+      "ediscoverySearched": "Pesquisa de eDiscovery",
+      "ediscoveryExportRequested": "Exportação de eDiscovery solicitada",
+      "ediscoveryExported": "Exportação de eDiscovery concluída"
+    },
+    "filters": {
+      "allActions": "Todas as ações",
+      "actionsSelected": "{count, plural, one {# ação} other {# ações}}",
+      "actor": "Autor",
+      "allActors": "Todos os autores",
+      "targetType": "Tipo de alvo",
+      "allTargets": "Todos os alvos",
+      "from": "De",
+      "to": "Até",
+      "apply": "Aplicar",
+      "reset": "Redefinir"
+    },
+    "export": {
+      "csv": "Exportar CSV",
+      "json": "Exportar JSON"
+    },
+    "unknownActor": "Desconhecido"
+  },
+  "errors": {
+    "archiveChannel": "Falha ao arquivar o canal",
+    "createInvite": "Falha ao criar o convite",
+    "createWebhook": "Falha ao criar o webhook",
+    "deactivateUser": "Falha ao desativar o usuário",
+    "deleteChannel": "Falha ao excluir o canal",
+    "deleteInvite": "Falha ao excluir o convite",
+    "deleteWebhook": "Falha ao excluir o webhook",
+    "editChannel": "Falha ao editar o canal",
+    "exportAuditLog": "Falha ao exportar o registro de auditoria",
+    "fetchAuditLog": "Falha ao buscar o registro de auditoria",
+    "fetchChannels": "Falha ao buscar os canais",
+    "fetchInvites": "Falha ao buscar os convites",
+    "fetchUsers": "Falha ao buscar os usuários",
+    "fetchWebhooks": "Falha ao buscar os webhooks",
+    "forceLogout": "Falha ao desconectar o usuário",
+    "reactivateUser": "Falha ao reativar o usuário",
+    "removeChannelMember": "Falha ao remover o membro do canal",
+    "transferOwnership": "Falha ao transferir a propriedade",
+    "unarchiveChannel": "Falha ao desarquivar o canal",
+    "updateRole": "Falha ao atualizar a função",
+    "resetMfa": "Falha ao redefinir a autenticação em dois fatores"
+  },
+  "retention": {
+    "title": "Retenção de dados",
+    "description": "Exclua mensagens automaticamente após um número definido de dias. Os arquivos são excluídos junto com as mensagens. A limpeza roda uma vez por dia. Os lembretes são mantidos e mostram \"mensagem excluída\".",
+    "loadError": "Falha ao carregar a política de retenção",
+    "saveError": "Falha ao salvar a política de retenção",
+    "resetError": "Falha ao redefinir a política do canal",
+    "workspace": {
+      "heading": "Padrão do espaço de trabalho",
+      "hint": "Vale para todos os canais sem configuração própria, além de mensagens diretas e conversas em grupo."
+    },
+    "mode": {
+      "forever": "Manter para sempre",
+      "days": "Excluir após um número de dias",
+      "inherit": "Usar o padrão do espaço de trabalho"
+    },
+    "daysLabel": "Dias",
+    "daysHint": "De {min} a {max} dias",
+    "effective": {
+      "forever": "Mantido para sempre",
+      "days": "{count, plural, one {# dia} other {# dias}}"
+    },
+    "channels": {
+      "heading": "Canais",
+      "columns": {
+        "channel": "Canal",
+        "policy": "Política",
+        "effective": "Aplica-se"
+      },
+      "legalHold": "Retenção legal",
+      "reset": "Redefinir para o padrão",
+      "empty": "Nenhum canal"
+    },
+    "save": "Salvar",
+    "saved": "Salvo",
+    "confirm": {
+      "title": "Excluir permanentemente as mensagens antigas?",
+      "message": "Na próxima limpeza, as mensagens com mais de {count, plural, one {# dia} other {# dias}} serão excluídas permanentemente junto com os arquivos. Esta ação não pode ser desfeita.",
+      "confirm": "Aplicar política"
+    }
+  },
+  "security": {
+    "title": "Autenticação em dois fatores",
+    "requireMfa": "Exigir autenticação em dois fatores de todos",
+    "requireMfaHint": "Membros sem autenticação em dois fatores só podem acessar a tela de configuração até ativá-la.",
+    "unavailable": "A autenticação em dois fatores está desativada neste servidor porque nenhuma chave de criptografia foi definida (TOTP_ENCRYPTION_KEY). A exigência não é aplicada.",
+    "saved": "Configurações de segurança salvas",
+    "loading": "Carregando...",
+    "errors": {
+      "loadFailed": "Não foi possível carregar as configurações de segurança.",
+      "saveFailed": "Não foi possível salvar as configurações de segurança."
+    },
+    "allowOAuthApps": "Permitir que membros conectem aplicativos OAuth",
+    "allowOAuthAppsHint": "Permite que os membros conectem aplicativos como o Claude pelo fluxo de login OAuth. Desativar isto desconecta todos os aplicativos imediatamente."
+  },
+  "dlp": {
+    "title": "Prevenção contra perda de dados",
+    "description": "Detecta padrões sensíveis nas mensagens, como números de cartão. Uma regra de bloqueio impede que a mensagem seja salva. Uma regra de aviso salva a mensagem e a registra no log de auditoria. O texto das mensagens nunca é gravado no log.",
+    "loadError": "Falha ao carregar as regras de DLP",
+    "saveError": "Falha ao salvar a regra",
+    "toggleError": "Falha ao alterar a regra",
+    "deleteError": "Falha ao excluir a regra",
+    "testError": "Falha ao testar o padrão",
+    "builtinBadge": "Integrada",
+    "builtinPattern": "Detector integrado",
+    "builtin": {
+      "credit_card": "Número de cartão de crédito",
+      "kr_rrn": "Número de registro de residente coreano",
+      "aws_access_key": "Chave de acesso da AWS",
+      "private_key": "Chave privada"
+    },
+    "action": {
+      "BLOCK": "Bloquear",
+      "WARN": "Avisar"
+    },
+    "columns": {
+      "name": "Regra",
+      "pattern": "Padrão",
+      "action": "Ação",
+      "enabled": "Status"
+    },
+    "on": "Ativada",
+    "off": "Desativada",
+    "toggleLabel": "Ativar ou desativar {name}",
+    "edit": "Editar",
+    "editLabel": "Editar {name}",
+    "delete": "Excluir",
+    "deleteLabel": "Excluir {name}",
+    "form": {
+      "createHeading": "Adicionar regra",
+      "editHeading": "Editar regra",
+      "name": "Nome",
+      "pattern": "Padrão (expressão regular)",
+      "patternPlaceholder": "PROJETO-\\d{4}",
+      "action": "Ação",
+      "add": "Adicionar regra",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "hint": "Até {max} caracteres. Repetições aninhadas como (a+)+, referências retroativas e contagens de repetição muito grandes são rejeitadas."
+    },
+    "patternProblem": {
+      "empty": "Digite um padrão.",
+      "tooLong": "O padrão é muito longo.",
+      "invalid": "Esta não é uma expressão regular válida.",
+      "backreference": "Referências retroativas não são permitidas.",
+      "nestedQuantifier": "Repetições aninhadas podem tornar a verificação muito lenta e não são permitidas.",
+      "repeatTooLarge": "A contagem de repetição é muito grande (no máximo 200)."
+    },
+    "test": {
+      "heading": "Testar um padrão",
+      "hint": "Nada é salvo. Digite um padrão acima ou escolha uma regra salva e depois digite um texto de exemplo.",
+      "source": "Padrão a testar",
+      "sourceDraft": "Padrão do formulário acima",
+      "sample": "Texto de exemplo",
+      "run": "Testar",
+      "matched": "Corresponde. Este texto seria bloqueado.",
+      "notMatched": "Nenhuma correspondência.",
+      "timedOut": "A verificação demorou demais e foi interrompida. Simplifique o padrão."
+    },
+    "confirmDelete": {
+      "title": "Excluir esta regra?",
+      "message": "A regra \"{name}\" será removida e não será mais verificada."
+    }
+  },
+  "legalHolds": {
+    "description": "Preserve tudo o que uma pessoa escreveu ou recebeu, mesmo quando a retenção de dados os excluiria. Administradores podem pesquisar e exportar os dados preservados para análise jurídica.",
+    "statusFilter": "Mostrar",
+    "status": {
+      "active": "Ativas",
+      "released": "Liberadas",
+      "all": "Todas"
+    },
+    "empty": "Nenhuma retenção legal",
+    "selectHint": "Selecione uma retenção legal para gerenciar as pessoas dela e pesquisar seus dados.",
+    "loadMore": "Carregar mais",
+    "custodianCount": "{count, plural, one {# pessoa} other {# pessoas}}",
+    "createdOn": "Criada em {date}",
+    "releasedOn": "Liberada em {date}",
+    "createdBy": "Criada por {name} em {date}",
+    "releasedBy": "Liberada por {name} em {date}",
+    "unknownUser": "Usuário desconhecido",
+    "edit": "Editar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "fields": {
+      "name": "Nome",
+      "description": "Descrição (opcional)"
+    },
+    "create": {
+      "open": "Nova retenção",
+      "submit": "Criar retenção",
+      "hint": "Você pode adicionar pessoas depois de criar a retenção."
+    },
+    "custodians": {
+      "heading": "Pessoas na retenção",
+      "pick": "Escolha uma pessoa",
+      "add": "Adicionar",
+      "remove": "Remover {name} desta retenção",
+      "empty": "Ninguém está nesta retenção ainda.",
+      "deactivated": "Desativado"
+    },
+    "release": {
+      "open": "Liberar retenção",
+      "title": "Liberar esta retenção legal?",
+      "message": "\"{name}\" deixará de preservar dados. As pessoas que não estão em outra retenção ativa voltam à política de retenção normal, e as mensagens antigas delas podem ser excluídas na próxima limpeza. A retenção e a lista de pessoas continuam registradas. Esta ação não pode ser desfeita.",
+      "confirm": "Liberar"
+    },
+    "discovery": {
+      "heading": "Pesquisa e exportação",
+      "hint": "Abrange as mensagens que as pessoas da retenção escreveram em qualquer canal (inclusive privados), as mensagens diretas e em grupo de que participaram e os detalhes dos arquivos. Mensagens excluídas são incluídas e marcadas.",
+      "query": "Palavra-chave",
+      "from": "De",
+      "to": "Para",
+      "search": "Pesquisar",
+      "export": "Exportar (JSONL)",
+      "exportHint": "Exporta os resultados da última pesquisa. Cada pesquisa e exportação é registrada no log de auditoria.",
+      "searchFirst": "Pesquise primeiro com estes filtros. A exportação usa os filtros da pesquisa exibida abaixo.",
+      "kinds": {
+        "channel": "Mensagens de canal",
+        "dm": "Mensagens diretas",
+        "file": "Arquivos"
+      },
+      "empty": "Nenhum resultado",
+      "deleted": "Excluída",
+      "edited": "Editada",
+      "reply": "Resposta em thread",
+      "groupDm": "Conversa em grupo #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Falha ao carregar as retenções legais",
+      "create": "Falha ao criar a retenção legal",
+      "update": "Falha ao atualizar a retenção legal",
+      "custodians": "Falha ao alterar as pessoas da retenção",
+      "release": "Falha ao liberar a retenção legal",
+      "search": "A pesquisa falhou",
+      "export": "A exportação falhou"
+    }
+  }
+}

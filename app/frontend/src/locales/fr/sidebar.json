@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Activité",
+    "unreads": "Non lus",
+    "later": "Plus tard",
+    "files": "Fichiers",
+    "admin": "Administration",
+    "threads": "Fils"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nouveau message"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Notifications bloquées",
+    "disableNotifications": "Désactiver les notifications",
+    "enableNotifications": "Activer les notifications",
+    "signOut": "Se déconnecter",
+    "updateStatus": "Mettre à jour votre statut",
+    "pauseNotifications": "Suspendre les notifications",
+    "pausedUntil": "Suspendues jusqu'à {time}",
+    "pausedIndefinitely": "Suspendues jusqu'à la suppression de votre statut",
+    "resumeNotifications": "Reprendre les notifications",
+    "pause": {
+      "m30": "30 minutes",
+      "h1": "1 heure",
+      "h2": "2 heures",
+      "tomorrow": "Jusqu'à demain"
+    },
+    "pauseError": "Impossible de modifier la suspension des notifications. Veuillez réessayer.",
+    "accessTokens": "Jetons d'accès personnels",
+    "sessions": "Appareils connectés",
+    "twoFactor": "Double authentification",
+    "changePassword": "Modifier le mot de passe",
+    "connectedApps": "Applications connectées"
+  },
+  "sections": {
+    "starred": "Favoris",
+    "channels": "Canaux",
+    "addChannels": "Ajouter des canaux",
+    "directMessages": "Messages privés",
+    "addTeammates": "Ajouter des collègues",
+    "starredEmpty": "Ajoutez un canal ou une conversation aux favoris pour les retrouver ici.",
+    "collapse": "Réduire {section}",
+    "expand": "Développer {section}"
+  },
+  "teammates": {
+    "title": "Message privé",
+    "subtitle": "Rechercher ou démarrer une conversation",
+    "searchPlaceholder": "Rechercher par nom...",
+    "noUsers": "Aucun utilisateur trouvé",
+    "close": "Fermer",
+    "pickSubtitle": "Sélectionnez jusqu'à {max, plural, one {# personne} other {# personnes}}",
+    "select": "Sélectionner {name}",
+    "selectedCount": "{count} sur {max} sélectionné(s)",
+    "start": "Démarrer la conversation",
+    "startGroup": "Démarrer une conversation de groupe"
+  },
+  "you": "(vous)",
+  "notifications": {
+    "someone": "Quelqu'un",
+    "sentAttachment": "a envoyé une pièce jointe",
+    "threadTitle": "{name} (fil)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# membre} other {# membres}}",
+    "createError": "Impossible de démarrer la conversation de groupe. Veuillez réessayer."
+  },
+  "statusDialog": {
+    "title": "Définir un statut",
+    "emojiLabel": "Choisir un emoji",
+    "textLabel": "Quel est votre statut ?",
+    "textPlaceholder": "Quel est votre statut ?",
+    "durationLabel": "Effacer après",
+    "duration": {
+      "never": "Ne pas effacer",
+      "m30": "30 minutes",
+      "h1": "1 heure",
+      "h4": "4 heures",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine"
+    },
+    "pauseCheckbox": "Suspendre les notifications jusqu'à la suppression du statut",
+    "save": "Enregistrer",
+    "clear": "Effacer le statut",
+    "cancel": "Annuler",
+    "expiresAt": "Sera effacé à {time}",
+    "saveError": "Impossible d'enregistrer votre statut. Veuillez réessayer."
+  },
+  "findConversation": "Rechercher une conversation"
+}

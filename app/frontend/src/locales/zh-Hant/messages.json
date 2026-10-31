@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "通知所有目前在線上的人",
+    "channelLabel": "@channel",
+    "channelHint": "通知此頻道中的所有人"
+  },
+  "deleteDialog": {
+    "title": "刪除訊息",
+    "body": "確定要刪除此訊息嗎？此操作無法復原。"
+  },
+  "editorToolbar": {
+    "attachFile": "附加檔案",
+    "emoji": "表情符號",
+    "mention": "提及某人",
+    "stopRecording": "停止錄音",
+    "recordVoice": "錄製語音片段"
+  },
+  "emojiAutocomplete": {
+    "navigate": "移動",
+    "select": "選取",
+    "dismiss": "關閉",
+    "escKey": "Esc"
+  },
+  "filePreview": {
+    "remove": "移除 {name}"
+  },
+  "fileModal": {
+    "download": "下載",
+    "loadFailed": "無法載入檔案內容",
+    "truncated": "...（已截斷）",
+    "noPreview": "沒有可用的預覽",
+    "downloadToView": "請下載檔案後再檢視"
+  },
+  "files": {
+    "allFiles": "所有檔案",
+    "channelFiles": "頻道檔案",
+    "loadFailed": "無法載入檔案。",
+    "empty": "尚未上傳任何檔案",
+    "download": "下載",
+    "menu": "選單",
+    "unavailable": "檔案無法使用",
+    "preparing": "正在準備檔案"
+  },
+  "format": {
+    "bold": "粗體",
+    "italic": "斜體",
+    "strike": "刪除線",
+    "link": "連結",
+    "orderedList": "有序清單",
+    "bulletList": "項目符號清單",
+    "code": "程式碼",
+    "codeBlock": "程式碼區塊",
+    "quote": "引言"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "沒有新通知",
+    "unreadCount": "{count, plural, other {# 則未讀訊息}}"
+  },
+  "search": {
+    "placeholder": "搜尋",
+    "searching": "搜尋中...",
+    "noResults": "找不到結果",
+    "previewHint": "{count, plural, other {前 # 項結果}} · 查看全部（Enter）",
+    "truncatedNotice": "結果很多。請加入篩選條件以縮小範圍。",
+    "retry": "重試",
+    "ignoredChip": "{token}（已忽略）",
+    "ignoredLimitChip": "{token}（已忽略：數量過多）",
+    "inChannel": "在 #{channel}",
+    "title": "搜尋結果",
+    "resultsFor": "「{query}」的搜尋結果",
+    "emptyQuery": "請輸入搜尋詞，或使用 from:、in:、has:、before:、after: 等篩選條件。",
+    "noResultsHint": "請嘗試其他關鍵字，或移除部分篩選條件。",
+    "clearFilters": "清除所有篩選條件",
+    "removeFilter": "移除篩選條件 {filter}",
+    "loadFailed": "搜尋失敗。請再試一次。",
+    "loadMore": "載入更多",
+    "threadReply": "討論串回覆",
+    "directMessage": "私訊",
+    "groupMessage": "群組對話",
+    "joined": "已加入",
+    "privateChannel": "私人",
+    "archivedChannel": "已封存",
+    "back": "返回",
+    "tabs": {
+      "label": "搜尋結果類型",
+      "messages": "訊息",
+      "files": "檔案",
+      "people": "成員",
+      "channels": "頻道"
+    },
+    "sort": {
+      "label": "排序方式",
+      "relevance": "相關性",
+      "recent": "最近"
+    }
+  },
+  "headerTabs": {
+    "files": "檔案",
+    "pins": "釘選"
+  },
+  "lightbox": {
+    "close": "關閉"
+  },
+  "later": {
+    "title": "稍後處理",
+    "saved": "已儲存",
+    "scheduled": "已排程",
+    "loadFailed": "無法載入已儲存的訊息。",
+    "empty": "目前沒有已儲存的訊息。點選任一則訊息的書籤圖示即可儲存。",
+    "removeSaved": "從已儲存中移除",
+    "menu": "選單",
+    "reminders": "提醒"
+  },
+  "linkModal": {
+    "title": "新增連結",
+    "url": "網址",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "顯示文字",
+    "optional": "（選填）",
+    "textPlaceholder": "連結文字",
+    "close": "關閉"
+  },
+  "actionsMenu": {
+    "noActions": "沒有可用的操作",
+    "markUnread": "標示為未讀",
+    "pin": "釘選訊息",
+    "unpin": "取消釘選訊息",
+    "edit": "編輯訊息",
+    "delete": "刪除訊息",
+    "copyLink": "複製連結",
+    "remind": "提醒我這則訊息"
+  },
+  "area": {
+    "selectChannel": "選擇頻道以開始傳訊",
+    "openMenu": "開啟選單",
+    "placeholder": "傳訊至 #{channel}",
+    "viewing": "您正在檢視 <bold>#{channel}</bold>",
+    "joinChannel": "加入頻道"
+  },
+  "header": {
+    "menu": "選單",
+    "unstar": "從已加星號移除",
+    "star": "加入已加星號",
+    "members": "成員：{count}",
+    "search": "搜尋",
+    "channelMenu": "頻道選項",
+    "leaveChannel": "離開頻道",
+    "leaveLastMember": "無法離開頻道，您是最後一位成員。",
+    "dismiss": "關閉",
+    "addTopic": "新增主題",
+    "editDetails": "編輯頻道詳細資料"
+  },
+  "message": {
+    "edited": "（已編輯）",
+    "pinned": "已釘選",
+    "showMore": "顯示更多",
+    "showLess": "顯示較少",
+    "repliedToThread": "已回覆討論串：{excerpt}",
+    "deletedPlaceholder": "此訊息已被刪除。",
+    "sendToChannel": "同時傳送到頻道",
+    "removeFromChannel": "從頻道移除"
+  },
+  "input": {
+    "uploading": "上傳中...",
+    "scheduleMessage": "排程訊息",
+    "send": "傳送訊息",
+    "hint": "按下 <kbd>Enter</kbd> 傳送，按 <kbd>Shift + Enter</kbd> 換行",
+    "scheduledFor": "排定於 {time}",
+    "scheduleFailed": "無法排程訊息，請再試一次。"
+  },
+  "list": {
+    "loading": "正在載入訊息...",
+    "empty": "尚無訊息",
+    "emptyReadOnly": "此頻道沒有任何訊息。",
+    "emptyFirst": "成為第一個傳送訊息的人吧！"
+  },
+  "reactions": {
+    "tooltip": "{names} 以 {emoji} 回應",
+    "add": "新增反應",
+    "you": "您"
+  },
+  "toolbar": {
+    "addReaction": "新增反應",
+    "replyInThread": "在討論串中回覆",
+    "removeBookmark": "移除書籤",
+    "bookmark": "為此訊息加上書籤",
+    "moreActions": "更多操作"
+  },
+  "mobileSearch": {
+    "placeholder": "搜尋訊息...",
+    "hint": "搜尋所有頻道和對話中的訊息",
+    "close": "關閉搜尋"
+  },
+  "pins": {
+    "title": "釘選的訊息",
+    "loadFailed": "無法載入釘選的訊息。",
+    "empty": "目前沒有釘選的訊息"
+  },
+  "schedule": {
+    "menuTitle": "排程訊息",
+    "in20": "20 分鐘後",
+    "in1h": "1 小時後",
+    "in3h": "3 小時後",
+    "tomorrow9": "明天上午 9:00",
+    "custom": "自訂時間...",
+    "modalTitle": "排程訊息",
+    "dateTime": "日期與時間",
+    "pickFuture": "請選擇未來的時間。",
+    "submit": "排程",
+    "submitting": "排程中...",
+    "close": "關閉"
+  },
+  "scheduled": {
+    "loadFailed": "無法載入排程的訊息。",
+    "cancelFailed": "無法取消訊息。",
+    "sendFailed": "無法傳送訊息。",
+    "saveFailed": "無法儲存變更。",
+    "empty": "沒有排程的訊息。請使用訊息輸入框中的時鐘圖示來排程。",
+    "sendAt": "傳送時間：",
+    "edit": "編輯",
+    "sendNow": "立即傳送",
+    "cancel": "取消",
+    "failedDlp": "此訊息因符合資料保護規則（{rule}）而未傳送。請刪除後重新撰寫。"
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {# 則回覆}}"
+  },
+  "unreads": {
+    "title": "未讀",
+    "loadFailed": "無法載入未讀訊息。",
+    "empty": "沒有未讀訊息，您已全部看完了！🎉",
+    "menu": "選單"
+  },
+  "threadPanel": {
+    "title": "討論串",
+    "replyPlaceholder": "回覆...",
+    "loadFailed": "無法載入討論串，請再試一次。",
+    "loading": "正在載入討論串...",
+    "replyFailed": "無法傳送回覆，請再試一次。",
+    "joinToReply": "加入頻道後才能在討論串中回覆",
+    "alsoSendToChannel": "同時傳送到頻道"
+  },
+  "errors": {
+    "messageEmpty": "訊息不能是空的。",
+    "pasteUploadFailed": "無法上傳貼上的圖片，請再試一次。",
+    "dropUploadFailed": "無法上傳拖曳的檔案，請再試一次。",
+    "uploadFailed": "無法上傳檔案，請再試一次。",
+    "voiceUploadFailed": "無法上傳語音訊息。",
+    "micDenied": "未允許存取麥克風。請允許存取麥克風。",
+    "loadFailed": "無法載入訊息。",
+    "sendTimeout": "傳送訊息逾時。請再試一次。",
+    "sendFailed": "訊息傳送失敗。請再試一次。",
+    "pushNotConfigured": "伺服器尚未設定推播通知",
+    "serviceWorkerUnavailable": "無法使用 Service Worker",
+    "subscribeFailed": "無法註冊訂閱",
+    "editFailed": "無法儲存編輯內容。請再試一次。"
+  },
+  "details": {
+    "title": "頻道詳細資料",
+    "name": "名稱",
+    "topic": "主題",
+    "topicPlaceholder": "此頻道的主題是什麼？",
+    "description": "說明",
+    "descriptionPlaceholder": "新增說明",
+    "createdBy": "建立者：{name}",
+    "readOnly": "只有頻道擁有者、管理員和工作區管理員可以編輯這些詳細資料。",
+    "save": "儲存",
+    "cancel": "取消",
+    "saveFailed": "無法儲存頻道詳細資料。"
+  },
+  "intro": {
+    "title": "歡迎來到 #{name}",
+    "noDescription": "尚無說明。",
+    "editDescription": "編輯說明"
+  },
+  "threads": {
+    "title": "討論串",
+    "menu": "選單",
+    "loadFailed": "無法載入討論串。",
+    "empty": "尚無討論串",
+    "emptyHint": "您發起或回覆的討論串會顯示在這裡。",
+    "newReplies": "{count, plural, other {# 則新回覆}}",
+    "replyCount": "{count, plural, other {# 則回覆}}",
+    "olderReplies": "開啟討論串以查看較早的回覆",
+    "replyPlaceholder": "回覆...",
+    "send": "傳送",
+    "replyFailed": "無法傳送回覆，請再試一次。",
+    "alsoSendToChannel": "同時傳送到頻道",
+    "openThread": "開啟討論串",
+    "loadMore": "載入更多",
+    "loading": "載入中..."
+  },
+  "permalink": {
+    "copied": "已複製連結",
+    "notFound": "找不到此訊息，或您沒有檢視權限",
+    "goHome": "返回首頁",
+    "copyManually": "無法自動複製。請複製此連結：{url}"
+  },
+  "unread": {
+    "divider": "新",
+    "newMessagesBar": "{count, plural, other {# 則新訊息}}",
+    "newMessagesBarAtLeast": "{count, plural, other {# 則以上新訊息}}",
+    "markRead": "標示為已讀",
+    "jumpFailed": "無法載入未讀位置"
+  },
+  "reminder": {
+    "set": "設定提醒",
+    "customLabel": "提醒日期與時間",
+    "preset": {
+      "in20": "20 分鐘後",
+      "in1h": "1 小時後",
+      "in3h": "3 小時後",
+      "tomorrow": "明天",
+      "nextWeek": "下週",
+      "custom": "自訂..."
+    },
+    "status": {
+      "pending": "即將到來",
+      "done": "已完成"
+    },
+    "snooze": {
+      "m10": "10 分鐘",
+      "h1": "1 小時",
+      "tomorrow": "明天"
+    },
+    "loadFailed": "無法載入提醒。",
+    "empty": "沒有提醒。請使用訊息的更多操作選單，或輸入 /remind 來新增。",
+    "emptyDone": "沒有已完成的提醒。",
+    "dueAt": "到期時間 {time}",
+    "firedAt": "已於 {time} 到期",
+    "completedAt": "已於 {time} 完成",
+    "messageDeleted": "已刪除的訊息",
+    "complete": "標示為已完成",
+    "reopen": "標示為未完成",
+    "delete": "刪除提醒",
+    "toast": {
+      "created": "已設定提醒",
+      "due": "提醒：{text}",
+      "createFailed": "無法設定提醒，請再試一次。"
+    },
+    "command": {
+      "syntax": "用法：/remind me [文字] in [數字] [minutes|hours|days]",
+      "tooShort": "提醒時間必須至少在 1 分鐘之後。",
+      "tooLong": "提醒時間必須在一年以內。",
+      "created": "已設定 {time} 的提醒"
+    },
+    "pastTime": "請選擇未來的時間。",
+    "loadMore": "載入更多"
+  }
+}

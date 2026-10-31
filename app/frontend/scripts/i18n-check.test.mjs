@@ -96,7 +96,7 @@ test('빈 문자열 값은 등급과 관계없이 실패한다', () => {
   assert.match(checkLocale(base, data, { tier: 2 }).errors[0], /빈 값: messages:greet/);
 });
 
-test('실제 번역 파일(ko, ja, zh-Hans, es)이 검사를 통과한다', () => {
+test('실제 번역 파일(ko, ja, zh-Hans, zh-Hant, es, fr, de, pt-BR)이 검사를 통과한다', () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const root = join(here, '..', 'src', 'locales');
   const load = (locale) => {
@@ -112,7 +112,11 @@ test('실제 번역 파일(ko, ja, zh-Hans, es)이 검사를 통과한다', () =
     ['ko', 1],
     ['ja', 2],
     ['zh-Hans', 2],
+    ['zh-Hant', 2],
     ['es', 2],
+    ['fr', 2],
+    ['de', 2],
+    ['pt-BR', 2],
   ]) {
     const { errors } = checkLocale(en, load(locale), { tier });
     assert.deepEqual(errors, [], `${locale} 오류`);
