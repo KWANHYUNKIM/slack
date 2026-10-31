@@ -47,14 +47,16 @@
   },
   "accessTokens": {
     "title": "개인 액세스 토큰",
-    "description": "토큰이 있으면 Claude 같은 MCP 클라이언트가 내 권한으로 워크스페이스를 읽을 수 있습니다. 비밀번호처럼 다루세요.",
+    "description": "토큰이 있으면 Claude 같은 MCP 클라이언트가 내 권한으로 워크스페이스를 읽고, 허용하면 쓸 수도 있습니다. 비밀번호처럼 다루세요.",
     "nameLabel": "토큰 이름",
     "namePlaceholder": "예: 노트북의 Claude Code",
     "scopesLabel": "권한",
     "scope": {
       "channelsRead": "채널 목록 보기",
       "channelsHistory": "메시지, 스레드, 활동 읽기",
-      "usersRead": "사람 보기"
+      "usersRead": "사람 보기",
+      "chatWrite": "내 이름으로 메시지 쓰기, 고치기, 지우기",
+      "reactionsWrite": "내 리액션 추가·제거"
     },
     "expiryLabel": "만료",
     "expiryDays": "{count}일",
