@@ -66,7 +66,7 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
   };
 
   const connectCommand = justCreated
-    ? `claude mcp add --transport http slackclone ${getMcpUrl()} --header "Authorization: Bearer ${justCreated.token}"`
+    ? `claude mcp add --transport http team-messenger ${getMcpUrl()} --header "Authorization: Bearer ${justCreated.token}"`
     : '';
 
   return (
