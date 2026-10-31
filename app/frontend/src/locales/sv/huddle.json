@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(ljud av)",
+    "mute": "Ljud av",
+    "unmute": "Ljud på",
+    "leave": "Lämna huddle"
+  },
+  "button": {
+    "leaveFirstError": "Lämna din nuvarande huddle först",
+    "cancelInviteFirstError": "Avbryt din nuvarande inbjudan först",
+    "cancelInvite": "Avbryt inbjudan",
+    "calling": "Ringer...",
+    "inHuddle": "I huddle",
+    "leaveCurrentFirst": "Lämna den nuvarande huddlen först",
+    "start": "Starta huddle"
+  },
+  "incoming": {
+    "invite": "Huddle-inbjudan",
+    "secondsLeft": "{count} s",
+    "decline": "Avböj",
+    "accept": "Acceptera"
+  },
+  "system": {
+    "youStarted": "Du startade en huddle.",
+    "started": "Startade en huddle.",
+    "ended": "Avslutad",
+    "youSentInvite": "Du skickade en huddle-inbjudan.",
+    "sentInvite": "Skickade dig en huddle-inbjudan.",
+    "huddleStarted": "Huddle startad",
+    "huddleEnded": "Huddle avslutad ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Lämna din nuvarande huddle först",
+    "cancelInviteFirst": "Avbryt din nuvarande inbjudan först",
+    "micDenied": "Åtkomst till mikrofonen nekades",
+    "busy": "De är i en annan huddle",
+    "declined": "Inbjudan avböjdes",
+    "expired": "Inbjudan har gått ut",
+    "rateLimited": "För många förfrågningar. Försök igen om en stund",
+    "invalidInvite": "Inbjudningsbegäran var ogiltig",
+    "cannotInviteSelf": "Du kan inte bjuda in dig själv",
+    "userNotFound": "Användaren hittades inte",
+    "invalidAccept": "Accepteringsbegäran var ogiltig",
+    "inviteNotFound": "Inbjudan hittades inte eller har gått ut",
+    "peerOffline": "De är offline",
+    "generic": "Det gick inte att starta huddlen. Försök igen"
+  }
+}

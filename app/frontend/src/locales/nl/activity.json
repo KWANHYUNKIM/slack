@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Activiteit",
+    "markAllRead": "Alles als gelezen markeren",
+    "loading": "Laden...",
+    "loadingMore": "Meer laden...",
+    "loadFailed": "Activiteit laden is mislukt.",
+    "empty": "Nog geen activiteit.",
+    "unread": "Ongelezen",
+    "menu": "Menu",
+    "someone": "Iemand",
+    "directMessage": "een direct bericht",
+    "messageDeleted": "Verwijderd bericht"
+  },
+  "tabs": {
+    "all": "Alles",
+    "mentions": "Vermeldingen",
+    "threads": "Threads",
+    "reactions": "Reacties"
+  },
+  "describe": {
+    "mention": "{actor} heeft je vermeld in {where}",
+    "channelMention": "{actor} heeft @channel vermeld in {where}",
+    "hereMention": "{actor} heeft @here vermeld in {where}",
+    "threadReply": "{actor} heeft gereageerd op een thread in {where}",
+    "reaction": "{actor} reageerde met {emoji} op je bericht in {where}",
+    "reminder": "Herinnering"
+  }
+}

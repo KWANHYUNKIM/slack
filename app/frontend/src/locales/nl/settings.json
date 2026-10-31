@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Taal",
+    "pending": "{name} (vertaling komt eraan)",
+    "beta": "Bèta",
+    "betaOption": "{name} (bèta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Meldingen gepauzeerd"
+  },
+  "profile": {
+    "title": "Profiel",
+    "close": "Sluiten",
+    "loading": "Laden...",
+    "notFound": "Profiel niet gevonden",
+    "uploadPhoto": "Foto uploaden",
+    "uploading": "Uploaden...",
+    "name": "Naam",
+    "bio": "Bio",
+    "bioPlaceholder": "Vertel iets over jezelf",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "status": "Status",
+    "joined": "Lid sinds",
+    "message": "Bericht",
+    "edit": "Profiel bewerken",
+    "statusValue": {
+      "online": "online",
+      "away": "afwezig",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profiel laden is mislukt.",
+      "saveFailed": "Profiel opslaan is mislukt. Probeer het opnieuw.",
+      "notImage": "Selecteer een afbeeldingsbestand.",
+      "tooLarge": "De afbeelding moet kleiner zijn dan 5 MB.",
+      "uploadFailed": "De foto kon niet worden geüpload. Probeer het opnieuw."
+    },
+    "statusUntil": "Tot {time}"
+  },
+  "crop": {
+    "title": "Bijsnijden van je foto",
+    "close": "Sluiten",
+    "zoom": "Zoomen",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "failed": "Bijsnijden mislukt"
+  },
+  "accessTokens": {
+    "title": "Persoonlijke toegangstokens",
+    "description": "Met tokens kunnen Claude en andere MCP-clients met jouw rechten lezen en, als je dat toestaat, schrijven in je werkruimte. Behandel ze als een wachtwoord.",
+    "nameLabel": "Tokennaam",
+    "namePlaceholder": "bijv. Claude Code op mijn laptop",
+    "scopesLabel": "Rechten",
+    "scope": {
+      "channelsRead": "Kanalen weergeven",
+      "channelsHistory": "Berichten, threads en activiteit lezen",
+      "usersRead": "Personen bekijken",
+      "chatWrite": "Je berichten plaatsen, bewerken en verwijderen",
+      "reactionsWrite": "Je reacties toevoegen en verwijderen",
+      "imRead": "Je directe berichten en groepsberichten weergeven",
+      "imHistory": "Je geschiedenis van directe berichten lezen",
+      "imWrite": "Je directe berichten verzenden, bewerken en verwijderen",
+      "searchRead": "Berichten, bestanden, personen en kanalen doorzoeken (resultaten van directe berichten vereisen geschiedenis van directe berichten)",
+      "filesRead": "Bestanden weergeven en de inhoud van tekstbestanden lezen"
+    },
+    "expiryLabel": "Verloopt",
+    "expiryDays": "{count, plural, one {# dag} other {# dagen}}",
+    "expiryNever": "Geen vervaldatum",
+    "neverWarning": "Tokens zonder vervaldatum blijven geldig tot je ze intrekt.",
+    "create": "Token genereren",
+    "createdNotice": "Kopieer je nieuwe token nu. Je kunt hem daarna niet meer zien.",
+    "copy": "Token kopiëren",
+    "copyCommand": "Opdracht kopiëren",
+    "copied": "Gekopieerd naar het klembord",
+    "connectHint": "Verbinden vanuit Claude Code:",
+    "dismiss": "Klaar, token verbergen",
+    "loading": "Laden...",
+    "empty": "Je hebt geen persoonlijke toegangstokens.",
+    "expires": "Verloopt op {date}",
+    "expired": "Verlopen",
+    "noExpiry": "Geen vervaldatum",
+    "lastUsed": "Laatst gebruikt op {date}",
+    "neverUsed": "Nooit gebruikt",
+    "rename": "Hernoemen",
+    "renameLabel": "Token {name} hernoemen",
+    "revoke": "Intrekken",
+    "revokeLabel": "Token {name} intrekken",
+    "revokeConfirm": "Nu intrekken",
+    "cancel": "Annuleren",
+    "close": "Sluiten",
+    "errors": {
+      "loadFailed": "Tokens laden is mislukt.",
+      "createFailed": "Het token kon niet worden gemaakt. Probeer het opnieuw.",
+      "renameFailed": "Het token kon niet worden hernoemd.",
+      "revokeFailed": "Het token kon niet worden ingetrokken.",
+      "copyFailed": "Kopiëren is mislukt. Selecteer de tekst en kopieer hem handmatig.",
+      "limitReached": "Je kunt maximaal {max} actieve tokens hebben. Trek er een in die je niet meer gebruikt en probeer het opnieuw.",
+      "codeRequired": "Voer je tweestapscode in om een token te maken.",
+      "invalidCode": "De tweestapscode is onjuist."
+    },
+    "codeLabel": "Tweestapscode",
+    "codeHint": "Voer een code uit je authenticatie-app in om een token te maken."
+  },
+  "sessions": {
+    "title": "Aangemelde apparaten",
+    "description": "Deze apparaten zijn aangemeld bij je account. Meld apparaten af die je niet herkent of niet meer gebruikt.",
+    "loading": "Laden...",
+    "empty": "Geen aangemelde apparaten.",
+    "thisDevice": "Dit apparaat",
+    "unknownDevice": "Onbekend apparaat",
+    "signedInAt": "Aangemeld op {date}",
+    "lastActive": "Laatst actief op {date}",
+    "signOut": "Afmelden",
+    "signOutLabel": "{device} afmelden",
+    "signOutThisLabel": "Dit apparaat afmelden ({device})",
+    "signOutOthers": "Afmelden op alle andere apparaten",
+    "signOutOthersConfirm": "{count, plural, one {# ander apparaat afmelden} other {# andere apparaten afmelden}}",
+    "revoked": "Apparaat afgemeld",
+    "revokedOthers": "Afgemeld op alle andere apparaten",
+    "errors": {
+      "loadFailed": "Apparaten laden is mislukt.",
+      "revokeFailed": "Afmelden is mislukt. Probeer het opnieuw."
+    },
+    "device": {
+      "desktop": "Bureaubladapp",
+      "desktopOn": "Bureaubladapp op {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} op {os}",
+      "unknownOn": "Onbekend apparaat op {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Wachtwoord wijzigen",
+    "description": "Voer je huidige wachtwoord in en kies een nieuw wachtwoord.",
+    "currentLabel": "Huidig wachtwoord",
+    "newLabel": "Nieuw wachtwoord",
+    "confirmLabel": "Nieuw wachtwoord bevestigen",
+    "sessionsNote": "Als je je wachtwoord wijzigt, worden je andere aangemelde apparaten afgemeld.",
+    "submit": "Wachtwoord wijzigen",
+    "submitting": "Wijzigen...",
+    "cancel": "Annuleren",
+    "successToast": "Je wachtwoord is gewijzigd",
+    "errors": {
+      "currentRequired": "Voer je huidige wachtwoord in.",
+      "failed": "Je wachtwoord kon niet worden gewijzigd. Probeer het opnieuw."
+    }
+  },
+  "twoFactor": {
+    "title": "Tweestapsverificatie",
+    "description": "Vraag bij het aanmelden naast je wachtwoord ook om een code uit je authenticatie-app.",
+    "loading": "Laden...",
+    "statusOn": "Aan",
+    "statusOff": "Uit",
+    "enabledSince": "Aangezet op {date}",
+    "recoveryRemaining": "{count, plural, one {# herstelcode over} other {# herstelcodes over}}",
+    "unavailable": "Tweestapsverificatie is niet beschikbaar op deze server. Vraag je beheerder.",
+    "requiredNotice": "Je organisatie vereist tweestapsverificatie.",
+    "close": "Sluiten",
+    "setup": {
+      "start": "Tweestapsverificatie instellen",
+      "starting": "Voorbereiden...",
+      "step1": "1. Voeg dit account toe aan je authenticatie-app. Open de link op je telefoon of voer de installatiesleutel handmatig in.",
+      "uriLabel": "Installatielink",
+      "openInApp": "Openen in authenticatie-app",
+      "qrLabel": "QR-code voor de authenticatie-app",
+      "qrHint": "Scan deze QR-code met je authenticatie-app, of gebruik de link of sleutel hieronder.",
+      "keyLabel": "Installatiesleutel",
+      "copyKey": "Installatiesleutel kopiëren",
+      "copyUri": "Installatielink kopiëren",
+      "copied": "Gekopieerd",
+      "step2": "2. Voer de code van 6 cijfers in die je app toont.",
+      "codeLabel": "Verificatiecode",
+      "codePlaceholder": "123456",
+      "verify": "Aanzetten",
+      "verifying": "Controleren...",
+      "cancel": "Annuleren",
+      "passwordLabel": "3. Voer je huidige wachtwoord in.",
+      "sessionsNote": "Als je dit aanzet, worden je andere aangemelde apparaten afgemeld."
+    },
+    "recovery": {
+      "title": "Bewaar je herstelcodes",
+      "description": "Gebruik een herstelcode om je aan te melden als je je apparaat kwijtraakt. Elke code werkt één keer. Ze worden niet opnieuw getoond.",
+      "download": "Downloaden",
+      "copy": "Alles kopiëren",
+      "fileHeader": "Herstelcodes. Elke code werkt één keer. Bewaar ze op een veilige plek.",
+      "confirmSaved": "Ik heb mijn herstelcodes opgeslagen",
+      "fileName": "herstelcodes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Wachtwoord",
+      "codeLabel": "Verificatie- of herstelcode",
+      "cancel": "Annuleren",
+      "passwordInvalid": "Voer een geldig wachtwoord in.",
+      "codeInvalid": "Voer een geldige verificatie- of herstelcode in."
+    },
+    "regenerate": {
+      "start": "Nieuwe herstelcodes maken",
+      "title": "Nieuwe herstelcodes maken",
+      "description": "Je oude herstelcodes werken niet meer zodra je nieuwe maakt. Voer je wachtwoord in en een code uit je authenticatie-app (of een herstelcode).",
+      "submit": "Nieuwe codes maken",
+      "submitting": "Maken...",
+      "lowNotice": "{count, plural, one {Er is nog maar # herstelcode over} other {Er zijn nog maar # herstelcodes over}}. Maak nieuwe aan voordat ze op zijn.",
+      "toast": "Nieuwe herstelcodes zijn klaar"
+    },
+    "disable": {
+      "title": "Tweestapsverificatie uitzetten",
+      "description": "Voer je wachtwoord in en een code uit je authenticatie-app (of een herstelcode).",
+      "start": "Uitzetten",
+      "submit": "Tweestapsverificatie uitzetten",
+      "submitting": "Uitzetten...",
+      "blockedByPolicy": "Je organisatie vereist tweestapsverificatie, dus je kunt het niet uitzetten. Als je je apparaat kwijt bent, vraag dan een beheerder om het opnieuw in te stellen."
+    },
+    "enabledToast": "Tweestapsverificatie staat aan",
+    "disabledToast": "Tweestapsverificatie staat uit",
+    "errors": {
+      "loadFailed": "De instellingen voor tweestapsverificatie konden niet worden geladen.",
+      "setupFailed": "De instelling kon niet worden gestart. Probeer het opnieuw.",
+      "enableFailed": "Tweestapsverificatie kon niet worden aangezet.",
+      "regenerateFailed": "Er konden geen nieuwe herstelcodes worden gemaakt.",
+      "disableFailed": "Tweestapsverificatie kon niet worden uitgezet.",
+      "copyFailed": "Kon niet naar het klembord kopiëren."
+    }
+  },
+  "connectedApps": {
+    "title": "Verbonden apps",
+    "description": "Apps die je toestemming hebt gegeven om via de OAuth-aanmeldstroom je account te gebruiken. Ze handelen met jouw rechten. Koppel apps los die je niet meer gebruikt.",
+    "loading": "Laden...",
+    "empty": "Er zijn geen apps verbonden met je account.",
+    "redirectsTo": "Stuurt terug naar {hosts}",
+    "connectedAt": "Verbonden op {date}",
+    "lastUsed": "Laatst gebruikt op {date}",
+    "neverUsed": "Nooit gebruikt",
+    "disconnect": "Loskoppelen",
+    "disconnectLabel": "{name} loskoppelen",
+    "disconnectConfirm": "Nu loskoppelen",
+    "cancel": "Annuleren",
+    "disconnected": "App losgekoppeld",
+    "close": "Sluiten",
+    "errors": {
+      "loadFailed": "Verbonden apps laden is mislukt.",
+      "disconnectFailed": "De app kon niet worden losgekoppeld."
+    },
+    "unnamedApp": "Naamloze app"
+  }
+}

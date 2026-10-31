@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Språk",
+    "pending": "{name} (översättning kommer snart)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Aviseringar pausade"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Stäng",
+    "loading": "Läser in...",
+    "notFound": "Profilen hittades inte",
+    "uploadPhoto": "Ladda upp foto",
+    "uploading": "Laddar upp...",
+    "name": "Namn",
+    "bio": "Presentation",
+    "bioPlaceholder": "Berätta om dig själv",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "status": "Status",
+    "joined": "Gick med",
+    "message": "Meddelande",
+    "edit": "Redigera profil",
+    "statusValue": {
+      "online": "online",
+      "away": "borta",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in profilen.",
+      "saveFailed": "Det gick inte att spara profilen. Försök igen.",
+      "notImage": "Välj en bildfil.",
+      "tooLarge": "Bilden måste vara mindre än 5 MB.",
+      "uploadFailed": "Det gick inte att ladda upp fotot. Försök igen."
+    },
+    "statusUntil": "Till {time}"
+  },
+  "crop": {
+    "title": "Beskär ditt foto",
+    "close": "Stäng",
+    "zoom": "Zooma",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "saving": "Sparar...",
+    "failed": "Det gick inte att beskära"
+  },
+  "accessTokens": {
+    "title": "Personliga åtkomsttokens",
+    "description": "Tokens låter Claude och andra MCP-klienter läsa och, om du tillåter det, skriva i din arbetsyta med dina behörigheter. Behandla dem som ett lösenord.",
+    "nameLabel": "Tokennamn",
+    "namePlaceholder": "t.ex. Claude Code på min laptop",
+    "scopesLabel": "Behörigheter",
+    "scope": {
+      "channelsRead": "Lista kanaler",
+      "channelsHistory": "Läsa meddelanden, trådar och aktivitet",
+      "usersRead": "Visa personer",
+      "chatWrite": "Skicka, redigera och ta bort dina meddelanden",
+      "reactionsWrite": "Lägga till och ta bort dina reaktioner",
+      "imRead": "Lista dina direktmeddelanden och gruppkonversationer",
+      "imHistory": "Läsa din historik för direktmeddelanden",
+      "imWrite": "Skicka, redigera och ta bort dina direktmeddelanden",
+      "searchRead": "Söka i meddelanden, filer, personer och kanaler (sökresultat för direktmeddelanden kräver historik för direktmeddelanden)",
+      "filesRead": "Lista filer och läsa innehållet i textfiler"
+    },
+    "expiryLabel": "Går ut",
+    "expiryDays": "{count, plural, one {# dag} other {# dagar}}",
+    "expiryNever": "Går aldrig ut",
+    "neverWarning": "Tokens utan utgångsdatum förblir giltiga tills du återkallar dem.",
+    "create": "Skapa token",
+    "createdNotice": "Kopiera din nya token nu. Du kommer inte att kunna se den igen.",
+    "copy": "Kopiera token",
+    "copyCommand": "Kopiera kommando",
+    "copied": "Kopierad till urklipp",
+    "connectHint": "Anslut från Claude Code:",
+    "dismiss": "Klar, dölj token",
+    "loading": "Läser in...",
+    "empty": "Du har inga personliga åtkomsttokens.",
+    "expires": "Går ut {date}",
+    "expired": "Utgången",
+    "noExpiry": "Går aldrig ut",
+    "lastUsed": "Senast använd {date}",
+    "neverUsed": "Aldrig använd",
+    "rename": "Byt namn",
+    "renameLabel": "Byt namn på token {name}",
+    "revoke": "Återkalla",
+    "revokeLabel": "Återkalla token {name}",
+    "revokeConfirm": "Återkalla nu",
+    "cancel": "Avbryt",
+    "close": "Stäng",
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in tokens.",
+      "createFailed": "Det gick inte att skapa token. Försök igen.",
+      "renameFailed": "Det gick inte att byta namn på token.",
+      "revokeFailed": "Det gick inte att återkalla token.",
+      "copyFailed": "Kunde inte kopieras. Markera texten och kopiera den manuellt.",
+      "limitReached": "Du kan ha högst {max} aktiva tokens. Återkalla en som du inte använder längre och försök igen.",
+      "codeRequired": "Ange din tvåstegskod för att skapa en token.",
+      "invalidCode": "Tvåstegskoden är fel."
+    },
+    "codeLabel": "Tvåstegskod",
+    "codeHint": "Ange en kod från din autentiseringsapp för att skapa en token."
+  },
+  "sessions": {
+    "title": "Inloggade enheter",
+    "description": "De här enheterna är inloggade på ditt konto. Logga ut alla du inte känner igen eller inte längre använder.",
+    "loading": "Läser in...",
+    "empty": "Inga inloggade enheter.",
+    "thisDevice": "Den här enheten",
+    "unknownDevice": "Okänd enhet",
+    "signedInAt": "Inloggad {date}",
+    "lastActive": "Senast aktiv {date}",
+    "signOut": "Logga ut",
+    "signOutLabel": "Logga ut {device}",
+    "signOutThisLabel": "Logga ut den här enheten ({device})",
+    "signOutOthers": "Logga ut från alla andra enheter",
+    "signOutOthersConfirm": "{count, plural, one {Logga ut # annan enhet} other {Logga ut # andra enheter}}",
+    "revoked": "Enheten är utloggad",
+    "revokedOthers": "Utloggad från alla andra enheter",
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in enheterna.",
+      "revokeFailed": "Det gick inte att logga ut. Försök igen."
+    },
+    "device": {
+      "desktop": "Skrivbordsapp",
+      "desktopOn": "Skrivbordsapp på {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} på {os}",
+      "unknownOn": "Okänd enhet på {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Byt lösenord",
+    "description": "Ange ditt nuvarande lösenord och välj ett nytt.",
+    "currentLabel": "Nuvarande lösenord",
+    "newLabel": "Nytt lösenord",
+    "confirmLabel": "Bekräfta nytt lösenord",
+    "sessionsNote": "När du byter lösenord loggas dina andra inloggade enheter ut.",
+    "submit": "Byt lösenord",
+    "submitting": "Byter...",
+    "cancel": "Avbryt",
+    "successToast": "Ditt lösenord har ändrats",
+    "errors": {
+      "currentRequired": "Ange ditt nuvarande lösenord.",
+      "failed": "Det gick inte att byta lösenord. Försök igen."
+    }
+  },
+  "twoFactor": {
+    "title": "Tvåstegsverifiering",
+    "description": "Be om en kod från din autentiseringsapp utöver ditt lösenord när du loggar in.",
+    "loading": "Läser in...",
+    "statusOn": "På",
+    "statusOff": "Av",
+    "enabledSince": "Slogs på {date}",
+    "recoveryRemaining": "{count, plural, one {# återställningskod kvar} other {# återställningskoder kvar}}",
+    "unavailable": "Tvåstegsverifiering är inte tillgänglig på den här servern. Kontakta din administratör.",
+    "requiredNotice": "Din organisation kräver tvåstegsverifiering.",
+    "close": "Stäng",
+    "setup": {
+      "start": "Konfigurera tvåstegsverifiering",
+      "starting": "Förbereder...",
+      "step1": "1. Lägg till det här kontot i din autentiseringsapp. Öppna länken i telefonen eller ange konfigurationsnyckeln manuellt.",
+      "uriLabel": "Konfigurationslänk",
+      "openInApp": "Öppna i autentiseringsappen",
+      "qrLabel": "QR-kod för autentiseringsappen",
+      "qrHint": "Skanna QR-koden med din autentiseringsapp, eller använd länken eller nyckeln nedan.",
+      "keyLabel": "Konfigurationsnyckel",
+      "copyKey": "Kopiera konfigurationsnyckel",
+      "copyUri": "Kopiera konfigurationslänk",
+      "copied": "Kopierad",
+      "step2": "2. Ange den sexsiffriga koden som appen visar.",
+      "codeLabel": "Verifieringskod",
+      "codePlaceholder": "123456",
+      "verify": "Slå på",
+      "verifying": "Kontrollerar...",
+      "cancel": "Avbryt",
+      "passwordLabel": "3. Ange ditt nuvarande lösenord.",
+      "sessionsNote": "När du slår på det här loggas dina andra inloggade enheter ut."
+    },
+    "recovery": {
+      "title": "Spara dina återställningskoder",
+      "description": "Använd en återställningskod för att logga in om du tappar bort din enhet. Varje kod fungerar en gång. De visas inte igen.",
+      "download": "Hämta",
+      "copy": "Kopiera alla",
+      "fileHeader": "Återställningskoder. Varje kod fungerar en gång. Förvara dem på ett säkert ställe.",
+      "confirmSaved": "Jag har sparat mina återställningskoder",
+      "fileName": "aterstallningskoder.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Lösenord",
+      "codeLabel": "Verifierings- eller återställningskod",
+      "cancel": "Avbryt",
+      "passwordInvalid": "Ange ett giltigt lösenord.",
+      "codeInvalid": "Ange en giltig verifierings- eller återställningskod."
+    },
+    "regenerate": {
+      "start": "Skapa nya återställningskoder",
+      "title": "Skapa nya återställningskoder",
+      "description": "Dina gamla återställningskoder slutar fungera så snart du skapar nya. Ange ditt lösenord och en kod från din autentiseringsapp (eller en återställningskod).",
+      "submit": "Skapa nya koder",
+      "submitting": "Skapar...",
+      "lowNotice": "{count, plural, one {Bara # återställningskod är kvar} other {Bara # återställningskoder är kvar}}. Skapa nya innan de tar slut.",
+      "toast": "Nya återställningskoder är klara"
+    },
+    "disable": {
+      "title": "Stäng av tvåstegsverifiering",
+      "description": "Ange ditt lösenord och en kod från din autentiseringsapp (eller en återställningskod).",
+      "start": "Stäng av",
+      "submit": "Stäng av tvåstegsverifiering",
+      "submitting": "Stänger av...",
+      "blockedByPolicy": "Din organisation kräver tvåstegsverifiering, så du kan inte stänga av den. Om du har tappat bort din enhet ber du en administratör att återställa den."
+    },
+    "enabledToast": "Tvåstegsverifiering är på",
+    "disabledToast": "Tvåstegsverifiering är av",
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in inställningarna för tvåstegsverifiering.",
+      "setupFailed": "Det gick inte att starta konfigurationen. Försök igen.",
+      "enableFailed": "Det gick inte att slå på tvåstegsverifiering.",
+      "regenerateFailed": "Det gick inte att skapa nya återställningskoder.",
+      "disableFailed": "Det gick inte att stänga av tvåstegsverifiering.",
+      "copyFailed": "Det gick inte att kopiera till urklipp."
+    }
+  },
+  "connectedApps": {
+    "title": "Anslutna appar",
+    "description": "Appar som du tillät att använda ditt konto via OAuth-inloggningen. De agerar med dina behörigheter. Koppla bort appar du inte längre använder.",
+    "loading": "Läser in...",
+    "empty": "Inga appar är anslutna till ditt konto.",
+    "redirectsTo": "Skickar tillbaka till {hosts}",
+    "connectedAt": "Ansluten {date}",
+    "lastUsed": "Senast använd {date}",
+    "neverUsed": "Aldrig använd",
+    "disconnect": "Koppla bort",
+    "disconnectLabel": "Koppla bort {name}",
+    "disconnectConfirm": "Koppla bort nu",
+    "cancel": "Avbryt",
+    "disconnected": "Appen har kopplats bort",
+    "close": "Stäng",
+    "errors": {
+      "loadFailed": "Det gick inte att läsa in anslutna appar.",
+      "disconnectFailed": "Det gick inte att koppla bort appen."
+    },
+    "unnamedApp": "Namnlös app"
+  }
+}

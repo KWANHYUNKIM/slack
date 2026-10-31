@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "close": "Stäng",
+    "send": "Skicka",
+    "confirm": "Bekräfta",
+    "back": "Tillbaka",
+    "remove": "Ta bort",
+    "add": "Lägg till",
+    "create": "Skapa",
+    "retry": "Försök igen",
+    "search": "Sök",
+    "copy": "Kopiera",
+    "done": "Klar",
+    "next": "Nästa",
+    "more": "Mer"
+  },
+  "emojiPicker": {
+    "loadFailed": "Det gick inte att läsa in emojier. Kontrollera anslutningen och försök igen.",
+    "retry": "Försök igen"
+  },
+  "status": {
+    "loading": "Läser in...",
+    "saving": "Sparar...",
+    "deleting": "Tar bort..."
+  },
+  "dates": {
+    "today": "Idag",
+    "yesterday": "Igår"
+  },
+  "quickSwitcher": {
+    "title": "Snabbväxlare",
+    "inputLabel": "Hoppa till en konversation",
+    "placeholder": "Hoppa till en kanal eller konversation",
+    "recent": "Senaste",
+    "results": "Resultat",
+    "clearRecent": "Rensa senaste",
+    "listLabel": "Konversationer",
+    "noResults": "Inga matchande konversationer",
+    "starred": "Stjärnmärkta",
+    "unread": "Olästa",
+    "dnd": "Stör ej",
+    "footer": "{keys} för att öppna. Upp och ner för att flytta, Enter för att gå, Esc för att stänga.",
+    "open": "Hoppa till…",
+    "kind": {
+      "channel": "Kanal",
+      "dm": "Direktmeddelande",
+      "group": "Gruppmeddelande"
+    }
+  },
+  "shortcuts": {
+    "title": "Tangentbordsgenvägar",
+    "groups": {
+      "navigation": "Navigering",
+      "general": "Allmänt"
+    },
+    "items": {
+      "switcher": "Öppna snabbväxlaren",
+      "prevChannel": "Föregående konversation",
+      "nextChannel": "Nästa konversation",
+      "prevUnread": "Föregående olästa konversation",
+      "nextUnread": "Nästa olästa konversation",
+      "help": "Visa tangentbordsgenvägar",
+      "closeTop": "Stäng snabbväxlaren eller den här dialogrutan"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Skift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Arbetsyta"
+  },
+  "organization": {
+    "defaultName": "Organisation"
+  }
+}

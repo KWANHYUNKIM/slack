@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Meddela alla som är online",
+    "channelLabel": "@channel",
+    "channelHint": "Meddela alla i den här kanalen"
+  },
+  "deleteDialog": {
+    "title": "Ta bort meddelande",
+    "body": "Är du säker på att du vill ta bort det här meddelandet? Det här går inte att ångra."
+  },
+  "editorToolbar": {
+    "attachFile": "Bifoga fil",
+    "emoji": "Emoji",
+    "mention": "Nämn någon",
+    "stopRecording": "Stoppa inspelning",
+    "recordVoice": "Spela in röstklipp"
+  },
+  "emojiAutocomplete": {
+    "navigate": "för att navigera",
+    "select": "för att välja",
+    "dismiss": "för att stänga",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Ta bort {name}"
+  },
+  "fileModal": {
+    "download": "Hämta",
+    "loadFailed": "Det gick inte att läsa in filinnehållet",
+    "truncated": "... (förkortad)",
+    "noPreview": "Ingen förhandsgranskning tillgänglig",
+    "downloadToView": "Hämta filen för att visa den"
+  },
+  "files": {
+    "allFiles": "Alla filer",
+    "channelFiles": "Kanalfiler",
+    "loadFailed": "Det gick inte att läsa in filerna.",
+    "empty": "Inga filer har laddats upp ännu",
+    "download": "Hämta",
+    "menu": "Meny",
+    "unavailable": "Filen är inte tillgänglig",
+    "preparing": "Förbereder fil"
+  },
+  "format": {
+    "bold": "Fetstil",
+    "italic": "Kursiv",
+    "strike": "Genomstruken",
+    "link": "Länk",
+    "orderedList": "Numrerad lista",
+    "bulletList": "Punktlista",
+    "code": "Kod",
+    "codeBlock": "Kodblock",
+    "quote": "Citat"
+  },
+  "notifications": {
+    "title": "Aviseringar",
+    "empty": "Inga nya aviseringar",
+    "unreadCount": "{count, plural, one {# oläst meddelande} other {# olästa meddelanden}}"
+  },
+  "search": {
+    "placeholder": "Sök",
+    "searching": "Söker...",
+    "noResults": "Inga resultat hittades",
+    "previewHint": "{count, plural, one {Översta # resultat} other {Översta # resultat}} · Visa alla (Enter)",
+    "truncatedNotice": "Det finns många resultat. Lägg till filter för att begränsa dem.",
+    "retry": "Försök igen",
+    "ignoredChip": "{token} (ignorerad)",
+    "ignoredLimitChip": "{token} (ignorerad: för många)",
+    "inChannel": "i #{channel}",
+    "title": "Sökresultat",
+    "resultsFor": "Resultat för \"{query}\"",
+    "emptyQuery": "Skriv en sökterm eller använd filter som from:, in:, has:, before:, after:.",
+    "noResultsHint": "Prova andra sökord eller ta bort några filter.",
+    "clearFilters": "Rensa alla filter",
+    "removeFilter": "Ta bort filtret {filter}",
+    "loadFailed": "Sökningen misslyckades. Försök igen.",
+    "loadMore": "Läs in fler",
+    "threadReply": "Trådsvar",
+    "directMessage": "Direktmeddelande",
+    "groupMessage": "Gruppkonversation",
+    "joined": "Med",
+    "privateChannel": "Privat",
+    "archivedChannel": "Arkiverad",
+    "back": "Tillbaka",
+    "tabs": {
+      "label": "Typer av sökresultat",
+      "messages": "Meddelanden",
+      "files": "Filer",
+      "people": "Personer",
+      "channels": "Kanaler"
+    },
+    "sort": {
+      "label": "Sortera efter",
+      "relevance": "Relevans",
+      "recent": "Senaste"
+    }
+  },
+  "headerTabs": {
+    "files": "Filer",
+    "pins": "Fästa"
+  },
+  "lightbox": {
+    "close": "Stäng"
+  },
+  "later": {
+    "title": "Senare",
+    "saved": "Sparade",
+    "scheduled": "Schemalagda",
+    "loadFailed": "Det gick inte att läsa in sparade meddelanden.",
+    "empty": "Inga sparade meddelanden ännu. Klicka på bokmärkesikonen på ett meddelande för att spara det.",
+    "removeSaved": "Ta bort från Sparade",
+    "menu": "Meny",
+    "reminders": "Påminnelser"
+  },
+  "linkModal": {
+    "title": "Lägg till länk",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Visad text",
+    "optional": "(valfri)",
+    "textPlaceholder": "Länktext",
+    "close": "Stäng"
+  },
+  "actionsMenu": {
+    "noActions": "Inga åtgärder tillgängliga",
+    "markUnread": "Markera som oläst",
+    "pin": "Fäst meddelande",
+    "unpin": "Lossa meddelande",
+    "edit": "Redigera meddelande",
+    "delete": "Ta bort meddelande",
+    "copyLink": "Kopiera länk",
+    "remind": "Påminn mig om detta"
+  },
+  "area": {
+    "selectChannel": "Välj en kanal för att börja skriva meddelanden",
+    "openMenu": "Öppna meny",
+    "placeholder": "Meddelande till #{channel}",
+    "viewing": "Du tittar på <bold>#{channel}</bold>",
+    "joinChannel": "Gå med i kanalen"
+  },
+  "header": {
+    "menu": "Meny",
+    "unstar": "Ta bort från Stjärnmärkta",
+    "star": "Lägg till i Stjärnmärkta",
+    "members": "Medlemmar: {count}",
+    "search": "Sök",
+    "channelMenu": "Kanalalternativ",
+    "leaveChannel": "Lämna kanalen",
+    "leaveLastMember": "Det går inte att lämna kanalen. Du är den sista medlemmen.",
+    "dismiss": "Stäng",
+    "addTopic": "Lägg till ett ämne",
+    "editDetails": "Redigera kanalinformation"
+  },
+  "message": {
+    "edited": "(redigerat)",
+    "pinned": "Fäst",
+    "showMore": "Visa mer",
+    "showLess": "Visa mindre",
+    "repliedToThread": "Svarade i en tråd: {excerpt}",
+    "deletedPlaceholder": "Det här meddelandet togs bort.",
+    "sendToChannel": "Skicka även till kanalen",
+    "removeFromChannel": "Ta bort från kanalen"
+  },
+  "input": {
+    "uploading": "Laddar upp...",
+    "scheduleMessage": "Schemalägg meddelande",
+    "send": "Skicka meddelande",
+    "hint": "Tryck på <kbd>Enter</kbd> för att skicka, <kbd>Shift + Enter</kbd> för en ny rad",
+    "scheduledFor": "Schemalagt till {time}",
+    "scheduleFailed": "Det gick inte att schemalägga meddelandet. Försök igen."
+  },
+  "list": {
+    "loading": "Läser in meddelanden...",
+    "empty": "Inga meddelanden ännu",
+    "emptyReadOnly": "Den här kanalen har inga meddelanden.",
+    "emptyFirst": "Var först med att skicka ett meddelande!"
+  },
+  "reactions": {
+    "tooltip": "{names} reagerade med {emoji}",
+    "add": "Lägg till reaktion",
+    "you": "Du"
+  },
+  "toolbar": {
+    "addReaction": "Lägg till reaktion",
+    "replyInThread": "Svara i tråd",
+    "removeBookmark": "Ta bort bokmärke",
+    "bookmark": "Bokmärk det här meddelandet",
+    "moreActions": "Fler åtgärder"
+  },
+  "mobileSearch": {
+    "placeholder": "Sök meddelanden...",
+    "hint": "Sök efter meddelanden i alla kanaler och konversationer",
+    "close": "Stäng sökningen"
+  },
+  "pins": {
+    "title": "Fästa meddelanden",
+    "loadFailed": "Det gick inte att läsa in fästa meddelanden.",
+    "empty": "Inga fästa meddelanden ännu"
+  },
+  "schedule": {
+    "menuTitle": "Schemalägg meddelande",
+    "in20": "Om 20 minuter",
+    "in1h": "Om 1 timme",
+    "in3h": "Om 3 timmar",
+    "tomorrow9": "Imorgon kl. 09:00",
+    "custom": "Egen tid...",
+    "modalTitle": "Schemalägg meddelande",
+    "dateTime": "Datum och tid",
+    "pickFuture": "Välj en tid i framtiden.",
+    "submit": "Schemalägg",
+    "submitting": "Schemalägger...",
+    "close": "Stäng"
+  },
+  "scheduled": {
+    "loadFailed": "Det gick inte att läsa in schemalagda meddelanden.",
+    "cancelFailed": "Det gick inte att avbryta meddelandet.",
+    "sendFailed": "Det gick inte att skicka meddelandet.",
+    "saveFailed": "Det gick inte att spara ändringarna.",
+    "empty": "Inga schemalagda meddelanden. Använd klockikonen i meddelanderutan för att schemalägga ett.",
+    "sendAt": "Skickas kl.:",
+    "edit": "Redigera",
+    "sendNow": "Skicka nu",
+    "cancel": "Avbryt",
+    "failedDlp": "Meddelandet skickades inte eftersom det matchade en dataskyddsregel ({rule}). Ta bort det och skriv ett nytt."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# svar} other {# svar}}"
+  },
+  "unreads": {
+    "title": "Olästa",
+    "loadFailed": "Det gick inte att läsa in olästa meddelanden.",
+    "empty": "Inga olästa meddelanden. Du är helt ikapp!",
+    "menu": "Meny"
+  },
+  "threadPanel": {
+    "title": "Tråd",
+    "replyPlaceholder": "Svara...",
+    "loadFailed": "Det gick inte att läsa in tråden. Försök igen.",
+    "loading": "Läser in tråden...",
+    "replyFailed": "Det gick inte att skicka svaret. Försök igen.",
+    "joinToReply": "Gå med i kanalen för att svara i trådar",
+    "alsoSendToChannel": "Skicka även till kanalen"
+  },
+  "errors": {
+    "messageEmpty": "Meddelandet kan inte vara tomt.",
+    "pasteUploadFailed": "Det gick inte att ladda upp den inklistrade bilden. Försök igen.",
+    "dropUploadFailed": "Det gick inte att ladda upp den nedsläppta filen. Försök igen.",
+    "uploadFailed": "Det gick inte att ladda upp filen. Försök igen.",
+    "voiceUploadFailed": "Det gick inte att ladda upp röstmeddelandet.",
+    "micDenied": "Åtkomst till mikrofonen nekades. Tillåt åtkomst till mikrofonen.",
+    "loadFailed": "Det gick inte att läsa in meddelandena.",
+    "sendTimeout": "Det tog för lång tid att skicka meddelandet. Försök igen.",
+    "sendFailed": "Meddelandet kunde inte skickas. Försök igen.",
+    "pushNotConfigured": "Pushaviseringar är inte konfigurerade på servern",
+    "serviceWorkerUnavailable": "Service worker är inte tillgänglig",
+    "subscribeFailed": "Det gick inte att registrera prenumerationen",
+    "editFailed": "Det gick inte att spara redigeringen. Försök igen."
+  },
+  "details": {
+    "title": "Kanalinformation",
+    "name": "Namn",
+    "topic": "Ämne",
+    "topicPlaceholder": "Vad handlar den här kanalen om?",
+    "description": "Beskrivning",
+    "descriptionPlaceholder": "Lägg till en beskrivning",
+    "createdBy": "Skapad av {name}",
+    "readOnly": "Endast kanalägare, moderatorer och arbetsytans administratörer kan redigera uppgifterna.",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "saveFailed": "Det gick inte att spara kanalinformationen."
+  },
+  "intro": {
+    "title": "Välkommen till #{name}",
+    "noDescription": "Ingen beskrivning än.",
+    "editDescription": "Redigera beskrivning"
+  },
+  "threads": {
+    "title": "Trådar",
+    "menu": "Meny",
+    "loadFailed": "Det gick inte att läsa in trådarna.",
+    "empty": "Inga trådar ännu",
+    "emptyHint": "Trådar som du startar eller svarar i visas här.",
+    "newReplies": "{count, plural, one {# nytt svar} other {# nya svar}}",
+    "replyCount": "{count, plural, one {# svar} other {# svar}}",
+    "olderReplies": "Öppna tråden för att se tidigare svar",
+    "replyPlaceholder": "Svara...",
+    "send": "Skicka",
+    "replyFailed": "Det gick inte att skicka svaret. Försök igen.",
+    "alsoSendToChannel": "Skicka även till kanalen",
+    "openThread": "Öppna tråd",
+    "loadMore": "Läs in fler",
+    "loading": "Läser in..."
+  },
+  "permalink": {
+    "copied": "Länken kopierades",
+    "notFound": "Det här meddelandet kan inte hittas, eller så saknar du behörighet att visa det",
+    "goHome": "Gå till startsidan",
+    "copyManually": "Det gick inte att kopiera automatiskt. Kopiera den här länken: {url}"
+  },
+  "unread": {
+    "divider": "Nytt",
+    "newMessagesBar": "{count, plural, one {# nytt meddelande} other {# nya meddelanden}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# eller fler nya meddelanden} other {# eller fler nya meddelanden}}",
+    "markRead": "Markera som läst",
+    "jumpFailed": "Det gick inte att läsa in positionen för olästa meddelanden"
+  },
+  "reminder": {
+    "set": "Ställ in påminnelse",
+    "customLabel": "Datum och tid för påminnelsen",
+    "preset": {
+      "in20": "Om 20 minuter",
+      "in1h": "Om 1 timme",
+      "in3h": "Om 3 timmar",
+      "tomorrow": "Imorgon",
+      "nextWeek": "Nästa vecka",
+      "custom": "Egen..."
+    },
+    "status": {
+      "pending": "Kommande",
+      "done": "Klar"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 timme",
+      "tomorrow": "Imorgon"
+    },
+    "loadFailed": "Det gick inte att läsa in påminnelser.",
+    "empty": "Inga påminnelser. Använd menyn med fler åtgärder på ett meddelande eller skriv /remind för att lägga till en.",
+    "emptyDone": "Inga klara påminnelser.",
+    "dueAt": "Förfaller {time}",
+    "firedAt": "Förföll {time}",
+    "completedAt": "Klar {time}",
+    "messageDeleted": "Borttaget meddelande",
+    "complete": "Markera som klar",
+    "reopen": "Markera som inte klar",
+    "delete": "Ta bort påminnelse",
+    "toast": {
+      "created": "Påminnelse inställd",
+      "due": "Påminnelse: {text}",
+      "createFailed": "Det gick inte att ställa in påminnelsen. Försök igen."
+    },
+    "command": {
+      "syntax": "Användning: /remind me [text] in [antal] [minuter|timmar|dagar]",
+      "tooShort": "Påminnelsen måste ligga minst 1 minut fram i tiden.",
+      "tooLong": "Påminnelsen måste ligga inom ett år.",
+      "created": "Påminnelse inställd till {time}"
+    },
+    "pastTime": "Välj en tid i framtiden.",
+    "loadMore": "Läs in fler"
+  }
+}

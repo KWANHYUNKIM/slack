@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Skapa en kanal",
+    "tabBrowse": "Bläddra bland kanaler",
+    "nameLabel": "Kanalnamn",
+    "namePlaceholder": "t.ex. plan-budget",
+    "visibility": "Synlighet",
+    "public": "Offentlig",
+    "private": "Privat",
+    "publicHint": "Alla i arbetsytan kan hitta och gå med i den här kanalen.",
+    "privateHint": "Bara inbjudna medlemmar kan hitta och gå med i den här kanalen.",
+    "cancel": "Avbryt",
+    "create": "Skapa",
+    "noChannels": "Inga kanaler att gå med i",
+    "memberCount": "{count, plural, one {# medlem} other {# medlemmar}}",
+    "joined": "Med",
+    "join": "Gå med",
+    "close": "Stäng",
+    "errors": {
+      "createFailed": "Det gick inte att skapa kanalen"
+    }
+  },
+  "errors": {
+    "loadConversations": "Det gick inte att läsa in konversationerna.",
+    "loadChannels": "Det gick inte att läsa in kanalerna."
+  },
+  "membersPanel": {
+    "title": "Medlemmar",
+    "addPeople": "Lägg till personer",
+    "loadError": "Det gick inte att läsa in medlemmarna.",
+    "removeError": "Det gick inte att ta bort medlemmen",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Ta bort medlem?",
+      "message": "Ta bort <bold>{name}</bold> från den här kanalen?"
+    },
+    "removing": "Tar bort...",
+    "searchByName": "Sök på namn...",
+    "noUsers": "Inga användare hittades",
+    "roles": {
+      "owner": "Ägare",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Ta bort medlem"
+  },
+  "dm": {
+    "messagePlaceholder": "Meddelande till {name}",
+    "you": "(du)",
+    "star": "Lägg till i Stjärnmärkta",
+    "unstar": "Ta bort från Stjärnmärkta",
+    "loadingMessages": "Läser in meddelanden...",
+    "selfSpace": "Det här är ditt utrymme. Skriv utkast, gör din att-göra-lista eller spara länkar och filer.",
+    "conversationStart": "Början på din konversation med {name}",
+    "sendToBegin": "Skicka ett meddelande för att börja.",
+    "edited": "(redigerat)",
+    "pinnedMessages": "Fästa meddelanden",
+    "noPins": "Inga fästa meddelanden ännu",
+    "files": "Filer",
+    "noFiles": "Inga delade filer ännu",
+    "loadError": "Det gick inte att läsa in meddelandena.",
+    "sendError": "Meddelandet kunde inte skickas. Försök igen."
+  },
+  "nameRules": {
+    "required": "Ange ett kanalnamn.",
+    "tooLong": "Kanalnamnet får högst vara {max} tecken.",
+    "invalidChars": "Kanalnamn kan bara innehålla bokstäver, siffror, bindestreck och understreck, och måste börja med en bokstav eller siffra.",
+    "tooManyMarks": "Kanalnamn får inte ha fler än 4 kombinerande tecken i rad.",
+    "mixedScripts": "Kanalnamn får inte blanda lika utseende alfabet (som latin med kyrillisk eller grekisk) eller siffror från ett annat talsystem.",
+    "taken": "Det finns redan en kanal med det namnet."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# medlem} other {# medlemmar}}",
+    "nameLabel": "Konversationens namn",
+    "namePlaceholder": "Lägg till ett namn",
+    "noName": "Inget namn (visar medlemmarnas namn)",
+    "rename": "Byt namn på konversationen",
+    "addPeople": "Lägg till personer",
+    "add": "Lägg till",
+    "createWith": "Starta gruppkonversation",
+    "leave": "Lämna konversationen",
+    "leaveConfirm": "Lämna den här konversationen? Du kommer inte längre att se dess meddelanden.",
+    "conversationStart": "Det här är början på din konversation med {names}",
+    "addError": "Det gick inte att lägga till personer. Försök igen.",
+    "renameError": "Det gick inte att byta namn på konversationen. Försök igen.",
+    "leaveError": "Det gick inte att lämna konversationen. Försök igen."
+  }
+}

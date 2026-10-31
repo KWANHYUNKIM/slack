@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktivitet",
+    "markAllRead": "Markér alt som læst",
+    "loading": "Indlæser...",
+    "loadingMore": "Indlæser flere...",
+    "loadFailed": "Aktiviteten kunne ikke indlæses.",
+    "empty": "Ingen aktivitet endnu.",
+    "unread": "Ulæst",
+    "menu": "Menu",
+    "someone": "Nogen",
+    "directMessage": "en direkte besked",
+    "messageDeleted": "Slettet besked"
+  },
+  "tabs": {
+    "all": "Alle",
+    "mentions": "Omtaler",
+    "threads": "Tråde",
+    "reactions": "Reaktioner"
+  },
+  "describe": {
+    "mention": "{actor} omtalte dig i {where}",
+    "channelMention": "{actor} omtalte @channel i {where}",
+    "hereMention": "{actor} omtalte @here i {where}",
+    "threadReply": "{actor} svarede i en tråd i {where}",
+    "reaction": "{actor} reagerede med {emoji} på din besked i {where}",
+    "reminder": "Påmindelse"
+  }
+}

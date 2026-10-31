@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Kanal oluştur",
+    "tabBrowse": "Kanallara göz at",
+    "nameLabel": "Kanal adı",
+    "namePlaceholder": "ör. plan-butce",
+    "visibility": "Görünürlük",
+    "public": "Herkese açık",
+    "private": "Özel",
+    "publicHint": "Çalışma alanındaki herkes bu kanalı bulabilir ve katılabilir.",
+    "privateHint": "Yalnızca davet edilen üyeler bu kanalı bulabilir ve katılabilir.",
+    "cancel": "İptal",
+    "create": "Oluştur",
+    "noChannels": "Katılabileceğiniz kanal yok",
+    "memberCount": "{count, plural, one {# üye} other {# üye}}",
+    "joined": "Katıldınız",
+    "join": "Katıl",
+    "close": "Kapat",
+    "errors": {
+      "createFailed": "Kanal oluşturulamadı"
+    }
+  },
+  "errors": {
+    "loadConversations": "Sohbetler yüklenemedi.",
+    "loadChannels": "Kanallar yüklenemedi."
+  },
+  "membersPanel": {
+    "title": "Üyeler",
+    "addPeople": "Kişi ekle",
+    "loadError": "Üyeler yüklenemedi.",
+    "removeError": "Üye kaldırılamadı",
+    "online": "Çevrimiçi — {count}",
+    "offline": "Çevrimdışı — {count}",
+    "removeDialog": {
+      "title": "Üye kaldırılsın mı?",
+      "message": "<bold>{name}</bold> bu kanaldan kaldırılsın mı?"
+    },
+    "removing": "Kaldırılıyor...",
+    "searchByName": "Ada göre ara...",
+    "noUsers": "Kullanıcı bulunamadı",
+    "roles": {
+      "owner": "Sahip",
+      "moderator": "Mod"
+    },
+    "removeMember": "Üyeyi kaldır"
+  },
+  "dm": {
+    "messagePlaceholder": "{name} kişisine ileti",
+    "you": "(siz)",
+    "star": "Yıldızlılara ekle",
+    "unstar": "Yıldızlılardan kaldır",
+    "loadingMessages": "İletiler yükleniyor...",
+    "selfSpace": "Burası sizin alanınız. Taslak yazın, yapılacaklarınızı listeleyin veya bağlantı ve dosyalarınızı elinizin altında tutun.",
+    "conversationStart": "{name} ile sohbetinizin başlangıcı",
+    "sendToBegin": "Başlamak için bir ileti gönderin.",
+    "edited": "(düzenlendi)",
+    "pinnedMessages": "Sabitlenmiş iletiler",
+    "noPins": "Henüz sabitlenmiş ileti yok",
+    "files": "Dosyalar",
+    "noFiles": "Henüz paylaşılmış dosya yok",
+    "loadError": "İletiler yüklenemedi.",
+    "sendError": "İleti gönderilemedi. Lütfen yeniden deneyin."
+  },
+  "nameRules": {
+    "required": "Bir kanal adı girin.",
+    "tooLong": "Kanal adı en fazla {max} karakter olabilir.",
+    "invalidChars": "Kanal adları yalnızca harf, rakam, kısa çizgi ve alt çizgi içerebilir ve bir harf veya rakamla başlamalıdır.",
+    "tooManyMarks": "Kanal adlarında arka arkaya en fazla 4 birleştirici işaret olabilir.",
+    "mixedScripts": "Kanal adları birbirine benzeyen alfabeleri (ör. Latin ile Kiril veya Yunan) ya da başka bir sayı sisteminin rakamlarını karıştıramaz.",
+    "taken": "Bu adla bir kanal zaten var."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# üye} other {# üye}}",
+    "nameLabel": "Sohbet adı",
+    "namePlaceholder": "Bir ad ekleyin",
+    "noName": "Ad yok (üyelerin adlarını gösterir)",
+    "rename": "Sohbeti yeniden adlandır",
+    "addPeople": "Kişi ekle",
+    "add": "Ekle",
+    "createWith": "Grup sohbeti başlat",
+    "leave": "Sohbetten ayrıl",
+    "leaveConfirm": "Bu sohbetten ayrılmak istiyor musunuz? Artık iletilerini göremeyeceksiniz.",
+    "conversationStart": "{names} ile sohbetinizin başlangıcı",
+    "addError": "Kişiler eklenemedi. Lütfen yeniden deneyin.",
+    "renameError": "Sohbet yeniden adlandırılamadı. Lütfen yeniden deneyin.",
+    "leaveError": "Sohbetten ayrılınamadı. Lütfen yeniden deneyin."
+  }
+}

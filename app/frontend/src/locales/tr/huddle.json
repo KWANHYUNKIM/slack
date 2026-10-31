@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(sessiz)",
+    "mute": "Sessize al",
+    "unmute": "Sesi aç",
+    "leave": "Huddle'dan ayrıl"
+  },
+  "button": {
+    "leaveFirstError": "Önce mevcut huddle'ınızdan ayrılın",
+    "cancelInviteFirstError": "Önce mevcut davetinizi iptal edin",
+    "cancelInvite": "Daveti iptal et",
+    "calling": "Aranıyor...",
+    "inHuddle": "Huddle'da",
+    "leaveCurrentFirst": "Önce mevcut huddle'dan ayrılın",
+    "start": "Huddle başlat"
+  },
+  "incoming": {
+    "invite": "Huddle daveti",
+    "secondsLeft": "{count} sn",
+    "decline": "Reddet",
+    "accept": "Kabul et"
+  },
+  "system": {
+    "youStarted": "Bir huddle başlattınız.",
+    "started": "Bir huddle başlattı.",
+    "ended": "Sona erdi",
+    "youSentInvite": "Bir huddle daveti gönderdiniz.",
+    "sentInvite": "Size bir huddle daveti gönderdi.",
+    "huddleStarted": "Huddle başladı",
+    "huddleEnded": "Huddle sona erdi ({duration})",
+    "durationSeconds": "{seconds} sn",
+    "durationMinutesSeconds": "{minutes} dk {seconds} sn"
+  },
+  "errors": {
+    "leaveFirst": "Önce mevcut huddle'ınızdan ayrılın",
+    "cancelInviteFirst": "Önce mevcut davetinizi iptal edin",
+    "micDenied": "Mikrofon erişimi reddedildi",
+    "busy": "Başka bir huddle'da",
+    "declined": "Davet reddedildi",
+    "expired": "Davetin süresi doldu",
+    "rateLimited": "Çok fazla istek var. Birazdan yeniden deneyin",
+    "invalidInvite": "Davet isteği geçersizdi",
+    "cannotInviteSelf": "Kendinizi davet edemezsiniz",
+    "userNotFound": "Kullanıcı bulunamadı",
+    "invalidAccept": "Kabul isteği geçersizdi",
+    "inviteNotFound": "Davet bulunamadı veya süresi doldu",
+    "peerOffline": "Çevrimdışılar",
+    "generic": "Huddle başlatılamadı. Lütfen yeniden deneyin"
+  }
+}

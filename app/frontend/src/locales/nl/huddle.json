@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(gedempt)",
+    "mute": "Dempen",
+    "unmute": "Dempen opheffen",
+    "leave": "Huddle verlaten"
+  },
+  "button": {
+    "leaveFirstError": "Verlaat eerst je huidige huddle",
+    "cancelInviteFirstError": "Annuleer eerst je huidige uitnodiging",
+    "cancelInvite": "Uitnodiging annuleren",
+    "calling": "Bellen...",
+    "inHuddle": "In huddle",
+    "leaveCurrentFirst": "Verlaat eerst de huidige huddle",
+    "start": "Huddle starten"
+  },
+  "incoming": {
+    "invite": "Huddle-uitnodiging",
+    "secondsLeft": "{count} s",
+    "decline": "Weigeren",
+    "accept": "Accepteren"
+  },
+  "system": {
+    "youStarted": "Je bent een huddle gestart.",
+    "started": "Heeft een huddle gestart.",
+    "ended": "Beëindigd",
+    "youSentInvite": "Je hebt een huddle-uitnodiging verstuurd.",
+    "sentInvite": "Heeft je een huddle-uitnodiging gestuurd.",
+    "huddleStarted": "Huddle gestart",
+    "huddleEnded": "Huddle beëindigd ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Verlaat eerst je huidige huddle",
+    "cancelInviteFirst": "Annuleer eerst je huidige uitnodiging",
+    "micDenied": "Toegang tot de microfoon geweigerd",
+    "busy": "Deze persoon zit in een andere huddle",
+    "declined": "De uitnodiging is geweigerd",
+    "expired": "De uitnodiging is verlopen",
+    "rateLimited": "Te veel verzoeken. Probeer het zo meteen opnieuw",
+    "invalidInvite": "Het uitnodigingsverzoek was ongeldig",
+    "cannotInviteSelf": "Je kunt jezelf niet uitnodigen",
+    "userNotFound": "Gebruiker niet gevonden",
+    "invalidAccept": "Het accepteerverzoek was ongeldig",
+    "inviteNotFound": "Uitnodiging niet gevonden of verlopen",
+    "peerOffline": "Deze persoon is offline",
+    "generic": "De huddle kon niet worden gestart. Probeer het opnieuw"
+  }
+}

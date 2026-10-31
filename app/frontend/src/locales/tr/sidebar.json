@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Etkinlik",
+    "unreads": "Okunmamışlar",
+    "later": "Daha sonra",
+    "files": "Dosyalar",
+    "admin": "Yönetici",
+    "threads": "Konu zincirleri"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Yeni ileti"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Bildirimler engellendi",
+    "disableNotifications": "Bildirimleri kapat",
+    "enableNotifications": "Bildirimleri aç",
+    "signOut": "Oturumu kapat",
+    "updateStatus": "Durumunuzu güncelleyin",
+    "pauseNotifications": "Bildirimleri duraklat",
+    "pausedUntil": "{time} saatine kadar duraklatıldı",
+    "pausedIndefinitely": "Durumunuz temizlenene kadar duraklatıldı",
+    "resumeNotifications": "Bildirimleri sürdür",
+    "pause": {
+      "m30": "30 dakika",
+      "h1": "1 saat",
+      "h2": "2 saat",
+      "tomorrow": "Yarına kadar"
+    },
+    "pauseError": "Bildirim duraklatma değiştirilemedi. Lütfen yeniden deneyin.",
+    "accessTokens": "Kişisel erişim belirteçleri",
+    "sessions": "Oturum açılmış cihazlar",
+    "twoFactor": "İki adımlı doğrulama",
+    "changePassword": "Parolayı değiştir",
+    "connectedApps": "Bağlı uygulamalar"
+  },
+  "sections": {
+    "starred": "Yıldızlı",
+    "channels": "Kanallar",
+    "addChannels": "Kanal ekle",
+    "directMessages": "Doğrudan iletiler",
+    "addTeammates": "Ekip arkadaşı ekle",
+    "starredEmpty": "Burada tutmak için bir kanalı veya sohbeti yıldızlayın.",
+    "collapse": "{section} bölümünü daralt",
+    "expand": "{section} bölümünü genişlet"
+  },
+  "teammates": {
+    "title": "Doğrudan ileti",
+    "subtitle": "Bir sohbet bulun veya başlatın",
+    "searchPlaceholder": "Ada göre ara...",
+    "noUsers": "Kullanıcı bulunamadı",
+    "close": "Kapat",
+    "pickSubtitle": "En fazla {max, plural, one {# kişi} other {# kişi}} seçin",
+    "select": "{name} seç",
+    "selectedCount": "{max} kişiden {count} kişi seçildi",
+    "start": "Sohbet başlat",
+    "startGroup": "Grup sohbeti başlat"
+  },
+  "you": "(siz)",
+  "notifications": {
+    "someone": "Biri",
+    "sentAttachment": "Bir ek gönderdi",
+    "threadTitle": "{name} (konu zinciri)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# üye} other {# üye}}",
+    "createError": "Grup sohbeti başlatılamadı. Lütfen yeniden deneyin."
+  },
+  "statusDialog": {
+    "title": "Durum ayarla",
+    "emojiLabel": "Bir emoji seçin",
+    "textLabel": "Durumunuz nedir?",
+    "textPlaceholder": "Durumunuz nedir?",
+    "durationLabel": "Şu süre sonra temizle",
+    "duration": {
+      "never": "Temizleme",
+      "m30": "30 dakika",
+      "h1": "1 saat",
+      "h4": "4 saat",
+      "today": "Bugün",
+      "week": "Bu hafta"
+    },
+    "pauseCheckbox": "Durum temizlenene kadar bildirimleri duraklat",
+    "save": "Kaydet",
+    "clear": "Durumu temizle",
+    "cancel": "İptal",
+    "expiresAt": "{time} saatinde temizlenecek",
+    "saveError": "Durumunuz kaydedilemedi. Lütfen yeniden deneyin."
+  },
+  "findConversation": "Bir sohbet bulun"
+}

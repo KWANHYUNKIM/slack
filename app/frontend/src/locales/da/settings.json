@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Sprog",
+    "pending": "{name} (oversættelse kommer snart)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notifikationer sat på pause"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Luk",
+    "loading": "Indlæser...",
+    "notFound": "Profilen blev ikke fundet",
+    "uploadPhoto": "Upload foto",
+    "uploading": "Uploader...",
+    "name": "Navn",
+    "bio": "Bio",
+    "bioPlaceholder": "Fortæl andre om dig selv",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "status": "Status",
+    "joined": "Tilmeldt",
+    "message": "Besked",
+    "edit": "Rediger profil",
+    "statusValue": {
+      "online": "online",
+      "away": "væk",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profilen kunne ikke indlæses.",
+      "saveFailed": "Profilen kunne ikke gemmes. Prøv igen.",
+      "notImage": "Vælg en billedfil.",
+      "tooLarge": "Billedet skal være under 5 MB.",
+      "uploadFailed": "Fotoet kunne ikke uploades. Prøv igen."
+    },
+    "statusUntil": "Indtil {time}"
+  },
+  "crop": {
+    "title": "Beskær dit foto",
+    "close": "Luk",
+    "zoom": "Zoom",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "saving": "Gemmer...",
+    "failed": "Beskæring mislykkedes"
+  },
+  "accessTokens": {
+    "title": "Personlige adgangstokens",
+    "description": "Tokens giver Claude og andre MCP-klienter mulighed for at læse og, hvis du tillader det, skrive i dit arbejdsområde med dine rettigheder. Behandl dem som en adgangskode.",
+    "nameLabel": "Tokennavn",
+    "namePlaceholder": "f.eks. Claude Code på min bærbare",
+    "scopesLabel": "Rettigheder",
+    "scope": {
+      "channelsRead": "Vis kanaler",
+      "channelsHistory": "Læs beskeder, tråde og aktivitet",
+      "usersRead": "Se personer",
+      "chatWrite": "Send, redigér og slet dine beskeder",
+      "reactionsWrite": "Tilføj og fjern dine reaktioner",
+      "imRead": "Vis dine direkte beskeder og gruppesamtaler",
+      "imHistory": "Læs din historik for direkte beskeder",
+      "imWrite": "Send, redigér og slet dine direkte beskeder",
+      "searchRead": "Søg i beskeder, filer, personer og kanaler (resultater fra direkte beskeder kræver historik for direkte beskeder)",
+      "filesRead": "Vis filer og læs indholdet af tekstfiler"
+    },
+    "expiryLabel": "Udløber",
+    "expiryDays": "{count, plural, one {# dag} other {# dage}}",
+    "expiryNever": "Udløber aldrig",
+    "neverWarning": "Tokens uden udløbsdato forbliver gyldige, indtil du tilbagekalder dem.",
+    "create": "Generér token",
+    "createdNotice": "Kopiér dit nye token nu. Du kan ikke se det igen bagefter.",
+    "copy": "Kopiér token",
+    "copyCommand": "Kopiér kommando",
+    "copied": "Kopieret til udklipsholderen",
+    "connectHint": "Forbind fra Claude Code:",
+    "dismiss": "Udført, skjul token",
+    "loading": "Indlæser...",
+    "empty": "Du har ingen personlige adgangstokens.",
+    "expires": "Udløber {date}",
+    "expired": "Udløbet",
+    "noExpiry": "Udløber aldrig",
+    "lastUsed": "Sidst brugt {date}",
+    "neverUsed": "Aldrig brugt",
+    "rename": "Omdøb",
+    "renameLabel": "Omdøb token {name}",
+    "revoke": "Tilbagekald",
+    "revokeLabel": "Tilbagekald token {name}",
+    "revokeConfirm": "Tilbagekald nu",
+    "cancel": "Annuller",
+    "close": "Luk",
+    "errors": {
+      "loadFailed": "Tokens kunne ikke indlæses.",
+      "createFailed": "Tokenet kunne ikke oprettes. Prøv igen.",
+      "renameFailed": "Tokenet kunne ikke omdøbes.",
+      "revokeFailed": "Tokenet kunne ikke tilbagekaldes.",
+      "copyFailed": "Kunne ikke kopieres. Markér teksten, og kopiér den manuelt.",
+      "limitReached": "Du kan have op til {max} aktive tokens. Tilbagekald et, du ikke længere bruger, og prøv igen.",
+      "codeRequired": "Indtast din tofaktorkode for at oprette et token.",
+      "invalidCode": "Tofaktorkoden er forkert."
+    },
+    "codeLabel": "Tofaktorkode",
+    "codeHint": "Indtast en kode fra din godkendelsesapp for at oprette et token."
+  },
+  "sessions": {
+    "title": "Enheder, der er logget ind",
+    "description": "Disse enheder er logget ind på din konto. Log dem ud, du ikke genkender, eller ikke længere bruger.",
+    "loading": "Indlæser...",
+    "empty": "Ingen enheder er logget ind.",
+    "thisDevice": "Denne enhed",
+    "unknownDevice": "Ukendt enhed",
+    "signedInAt": "Logget ind {date}",
+    "lastActive": "Sidst aktiv {date}",
+    "signOut": "Log ud",
+    "signOutLabel": "Log {device} ud",
+    "signOutThisLabel": "Log denne enhed ud ({device})",
+    "signOutOthers": "Log ud af alle andre enheder",
+    "signOutOthersConfirm": "{count, plural, one {Log # anden enhed ud} other {Log # andre enheder ud}}",
+    "revoked": "Enheden er logget ud",
+    "revokedOthers": "Logget ud af alle andre enheder",
+    "errors": {
+      "loadFailed": "Enhederne kunne ikke indlæses.",
+      "revokeFailed": "Kunne ikke logge ud. Prøv igen."
+    },
+    "device": {
+      "desktop": "Desktopapp",
+      "desktopOn": "Desktopapp på {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} på {os}",
+      "unknownOn": "Ukendt enhed på {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Skift adgangskode",
+    "description": "Indtast din nuværende adgangskode, og vælg en ny.",
+    "currentLabel": "Nuværende adgangskode",
+    "newLabel": "Ny adgangskode",
+    "confirmLabel": "Bekræft ny adgangskode",
+    "sessionsNote": "Når du skifter adgangskode, logges dine andre enheder, der er logget ind, ud.",
+    "submit": "Skift adgangskode",
+    "submitting": "Skifter...",
+    "cancel": "Annuller",
+    "successToast": "Din adgangskode er ændret",
+    "errors": {
+      "currentRequired": "Indtast din nuværende adgangskode.",
+      "failed": "Din adgangskode kunne ikke ændres. Prøv igen."
+    }
+  },
+  "twoFactor": {
+    "title": "Tofaktorgodkendelse",
+    "description": "Bed om en kode fra din godkendelsesapp ud over din adgangskode, når du logger ind.",
+    "loading": "Indlæser...",
+    "statusOn": "Til",
+    "statusOff": "Fra",
+    "enabledSince": "Slået til {date}",
+    "recoveryRemaining": "{count, plural, one {# gendannelseskode tilbage} other {# gendannelseskoder tilbage}}",
+    "unavailable": "Tofaktorgodkendelse er ikke tilgængelig på denne server. Kontakt din administrator.",
+    "requiredNotice": "Din organisation kræver tofaktorgodkendelse.",
+    "close": "Luk",
+    "setup": {
+      "start": "Opsæt tofaktorgodkendelse",
+      "starting": "Forbereder...",
+      "step1": "1. Tilføj denne konto til din godkendelsesapp. Åbn linket på din telefon, eller indtast opsætningsnøglen manuelt.",
+      "uriLabel": "Opsætningslink",
+      "openInApp": "Åbn i godkendelsesappen",
+      "qrLabel": "QR-kode til godkendelsesappen",
+      "qrHint": "Scan denne QR-kode med din godkendelsesapp, eller brug linket eller nøglen herunder.",
+      "keyLabel": "Opsætningsnøgle",
+      "copyKey": "Kopiér opsætningsnøgle",
+      "copyUri": "Kopiér opsætningslink",
+      "copied": "Kopieret",
+      "step2": "2. Indtast den 6-cifrede kode, din app viser.",
+      "codeLabel": "Godkendelseskode",
+      "codePlaceholder": "123456",
+      "verify": "Slå til",
+      "verifying": "Kontrollerer...",
+      "cancel": "Annuller",
+      "passwordLabel": "3. Indtast din nuværende adgangskode.",
+      "sessionsNote": "Når du slår dette til, logges dine andre enheder, der er logget ind, ud."
+    },
+    "recovery": {
+      "title": "Gem dine gendannelseskoder",
+      "description": "Brug en gendannelseskode til at logge ind, hvis du mister din enhed. Hver kode virker én gang. De vises ikke igen.",
+      "download": "Download",
+      "copy": "Kopiér alle",
+      "fileHeader": "Gendannelseskoder. Hver kode virker én gang. Opbevar dem et sikkert sted.",
+      "confirmSaved": "Jeg har gemt mine gendannelseskoder",
+      "fileName": "gendannelseskoder.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Adgangskode",
+      "codeLabel": "Godkendelses- eller gendannelseskode",
+      "cancel": "Annuller",
+      "passwordInvalid": "Indtast en gyldig adgangskode.",
+      "codeInvalid": "Indtast en gyldig godkendelses- eller gendannelseskode."
+    },
+    "regenerate": {
+      "start": "Opret nye gendannelseskoder",
+      "title": "Opret nye gendannelseskoder",
+      "description": "Dine gamle gendannelseskoder holder op med at virke, så snart du opretter nye. Indtast din adgangskode og en kode fra din godkendelsesapp (eller en gendannelseskode).",
+      "submit": "Opret nye koder",
+      "submitting": "Opretter...",
+      "lowNotice": "{count, plural, one {Kun # gendannelseskode er tilbage} other {Kun # gendannelseskoder er tilbage}}. Opret nye, før de løber tør.",
+      "toast": "Nye gendannelseskoder er klar"
+    },
+    "disable": {
+      "title": "Slå tofaktorgodkendelse fra",
+      "description": "Indtast din adgangskode og en kode fra din godkendelsesapp (eller en gendannelseskode).",
+      "start": "Slå fra",
+      "submit": "Slå tofaktorgodkendelse fra",
+      "submitting": "Slår fra...",
+      "blockedByPolicy": "Din organisation kræver tofaktorgodkendelse, så du kan ikke slå den fra. Hvis du har mistet din enhed, skal du bede en administrator om at nulstille den."
+    },
+    "enabledToast": "Tofaktorgodkendelse er slået til",
+    "disabledToast": "Tofaktorgodkendelse er slået fra",
+    "errors": {
+      "loadFailed": "Indstillingerne for tofaktorgodkendelse kunne ikke indlæses.",
+      "setupFailed": "Opsætningen kunne ikke startes. Prøv igen.",
+      "enableFailed": "Tofaktorgodkendelse kunne ikke slås til.",
+      "regenerateFailed": "Nye gendannelseskoder kunne ikke oprettes.",
+      "disableFailed": "Tofaktorgodkendelse kunne ikke slås fra.",
+      "copyFailed": "Kunne ikke kopiere til udklipsholderen."
+    }
+  },
+  "connectedApps": {
+    "title": "Forbundne apps",
+    "description": "Apps, du har tilladt at bruge din konto via OAuth-login. De handler med dine rettigheder. Afbryd forbindelsen til alle apps, du ikke længere bruger.",
+    "loading": "Indlæser...",
+    "empty": "Ingen apps er forbundet til din konto.",
+    "redirectsTo": "Sender tilbage til {hosts}",
+    "connectedAt": "Forbundet {date}",
+    "lastUsed": "Sidst brugt {date}",
+    "neverUsed": "Aldrig brugt",
+    "disconnect": "Afbryd forbindelse",
+    "disconnectLabel": "Afbryd forbindelsen til {name}",
+    "disconnectConfirm": "Afbryd nu",
+    "cancel": "Annuller",
+    "disconnected": "Appen er frakoblet",
+    "close": "Luk",
+    "errors": {
+      "loadFailed": "Forbundne apps kunne ikke indlæses.",
+      "disconnectFailed": "Appen kunne ikke frakobles."
+    },
+    "unnamedApp": "Unavngiven app"
+  }
+}

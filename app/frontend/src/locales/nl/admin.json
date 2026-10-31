@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Beheerpaneel",
+    "openSidebar": "Zijbalk openen",
+    "tabs": {
+      "members": "Leden",
+      "invites": "Uitnodigingen",
+      "channels": "Kanalen",
+      "webhooks": "Webhooks",
+      "audit": "Auditlogboek",
+      "retention": "Gegevensbewaring",
+      "security": "Beveiliging",
+      "dlp": "DLP",
+      "legalHolds": "Juridische bewaring"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanaal",
+      "members": "Leden",
+      "messages": "Berichten",
+      "created": "Gemaakt"
+    },
+    "actions": {
+      "rename": "Kanaal hernoemen",
+      "archive": "Kanaal archiveren",
+      "delete": "Kanaal verwijderen",
+      "unarchive": "Kanaal uit archief halen",
+      "deletePermanently": "Definitief verwijderen"
+    },
+    "emptyActive": "Geen actieve kanalen",
+    "archivedHeading": "Gearchiveerde kanalen ({count})",
+    "archivedOn": "gearchiveerd op {date}",
+    "messageCount": "{count, plural, one {# bericht} other {# berichten}}",
+    "deleteDialog": {
+      "title": "Kanaal verwijderen",
+      "message": "Weet je zeker dat je #{name} definitief wilt verwijderen? Alle berichten gaan verloren. Dit kan niet ongedaan worden gemaakt."
+    },
+    "archiveDialog": {
+      "title": "Kanaal archiveren",
+      "confirm": "Archiveren",
+      "message": "#{name} archiveren? Het wordt verborgen in de zijbalk, maar de berichten blijven bewaard. Je kunt het later uit het archief halen."
+    },
+    "unarchiveDialog": {
+      "title": "Kanaal uit archief halen",
+      "confirm": "Uit archief halen",
+      "message": "#{name} uit het archief halen? Het verschijnt dan weer in de zijbalk voor alle leden."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Zoek leden...",
+    "columns": {
+      "user": "Gebruiker",
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Status",
+      "actions": "Acties"
+    },
+    "you": "(jij)",
+    "roles": {
+      "owner": "Eigenaar",
+      "admin": "Beheerder",
+      "member": "Lid",
+      "guest": "Gast"
+    },
+    "status": {
+      "active": "Actief",
+      "deactivated": "Gedeactiveerd"
+    },
+    "actions": {
+      "transfer": "Eigenaarschap overdragen",
+      "reactivate": "Opnieuw activeren",
+      "deactivate": "Deactiveren",
+      "forceLogout": "Geforceerd afmelden",
+      "resetMfa": "2FA resetten"
+    },
+    "empty": "Geen gebruikers gevonden",
+    "dialogs": {
+      "transfer": {
+        "title": "Eigenaarschap van de werkruimte overdragen",
+        "confirm": "Overdragen",
+        "message": "Weet je zeker dat je het eigenaarschap van de werkruimte wilt overdragen aan {name}? Jij wordt dan teruggezet naar Beheerder."
+      },
+      "deactivate": {
+        "title": "Gebruiker deactiveren",
+        "confirm": "Deactiveren",
+        "message": "Weet je zeker dat je {name} wilt deactiveren? Die wordt meteen afgemeld en kan niet meer aanmelden."
+      },
+      "reactivate": {
+        "title": "Gebruiker opnieuw activeren",
+        "confirm": "Opnieuw activeren",
+        "message": "Weet je zeker dat je {name} opnieuw wilt activeren? Die kan dan weer aanmelden."
+      },
+      "forceLogout": {
+        "title": "Geforceerd afmelden",
+        "confirm": "Afmelden",
+        "message": "{name} nu op alle apparaten afmelden? Het account blijft actief en de persoon kan weer aanmelden."
+      },
+      "resetMfa": {
+        "title": "Tweestapsverificatie resetten",
+        "confirm": "Resetten",
+        "message": "Tweestapsverificatie voor {name} verwijderen? Die persoon wordt op alle apparaten afgemeld en kan alleen met het wachtwoord aanmelden."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Tweestapsverificatie staat aan"
+    }
+  },
+  "invites": {
+    "createHeading": "Uitnodigingslink maken",
+    "fields": {
+      "role": "Rol",
+      "maxUses": "Maximaal aantal gebruiken",
+      "expiresIn": "Verloopt over"
+    },
+    "unlimited": "Onbeperkt",
+    "expiry": {
+      "1d": "1 dag",
+      "7d": "7 dagen",
+      "30d": "30 dagen",
+      "never": "Nooit"
+    },
+    "expired": "Verlopen",
+    "columns": {
+      "url": "Uitnodigings-URL",
+      "uses": "Gebruik",
+      "expires": "Verloopt",
+      "createdBy": "Gemaakt door"
+    },
+    "copyUrl": "Uitnodigings-URL kopiëren",
+    "full": "(vol)",
+    "delete": "Uitnodiging verwijderen",
+    "empty": "Nog geen uitnodigingslinks"
+  },
+  "webhooks": {
+    "createHeading": "Webhook maken",
+    "fields": {
+      "name": "Naam van de webhook",
+      "channel": "Kanaal"
+    },
+    "namePlaceholder": "Mijn integratie",
+    "selectChannel": "Kies een kanaal...",
+    "columns": {
+      "name": "Naam",
+      "url": "Webhook-URL",
+      "lastUsed": "Laatst gebruikt"
+    },
+    "never": "Nooit",
+    "justNow": "Zojuist",
+    "inactive": "Inactief",
+    "copyUrl": "Webhook-URL kopiëren",
+    "delete": "Webhook verwijderen",
+    "empty": "Nog geen webhooks ingesteld"
+  },
+  "audit": {
+    "empty": "Er zijn geen auditlogboekitems die overeenkomen. Vastgelegde acties verschijnen hier.",
+    "loadMore": "Meer laden",
+    "targets": {
+      "user": "Gebruiker",
+      "channel": "Kanaal",
+      "invite": "Uitnodiging",
+      "webhook": "Webhook",
+      "message": "Bericht",
+      "directMessage": "Direct bericht",
+      "token": "Toegangstoken",
+      "auditLog": "Auditlogboek",
+      "mcpTool": "MCP-tool",
+      "workspace": "Werkruimte",
+      "file": "Bestand",
+      "dlpRule": "DLP-regel",
+      "legalHold": "Juridische bewaring"
+    },
+    "action": {
+      "authLogin": "Aangemeld",
+      "authLoginFailed": "Aanmelden mislukt",
+      "authLogout": "Afgemeld",
+      "authPasswordChanged": "Wachtwoord gewijzigd",
+      "userRoleChanged": "Rol gewijzigd",
+      "userDeactivated": "Gedeactiveerd",
+      "userForceLogout": "Geforceerd afgemeld",
+      "userReactivated": "Opnieuw geactiveerd",
+      "ownershipTransferred": "Eigenaarschap overgedragen",
+      "ownerBootstrapped": "Eigenaar aangemaakt",
+      "channelCreated": "Kanaal gemaakt",
+      "channelEdited": "Kanaal bewerkt",
+      "channelArchived": "Kanaal gearchiveerd",
+      "channelUnarchived": "Kanaal uit archief gehaald",
+      "channelDeleted": "Kanaal verwijderd",
+      "channelMemberAdded": "Lid toegevoegd",
+      "channelMemberRemoved": "Lid verwijderd",
+      "inviteCreated": "Uitnodiging gemaakt",
+      "inviteDeleted": "Uitnodiging verwijderd",
+      "webhookCreated": "Webhook gemaakt",
+      "webhookDeleted": "Webhook verwijderd",
+      "tokenCreate": "Token gemaakt",
+      "tokenRevoke": "Token ingetrokken",
+      "mcpToolCall": "MCP-toolaanroep",
+      "auditExported": "Auditlogboek geëxporteerd",
+      "authLoginLocked": "Account vergrendeld",
+      "sessionRevoked": "Apparaat afgemeld",
+      "sessionRevokedAll": "Alle apparaten afgemeld",
+      "retentionPurged": "Verlopen gegevens verwijderd",
+      "retentionWorkspaceUpdated": "Bewaarbeleid gewijzigd",
+      "retentionChannelUpdated": "Bewaring van kanaal gewijzigd",
+      "retentionChannelCleared": "Bewaring van kanaal teruggezet",
+      "mfaEnabled": "Tweestapsverificatie aangezet",
+      "mfaDisabled": "Tweestapsverificatie uitgezet",
+      "mfaRecoveryUsed": "Herstelcode gebruikt",
+      "mfaRecoveryRegenerated": "Herstelcodes opnieuw gemaakt",
+      "mfaResetByAdmin": "Tweestapsverificatie gereset door beheerder",
+      "mfaPolicyChanged": "Vereiste voor tweestapsverificatie gewijzigd",
+      "dlpBlocked": "Bericht geblokkeerd door DLP",
+      "dlpWarned": "DLP-waarschuwing",
+      "dlpRuleCreated": "DLP-regel gemaakt",
+      "dlpRuleUpdated": "DLP-regel gewijzigd",
+      "dlpRuleDeleted": "DLP-regel verwijderd",
+      "dlpRuleTimeout": "DLP-regel verlopen",
+      "dlpRuleAutoDisabled": "DLP-regel automatisch uitgezet",
+      "legalHoldCreated": "Juridische bewaring gemaakt",
+      "legalHoldUpdated": "Juridische bewaring bewerkt",
+      "legalHoldCustodianAdded": "Persoon toegevoegd aan juridische bewaring",
+      "legalHoldCustodianRemoved": "Persoon verwijderd uit juridische bewaring",
+      "legalHoldReleased": "Juridische bewaring opgeheven",
+      "ediscoverySearched": "eDiscovery-zoekopdracht",
+      "ediscoveryExportRequested": "eDiscovery-export aangevraagd",
+      "ediscoveryExported": "eDiscovery geëxporteerd"
+    },
+    "filters": {
+      "allActions": "Alle acties",
+      "actionsSelected": "{count, plural, one {# actie} other {# acties}}",
+      "actor": "Uitvoerder",
+      "allActors": "Alle uitvoerders",
+      "targetType": "Doeltype",
+      "allTargets": "Alle doelen",
+      "from": "Van",
+      "to": "Tot",
+      "apply": "Toepassen",
+      "reset": "Resetten"
+    },
+    "export": {
+      "csv": "CSV exporteren",
+      "json": "JSON exporteren"
+    },
+    "unknownActor": "Onbekend"
+  },
+  "errors": {
+    "archiveChannel": "Kanaal archiveren is mislukt",
+    "createInvite": "Uitnodiging maken is mislukt",
+    "createWebhook": "Webhook maken is mislukt",
+    "deactivateUser": "Gebruiker deactiveren is mislukt",
+    "deleteChannel": "Kanaal verwijderen is mislukt",
+    "deleteInvite": "Uitnodiging verwijderen is mislukt",
+    "deleteWebhook": "Webhook verwijderen is mislukt",
+    "editChannel": "Kanaal bewerken is mislukt",
+    "exportAuditLog": "Auditlogboek exporteren is mislukt",
+    "fetchAuditLog": "Auditlogboek ophalen is mislukt",
+    "fetchChannels": "Kanalen ophalen is mislukt",
+    "fetchInvites": "Uitnodigingen ophalen is mislukt",
+    "fetchUsers": "Gebruikers ophalen is mislukt",
+    "fetchWebhooks": "Webhooks ophalen is mislukt",
+    "forceLogout": "Gebruiker afmelden is mislukt",
+    "reactivateUser": "Gebruiker opnieuw activeren is mislukt",
+    "removeChannelMember": "Kanaallid verwijderen is mislukt",
+    "transferOwnership": "Eigenaarschap overdragen is mislukt",
+    "unarchiveChannel": "Kanaal uit archief halen is mislukt",
+    "updateRole": "Rol bijwerken is mislukt",
+    "resetMfa": "Tweestapsverificatie resetten is mislukt"
+  },
+  "retention": {
+    "title": "Gegevensbewaring",
+    "description": "Berichten automatisch verwijderen na een ingesteld aantal dagen. Bestanden gaan mee met hun berichten. Het opschonen gebeurt één keer per dag. Herinneringen blijven bewaard en tonen \"verwijderd bericht\".",
+    "loadError": "Het bewaarbeleid kon niet worden geladen",
+    "saveError": "Het bewaarbeleid kon niet worden opgeslagen",
+    "resetError": "Het beleid voor het kanaal kon niet worden teruggezet",
+    "workspace": {
+      "heading": "Standaard van de werkruimte",
+      "hint": "Geldt voor elk kanaal zonder eigen instelling, en voor directe berichten en groepsberichten."
+    },
+    "mode": {
+      "forever": "Altijd bewaren",
+      "days": "Verwijderen na een aantal dagen",
+      "inherit": "Standaard van de werkruimte gebruiken"
+    },
+    "daysLabel": "Dagen",
+    "daysHint": "{min} tot {max} dagen",
+    "effective": {
+      "forever": "Altijd bewaard",
+      "days": "{count, plural, one {# dag} other {# dagen}}"
+    },
+    "channels": {
+      "heading": "Kanalen",
+      "columns": {
+        "channel": "Kanaal",
+        "policy": "Beleid",
+        "effective": "Geldt"
+      },
+      "legalHold": "Juridische bewaring",
+      "reset": "Terugzetten naar standaard",
+      "empty": "Geen kanalen"
+    },
+    "save": "Opslaan",
+    "saved": "Opgeslagen",
+    "confirm": {
+      "title": "Oude berichten definitief verwijderen?",
+      "message": "Bij de volgende opschoning worden berichten die ouder zijn dan {count, plural, one {# dag} other {# dagen}} definitief verwijderd, samen met hun bestanden. Dit kan niet ongedaan worden gemaakt.",
+      "confirm": "Beleid toepassen"
+    }
+  },
+  "security": {
+    "title": "Tweestapsverificatie",
+    "requireMfa": "Tweestapsverificatie verplicht stellen voor iedereen",
+    "requireMfaHint": "Leden zonder tweestapsverificatie kunnen alleen het instelscherm openen totdat ze het aanzetten.",
+    "unavailable": "Tweestapsverificatie staat uit op deze server omdat er geen versleutelingssleutel is ingesteld (TOTP_ENCRYPTION_KEY). De verplichting wordt niet afgedwongen.",
+    "saved": "Beveiligingsinstellingen opgeslagen",
+    "loading": "Laden...",
+    "errors": {
+      "loadFailed": "De beveiligingsinstellingen konden niet worden geladen.",
+      "saveFailed": "De beveiligingsinstellingen konden niet worden opgeslagen."
+    },
+    "allowOAuthApps": "Leden toestaan OAuth-apps te verbinden",
+    "allowOAuthAppsHint": "Laat leden apps zoals Claude verbinden via de OAuth-aanmeldstroom. Als je dit uitzet, worden alle apps meteen losgekoppeld."
+  },
+  "dlp": {
+    "title": "Gegevensverlies voorkomen",
+    "description": "Detecteer gevoelige patronen in berichten, zoals kaartnummers. Een blokkeerregel voorkomt dat het bericht wordt opgeslagen. Een waarschuwingsregel slaat het op en legt het vast in het auditlogboek. De tekst van het bericht wordt nooit in het logboek geschreven.",
+    "loadError": "DLP-regels laden is mislukt",
+    "saveError": "De regel opslaan is mislukt",
+    "toggleError": "De regel wijzigen is mislukt",
+    "deleteError": "De regel verwijderen is mislukt",
+    "testError": "Het patroon testen is mislukt",
+    "builtinBadge": "Ingebouwd",
+    "builtinPattern": "Ingebouwde detector",
+    "builtin": {
+      "credit_card": "Creditcardnummer",
+      "kr_rrn": "Koreaans burgerservicenummer",
+      "aws_access_key": "AWS-toegangssleutel",
+      "private_key": "Privésleutel"
+    },
+    "action": {
+      "BLOCK": "Blokkeren",
+      "WARN": "Waarschuwen"
+    },
+    "columns": {
+      "name": "Regel",
+      "pattern": "Patroon",
+      "action": "Actie",
+      "enabled": "Status"
+    },
+    "on": "Aan",
+    "off": "Uit",
+    "toggleLabel": "{name} aan- of uitzetten",
+    "edit": "Bewerken",
+    "editLabel": "{name} bewerken",
+    "delete": "Verwijderen",
+    "deleteLabel": "{name} verwijderen",
+    "form": {
+      "createHeading": "Een regel toevoegen",
+      "editHeading": "Regel bewerken",
+      "name": "Naam",
+      "pattern": "Patroon (reguliere expressie)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Actie",
+      "add": "Regel toevoegen",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "hint": "Maximaal {max} tekens. Geneste herhalingen zoals (a+)+, verwijzingen naar eerdere groepen en zeer grote herhalingsaantallen worden geweigerd."
+    },
+    "patternProblem": {
+      "empty": "Voer een patroon in.",
+      "tooLong": "Het patroon is te lang.",
+      "invalid": "Dit is geen geldige reguliere expressie.",
+      "backreference": "Verwijzingen naar eerdere groepen zijn niet toegestaan.",
+      "nestedQuantifier": "Geneste herhalingen kunnen de controle heel traag maken en zijn niet toegestaan.",
+      "repeatTooLarge": "Het herhalingsaantal is te groot (maximaal 200)."
+    },
+    "test": {
+      "heading": "Een patroon testen",
+      "hint": "Er wordt niets opgeslagen. Voer hierboven een patroon in of kies een opgeslagen regel, en typ daarna voorbeeldtekst.",
+      "source": "Te testen patroon",
+      "sourceDraft": "Patroon in het formulier hierboven",
+      "sample": "Voorbeeldtekst",
+      "run": "Testen",
+      "matched": "Overeenkomst. Deze tekst zou worden opgemerkt.",
+      "notMatched": "Geen overeenkomst.",
+      "timedOut": "De controle duurde te lang en is gestopt. Vereenvoudig het patroon."
+    },
+    "confirmDelete": {
+      "title": "Deze regel verwijderen?",
+      "message": "De regel \"{name}\" wordt verwijderd en niet meer gecontroleerd."
+    }
+  },
+  "legalHolds": {
+    "description": "Bewaar alles wat een persoon heeft geschreven of ontvangen, ook als de gegevensbewaring het zou verwijderen. Beheerders kunnen de bewaarde gegevens doorzoeken en exporteren voor juridische controle.",
+    "statusFilter": "Tonen",
+    "status": {
+      "active": "Actief",
+      "released": "Opgeheven",
+      "all": "Alle"
+    },
+    "empty": "Geen juridische bewaringen",
+    "selectHint": "Selecteer een juridische bewaring om de personen te beheren en de gegevens te doorzoeken.",
+    "loadMore": "Meer laden",
+    "custodianCount": "{count, plural, one {# persoon} other {# personen}}",
+    "createdOn": "Gemaakt op {date}",
+    "releasedOn": "Opgeheven op {date}",
+    "createdBy": "Gemaakt door {name} op {date}",
+    "releasedBy": "Opgeheven door {name} op {date}",
+    "unknownUser": "Onbekende gebruiker",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "fields": {
+      "name": "Naam",
+      "description": "Beschrijving (optioneel)"
+    },
+    "create": {
+      "open": "Nieuwe bewaring",
+      "submit": "Bewaring maken",
+      "hint": "Je kunt personen toevoegen nadat je de bewaring hebt gemaakt."
+    },
+    "custodians": {
+      "heading": "Personen onder bewaring",
+      "pick": "Kies een persoon",
+      "add": "Toevoegen",
+      "remove": "{name} uit deze bewaring verwijderen",
+      "empty": "Nog niemand staat onder deze bewaring.",
+      "deactivated": "Gedeactiveerd"
+    },
+    "release": {
+      "open": "Bewaring opheffen",
+      "title": "Deze juridische bewaring opheffen?",
+      "message": "\"{name}\" stopt met het bewaren van gegevens. Personen die niet op een andere actieve bewaring staan, vallen weer onder het normale bewaarbeleid, en hun oude berichten kunnen bij de volgende opschoning worden verwijderd. De bewaring en de lijst met personen blijven vastgelegd. Dit kan niet ongedaan worden gemaakt.",
+      "confirm": "Opheffen"
+    },
+    "discovery": {
+      "heading": "Zoeken en exporteren",
+      "hint": "Omvat berichten die de personen onder bewaring in elk kanaal hebben geschreven (ook privékanalen), directe en groepsberichten waaraan ze hebben deelgenomen, en bestandsgegevens. Verwijderde berichten zijn inbegrepen en gemarkeerd.",
+      "query": "Trefwoord",
+      "from": "Van",
+      "to": "Tot",
+      "search": "Zoeken",
+      "export": "Exporteren (JSONL)",
+      "exportHint": "Exporteert de resultaten van de laatste zoekopdracht. Elke zoekopdracht en elke export wordt in het auditlogboek vastgelegd.",
+      "searchFirst": "Zoek eerst met deze filters. Export gebruikt de filters van de zoekopdracht hieronder.",
+      "kinds": {
+        "channel": "Kanaalberichten",
+        "dm": "Directe berichten",
+        "file": "Bestanden"
+      },
+      "empty": "Geen resultaten",
+      "deleted": "Verwijderd",
+      "edited": "Bewerkt",
+      "reply": "Threadreactie",
+      "groupDm": "Groepsbericht #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Juridische bewaringen laden is mislukt",
+      "create": "De juridische bewaring kon niet worden gemaakt",
+      "update": "De juridische bewaring kon niet worden bijgewerkt",
+      "custodians": "De personen onder bewaring konden niet worden gewijzigd",
+      "release": "De juridische bewaring kon niet worden opgeheven",
+      "search": "Zoeken is mislukt",
+      "export": "Exporteren is mislukt"
+    }
+  }
+}
