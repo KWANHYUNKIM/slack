@@ -8,6 +8,7 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 
+import { processNewChannelMessage } from '../services/mentionService.js';
 const router = Router();
 
 const scheduleMessageSchema = z.object({
@@ -279,6 +280,8 @@ router.post('/scheduled/:id/send', authMiddleware, async (req: AuthRequest, res:
     }
 
     res.json({ success: true, message });
+
+    void processNewChannelMessage(message, { generalPush: true });
   } catch (error) {
     logError('Send scheduled message now error', error);
     res.status(500).json({ error: 'Failed to send message' });

@@ -64,14 +64,6 @@ router.post('/:id/reactions', authMiddleware, requireMessageAccess, async (req: 
       },
     });
 
-    await createReactionActivity({
-      actorId: userId,
-      targetUserId: req.message.userId,
-      emoji,
-      messageId,
-      channelId: req.channelId,
-    });
-
     // Broadcast to channel so other users see the reaction in real-time
     const channelId = req.channelId;
     if (channelId) {
@@ -83,6 +75,16 @@ router.post('/:id/reactions', authMiddleware, requireMessageAccess, async (req: 
     }
 
     res.status(201).json(reaction);
+
+    void createReactionActivity({
+      actorId: userId,
+      targetUserId: req.message.userId,
+      emoji,
+      messageId,
+      channelId: req.channelId,
+      actor: reaction.user,
+    });
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });

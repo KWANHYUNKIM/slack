@@ -1,4 +1,4 @@
-import type { Activity, ActivityType } from '@prisma/client';
+import type { Activity, ActivityType, Prisma } from '@prisma/client';
 import prisma from '../db.js';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -40,6 +40,17 @@ export function parseMentions(content: string): ParsedMentions {
   };
 }
 
+// 응답 뒤에 await 없이 도는 작업을 추적한다. 테스트가 끝나길 기다릴 때(settleBackgroundWork)만 쓴다.
+const pending = new Set<Promise<unknown>>();
+function track<T>(p: Promise<T>): Promise<T> {
+  pending.add(p);
+  void p.finally(() => pending.delete(p));
+  return p;
+}
+export async function settleBackgroundWork(): Promise<void> {
+  while (pending.size > 0) await Promise.allSettled([...pending]);
+}
+
 // ── 직렬화와 이벤트 ──────────────────────────────────────────────────
 
 export interface ActivityView {
@@ -57,20 +68,38 @@ export interface ActivityView {
   createdAt: Date;
 }
 
+type ActorLike = { id: number; name: string; avatar: string | null };
+type TargetLike = { id: number; content: string; threadId: number | null };
+
+/** 호출자가 이미 가진 객체. 있으면 해당 id는 다시 조회하지 않는다. */
+interface Preload {
+  actors?: ActorLike[];
+  channels?: { id: number; name: string }[];
+  messages?: TargetLike[];
+  dms?: TargetLike[];
+}
+
 function excerpt(content: string): string {
   return content.length > EXCERPT_LENGTH ? `${content.slice(0, EXCERPT_LENGTH)}…` : content;
 }
 
 /** Activity 행들을 화면용 객체로 바꾼다(배우·채널·메시지를 한 번에 조회). 대상 메시지가 지워졌으면 뺀다. */
-export async function serializeActivities(rows: Activity[]): Promise<ActivityView[]> {
+export async function serializeActivities(rows: Activity[], preload: Preload = {}): Promise<ActivityView[]> {
   if (rows.length === 0) return [];
-  const actorIds = [...new Set(rows.map((r) => r.actorId))];
-  const channelIds = [...new Set(rows.map((r) => r.channelId).filter((v): v is number => v !== null))];
-  const messageIds = [...new Set(rows.map((r) => r.messageId).filter((v): v is number => v !== null))];
-  const dmIds = [...new Set(rows.map((r) => r.dmId).filter((v): v is number => v !== null))];
+  const actorMap = new Map<number, ActorLike>((preload.actors ?? []).map((a) => [a.id, a]));
+  const channelMap = new Map((preload.channels ?? []).map((c) => [c.id, c]));
+  const messageMap = new Map<number, TargetLike>((preload.messages ?? []).map((m) => [m.id, m]));
+  const dmMap = new Map<number, TargetLike>((preload.dms ?? []).map((d) => [d.id, d]));
+
+  const missing = (ids: (number | null)[], have: Map<number, unknown>): number[] =>
+    [...new Set(ids.filter((v): v is number => v !== null && !have.has(v)))];
+  const actorIds = missing(rows.map((r) => r.actorId), actorMap);
+  const channelIds = missing(rows.map((r) => r.channelId), channelMap);
+  const messageIds = missing(rows.map((r) => r.messageId), messageMap);
+  const dmIds = missing(rows.map((r) => r.dmId), dmMap);
 
   const [actors, channels, messages, dms] = await Promise.all([
-    prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, avatar: true } }),
+    actorIds.length ? prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, avatar: true } }) : [],
     channelIds.length ? prisma.channel.findMany({ where: { id: { in: channelIds } }, select: { id: true, name: true } }) : [],
     messageIds.length
       ? prisma.message.findMany({ where: { id: { in: messageIds }, deletedAt: null }, select: { id: true, content: true, threadId: true } })
@@ -79,10 +108,10 @@ export async function serializeActivities(rows: Activity[]): Promise<ActivityVie
       ? prisma.directMessage.findMany({ where: { id: { in: dmIds }, deletedAt: null }, select: { id: true, content: true, threadId: true } })
       : [],
   ]);
-  const actorMap = new Map(actors.map((a) => [a.id, a]));
-  const channelMap = new Map(channels.map((c) => [c.id, c]));
-  const messageMap = new Map(messages.map((m) => [m.id, m]));
-  const dmMap = new Map(dms.map((d) => [d.id, d]));
+  actors.forEach((a) => actorMap.set(a.id, a));
+  channels.forEach((c) => channelMap.set(c.id, c));
+  messages.forEach((m) => messageMap.set(m.id, m));
+  dms.forEach((d) => dmMap.set(d.id, d));
 
   const views: ActivityView[] = [];
   for (const r of rows) {
@@ -107,10 +136,10 @@ export async function serializeActivities(rows: Activity[]): Promise<ActivityVie
   return views;
 }
 
-async function emitNew(rows: Activity[]): Promise<void> {
+async function emitNew(rows: Activity[], preload: Preload = {}): Promise<void> {
   const io = getIO();
   if (!io || rows.length === 0) return;
-  const views = await serializeActivities(rows);
+  const views = await serializeActivities(rows, preload);
   const byId = new Map(rows.map((r) => [r.id, r.userId]));
   for (const view of views) {
     io.to(`user:${byId.get(view.id)}`).emit('activity:new', { activity: view });
@@ -130,6 +159,18 @@ export function emitRead(userId: number, ids: number[]): void {
   getIO()?.to(`user:${userId}`).emit('activity:read', { ids });
 }
 
+/** 중복은 DB의 unique(NULLS NOT DISTINCT)가 막는다. 동시에 들어와도 먼저 들어간 행만 남고 충돌한 행은 조용히 건너뛴다. */
+function insertActivities(data: Prisma.ActivityCreateManyInput[]): Promise<Activity[]> {
+  if (data.length === 0) return Promise.resolve([]);
+  return prisma.activity.createManyAndReturn({ data, skipDuplicates: true });
+}
+
+async function removeRows(rows: Pick<Activity, 'id' | 'userId'>[]): Promise<void> {
+  if (rows.length === 0) return;
+  await prisma.activity.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
+  emitRemoved(rows);
+}
+
 // ── 채널 메시지 ──────────────────────────────────────────────────────
 
 interface ChannelMessageLike {
@@ -138,119 +179,175 @@ interface ChannelMessageLike {
   userId: number;
   channelId: number;
   threadId: number | null;
+  user?: ActorLike | null; // 있으면 배우 조회를 건너뛴다
 }
 
-/** 멘션 대상을 계산해 Activity를 맞춘다. 새 메시지와 편집이 같은 로직을 쓴다(없어진 멘션은 지우고 새 멘션만 추가). */
-async function syncChannelMentions(msg: ChannelMessageLike): Promise<Activity[]> {
+type SyncMode = 'create' | 'edit';
+
+/**
+ * 멘션 대상을 계산해 Activity를 맞춘다. 새 메시지와 편집이 같은 로직을 쓴다.
+ * - 없어진 멘션은 지우고, 새로 생긴 멘션만 만든다.
+ * - 직접 멘션과 @channel/@here 사이에서 종류만 바뀌면 행을 지우지 않고 type만 바꾼다(읽음 상태 보존, 재알림 없음).
+ * - @here는 생성 때만 온라인 여부를 본다. 편집에서는 원래 대상만 유지한다.
+ */
+async function syncChannelMentions(
+  msg: ChannelMessageLike,
+  mode: SyncMode,
+): Promise<{ created: Activity[]; removedUserIds: number[] }> {
   const parsed = parseMentions(msg.content);
   const existing = await prisma.activity.findMany({
     where: { messageId: msg.id, type: { in: MENTION_TYPES } },
   });
+  const existingByUser = new Map(existing.map((a) => [a.userId, a]));
 
-  const stale = existing.filter(
-    (a) =>
-      !(a.type === 'MENTION' && parsed.userIds.includes(a.userId)) &&
-      !(a.type === 'HERE_MENTION' && parsed.here) &&
-      !(a.type === 'CHANNEL_MENTION' && parsed.channel),
-  );
-  if (stale.length > 0) {
-    await prisma.activity.deleteMany({ where: { id: { in: stale.map((a) => a.id) } } });
-    emitRemoved(stale);
-  }
-  const staleIds = new Set(stale.map((a) => a.id));
-  const have = new Set(existing.filter((a) => !staleIds.has(a.id)).map((a) => a.userId));
-
-  if (!parsed.userIds.length && !parsed.here && !parsed.channel) return [];
+  const wantsAll = parsed.channel || (parsed.here && mode === 'create');
+  const candidateIds = [...new Set([...parsed.userIds, ...existing.map((a) => a.userId)])];
+  if (!wantsAll && candidateIds.length === 0) return { created: [], removedUserIds: [] };
 
   // 채널 멤버이면서 비활성이 아닌 사람만 대상이 된다(비공개 채널의 비멤버는 여기서 빠진다).
-  const wantIds = parsed.here || parsed.channel ? undefined : parsed.userIds;
   const members = await prisma.channelMember.findMany({
-    where: { channelId: msg.channelId, ...(wantIds && { userId: { in: wantIds } }), user: { deactivatedAt: null } },
+    where: { channelId: msg.channelId, ...(!wantsAll && { userId: { in: candidateIds } }), user: { deactivatedAt: null } },
     select: { userId: true },
   });
-  const memberIds = members.map((m) => m.userId);
-  const memberSet = new Set(memberIds);
+  const memberSet = new Set(members.map((m) => m.userId));
 
-  const wanted = new Map<number, ActivityType>();
-  if (parsed.channel) for (const id of memberIds) wanted.set(id, 'CHANNEL_MENTION');
-  if (parsed.here) for (const id of memberIds) if (isUserOnline(id)) wanted.set(id, 'HERE_MENTION');
-  for (const id of parsed.userIds) if (memberSet.has(id)) wanted.set(id, 'MENTION');
+  const typeFor = (userId: number): ActivityType | null => {
+    if (!memberSet.has(userId)) return null;
+    if (parsed.userIds.includes(userId)) return 'MENTION';
+    if (parsed.channel) return 'CHANNEL_MENTION';
+    if (parsed.here) {
+      if (mode === 'create') return isUserOnline(userId) ? 'HERE_MENTION' : null;
+      return existingByUser.has(userId) ? 'HERE_MENTION' : null;
+    }
+    return null;
+  };
 
-  const data = [...wanted]
-    .filter(([userId]) => userId !== msg.userId && !have.has(userId))
-    .map(([userId, type]) => ({ userId, actorId: msg.userId, type, messageId: msg.id, channelId: msg.channelId }));
-  if (data.length === 0) return [];
-  return prisma.activity.createManyAndReturn({ data });
+  const stale: Activity[] = [];
+  for (const a of existing) {
+    const t = typeFor(a.userId);
+    if (!t) stale.push(a);
+    else if (t !== a.type) await prisma.activity.update({ where: { id: a.id }, data: { type: t } });
+  }
+  await removeRows(stale);
+
+  const data: Prisma.ActivityCreateManyInput[] = [];
+  for (const userId of wantsAll ? memberSet : candidateIds) {
+    if (userId === msg.userId || existingByUser.has(userId)) continue;
+    const type = typeFor(userId);
+    if (type) data.push({ userId, actorId: msg.userId, type, messageId: msg.id, channelId: msg.channelId });
+  }
+  return { created: await insertActivities(data), removedUserIds: stale.map((a) => a.userId) };
 }
 
-/** 스레드 답글이면 부모 작성자와 스레드 참여자에게 THREAD_REPLY를 만든다(이미 멘션 받은 사람 제외). */
-async function createThreadReplyActivities(msg: ChannelMessageLike, skipUserIds: Set<number>): Promise<Activity[]> {
+/** 스레드 답글이면 부모 작성자와 스레드 참여자에게 THREAD_REPLY를 만든다(skip 대상 제외, only가 있으면 그 사람들만). */
+async function createThreadReplyActivities(msg: ChannelMessageLike, skipUserIds: Set<number>, only?: number[]): Promise<Activity[]> {
   if (!msg.threadId) return [];
   const participants = await prisma.message.findMany({
     where: { OR: [{ id: msg.threadId }, { threadId: msg.threadId }], deletedAt: null, user: { deactivatedAt: null } },
     select: { userId: true },
     distinct: ['userId'],
   });
-  const candidateIds = participants.map((p) => p.userId).filter((id) => id !== msg.userId && !skipUserIds.has(id));
+  const candidateIds = participants
+    .map((p) => p.userId)
+    .filter((id) => id !== msg.userId && !skipUserIds.has(id) && (!only || only.includes(id)));
   if (candidateIds.length === 0) return [];
   const members = await prisma.channelMember.findMany({
     where: { channelId: msg.channelId, userId: { in: candidateIds } },
     select: { userId: true },
   });
-  const existing = await prisma.activity.findMany({
-    where: { messageId: msg.id, type: 'THREAD_REPLY', userId: { in: candidateIds } },
-    select: { userId: true },
-  });
-  const done = new Set(existing.map((e) => e.userId));
-  const data = members
-    .filter((m) => !done.has(m.userId))
-    .map((m) => ({ userId: m.userId, actorId: msg.userId, type: 'THREAD_REPLY' as const, messageId: msg.id, channelId: msg.channelId }));
-  if (data.length === 0) return [];
-  return prisma.activity.createManyAndReturn({ data });
+  return insertActivities(
+    members.map((m) => ({ userId: m.userId, actorId: msg.userId, type: 'THREAD_REPLY' as const, messageId: msg.id, channelId: msg.channelId })),
+  );
 }
 
-async function pushMentions(msg: ChannelMessageLike, created: Activity[]): Promise<void> {
-  const targets = created.filter((a) => MENTION_TYPES.includes(a.type) && !isUserOnline(a.userId));
-  if (targets.length === 0) return;
+/** 알림 후처리: 활동 이벤트와 푸시. 호출자가 가진 msg·배우·채널 이름을 재사용한다. */
+async function notifyChannelActivities(
+  msg: ChannelMessageLike,
+  created: Activity[],
+  opts: { generalPush?: boolean } = {},
+): Promise<void> {
+  const needsPush = opts.generalPush && !msg.threadId;
+  if (created.length === 0 && !needsPush) return;
+
   const [channel, actor] = await Promise.all([
-    prisma.channel.findUnique({ where: { id: msg.channelId }, select: { name: true } }),
-    prisma.user.findUnique({ where: { id: msg.userId }, select: { name: true } }),
+    prisma.channel.findUnique({ where: { id: msg.channelId }, select: { id: true, name: true } }),
+    msg.user ?? prisma.user.findUnique({ where: { id: msg.userId }, select: { id: true, name: true, avatar: true } }),
   ]);
-  for (const a of targets) {
+  await emitNew(created, {
+    actors: actor ? [actor] : [],
+    channels: channel ? [channel] : [],
+    messages: [{ id: msg.id, content: msg.content, threadId: msg.threadId }],
+  });
+
+  const channelName = channel?.name ?? 'channel';
+  const senderName = actor?.name ?? 'Someone';
+  const url = `/c/${msg.channelId}`;
+  const notified = new Set<number>();
+  for (const a of created) {
+    notified.add(a.userId);
+    if (isUserOnline(a.userId)) continue;
+    const isMention = MENTION_TYPES.includes(a.type);
     sendPushToUser(
       a.userId,
-      {
-        title: `#${channel?.name ?? 'channel'} mention`,
-        body: `${actor?.name ?? 'Someone'}: ${msg.content.slice(0, 100)}`,
-        url: `/c/${msg.channelId}`,
-      },
-      { kind: 'mention', channelId: msg.channelId },
-    ).catch((err) => logError('Mention push dispatch failed', err));
+      isMention
+        ? { title: `#${channelName} mention`, body: `${senderName}: ${msg.content.slice(0, 100)}`, url }
+        : { title: `#${channelName} thread`, body: `${senderName}: ${msg.content.slice(0, 100)}`, url },
+      { kind: isMention ? 'mention' : 'thread', channelId: msg.channelId },
+    ).catch((err) => logError('Activity push dispatch failed', err));
+  }
+
+  // 일반 채널 푸시(오프라인 멤버 전체). 이미 멘션·스레드 푸시를 받은 사람은 뺀다.
+  if (needsPush) {
+    const members = await prisma.channelMember.findMany({ where: { channelId: msg.channelId }, select: { userId: true } });
+    for (const m of members) {
+      if (m.userId === msg.userId || notified.has(m.userId) || isUserOnline(m.userId)) continue;
+      sendPushToUser(
+        m.userId,
+        { title: `#${channelName}`, body: `${senderName}: ${msg.content.slice(0, 100) || 'Sent an attachment'}`, url },
+        { kind: 'message', channelId: msg.channelId },
+      ).catch((err) => logError('Push notification dispatch failed', err));
+    }
   }
 }
 
-/** 채널 메시지 생성 직후 호출: 멘션과 스레드 답글 Activity를 만들고 `activity:new`와 푸시를 보낸다. */
-export async function createActivitiesForMessage(msg: ChannelMessageLike): Promise<Activity[]> {
+/**
+ * 채널 메시지 생성 후처리의 단일 진입점(HTTP, 소켓, 예약 발송, 웹훅이 모두 호출).
+ * message:new 브로드캐스트와 HTTP/ack 응답 **뒤에** 부르고 await하지 않는다. 실패는 로그만 남긴다.
+ */
+async function processNewChannelMessageImpl(msg: ChannelMessageLike, opts: { generalPush?: boolean } = {}): Promise<Activity[]> {
   try {
-    const mentions = await syncChannelMentions(msg);
+    const { created: mentions } = await syncChannelMentions(msg, 'create');
     const replies = await createThreadReplyActivities(msg, new Set(mentions.map((a) => a.userId)));
     const created = [...mentions, ...replies];
-    await emitNew(created);
-    await pushMentions(msg, mentions);
+    await notifyChannelActivities(msg, created, opts);
     return created;
   } catch (err) {
-    logError('Create activities failed', err);
+    logError('Process new message failed', err);
     return [];
   }
 }
 
-/** 채널 메시지 편집 후 호출: 바뀐 멘션을 동기화한다(추가분만 알림). */
-export async function syncActivitiesOnEdit(msg: ChannelMessageLike): Promise<Activity[]> {
+/** 채널 메시지 편집 후 호출: 바뀐 멘션을 동기화한다(추가분만 알림). 응답 뒤에 await 없이 부른다. */
+async function syncActivitiesOnEditImpl(msg: ChannelMessageLike): Promise<Activity[]> {
   try {
-    const created = await syncChannelMentions(msg);
-    await emitNew(created);
-    await pushMentions(msg, created);
-    return created;
+    const { created, removedUserIds } = await syncChannelMentions(msg, 'edit');
+    const all = [...created];
+    if (msg.threadId) {
+      // 새 멘션을 받은 사람의 THREAD_REPLY는 멘션으로 대체하고, 멘션이 빠진 사람은 THREAD_REPLY로 되돌린다.
+      if (created.length > 0) {
+        const dup = await prisma.activity.findMany({
+          where: { messageId: msg.id, type: 'THREAD_REPLY', userId: { in: created.map((a) => a.userId) } },
+          select: { id: true, userId: true },
+        });
+        await removeRows(dup);
+      }
+      if (removedUserIds.length > 0) {
+        const holders = await prisma.activity.findMany({ where: { messageId: msg.id, type: { in: MENTION_TYPES } }, select: { userId: true } });
+        all.push(...(await createThreadReplyActivities(msg, new Set(holders.map((h) => h.userId)), removedUserIds)));
+      }
+    }
+    await notifyChannelActivities(msg, all);
+    return all;
   } catch (err) {
     logError('Sync activities on edit failed', err);
     return [];
@@ -260,10 +357,7 @@ export async function syncActivitiesOnEdit(msg: ChannelMessageLike): Promise<Act
 /** 메시지(채널 또는 스레드 답글)가 지워질 때 그 메시지와 연결된 Activity를 정리한다. */
 export async function deleteActivitiesForMessage(messageId: number): Promise<void> {
   try {
-    const rows = await prisma.activity.findMany({ where: { messageId }, select: { id: true, userId: true } });
-    if (rows.length === 0) return;
-    await prisma.activity.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
-    emitRemoved(rows);
+    await removeRows(await prisma.activity.findMany({ where: { messageId }, select: { id: true, userId: true } }));
   } catch (err) {
     logError('Delete activities failed', err);
   }
@@ -277,41 +371,41 @@ interface DmLike {
   fromUserId: number;
   toUserId: number;
   threadId: number | null;
+  fromUser?: ActorLike | null;
 }
 
-async function syncDmMentions(dm: DmLike): Promise<Activity[]> {
-  const parsed = parseMentions(dm.content);
-  const existing = await prisma.activity.findMany({ where: { dmId: dm.id, type: 'MENTION' } });
-  const mentioned = dm.fromUserId !== dm.toUserId && parsed.userIds.includes(dm.toUserId);
+/** DM의 활동을 맞춘다: 상대를 멘션하면 MENTION, 아니면 스레드 답글일 때 THREAD_REPLY. 생성과 편집이 같이 쓴다. */
+async function syncDmActivities(dm: DmLike): Promise<Activity[]> {
+  const mentioned = dm.fromUserId !== dm.toUserId && parseMentions(dm.content).userIds.includes(dm.toUserId);
+  const existing = await prisma.activity.findMany({ where: { dmId: dm.id, type: { in: ['MENTION', 'THREAD_REPLY'] } } });
 
-  if (!mentioned && existing.length > 0) {
-    await prisma.activity.deleteMany({ where: { id: { in: existing.map((a) => a.id) } } });
-    emitRemoved(existing);
+  let wanted: ActivityType | null = null;
+  if (dm.fromUserId !== dm.toUserId) {
+    if (mentioned) wanted = 'MENTION';
+    else if (dm.threadId) wanted = 'THREAD_REPLY';
   }
-  if (!mentioned || existing.length > 0) return [];
+  await removeRows(existing.filter((a) => a.type !== wanted));
+  if (!wanted || existing.some((a) => a.type === wanted)) return [];
 
   const recipient = await prisma.user.findUnique({ where: { id: dm.toUserId }, select: { deactivatedAt: true } });
   if (!recipient || recipient.deactivatedAt) return [];
-  return prisma.activity.createManyAndReturn({
-    data: [{ userId: dm.toUserId, actorId: dm.fromUserId, type: 'MENTION', dmId: dm.id }],
+  return insertActivities([{ userId: dm.toUserId, actorId: dm.fromUserId, type: wanted, dmId: dm.id }]);
+}
+
+async function notifyDmActivities(dm: DmLike, created: Activity[]): Promise<void> {
+  if (created.length === 0) return;
+  const actor = dm.fromUser ?? (await prisma.user.findUnique({ where: { id: dm.fromUserId }, select: { id: true, name: true, avatar: true } }));
+  await emitNew(created, {
+    actors: actor ? [actor] : [],
+    dms: [{ id: dm.id, content: dm.content, threadId: dm.threadId }],
   });
 }
 
-/** DM 전송·답글 직후 호출: 상대를 멘션했으면 MENTION, 스레드 답글이면 THREAD_REPLY를 만든다. */
-export async function createActivitiesForDm(dm: DmLike): Promise<Activity[]> {
+/** DM 전송·답글 직후 호출. 응답 뒤에 await 없이 부른다. */
+async function createActivitiesForDmImpl(dm: DmLike): Promise<Activity[]> {
   try {
-    const created = await syncDmMentions(dm);
-    if (dm.threadId && dm.fromUserId !== dm.toUserId && created.length === 0) {
-      const recipient = await prisma.user.findUnique({ where: { id: dm.toUserId }, select: { deactivatedAt: true } });
-      if (recipient && !recipient.deactivatedAt) {
-        created.push(
-          ...(await prisma.activity.createManyAndReturn({
-            data: [{ userId: dm.toUserId, actorId: dm.fromUserId, type: 'THREAD_REPLY', dmId: dm.id }],
-          })),
-        );
-      }
-    }
-    await emitNew(created);
+    const created = await syncDmActivities(dm);
+    await notifyDmActivities(dm, created);
     return created;
   } catch (err) {
     logError('Create DM activities failed', err);
@@ -319,23 +413,10 @@ export async function createActivitiesForDm(dm: DmLike): Promise<Activity[]> {
   }
 }
 
-export async function syncActivitiesOnDmEdit(dm: DmLike): Promise<Activity[]> {
-  try {
-    const created = await syncDmMentions(dm);
-    await emitNew(created);
-    return created;
-  } catch (err) {
-    logError('Sync DM activities on edit failed', err);
-    return [];
-  }
-}
 
 export async function deleteActivitiesForDm(dmId: number): Promise<void> {
   try {
-    const rows = await prisma.activity.findMany({ where: { dmId }, select: { id: true, userId: true } });
-    if (rows.length === 0) return;
-    await prisma.activity.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
-    emitRemoved(rows);
+    await removeRows(await prisma.activity.findMany({ where: { dmId }, select: { id: true, userId: true } }));
   } catch (err) {
     logError('Delete DM activities failed', err);
   }
@@ -350,10 +431,11 @@ interface ReactionTarget {
   messageId?: number;
   dmId?: number;
   channelId?: number;
+  actor?: ActorLike;
 }
 
 /** 내 메시지에 달린 리액션을 활동으로 남긴다. 자기 자신, 비활성 사용자, 채널을 떠난 작성자는 제외. */
-export async function createReactionActivity(t: ReactionTarget): Promise<Activity | null> {
+async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity | null> {
   try {
     if (t.targetUserId === t.actorId) return null;
     const author = await prisma.user.findUnique({ where: { id: t.targetUserId }, select: { deactivatedAt: true } });
@@ -372,9 +454,9 @@ export async function createReactionActivity(t: ReactionTarget): Promise<Activit
       messageId: t.messageId ?? null,
       dmId: t.dmId ?? null,
     };
-    if (await prisma.activity.findFirst({ where, select: { id: true } })) return null;
-    const created = await prisma.activity.create({ data: { ...where, channelId: t.channelId ?? null } });
-    await emitNew([created]);
+    const [created] = await insertActivities([{ ...where, channelId: t.channelId ?? null }]);
+    if (!created) return null; // 이미 있음(동시 요청 포함)
+    await emitNew([created], { actors: t.actor ? [t.actor] : [] });
     return created;
   } catch (err) {
     logError('Create reaction activity failed', err);
@@ -408,9 +490,24 @@ async function markRead(userId: number, where: object): Promise<number[]> {
   return ids;
 }
 
-/** 채널을 messageId까지 읽었을 때 그 채널의 멘션을 읽음 처리한다. */
-export function markChannelMentionsRead(userId: number, channelId: number, upToMessageId: number): Promise<number[]> {
-  return markRead(userId, { channelId, type: { in: MENTION_TYPES }, messageId: { lte: upToMessageId } });
+/** 채널을 messageId까지 읽었을 때, 채널 최상위 메시지의 멘션만 읽음 처리한다(스레드 답글 멘션은 스레드를 열 때 읽는다). */
+export async function markChannelMentionsRead(userId: number, channelId: number, upToMessageId: number): Promise<number[]> {
+  const candidates = await prisma.activity.findMany({
+    where: { userId, readAt: null, channelId, type: { in: MENTION_TYPES }, messageId: { lte: upToMessageId } },
+    select: { messageId: true },
+  });
+  const ids = candidates.map((c) => c.messageId).filter((v): v is number => v !== null);
+  if (ids.length === 0) return [];
+  const topLevel = await prisma.message.findMany({ where: { id: { in: ids }, threadId: null }, select: { id: true } });
+  if (topLevel.length === 0) return [];
+  return markRead(userId, { channelId, type: { in: MENTION_TYPES }, messageId: { in: topLevel.map((m) => m.id) } });
+}
+
+/** 스레드를 열었을 때 그 스레드 답글에 달린 멘션을 읽음 처리한다. */
+async function markThreadMentionsReadImpl(userId: number, parentId: number): Promise<number[]> {
+  const replies = await prisma.message.findMany({ where: { threadId: parentId }, select: { id: true } });
+  if (replies.length === 0) return [];
+  return markRead(userId, { type: { in: MENTION_TYPES }, messageId: { in: replies.map((r) => r.id) } });
 }
 
 /** DM 대화를 열어 읽었을 때 상대가 보낸 멘션을 읽음 처리한다. */
@@ -452,3 +549,12 @@ export async function getMentionCountsByDmPartner(userId: number): Promise<Map<n
   });
   return new Map(rows.map((r) => [r.actorId, r._count._all]));
 }
+
+// ── 공개 진입점(백그라운드 추적 포함) ────────────────────────────────
+
+export const processNewChannelMessage = (...a: Parameters<typeof processNewChannelMessageImpl>) => track(processNewChannelMessageImpl(...a));
+export const syncActivitiesOnEdit = (...a: Parameters<typeof syncActivitiesOnEditImpl>) => track(syncActivitiesOnEditImpl(...a));
+export const createActivitiesForDm = (...a: Parameters<typeof createActivitiesForDmImpl>) => track(createActivitiesForDmImpl(...a));
+export const syncActivitiesOnDmEdit = createActivitiesForDm;
+export const createReactionActivity = (...a: Parameters<typeof createReactionActivityImpl>) => track(createReactionActivityImpl(...a));
+export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => track(markThreadMentionsReadImpl(...a));

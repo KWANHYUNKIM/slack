@@ -43,10 +43,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const types = TYPE_FILTERS[type];
 
     const rows = await prisma.activity.findMany({
-      where: { ...(await visibleActivityWhere(userId)), ...(types && { type: { in: types } }) },
+      where: {
+        ...(await visibleActivityWhere(userId)),
+        ...(types && { type: { in: types } }),
+        // 커서 행이 지워져도 다음 페이지가 나오도록 cursor+skip 대신 id 비교를 쓴다
+        ...(cursor && { id: { lt: cursor } }),
+      },
       orderBy: { id: 'desc' },
       take: limit + 1,
-      ...(cursor && { cursor: { id: cursor }, skip: 1 }),
     });
     const { results, nextCursor } = paginateResults(rows, limit);
 

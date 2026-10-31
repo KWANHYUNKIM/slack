@@ -10,6 +10,7 @@ import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { getIO } from '../websocket/index.js';
 import { MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
+import { processNewChannelMessage } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -198,6 +199,8 @@ router.post('/:token', async (req, res: Response) => {
     }
 
     res.status(201).json({ message: 'Message sent', messageId: finalMessage?.id });
+
+    if (finalMessage) void processNewChannelMessage(finalMessage);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });

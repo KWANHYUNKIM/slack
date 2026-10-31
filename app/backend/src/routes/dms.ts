@@ -94,8 +94,6 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       });
     });
 
-    if (dm) await createActivitiesForDm(dm);
-
     // Broadcast via WebSocket so the recipient sees the DM in real-time
     const io = getIO();
     if (io && dm) {
@@ -116,6 +114,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     res.status(201).json(dm);
+
+    // dm:new 뒤, 응답 뒤에 활동 생성(await하지 않는다)
+    if (dm) void createActivitiesForDm(dm);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -342,6 +343,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
             readAt: new Date(),
           },
         }).catch((err) => logError('DM read-status update failed', err)),
+        markDmMentionsRead(currentUserId, otherUserId).catch((err) => logError('DM mention read update failed', err)),
       ]);
 
       const paginated = paginateResults(messages, limit);
@@ -443,8 +445,6 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       });
     });
 
-    if (reply) await createActivitiesForDm({ ...reply, threadId: parentId });
-
     // Broadcast to both users so the thread updates in real-time
     const io = getIO();
     if (io) {
@@ -468,6 +468,8 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
     }
 
     res.status(201).json(reply);
+
+    if (reply) void createActivitiesForDm({ ...reply, threadId: parentId });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -525,8 +527,6 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
       },
     });
 
-    await syncActivitiesOnDmEdit(updated);
-
     // Broadcast to the other user so the edit appears in real-time
     // (the sender's UI is already updated from the REST response)
     const io = getIO();
@@ -535,6 +535,8 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
     }
 
     res.json(updated);
+
+    void syncActivitiesOnDmEdit(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -723,7 +725,7 @@ router.post('/:userId/read', authMiddleware, async (req: AuthRequest, res: Respo
       },
     });
 
-    await markDmMentionsRead(currentUserId, otherUserId);
+    await markDmMentionsRead(currentUserId, otherUserId).catch((err) => logError('DM mention read update failed', err));
 
     res.json({ markedAsRead: result.count });
   } catch (error) {

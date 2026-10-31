@@ -6,6 +6,11 @@ import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
+import {
+  settleBackgroundWork as settle,
+  processNewChannelMessage,
+  createReactionActivity,
+} from '../services/mentionService.js';
 
 interface TestUser { id: number; token: string; name: string }
 
@@ -38,12 +43,21 @@ describe('Activity: mentions, thread replies, reactions', () => {
   let privId: number;
   const sockets: ClientSocket[] = [];
 
-  const activityOf = (u: TestUser, query = '') =>
-    request(app).get(`/activity${query}`).set(auth(u));
-  const unread = async (u: TestUser) => (await request(app).get('/activity/unread-count').set(auth(u))).body;
+  // 활동 생성은 응답 뒤 백그라운드에서 돌므로, 읽기 전에 끝나길 기다린다.
+  const activityOf = async (u: TestUser, query = '') => {
+    await settle();
+    return request(app).get(`/activity${query}`).set(auth(u));
+  };
+  const unread = async (u: TestUser) => {
+    await settle();
+    return (await request(app).get('/activity/unread-count').set(auth(u))).body;
+  };
   const post = (u: TestUser, channelId: number, content: string, extra: object = {}) =>
     request(app).post(`/channels/${channelId}/messages`).set(auth(u)).send({ content, ...extra });
-  const dbActivities = (where: object) => prisma.activity.findMany({ where, orderBy: { id: 'asc' } });
+  const dbActivities = async (where: object) => {
+    await settle();
+    return prisma.activity.findMany({ where, orderBy: { id: 'asc' } });
+  };
 
   function connect(u: TestUser): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
@@ -97,6 +111,7 @@ describe('Activity: mentions, thread replies, reactions', () => {
   });
 
   afterEach(async () => {
+    await settle();
     await prisma.activity.deleteMany();
   });
 
@@ -328,7 +343,7 @@ describe('Activity: mentions, thread replies, reactions', () => {
       const m1 = await post(alice, pubId, `a ${mention(bob)}`);
       const m2 = await post(alice, pubId, `b ${mention(bob)}`);
       const channelsOf = async (u: TestUser) =>
-        (await request(app).get('/channels').set(auth(u))).body.find((c: any) => c.id === pubId);
+        (await settle(), await request(app).get('/channels').set(auth(u))).body.find((c: any) => c.id === pubId);
 
       expect((await channelsOf(bob)).mentionCount).toBe(2);
       expect((await channelsOf(carol)).mentionCount).toBe(0);
@@ -363,6 +378,7 @@ describe('Activity: mentions, thread replies, reactions', () => {
       const item = (await activityOf(bob)).body.items[0];
       expect(item).toMatchObject({ dmId: send.body.id, channel: null });
 
+      await settle();
       const convs = (await request(app).get('/dms').set(auth(bob))).body;
       expect(convs.find((c: any) => c.otherUser.id === alice.id).mentionCount).toBe(1);
 
@@ -373,6 +389,7 @@ describe('Activity: mentions, thread replies, reactions', () => {
       expect(await dbActivities({ dmId: send.body.id })).toHaveLength(1);
 
       await request(app).post(`/dms/${alice.id}/read`).set(auth(bob));
+      await settle();
       const convs2 = (await request(app).get('/dms').set(auth(bob))).body;
       expect(convs2.find((c: any) => c.otherUser.id === alice.id).mentionCount).toBe(0);
 
@@ -491,6 +508,152 @@ describe('Activity: mentions, thread replies, reactions', () => {
       await post(alice, pubId, `http ${mention(bob)}`);
       await waitFor(() => bobNew, (e) => e.length === 1);
       expect(bobNew[0].activity.type).toBe('MENTION');
+    });
+  });
+
+  describe('review fixes', () => {
+    it('cursor pagination still works after the cursor row is deleted', async () => {
+      for (let i = 0; i < 4; i++) await post(alice, pubId, `p${i} ${mention(bob)}`);
+      const page1 = await activityOf(bob, '?limit=2');
+      const cursor = page1.body.nextCursor;
+      await prisma.activity.delete({ where: { id: cursor } });
+      const page2 = await activityOf(bob, `?limit=2&cursor=${cursor}`);
+      expect(page2.status).toBe(200);
+      expect(page2.body.items).toHaveLength(2);
+      expect(page2.body.items.every((i: any) => i.id < cursor)).toBe(true);
+    });
+
+    it('concurrent creation never produces duplicate rows', async () => {
+      const m = await post(alice, pubId, `race ${mention(bob)} <@channel>`);
+      await settle();
+      const msg = await prisma.message.findUniqueOrThrow({ where: { id: m.body.id } });
+      await Promise.all(Array.from({ length: 8 }, () => processNewChannelMessage(msg)));
+      const rows = await dbActivities({ messageId: m.body.id });
+      expect(rows.map((r) => r.userId).sort()).toEqual([bob.id, carol.id, eve.id].sort());
+
+      await Promise.all(Array.from({ length: 8 }, () =>
+        createReactionActivity({ actorId: bob.id, targetUserId: alice.id, emoji: '🔥', messageId: m.body.id, channelId: pubId })));
+      expect(await dbActivities({ type: 'REACTION' })).toHaveLength(1);
+
+      // the DB itself rejects a duplicate even with NULL columns
+      await expect(prisma.activity.create({
+        data: { userId: alice.id, actorId: bob.id, type: 'REACTION', messageId: m.body.id, emoji: '🔥' },
+      })).rejects.toThrow();
+    });
+
+    it('webhook, send-now scheduled message, and the DB scheduler path create mention activities', async () => {
+      const wh = await prisma.webhook.create({ data: { name: 'hook', channelId: pubId, token: 'tok-act-test', createdBy: alice.id } });
+      const hook = await request(app).post(`/webhooks/${wh.token}`).send({ content: `from hook ${mention(bob)}` });
+      expect(hook.status).toBe(201);
+      expect(await dbActivities({ messageId: hook.body.messageId, userId: bob.id })).toHaveLength(1);
+
+      const sch = await prisma.scheduledMessage.create({
+        data: { content: `later ${mention(carol)}`, channelId: pubId, userId: alice.id, scheduledAt: new Date(Date.now() + 3600_000) },
+      });
+      const sent = await request(app).post(`/messages/scheduled/${sch.id}/send`).set(auth(alice));
+      expect(sent.status).toBe(200);
+      expect(await dbActivities({ messageId: sent.body.message.id, userId: carol.id })).toHaveLength(1);
+    });
+
+    it('GET /dms/:userId marks DM mentions read', async () => {
+      const send = await request(app).post('/dms').set(auth(alice)).send({ toUserId: bob.id, content: `see ${mention(bob)}` });
+      expect(await unread(bob)).toEqual({ total: 1, mentions: 1 });
+      const open = await request(app).get(`/dms/${alice.id}`).set(auth(bob));
+      expect(open.status).toBe(200);
+      await settle();
+      expect(await unread(bob)).toEqual({ total: 0, mentions: 0 });
+      expect((await dbActivities({ dmId: send.body.id }))[0].readAt).not.toBeNull();
+    });
+
+    it('channel read does not clear thread-reply mentions; opening the thread does', async () => {
+      const parent = await post(alice, pubId, 'parent');
+      const reply = await request(app).post(`/messages/${parent.body.id}/reply`).set(auth(alice)).send({ content: `look ${mention(bob)}` });
+      const top = await post(alice, pubId, `top ${mention(bob)}`);
+      expect(await unread(bob)).toEqual({ total: 2, mentions: 2 });
+
+      await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: top.body.id });
+      expect(await unread(bob)).toEqual({ total: 1, mentions: 1 }); // top-level cleared, reply mention remains
+      const left = await dbActivities({ userId: bob.id, readAt: null });
+      expect(left[0].messageId).toBe(reply.body.id);
+
+      const thread = await request(app).get(`/messages/${parent.body.id}/thread`).set(auth(bob));
+      expect(thread.status).toBe(200);
+      await settle();
+      expect(await unread(bob)).toEqual({ total: 0, mentions: 0 });
+    });
+
+    it('removing a mention from a thread reply restores THREAD_REPLY (and adding one replaces it)', async () => {
+      const parent = await post(alice, pubId, 'parent');
+      await request(app).post(`/messages/${parent.body.id}/reply`).set(auth(bob)).send({ content: 'first' });
+      const reply = await request(app).post(`/messages/${parent.body.id}/reply`).set(auth(carol)).send({ content: `hey ${mention(bob)}` });
+      expect((await dbActivities({ messageId: reply.body.id, userId: bob.id })).map((a) => a.type)).toEqual(['MENTION']);
+
+      await request(app).patch(`/messages/${reply.body.id}`).set(auth(carol)).send({ content: 'hey' });
+      expect((await dbActivities({ messageId: reply.body.id, userId: bob.id })).map((a) => a.type)).toEqual(['THREAD_REPLY']);
+
+      await request(app).patch(`/messages/${reply.body.id}`).set(auth(carol)).send({ content: `hey ${mention(bob)}` });
+      expect((await dbActivities({ messageId: reply.body.id, userId: bob.id })).map((a) => a.type)).toEqual(['MENTION']);
+    });
+
+    it('DM: removing a mention from a DM thread reply restores THREAD_REPLY', async () => {
+      const parent = await request(app).post('/dms').set(auth(alice)).send({ toUserId: bob.id, content: 'parent' });
+      const reply = await request(app).post(`/dms/messages/${parent.body.id}/reply`).set(auth(alice)).send({ content: `hi ${mention(bob)}` });
+      expect((await dbActivities({ dmId: reply.body.id })).map((a) => a.type)).toEqual(['MENTION']);
+      await request(app).patch(`/dms/messages/${reply.body.id}`).set(auth(alice)).send({ content: 'hi' });
+      expect((await dbActivities({ dmId: reply.body.id })).map((a) => a.type)).toEqual(['THREAD_REPLY']);
+    });
+
+    it('editing between direct mention and @channel keeps the row (id and readAt), @here is not re-evaluated', async () => {
+      const m = await post(alice, pubId, `x ${mention(bob)}`);
+      const before = (await dbActivities({ messageId: m.body.id, userId: bob.id }))[0];
+      await request(app).post('/activity/read').set(auth(bob)).send({ ids: [before.id] });
+
+      await request(app).patch(`/messages/${m.body.id}`).set(auth(alice)).send({ content: 'x <@channel>' });
+      let bobRow = (await dbActivities({ messageId: m.body.id, userId: bob.id }))[0];
+      expect(bobRow).toMatchObject({ id: before.id, type: 'CHANNEL_MENTION' });
+      expect(bobRow.readAt).not.toBeNull();
+      expect(await dbActivities({ messageId: m.body.id, userId: carol.id })).toHaveLength(1);
+
+      await request(app).patch(`/messages/${m.body.id}`).set(auth(alice)).send({ content: `x ${mention(bob)}` });
+      bobRow = (await dbActivities({ messageId: m.body.id, userId: bob.id }))[0];
+      expect(bobRow).toMatchObject({ id: before.id, type: 'MENTION' });
+      expect(await dbActivities({ messageId: m.body.id, userId: carol.id })).toHaveLength(0);
+
+      // @here: bob online at creation; carol comes online later and is NOT added by an edit
+      const bobSocket = await connect(bob);
+      const h = await post(alice, pubId, 'h <@here>');
+      expect((await dbActivities({ messageId: h.body.id })).map((a) => a.userId)).toEqual([bob.id]);
+      const carolSocket = await connect(carol);
+      await request(app).patch(`/messages/${h.body.id}`).set(auth(alice)).send({ content: 'h2 <@here>' });
+      const rows = await dbActivities({ messageId: h.body.id });
+      expect(rows.map((a) => a.userId)).toEqual([bob.id]);
+      bobSocket.disconnect();
+      carolSocket.disconnect();
+      await new Promise((r) => setTimeout(r, 100));
+    });
+
+    it('sends message:new before activity:new (HTTP and WebSocket paths)', async () => {
+      const aliceSocket = await connect(alice);
+      const bobSocket = await connect(bob);
+      const order: string[] = [];
+      bobSocket.on('dm:new', () => order.push('dm:new'));
+      bobSocket.on('activity:new', () => order.push('activity:new'));
+      await request(app).post('/dms').set(auth(alice)).send({ toUserId: bob.id, content: `1 ${mention(bob)}` });
+      await waitFor(() => order, (o) => o.length === 2);
+      expect(order).toEqual(['dm:new', 'activity:new']);
+
+      order.length = 0;
+      await new Promise((resolve) => bobSocket.emit('join:channel', pubId, resolve));
+      const ws: string[] = [];
+      bobSocket.on('message:new', () => ws.push('message:new'));
+      bobSocket.on('activity:new', () => ws.push('activity:new'));
+      await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: `2 ${mention(bob)}` });
+      aliceSocket.emit('message:send', { channelId: pubId, content: `3 ${mention(bob)}` });
+      await waitFor(() => ws, (o) => o.length === 4);
+      // each message:new precedes its own activity:new
+      expect(ws.filter((e) => e === 'message:new')).toHaveLength(2);
+      // 이벤트 두 쌍이 섞여도 첫 이벤트는 message:new여야 한다
+      expect(ws[0]).toBe('message:new');
     });
   });
 });

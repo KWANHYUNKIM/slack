@@ -703,7 +703,7 @@ router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: A
     });
 
     // 읽은 위치까지의 멘션은 읽음 처리한다(사이드바 멘션 배지가 줄어든다)
-    await markChannelMentionsRead(userId, channelId, messageId);
+    await markChannelMentionsRead(userId, channelId, messageId).catch((err) => logError('Mark channel mentions read failed', err));
 
     res.json({ success: true });
   } catch (error) {
