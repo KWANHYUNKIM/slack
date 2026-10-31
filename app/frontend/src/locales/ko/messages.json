@@ -136,7 +136,7 @@
     "selectChannel": "채널을 선택해 대화를 시작하세요",
     "openMenu": "메뉴 열기",
     "placeholder": "#{channel}에 메시지 보내기",
-    "viewing": "#{channel} 채널을 둘러보는 중입니다",
+    "viewing": "<bold>#{channel}</bold> 채널을 둘러보는 중입니다",
     "joinChannel": "채널 참여"
   },
   "header": {
@@ -166,7 +166,7 @@
     "uploading": "업로드하는 중...",
     "scheduleMessage": "메시지 예약",
     "send": "메시지 보내기",
-    "hint": "Enter로 보내기, Shift + Enter로 줄바꿈",
+    "hint": "<kbd>Enter</kbd>로 보내기, <kbd>Shift + Enter</kbd>로 줄바꿈",
     "scheduledFor": "{time}에 보내도록 예약했습니다",
     "scheduleFailed": "메시지를 예약하지 못했습니다. 다시 시도해 주세요."
   },

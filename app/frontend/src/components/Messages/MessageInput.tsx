@@ -4,7 +4,7 @@ import {
   SendHorizontal,
   ChevronDown,
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
@@ -276,7 +276,13 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
       </div>
 
       <p className="mt-1 text-xs text-slack-hint">
-        {t('input.hint')}
+        <Trans
+          t={t}
+          i18nKey="input.hint"
+          components={{
+            kbd: <kbd className="rounded bg-slack-active-tab px-1 py-0.5 text-[10px] font-medium" />,
+          }}
+        />
       </p>
 
       {sendError && <ErrorBanner message={sendError} onDismiss={clearSendError} />}

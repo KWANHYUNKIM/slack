@@ -136,7 +136,7 @@
     "selectChannel": "Select a channel to start messaging",
     "openMenu": "Open menu",
     "placeholder": "Message #{channel}",
-    "viewing": "You're viewing #{channel}",
+    "viewing": "You're viewing <bold>#{channel}</bold>",
     "joinChannel": "Join Channel"
   },
   "header": {
@@ -166,7 +166,7 @@
     "uploading": "Uploading...",
     "scheduleMessage": "Schedule message",
     "send": "Send message",
-    "hint": "Press Enter to send, Shift + Enter for a new line",
+    "hint": "Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line",
     "scheduledFor": "Scheduled for {time}",
     "scheduleFailed": "Failed to schedule message. Please try again."
   },

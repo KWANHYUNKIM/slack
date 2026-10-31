@@ -19,6 +19,7 @@
     "filetokens:test": "node --test scripts/file-tokens.test.ts",
     "i18nbackend:test": "node --test scripts/i18n-backend.test.ts",
     "emoji:test": "node --test scripts/emoji-lookup.test.ts scripts/emoji-store.test.ts",
+    "i18nui:test": "node --test scripts/huddle-errors.test.ts scripts/quill-placeholder.test.ts scripts/trans-markup.test.ts",
     "rtl:test": "node --test scripts/popover-position.test.ts scripts/pick-locale.test.ts scripts/editor-rtl-css.test.ts ../../scripts/check-physical-direction.test.mjs"
   },
   "dependencies": {

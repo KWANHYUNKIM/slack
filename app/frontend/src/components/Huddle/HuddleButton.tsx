@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { translateIfKey } from '@/lib/i18n';
+import { huddleErrorKey } from '@/lib/huddleErrors';
 import { Headphones, PhoneOff } from 'lucide-react';
 import { useHuddleStore } from '@/stores/useHuddleStore';
 
@@ -61,7 +62,7 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
         <Headphones className="h-4 w-4" />
       </button>
       {error && !huddleId && (
-        <span data-testid="huddle-error" className="text-xs text-red-600">{translateIfKey(error)}</span>
+        <span data-testid="huddle-error" className="text-xs text-red-600">{translateIfKey(huddleErrorKey(error))}</span>
       )}
     </div>
   );
