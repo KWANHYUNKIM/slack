@@ -12,11 +12,13 @@ interface TwoFactorSetupProps {
   /** 복구 코드를 저장했다고 확인한 뒤 부른다 */
   onFinished: () => void;
   onCancel?: () => void;
+  /** 복구 코드가 화면에 보이는 동안 true. 부모가 코드를 저장 확인하기 전에 창을 닫지 못하게 막는 데 쓴다 */
+  onCodesShown?: (shown: boolean) => void;
 }
 
 // 2FA 등록(E7b): 비밀 만들기 → 인증 앱에 추가(링크 또는 키) → 코드 확인 → 복구 코드 한 번 보여 주기.
 // QR은 lib/qr의 자체 인코더로 SVG를 그린다(외부 QR 서비스 금지, 규칙 17). 스캔이 어려우면 링크나 키를 쓴다.
-export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
+export function TwoFactorSetup({ onFinished, onCancel, onCodesShown }: TwoFactorSetupProps) {
   const { t } = useTranslation('settings');
   const showToast = useToastStore((s) => s.show);
   const replaceSessionToken = useAuthStore((s) => s.replaceSessionToken);
@@ -51,6 +53,7 @@ export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
       setCode('');
       setPassword('');
       setRecoveryCodes(res.recoveryCodes);
+      onCodesShown?.(true);
       showToast(t('twoFactor.enabledToast'));
     } catch (err) {
       setError(apiErrorMessage(err, 'settings:twoFactor.errors.enableFailed'));
@@ -69,7 +72,15 @@ export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
   };
 
   if (recoveryCodes) {
-    return <RecoveryCodesPanel codes={recoveryCodes} onDone={onFinished} />;
+    return (
+      <RecoveryCodesPanel
+        codes={recoveryCodes}
+        onDone={() => {
+          onCodesShown?.(false);
+          onFinished();
+        }}
+      />
+    );
   }
 
   // 키는 4글자씩 끊어 보여 준다(손으로 옮겨 적기 쉽게)

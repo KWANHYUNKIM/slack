@@ -29,6 +29,9 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
   const [action, setAction] = useState<Action>(null);
   // 새로 만든 복구 코드. 화면에 있는 동안은 저장했다고 확인할 때까지 다이얼로그를 닫지 못하게 한다(다시 볼 수 없으므로).
   const [newCodes, setNewCodes] = useState<string[] | null>(null);
+  // 처음 켠 직후 복구 코드가 화면에 있는 동안도 같다
+  const [setupCodesShown, setSetupCodesShown] = useState(false);
+  const codesOnScreen = !!newCodes || setupCodesShown;
 
   const load = useCallback(async () => {
     try {
@@ -63,7 +66,7 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
   };
 
   const handleClose = () => {
-    if (newCodes) return;
+    if (codesOnScreen) return;
     onClose();
   };
 
@@ -170,7 +173,7 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
         ) : (
           <>
             {status.required && <p className="mb-3 text-[13px] text-amber-700">{t('twoFactor.requiredNotice')}</p>}
-            <TwoFactorSetup onFinished={() => void load()} />
+            <TwoFactorSetup onFinished={() => void load()} onCodesShown={setSetupCodesShown} />
           </>
         )}
 
@@ -178,7 +181,7 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
           <button
             type="button"
             onClick={handleClose}
-            disabled={!!newCodes}
+            disabled={codesOnScreen}
             className="rounded-md border border-slack-border px-4 py-2 text-[14px] font-medium text-slack-primary hover:bg-slack-hover disabled:opacity-50"
           >
             {t('twoFactor.close')}

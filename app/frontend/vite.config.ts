@@ -32,7 +32,16 @@ export default defineConfig({
       '/auth': { target: 'http://localhost:3000', changeOrigin: true },
       '/channels': { target: 'http://localhost:3000', changeOrigin: true },
       '/messages': { target: 'http://localhost:3000', changeOrigin: true },
-      '/search': { target: 'http://localhost:3000', changeOrigin: true },
+      '/search': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        // /search는 화면 경로이기도 하다. 새로고침 같은 문서 이동은 SPA가 처리하게 둔다.
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
       '/files': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -79,6 +88,28 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the SPA handles /huddles in the browser
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
+      // 나중에 보기 > 리마인더(reminders)와 웹훅 관리(webhooks) API. 화면 경로와 겹치지 않는다.
+      '/reminders': { target: 'http://localhost:3000', changeOrigin: true },
+      '/webhooks': { target: 'http://localhost:3000', changeOrigin: true },
+      // /threads, /unreads는 화면 경로이기도 해서 문서 이동은 SPA가 처리하게 둔다.
+      '/threads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return req.url;
+          }
+        },
+      },
+      '/unreads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
         bypass(req) {
           if (req.headers.accept?.includes('text/html')) {
             return req.url;
