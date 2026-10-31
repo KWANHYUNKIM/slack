@@ -69,4 +69,4 @@
 | fix/emoji-cdn-runtime: emoji-mart data를 번들로, dist CDN 도메인 검사 | dev-1 | sonnet | 완료(PR #64 머지) | 1h | 2026-11-01 00:00 | | PR #55에서 발견(규칙 17) |
 | chore/ops-followups: .env.example BOOTSTRAP 키, compose $$ 안내, 자동 업데이트 문서 정리, ci.yml action SHA 고정 | dev-3 | haiku | 완료(PR #61 머지) | 45분 | 2026-11-01 00:00 | | |
 | E4 감사 로그 강화: 기록 범위 보강, 조회·필터 API, CSV/JSON 내보내기(수식 주입 방지), 보존 기간, 관리자 탭 | dev-1 | sonnet | 완료(PR #77 머지) | 2h | 2026-11-01 00:48 | | 엔터프라이즈 3절, 선행 없음 |
-| E7 세션 관리: Session 모델·sid, 기기 목록·개별/전체 로그아웃, 관리자 강제 로그아웃 UI, 유휴·최대 수명 정책(2FA는 E7b) | dev-5 | sonnet | 진행 | 2h | 2026-11-01 01:17 | | 엔터프라이즈 3절 |
+| E7 세션 관리: Session 모델·sid, 기기 목록·개별/전체 로그아웃, 관리자 강제 로그아웃 UI, 유휴·최대 수명 정책(2FA는 E7b) | dev-5 | sonnet | PR #80 리뷰 반영 중 | 2h | 2026-11-01 01:17 | | 엔터프라이즈 3절 |
