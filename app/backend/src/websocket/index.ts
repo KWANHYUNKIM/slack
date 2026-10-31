@@ -22,9 +22,6 @@ import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
-import {
-  createActivitiesForDm,
-} from '../services/mentionService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import { useSecureTransport } from '../runtimeConfig.js';
 import { sendDirectMessage } from '../services/dmService.js';
@@ -652,7 +649,6 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
         const dm = await sendGroupMessage({ groupId, fromUserId: socket.user.userId, content, fileIds });
         if (typeof ack === 'function') ack({ id: dm.id });
-        void createActivitiesForDm(dm);
       } catch (error) {
         if (error instanceof InvalidFileIdsError) {
           sendError(error.message, error.code);

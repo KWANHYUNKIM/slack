@@ -124,7 +124,11 @@ describe('MCP DM tools (mcp-2b)', () => {
     await new Promise((r) => httpServer.close(r));
   });
 
-  beforeEach(() => mcpWriteLimiter.reset());
+  // 사용자당 활성 토큰 상한(20)에 걸리지 않게 테스트마다 토큰을 비운다
+  beforeEach(async () => {
+    mcpWriteLimiter.reset();
+    await prisma.personalAccessToken.deleteMany();
+  });
 
   // 소켓이 남아 있으면 그 사용자가 온라인으로 보여 푸시 대상에서 빠진다. 테스트마다 끊고 오프라인이 될 때까지 기다린다.
   afterEach(async () => {
@@ -364,6 +368,120 @@ describe('MCP DM tools (mcp-2b)', () => {
       expect((await request(app).patch(`/dms/messages/${dm.id}`).set(auth(alice)).send({ content: 'ok' })).body.content).toBe('ok');
       expect((await request(app).delete(`/dms/messages/${dm.id}`).set(auth(alice))).status).toBe(200);
       expect((await request(app).patch(`/dms/messages/${dm.id}`).set(auth(alice)).send({ content: 'ok' })).status).toBe(404);
+    });
+  });
+
+  describe('events reach the author\'s other tabs too', () => {
+    it('sends dm:updated and dm:deleted to the author, the other side and group members, for 1:1, group and self DMs', async () => {
+      const claude = await clientFor(alice);
+      const aliceTab = await listen(alice);
+      const bobSocket = await listen(bob);
+      const carolSocket = await listen(carol);
+      const collect = (s: ClientSocket, event: string) => {
+        const got: any[] = [];
+        s.on(event, (p) => got.push(p));
+        return got;
+      };
+      const waitUntil = async (fn: () => boolean) => {
+        const start = Date.now();
+        while (!fn() && Date.now() - start < 3000) await new Promise((r) => setTimeout(r, 20));
+        expect(fn()).toBe(true);
+      };
+      // 한 소켓에 이벤트별 수집기를 한 번만 붙이고 반복마다 비운다
+      const tabUpd = collect(aliceTab, 'dm:updated'), tabDel = collect(aliceTab, 'dm:deleted');
+      const bobUpd = collect(bobSocket, 'dm:updated'), bobDel = collect(bobSocket, 'dm:deleted');
+      const carolDel = collect(carolSocket, 'dm:deleted');
+      const reset = () => { for (const a of [tabUpd, tabDel, bobUpd, bobDel, carolDel]) a.length = 0; };
+
+      for (let i = 0; i < 2; i++) {
+        // 1:1: 작성자 탭과 상대 모두 받고, 삭제 payload에 threadId가 있다
+        reset();
+        const one = (await call(claude, 'send_dm', { userId: bob.id, content: `tab ${i}` })).data.id;
+        await call(claude, 'edit_dm_message', { messageId: one, content: `tab edited ${i}` });
+        await call(claude, 'delete_dm_message', { messageId: one });
+        await waitUntil(() => tabUpd.length === 1 && tabDel.length === 1 && bobUpd.length === 1 && bobDel.length === 1);
+        expect(tabUpd[0]).toMatchObject({ id: one, content: `tab edited ${i}` });
+        expect(tabDel[0]).toEqual({ dmId: one, fromUserId: alice.id, toUserId: bob.id, groupId: null, threadId: null });
+        expect(bobDel[0]).toEqual(tabDel[0]);
+
+        // 그룹: 작성자 탭과 다른 멤버 모두 받는다
+        reset();
+        const g = (await call(claude, 'send_dm', { groupId, content: `gtab ${i}` })).data.id;
+        await call(claude, 'edit_dm_message', { messageId: g, content: `gtab edited ${i}` });
+        await call(claude, 'delete_dm_message', { messageId: g });
+        await waitUntil(() => tabUpd.length === 1 && tabDel.length === 1 && carolDel.length === 1);
+        expect(tabDel[0]).toEqual({ dmId: g, fromUserId: alice.id, toUserId: null, groupId, threadId: null });
+
+        // 나와의 대화: 작성자 탭이 한 번만 받는다(중복 방 전송 없음)
+        reset();
+        const note = (await call(claude, 'send_dm', { userId: alice.id, content: `note ${i}` })).data.id;
+        await call(claude, 'edit_dm_message', { messageId: note, content: `note edited ${i}` });
+        await call(claude, 'delete_dm_message', { messageId: note });
+        await waitUntil(() => tabUpd.length === 1 && tabDel.length === 1);
+        await new Promise((r) => setTimeout(r, 150));
+        expect(tabUpd).toHaveLength(1);
+        expect(tabDel).toHaveLength(1);
+        expect(tabDel[0]).toEqual({ dmId: note, fromUserId: alice.id, toUserId: alice.id, groupId: null, threadId: null });
+        expect((await call(claude, 'read_dm', { userId: alice.id })).data.messages.some((m: any) => m.id === note)).toBe(false);
+      }
+
+      // REST 경로도 같은 서비스라 같은 이벤트를 낸다
+      reset();
+      const dm = (await request(app).post('/dms').set(auth(alice)).send({ toUserId: bob.id, content: 'rest tab' })).body;
+      expect((await request(app).patch(`/dms/messages/${dm.id}`).set(auth(alice)).send({ content: 'rest tab edited' })).status).toBe(200);
+      expect((await request(app).delete(`/dms/messages/${dm.id}`).set(auth(alice))).status).toBe(200);
+      await waitUntil(() => tabUpd.length === 1 && tabDel.length === 1);
+    });
+  });
+
+  describe('group mention activity is created exactly once', () => {
+    it('creates one activity per mentioned member for MCP, REST, thread reply and socket sends, and edits do not add more', async () => {
+      const claude = await clientFor(alice);
+      const count = (dmId: number) => prisma.activity.count({ where: { userId: bob.id, dmId } });
+
+      const viaMcp = (await call(claude, 'send_dm', { groupId, content: `mcp ${mention(bob)}` })).data.id;
+      const viaRest = (await request(app).post(`/dms/groups/${groupId}/messages`).set(auth(alice)).send({ content: `rest ${mention(bob)}` })).body.id;
+      const reply = (await request(app).post(`/dms/messages/${viaRest}/reply`).set(auth(alice)).send({ content: `reply ${mention(bob)}` })).body.id;
+      const aliceSocket = await listen(alice);
+      const sockId = await new Promise<number>((resolve) =>
+        aliceSocket.emit('dmgroup:send', { groupId, content: `socket ${mention(bob)}` }, (r: any) => resolve(r.id)));
+      await settleBackgroundWork();
+      for (const id of [viaMcp, viaRest, reply, sockId]) expect(await count(id)).toBe(1);
+
+      // 수정해도 활동이 늘지 않는다
+      await call(claude, 'edit_dm_message', { messageId: viaMcp, content: `mcp edited ${mention(bob)}` });
+      await settleBackgroundWork();
+      expect(await count(viaMcp)).toBe(1);
+    });
+  });
+
+  describe('REST: a member who left cannot edit or delete their own group messages', () => {
+    it('answers 403 for PATCH and DELETE and keeps the message', async () => {
+      const g = (await request(app).post('/dms/groups').set(auth(dave)).send({ userIds: [alice.id, carol.id] })).body.group.id as number;
+      const mine = (await request(app).post(`/dms/groups/${g}/messages`).set(auth(dave)).send({ content: 'dave before leaving' })).body.id;
+      expect((await request(app).patch(`/dms/messages/${mine}`).set(auth(dave)).send({ content: 'ok while member' })).status).toBe(200);
+      expect((await request(app).delete(`/dms/groups/${g}/members/me`).set(auth(dave))).status).toBe(200);
+      expect((await request(app).patch(`/dms/messages/${mine}`).set(auth(dave)).send({ content: 'after leaving' })).status).toBe(403);
+      expect((await request(app).delete(`/dms/messages/${mine}`).set(auth(dave))).status).toBe(403);
+      const row = await prisma.directMessage.findUnique({ where: { id: mine } });
+      expect(row).toMatchObject({ content: 'ok while member', deletedAt: null });
+    });
+  });
+
+  describe('list_dms limit', () => {
+    it('applies the limit per kind to the most recent conversations', async () => {
+      const claude = await clientFor(alice);
+      const g2 = (await request(app).post('/dms/groups').set(auth(alice)).send({ userIds: [bob.id, dave.id] })).body.group.id as number;
+      await call(claude, 'send_dm', { groupId: g2, content: 'newest group' });
+      await call(claude, 'send_dm', { userId: dave.id, content: 'newest direct' });
+      const one = await call(claude, 'list_dms', { limit: 1 });
+      expect(one.data.direct).toHaveLength(1);
+      expect(one.data.groups).toHaveLength(1);
+      expect(one.data.direct[0]).toMatchObject({ userId: dave.id, lastMessage: { content: 'newest direct' } });
+      expect(one.data.groups[0]).toMatchObject({ groupId: g2, lastMessage: { content: 'newest group' } });
+      expect(Object.keys(one.data.direct[0]).sort()).toEqual(['lastMessage', 'name', 'unreadCount', 'userId']);
+      const all = await call(claude, 'list_dms', { limit: 100 });
+      expect(all.data.groups.map((c: any) => c.groupId)).toEqual(expect.arrayContaining([g2, groupId]));
     });
   });
 

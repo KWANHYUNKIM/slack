@@ -12,7 +12,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
-import { sendDirectMessage, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
+import { sharesChannel, sendDirectMessage, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
 import { ServiceError } from '../services/messageService.js';
 import {
   createActivitiesForDm,
@@ -164,14 +164,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
 
     // Guests can only view DM conversations with shared-channel members
     if (req.user!.role === 'GUEST' && currentUserId !== otherUserId) {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${currentUserId} AND cm2."userId" = ${otherUserId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
+      if (!(await sharesChannel(currentUserId, otherUserId))) {
         res.status(404).json({ error: 'User not found' });
         return;
       }
@@ -326,7 +319,6 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
     if (parentDm.groupId !== null) {
       const groupReply = await sendGroupMessage({ groupId: parentDm.groupId, fromUserId, content, fileIds, threadId: parentId });
       res.status(201).json(groupReply);
-      void createActivitiesForDm({ ...groupReply, threadId: parentId });
       return;
     }
 
@@ -346,14 +338,7 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
 
       // Guests can only reply to DMs with shared-channel members
       if (req.user!.role === 'GUEST') {
-        const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-          SELECT cm1."channelId" AS id
-          FROM "ChannelMember" cm1
-          JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-          WHERE cm1."userId" = ${fromUserId} AND cm2."userId" = ${toUserId}
-          LIMIT 1
-        `;
-        if (sharedChannel.length === 0) {
+        if (!(await sharesChannel(fromUserId, toUserId))) {
           res.status(400).json({ error: 'Unable to send message' });
           return;
         }
@@ -625,14 +610,7 @@ router.post('/:userId/read', authMiddleware, async (req: AuthRequest, res: Respo
 
     // Guests can only interact with shared-channel members
     if (req.user!.role === 'GUEST' && currentUserId !== otherUserId) {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${currentUserId} AND cm2."userId" = ${otherUserId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
+      if (!(await sharesChannel(currentUserId, otherUserId))) {
         res.status(404).json({ error: 'User not found' });
         return;
       }
@@ -678,14 +656,7 @@ router.post('/:userId/unread', authMiddleware, async (req: AuthRequest, res: Res
 
     // Guests can only interact with shared-channel members
     if (req.user!.role === 'GUEST') {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${currentUserId} AND cm2."userId" = ${otherUserId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
+      if (!(await sharesChannel(currentUserId, otherUserId))) {
         res.status(404).json({ error: 'User not found' });
         return;
       }
@@ -796,14 +767,7 @@ router.get('/:userId/pins', authMiddleware, async (req: AuthRequest, res: Respon
 
     // Guests can only view pins with shared-channel members
     if (req.user!.role === 'GUEST' && currentUserId !== otherUserId) {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${currentUserId} AND cm2."userId" = ${otherUserId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
+      if (!(await sharesChannel(currentUserId, otherUserId))) {
         res.status(404).json({ error: 'User not found' });
         return;
       }

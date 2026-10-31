@@ -2,16 +2,15 @@ import type { Prisma } from '@prisma/client';
 import prisma from '../db.js';
 import { USER_SELECT_BASIC } from '../db/selects.js';
 import { canAccessDm, checkDmGroupMembership } from '../middleware/authorize.js';
-import { listGroupConversations, sendGroupMessage } from '../services/dmGroupService.js';
+import { listGroupConversationSummaries, sendGroupMessage } from '../services/dmGroupService.js';
 import {
   UNABLE_TO_SEND,
   deleteDirectMessage,
   editDirectMessage,
-  listDirectConversations,
+  listDirectConversationSummaries,
   sendDirectMessage,
   sharesChannel,
 } from '../services/dmService.js';
-import { createActivitiesForDm } from '../services/mentionService.js';
 import { ServiceError } from '../services/messageService.js';
 import { paginateResults } from '../utils/pagination.js';
 import { ToolAccessError, type ToolContext } from './readTools.js';
@@ -66,27 +65,12 @@ async function assertCanReadWithUser(ctx: ToolContext, otherUserId: number) {
 }
 
 export async function listDms(ctx: ToolContext, args: { limit: number }) {
+  // 사이드바용 목록(멘션 수, 별표, 상태 포함)이 아니라 가벼운 요약을 쓰고, limit은 SQL에서 적용한다
   const [direct, groups] = await Promise.all([
-    listDirectConversations(ctx.userId, ctx.role),
-    listGroupConversations(ctx.userId),
+    listDirectConversationSummaries(ctx.userId, ctx.role, args.limit),
+    listGroupConversationSummaries(ctx.userId, args.limit),
   ]);
-  const lastOf = (m: { id: number; content: string; fromUserId: number; createdAt: Date } | null) =>
-    m && { id: m.id, content: m.content, fromUserId: m.fromUserId, createdAt: m.createdAt };
-  return {
-    direct: direct.slice(0, args.limit).map((c) => ({
-      userId: c.otherUser?.id ?? null,
-      name: c.otherUser?.name ?? null,
-      lastMessage: lastOf(c.lastMessage),
-      unreadCount: c.unreadCount,
-    })),
-    groups: groups.slice(0, args.limit).map((c) => ({
-      groupId: c.group.id,
-      name: c.group.name,
-      members: c.group.members.map((m) => ({ id: m.id, name: m.name })),
-      lastMessage: lastOf(c.lastMessage),
-      unreadCount: c.unreadCount,
-    })),
-  };
+  return { direct, groups };
 }
 
 export async function readDm(ctx: ToolContext, args: { userId?: number; groupId?: number; limit: number; cursor?: number }) {
@@ -121,7 +105,6 @@ export async function sendDm(ctx: ToolContext, args: { userId?: number; groupId?
   if ('groupId' in target) {
     if (!(await checkDmGroupMembership(ctx.userId, target.groupId))) throw new ToolAccessError(NOT_ACCESSIBLE_CONVERSATION);
     const dm = await sendGroupMessage({ groupId: target.groupId, fromUserId: ctx.userId, content: args.content });
-    void createActivitiesForDm(dm);
     return { id: dm.id, groupId: dm.groupId, createdAt: dm.createdAt };
   }
   try {
