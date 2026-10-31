@@ -4,35 +4,32 @@ set -euo pipefail
 # ── Configuration ────────────────────────────────────────────────────
 # Set these environment variables before running, or export them in your shell.
 # To look up current production values:
-#   gcloud run services describe slawk --project ncvgl-gcp --region us-central1 \
+#   gcloud run services describe slackclone --project your-gcp-project --region us-central1 \
 #     --format='yaml(spec.template.spec.containers[0].env)'
 #
 # Required env vars:
-#   GCP_PROJECT_ID   - GCP project ID (default: ncvgl-gcp)
+#   GCP_PROJECT_ID   - GCP project ID (default: your-gcp-project)
 #   DATABASE_URL     - Cloud SQL connection string (get from Cloud Run)
 #   JWT_SECRET       - JWT signing secret (get from Cloud Run)
-#   GCS_BUCKET_NAME  - GCS bucket for file uploads (default: slawk-uploads-<project>)
-#   RUN_SEED         - "true" for first deploy, "false" after
+#   GCS_BUCKET_NAME  - GCS bucket for file uploads (default: slackclone-uploads-<project>)
 
-GCP_PROJECT_ID="${GCP_PROJECT_ID:-ncvgl-gcp}"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-your-gcp-project}"
 REGION="${REGION:-us-central1}"
-SERVICE_NAME="${SERVICE_NAME:-slawk}"
-CLOUD_SQL_INSTANCE="${CLOUD_SQL_INSTANCE:-${GCP_PROJECT_ID}:${REGION}:slawk-db}"
+SERVICE_NAME="${SERVICE_NAME:-slackclone}"
+CLOUD_SQL_INSTANCE="${CLOUD_SQL_INSTANCE:-${GCP_PROJECT_ID}:${REGION}:slackclone-db}"
 
 DATABASE_URL="${DATABASE_URL:?Set DATABASE_URL}"
 JWT_SECRET="${JWT_SECRET:?Set JWT_SECRET}"
-GCS_BUCKET_NAME="${GCS_BUCKET_NAME:-slawk-uploads-${GCP_PROJECT_ID}}"
+GCS_BUCKET_NAME="${GCS_BUCKET_NAME:-slackclone-uploads-${GCP_PROJECT_ID}}"
 VAPID_PUBLIC_KEY="${VAPID_PUBLIC_KEY:?Set VAPID_PUBLIC_KEY}"
 VAPID_PRIVATE_KEY="${VAPID_PRIVATE_KEY:?Set VAPID_PRIVATE_KEY}"
-VAPID_SUBJECT="${VAPID_SUBJECT:-mailto:admin@slawk.dev}"
-RUN_SEED="${RUN_SEED:-false}"
+VAPID_SUBJECT="${VAPID_SUBJECT:-mailto:admin@example.com}"
 
 echo "Deploying ${SERVICE_NAME} to Cloud Run..."
 echo "  Project:  ${GCP_PROJECT_ID}"
 echo "  Region:   ${REGION}"
 echo "  SQL:      ${CLOUD_SQL_INSTANCE}"
 echo "  Bucket:   ${GCS_BUCKET_NAME}"
-echo "  Seed:     ${RUN_SEED}"
 echo ""
 
 # ── Ensure GCS bucket exists and has correct permissions ─────────────
@@ -67,19 +64,19 @@ echo "  GCS bucket ready."
 echo ""
 
 # ── Clone main branch from GitHub ────────────────────────────────────
-REPO_URL="https://github.com/ncvgl/slawk.git"
+REPO_URL="https://github.com/KWANHYUNKIM/slack.git"
 DEPLOY_DIR=$(mktemp -d)
 echo "Cloning ${REPO_URL} (main) into ${DEPLOY_DIR}..."
 git clone --depth 1 --branch main "${REPO_URL}" "${DEPLOY_DIR}"
 echo ""
 
 # ── Build and deploy (with Docker layer caching) ────────────────────
-IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/slawk"
+IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/slackclone"
 
-gcloud builds submit "${DEPLOY_DIR}" \
-  --config="${DEPLOY_DIR}/deploy/gcp/cloudbuild.yaml" \
+gcloud builds submit "${DEPLOY_DIR}/app" \
+  --config="${DEPLOY_DIR}/app/deploy/gcp/cloudbuild.yaml" \
   --project "${GCP_PROJECT_ID}" \
-  --substitutions="_IMAGE=${IMAGE},_CLOUD_SQL=${CLOUD_SQL_INSTANCE},_DATABASE_URL=${DATABASE_URL},_JWT_SECRET=${JWT_SECRET},_GCS_BUCKET=${GCS_BUCKET_NAME},_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY},_VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY},_VAPID_SUBJECT=${VAPID_SUBJECT},_RUN_SEED=${RUN_SEED}"
+  --substitutions="_IMAGE=${IMAGE},_CLOUD_SQL=${CLOUD_SQL_INSTANCE},_DATABASE_URL=${DATABASE_URL},_JWT_SECRET=${JWT_SECRET},_GCS_BUCKET=${GCS_BUCKET_NAME},_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY},_VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY},_VAPID_SUBJECT=${VAPID_SUBJECT}"
 
 echo ""
 echo "Deploy complete! Service URL:"

@@ -31,10 +31,13 @@ steps:
       - '--set-env-vars=JWT_SECRET=${_JWT_SECRET}'
       - '--set-env-vars=GCS_BUCKET_NAME=${_GCS_BUCKET}'
       - '--set-env-vars=NODE_ENV=production'
+      # Cloud Run 앞단 프록시 1홉. 예전 코드의 하드코딩 trust proxy 1과 같은 값이다.
+      - '--set-env-vars=TRUST_PROXY=1'
+      # Cloud Run은 UDP를 받지 않으므로 내장 STUN은 끈다.
+      - '--set-env-vars=STUN_ENABLED=false'
       - '--set-env-vars=VAPID_PUBLIC_KEY=${_VAPID_PUBLIC_KEY}'
       - '--set-env-vars=VAPID_PRIVATE_KEY=${_VAPID_PRIVATE_KEY}'
       - '--set-env-vars=VAPID_SUBJECT=${_VAPID_SUBJECT}'
-      - '--set-env-vars=RUN_SEED=${_RUN_SEED}'
       - '--timeout=3600'
       - '--session-affinity'
       - '--min-instances=1'
@@ -55,17 +58,16 @@ steps:
       - '--region=${_REGION}'
 
 substitutions:
-  _SERVICE: slawk
+  _SERVICE: slackclone
   _REGION: us-central1
   _IMAGE: ''
   _CLOUD_SQL: ''
   _GCS_BUCKET: ''
-  _RUN_SEED: 'false'
   _DATABASE_URL: ''
   _JWT_SECRET: ''
   _VAPID_PUBLIC_KEY: ''
   _VAPID_PRIVATE_KEY: ''
-  _VAPID_SUBJECT: 'mailto:admin@slawk.dev'
+  _VAPID_SUBJECT: 'mailto:admin@example.com'
 
 options:
   logging: CLOUD_LOGGING_ONLY
