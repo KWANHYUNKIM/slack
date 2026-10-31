@@ -83,7 +83,7 @@ RAM이 8GB이므로 8명이 동시에 돌 수 없다. `memory_pressure`의 여�
 - 메모리가 높게 잡히면 **천천히 굴려도 된다.** 속도보다 안정성이 우선이다.
 - 디스크 여유가 5GB 미만이면 새 설치나 빌드를 멈추고 사용자에게 보고한다.
 - 개발 서버, DB, Docker 컨테이너는 쓰지 않을 때 종료한다.
-- **테스트 DB는 전용 컨테이너 `slackclone-db`(127.0.0.1:5434, 메모리 256MB 제한)만 쓴다.** 백엔드 테스트는 시작할 때 DB를 전부 비우므로, 다른 프로젝트 DB(5432 `erp-postgres`, 5433 `jobseeker-db`)에는 절대 연결하지 않는다.
+- **테스트 DB는 전용 컨테이너 `slackclone-db`(127.0.0.1:5434, 메모리 256MB 제한)만 쓴다.** 개발자마다 **자기 전용 DB**를 쓴다: dev-N은 `DATABASE_URL=postgresql://postgres:password@localhost:5434/slackclone_test_devN npm test` (dev1~dev5). 테스트가 시작할 때 DB를 비우므로 같은 DB에서 동시에 테스트를 돌리면 서로 깨진다. `.env` 기본값(`slackclone`)은 총괄의 통합 테스트용, `slackclone_dev`는 시연 서버(:3100)용이라 테스트에 쓰지 않는다. 다른 프로젝트 DB(5432 `erp-postgres`, 5433 `jobseeker-db`)에는 절대 연결하지 않는다. 새 마이그레이션을 만든 개발자는 자기 DB에 적용하고, 총괄이 나머지 DB에 적용한다.
 
 ## 5. 금지 사항
 - Slack의 소스 코드, 디자인 에셋, 로고, 브랜드 이름을 그대로 복사하지 않는다. 동작 방식만 분석해 직접 구현한다.

@@ -95,3 +95,5 @@
 | 10:43 | 감속 단계 대기 중 총괄이 docs/conventions/i18n.md 작성 | i18n-1 바로 시작할 수 있게 키 이름, ICU, RTL, 백엔드 오류 코드 규칙 | |
 | 10:48 | PR #9 리뷰 반영 커밋 046d46f, 시연 서버 재시작 | mention-counts, /activity SPA 반영 | |
 | 10:50 | 6 | dev-2 sonnet: i18n-1 / dev-4 sonnet: 내장 STUN / dev-1 sonnet: 채널 읽음 멘션 버그 | 정상 단계 3명. 파일 영역 분리(프런트 전반 / useHuddleStore+stun / mentionService·channels) | 진행 중 |
+| 10:57 | **문제 발견**: 여러 개발자가 같은 테스트 DB로 jest를 동시에 돌려 서로 DB를 비움(전체 41건 실패의 원인) | 개발자별 DB `slackclone_test_dev1~5` 생성·마이그레이션, CLAUDE.md·developer.md·backend.md 규칙 갱신 | DB 컨테이너 125MB/256MB |
+| 10:59 | STUN 테스트를 전용 DB(dev3)로 재확인 19/19, PR #10을 01b 위에 쌓아 생성 | | |
