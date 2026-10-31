@@ -7,6 +7,7 @@ import { deleteStoredFile } from './fileStorage.js';
 import { emitRemoved } from './mentionService.js';
 import { onThreadReplyDeleted, onThreadParentDeleted } from './threadService.js';
 import { getGroupMemberIds, groupDmVisibleSql } from './dmGroupService.js';
+import { utcTimestamp } from '../db/sqlTime.js';
 
 // 데이터 보존(E5). 워크스페이스 기본 + 채널별 덮어쓰기로 "N일 지난 메시지"를 영구 삭제한다.
 //
@@ -27,8 +28,9 @@ const SETTING_ID = 1;
 // 활성 보존 건(LegalHold.releasedAt 없음)의 대상자이거나 User.legalHold 플래그가 켜져 있으면 보존 대상이다(둘 중 하나라도).
 // 플래그는 legalHoldService가 동기화하는 캐시지만 정리는 관계를 직접 본다. 선택한 뒤에 보존이 걸려도 지우지 않도록
 // 선택 문장과 삭제 문장(deleteMany, 자리표시자 전환) 모두에 같은 조건을 넣고, 파일 본체를 지우기 직전에 한 번 더 거른다.
-const HELD_USER: Prisma.UserWhereInput = { OR: [{ legalHold: true }, { legalHoldCustody: { some: { hold: { releasedAt: null } } } }] };
-const NOT_HELD_USER: Prisma.UserWhereInput = { legalHold: false, legalHoldCustody: { none: { hold: { releasedAt: null } } } };
+// HELD_USER·NOT_HELD_USER(Prisma)와 아래 HELD_CTE(raw SQL)는 같은 사용자 집합을 고른다. 하나를 바꾸면 나머지도 바꾼다(retention.test가 확인한다).
+export const HELD_USER: Prisma.UserWhereInput = { OR: [{ legalHold: true }, { legalHoldCustody: { some: { hold: { releasedAt: null } } } }] };
+export const NOT_HELD_USER: Prisma.UserWhereInput = { legalHold: false, legalHoldCustody: { none: { hold: { releasedAt: null } } } };
 const CHANNEL_NOT_HELD: Prisma.ChannelWhereInput = { legalHold: false, members: { none: { user: HELD_USER } } };
 const MESSAGE_NOT_HELD: Prisma.MessageWhereInput = { user: NOT_HELD_USER, channel: CHANNEL_NOT_HELD };
 
@@ -240,21 +242,29 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
 
 // DM과 그룹 DM. 보낸 사람이나 받은 사람이 법적 보존이면 제외하고, 그룹 DM은 보존 대상자가 볼 수 있었던 메시지를 제외한다
 // (구성원 이력이 있는 보존 대상자의 마지막 구간이 끝나기 전 메시지, 지금 구성원이면 전부. 기준은 eDiscovery와 같은 groupDmVisibleSql).
-// 메시지 작성 시각을 이력 행의 시각과 견줘야 해서 Prisma 조건 대신 raw SQL(상관 서브쿼리)로 쓴다. 메시지 별칭은 dm이다.
-// 선택·확인·삭제·자리표시자 전환 문장마다 이 조건이 들어가 문장 시점에 새로 평가되므로, 선택한 뒤에 보존이 걸려도 지우지 않는다.
-const heldUserSql = (userId: Prisma.Sql) => Prisma.sql`EXISTS (
-  SELECT 1 FROM "User" hu WHERE hu.id = ${userId} AND (hu."legalHold" OR EXISTS (
-    SELECT 1 FROM "LegalHoldCustodian" hc JOIN "LegalHold" hh ON hh.id = hc."holdId" WHERE hc."userId" = hu.id AND hh."releasedAt" IS NULL)))`;
-const DM_NOT_HELD = Prisma.sql`(NOT ${heldUserSql(Prisma.sql`dm."fromUserId"`)}
-  AND (dm."toUserId" IS NULL OR NOT ${heldUserSql(Prisma.sql`dm."toUserId"`)})
-  AND NOT ${groupDmVisibleSql(heldUserSql)})`;
-const HAS_REPLIES = Prisma.sql`EXISTS (SELECT 1 FROM "DirectMessage" r WHERE r."threadId" = dm.id)`;
+// 메시지 작성 시각을 이력 행의 시각과 견줘야 해서 Prisma 조건 대신 raw SQL(상관 서브쿼리)로 쓴다. 메시지 별칭은 dm, 파일 별칭은 fl이다.
+// 문장마다 맨 앞에 WITH held(HELD_CTE)를 붙여 보존 대상자 집합을 그 문장 시점에 한 번 계산하고, 선택·삭제·자리표시자 전환 문장마다
+// 같은 조건을 넣으므로 선택한 뒤에 보존이 걸려도 지우지 않는다.
 
-/** 지금도 보존 대상이 아닌 DM id만 남긴다 */
-async function stillPurgeableDms(ids: number[]): Promise<number[]> {
-  if (ids.length === 0) return [];
-  const rows = await prisma.$queryRaw<Array<{ id: number }>>`SELECT dm.id FROM "DirectMessage" dm WHERE dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}`;
-  return rows.map((r) => r.id);
+/** 보존 대상자 집합(held). HELD_USER·NOT_HELD_USER와 같은 정의다. */
+export const HELD_CTE = Prisma.sql`held AS (
+  SELECT hu.id FROM "User" hu WHERE hu."legalHold" OR EXISTS (
+    SELECT 1 FROM "LegalHoldCustodian" hc JOIN "LegalHold" hh ON hh.id = hc."holdId" WHERE hc."userId" = hu.id AND hh."releasedAt" IS NULL))`;
+const isHeld = (userId: Prisma.Sql) => Prisma.sql`${userId} IN (SELECT id FROM held)`;
+const DM_NOT_HELD = Prisma.sql`(NOT ${isHeld(Prisma.sql`dm."fromUserId"`)}
+  AND (dm."toUserId" IS NULL OR NOT ${isHeld(Prisma.sql`dm."toUserId"`)})
+  AND NOT ${groupDmVisibleSql(isHeld)})`;
+const HAS_REPLIES = Prisma.sql`EXISTS (SELECT 1 FROM "DirectMessage" r WHERE r."threadId" = dm.id)`;
+const FILE_RETURNING = Prisma.sql`fl.id, fl.filename, fl."gcsPath", fl."messageId", fl."dmId"`;
+
+/**
+ * DB에서 이미 지운 파일 행의 본체를 지운다. 보존 조건이 든 DB 문장이 실제로 지운 행(RETURNING)만 받으므로 보존 파일은 건드리지 않는다.
+ * 실패하면 로그만 남긴다(행이 없어 다시 찾을 수 없다. 본체만 남는 쪽이 보존 파일을 잃는 쪽보다 안전하다).
+ */
+async function removeBlobsAfterDelete(files: FileRow[]): Promise<void> {
+  for (const f of files) {
+    if (!(await deleteStoredFile(f))) logError(`Retention: stored file ${f.id} could not be removed after its row was deleted`, null);
+  }
 }
 
 type DmRow = { id: number; fromUserId: number; toUserId: number | null; groupId: number | null; threadId: number | null };
@@ -262,6 +272,7 @@ type DmRow = { id: number; fromUserId: number; toUserId: number | null; groupId:
 /** 보존 대상이 아닌 DM을 id 순으로 고른다. cond도 별칭 dm 기준이다. */
 function selectDms(cond: Prisma.Sql, take: number): Promise<DmRow[]> {
   return prisma.$queryRaw<DmRow[]>`
+    WITH ${HELD_CTE}
     SELECT dm.id, dm."fromUserId", dm."toUserId", dm."groupId", dm."threadId" FROM "DirectMessage" dm
     WHERE ${cond} AND ${DM_NOT_HELD} ORDER BY dm.id ASC LIMIT ${take}`;
 }
@@ -292,7 +303,7 @@ async function emitDmDeleted(rows: DmRow[]): Promise<void> {
 
 async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const leaf = Prisma.sql`dm."createdAt" < ${cutoff} AND NOT ${HAS_REPLIES}`;
+  const leaf = Prisma.sql`dm."createdAt" < ${utcTimestamp(cutoff)} AND NOT ${HAS_REPLIES}`;
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
@@ -311,29 +322,38 @@ async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeC
   return counts;
 }
 
+/**
+ * DM을 지우고(보존 조건·답글 없음을 문장 안에서 다시 본다) 실제로 지운 DM의 첨부만 지운다. 저장소 본체는 커밋 뒤에 지운다.
+ * 첨부 행은 FK SetNull이라 DM이 지워지면 dmId가 비므로, 지우기 전에 첨부 id를 잡아 두고 dmId가 빈 것만 지운다.
+ */
 async function deleteDms(rows: DmRow[]): Promise<PurgeCounts> {
-  const ids = await stillPurgeableDms(rows.map((r) => r.id));
-  if (ids.length === 0) return emptyCounts();
-  const files = await prisma.file.findMany({ where: { dmId: { in: ids } }, select: FILE_SELECT });
-  const { failedOwners, removed } = await removeStoredFiles(files);
-  const targets = ids.filter((id) => !failedOwners.has(id));
-  if (targets.length === 0) return emptyCounts();
+  const candidates = rows.map((r) => r.id);
+  const { goneIds, files } = await prisma.$transaction(async (tx) => {
+    const attached = (await tx.file.findMany({ where: { dmId: { in: candidates } }, select: { id: true } })).map((f) => f.id);
+    const gone = await tx.$queryRaw<Array<{ id: number }>>`
+      WITH ${HELD_CTE}
+      DELETE FROM "DirectMessage" dm WHERE dm.id = ANY(${candidates}::int[]) AND NOT ${HAS_REPLIES} AND ${DM_NOT_HELD}
+      RETURNING dm.id`;
+    const ids = gone.map((g) => g.id);
+    if (ids.length === 0 || attached.length === 0) return { goneIds: ids, files: [] as FileRow[] };
+    const removed = await tx.$queryRaw<FileRow[]>`
+      DELETE FROM "File" fl WHERE fl.id = ANY(${attached}::int[]) AND fl."dmId" IS NULL
+        AND (fl."detachedFromDmId" IS NULL OR fl."detachedFromDmId" = ANY(${ids}::int[]))
+      RETURNING ${FILE_RETURNING}`;
+    return { goneIds: ids, files: removed };
+  });
+  if (goneIds.length === 0) return emptyCounts();
+  await removeBlobsAfterDelete(files);
 
-  // 답글 없음: 조회 뒤에 새 답글이 달렸다면 그 부모는 지우지 않는다. 리액션은 FK cascade, 첨부 행은 SetNull이라 따로 지운다.
-  await prisma.$executeRaw`DELETE FROM "DirectMessage" dm WHERE dm.id = ANY(${targets}::int[]) AND NOT ${HAS_REPLIES} AND ${DM_NOT_HELD}`;
-  const remaining = new Set((await prisma.directMessage.findMany({ where: { id: { in: targets } }, select: { id: true } })).map((m) => m.id));
-  const gone = new Set(targets.filter((id) => !remaining.has(id)));
-  if (gone.size === 0) return emptyCounts();
-
-  const fileCount = await deleteFileRows(removed, gone, 'dmId');
-  await cleanupActivities({ dmId: { in: [...gone] } });
+  const gone = new Set(goneIds);
+  await cleanupActivities({ dmId: { in: goneIds } });
   await emitDmDeleted(rows.filter((r) => gone.has(r.id)));
-  return { messages: gone.size, files: fileCount, placeholders: 0, partial: false };
+  return { messages: gone.size, files: files.length, placeholders: 0, partial: false };
 }
 
 async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const parents = Prisma.sql`dm."createdAt" < ${cutoff} AND ${HAS_REPLIES} AND (dm."deletedAt" IS NULL OR dm.content <> '')`;
+  const parents = Prisma.sql`dm."createdAt" < ${utcTimestamp(cutoff)} AND ${HAS_REPLIES} AND (dm."deletedAt" IS NULL OR dm.content <> '')`;
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
@@ -344,83 +364,78 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
     if (rows.length === 0) break;
     budget.left -= rows.length;
     await budget.afterSelect?.();
-    const ids = new Set(await stillPurgeableDms(rows.map((r) => r.id)));
-    if (ids.size === 0) break;
-    const files = await prisma.file.findMany({ where: { dmId: { in: [...ids] } }, select: FILE_SELECT });
-    const { failedOwners, removed } = await removeStoredFiles(files);
-    const targets = rows.filter((r) => ids.has(r.id) && !failedOwners.has(r.id));
-    if (targets.length === 0) break;
-    const targetIds = targets.map((r) => r.id);
-    const removedIds = removed.map((f) => f.id);
+    const ids = rows.map((r) => r.id);
+    const at = utcTimestamp(new Date());
     // 세 문장 모두 보존 조건을 다시 본다(선택 뒤에 보존이 걸린 DM은 첨부·리액션·내용을 건드리지 않는다)
-    const [fileDel] = await prisma.$transaction([
-      prisma.$executeRaw`DELETE FROM "File" f USING "DirectMessage" dm WHERE f.id = ANY(${removedIds}::int[]) AND dm.id = f."dmId" AND ${DM_NOT_HELD}`,
-      prisma.$executeRaw`DELETE FROM "DMReaction" x USING "DirectMessage" dm WHERE x."dmId" = ANY(${targetIds}::int[]) AND dm.id = x."dmId" AND ${DM_NOT_HELD}`,
+    const [files, , blanked] = await prisma.$transaction([
+      prisma.$queryRaw<FileRow[]>`
+        WITH ${HELD_CTE}
+        DELETE FROM "File" fl USING "DirectMessage" dm WHERE dm.id = fl."dmId" AND dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}
+        RETURNING ${FILE_RETURNING}`,
       prisma.$executeRaw`
-        UPDATE "DirectMessage" dm SET "deletedAt" = COALESCE(dm."deletedAt", now()), content = '', "isPinned" = false, "pinnedBy" = NULL, "pinnedAt" = NULL, "updatedAt" = now()
-        WHERE dm.id = ANY(${targetIds}::int[]) AND ${DM_NOT_HELD}`,
+        WITH ${HELD_CTE}
+        DELETE FROM "DMReaction" x USING "DirectMessage" dm WHERE dm.id = x."dmId" AND dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}`,
+      prisma.$queryRaw<Array<{ id: number }>>`
+        WITH ${HELD_CTE}
+        UPDATE "DirectMessage" dm SET "deletedAt" = COALESCE(dm."deletedAt", ${at}), content = '', "isPinned" = false, "pinnedBy" = NULL, "pinnedAt" = NULL, "updatedAt" = ${at}
+        WHERE dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}
+        RETURNING dm.id`,
     ]);
-    await cleanupActivities({ dmId: { in: targetIds } });
+    await removeBlobsAfterDelete(files);
+    if (blanked.length === 0) break;
+    const blankedIds = new Set(blanked.map((b) => b.id));
+    const targets = rows.filter((r) => blankedIds.has(r.id));
+    await cleanupActivities({ dmId: { in: [...blankedIds] } });
     await emitDmDeleted(targets);
     counts.placeholders += targets.length;
-    counts.files += fileDel;
+    counts.files += files.length;
     if (targets.length < rows.length) break;
   }
   return counts;
 }
 
-type DetachedRow = FileRow & { detachedFromMessageId: number | null; detachedFromDmId: number | null };
-const ORPHAN_SELECT = { ...FILE_SELECT, detachedFromMessageId: true, detachedFromDmId: true } as const;
-
 /**
- * 분리된 파일 중 원래 메시지·DM이 지금도 법적 보존에 걸려 있는 것을 뺀다. 원래 행이 이미 없으면(정리됨) 걸리지 않는다.
- * DM은 stillPurgeableDms(DM 보존 조건 한 곳)로, 채널 메시지는 MESSAGE_NOT_HELD로 판단한다.
+ * 분리된 파일(원래 메시지·DM이 소프트 삭제되며 떨어진 첨부)이 지금도 보존 대상이 아니면 참. 파일 별칭은 fl.
+ * 업로더가 보존 대상이거나, 원래 DM이 DM_NOT_HELD에 걸리거나(그룹 DM 볼 수 있었던 범위 포함),
+ * 원래 채널 메시지가 MESSAGE_NOT_HELD에 걸리면(작성자, 보존 채널, 보존 대상자가 멤버인 채널) 남긴다. 원래 행이 이미 없으면 걸리지 않는다.
  */
-async function dropHeldDetached<T extends { detachedFromMessageId: number | null; detachedFromDmId: number | null }>(files: T[]): Promise<T[]> {
-  const dmIds = [...new Set(files.flatMap((f) => (f.detachedFromDmId !== null ? [f.detachedFromDmId] : [])))];
-  const msgIds = [...new Set(files.flatMap((f) => (f.detachedFromMessageId !== null ? [f.detachedFromMessageId] : [])))];
-  const heldDms = new Set<number>();
-  if (dmIds.length > 0) {
-    const free = new Set(await stillPurgeableDms(dmIds));
-    const existing = await prisma.directMessage.findMany({ where: { id: { in: dmIds } }, select: { id: true } });
-    for (const d of existing) if (!free.has(d.id)) heldDms.add(d.id);
-  }
-  const heldMsgs = new Set<number>();
-  if (msgIds.length > 0) {
-    const free = new Set((await prisma.message.findMany({ where: { id: { in: msgIds }, ...MESSAGE_NOT_HELD }, select: { id: true } })).map((m) => m.id));
-    const existing = await prisma.message.findMany({ where: { id: { in: msgIds } }, select: { id: true } });
-    for (const m of existing) if (!free.has(m.id)) heldMsgs.add(m.id);
-  }
-  return files.filter((f) => !(f.detachedFromDmId !== null && heldDms.has(f.detachedFromDmId)) && !(f.detachedFromMessageId !== null && heldMsgs.has(f.detachedFromMessageId)));
-}
+const ORPHAN_NOT_HELD = Prisma.sql`(NOT ${isHeld(Prisma.sql`fl."userId"`)}
+  AND NOT EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."detachedFromDmId" AND NOT ${DM_NOT_HELD})
+  AND NOT EXISTS (
+    SELECT 1 FROM "Message" om JOIN "Channel" oc ON oc.id = om."channelId"
+    WHERE om.id = fl."detachedFromMessageId" AND (${isHeld(Prisma.sql`om."userId"`)} OR oc."legalHold"
+      OR EXISTS (SELECT 1 FROM "ChannelMember" ocm WHERE ocm."channelId" = oc.id AND ${isHeld(Prisma.sql`ocm."userId"`)}))))`;
 
 /**
  * 이미 소프트 삭제되어 메시지에서 분리된 파일(messageId·dmId 모두 null)을 정리한다. 워크스페이스 기본 기간을 기준으로 한다.
- * 업로더가 보존 대상이거나, 분리 전 원래 메시지·DM이 보존 대상(채널·보낸/받은 사람·그룹 구성원)이면 남긴다.
+ * 보존 조건(ORPHAN_NOT_HELD)은 선택과 DELETE 문장 모두에 넣고, 저장소 본체는 DELETE가 돌려준 행만 지운다.
  * 업로드만 하고 아직 보내지 않은 파일도 이 조건에 닿지만, 기간 하한이 1일이라 보내는 중인 파일을 지우지는 않는다.
  */
 async function purgeOrphanFiles(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const base: Prisma.FileWhereInput = { messageId: null, dmId: null, createdAt: { lt: cutoff }, user: NOT_HELD_USER };
-  // 남겨 둔(보존) 파일이 앞을 막지 않도록 id 커서로 넘어간다
+  const detached = Prisma.sql`fl."messageId" IS NULL AND fl."dmId" IS NULL AND fl."createdAt" < ${utcTimestamp(cutoff)}`;
+  // 선택 뒤 보존이 걸려 남은 행이 앞을 막지 않도록 id 커서로 넘어간다
   let lastId = 0;
+  const select = (take: number) => prisma.$queryRaw<Array<{ id: number }>>`
+    WITH ${HELD_CTE}
+    SELECT fl.id FROM "File" fl WHERE ${detached} AND fl.id > ${lastId} AND ${ORPHAN_NOT_HELD} ORDER BY fl.id ASC LIMIT ${take}`;
   for (;;) {
-    const where: Prisma.FileWhereInput = { ...base, id: { gt: lastId } };
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
-      counts.partial = (await prisma.file.findFirst({ where, select: { id: true } })) !== null;
+      counts.partial = (await select(1)).length > 0;
       break;
     }
-    const rows: DetachedRow[] = await prisma.file.findMany({ where, select: ORPHAN_SELECT, orderBy: { id: 'asc' }, take });
+    const rows = await select(take);
     if (rows.length === 0) break;
-    lastId = rows[rows.length - 1].id;
+    const ids = rows.map((r) => r.id);
+    lastId = ids[ids.length - 1];
     budget.left -= rows.length;
-    const files = await dropHeldDetached(rows);
-    if (files.length === 0) continue;
-    const { removed } = await removeStoredFiles(files);
-    if (removed.length === 0) continue;
-    const { count } = await prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, messageId: null, dmId: null, user: NOT_HELD_USER } });
-    counts.files += count;
+    const removed = await prisma.$queryRaw<FileRow[]>`
+      WITH ${HELD_CTE}
+      DELETE FROM "File" fl WHERE fl.id = ANY(${ids}::int[]) AND fl."messageId" IS NULL AND fl."dmId" IS NULL AND ${ORPHAN_NOT_HELD}
+      RETURNING ${FILE_RETURNING}`;
+    await removeBlobsAfterDelete(removed);
+    counts.files += removed.length;
   }
   return counts;
 }

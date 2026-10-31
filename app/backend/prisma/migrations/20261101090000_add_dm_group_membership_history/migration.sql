@@ -25,7 +25,8 @@ ALTER TABLE "DMGroupMembership" ADD CONSTRAINT "DMGroupMembership_userId_fkey" F
 CREATE UNIQUE INDEX "DMGroupMembership_open_key" ON "DMGroupMembership"("groupId", "userId") WHERE "leftAt" IS NULL;
 
 -- 기존 데이터 이전: 지금 구성원마다 열린 구간(leftAt NULL) 하나를 만든다. joinedAt은 가입 시각(감사용, 범위 판단에는 쓰지 않는다).
--- 이미 나간 사람의 과거 구간은 기록이 없어 되살릴 수 없다.
+-- 한계: 이 마이그레이션을 배포하기 전에 이미 나간 구성원의 과거 구간은 기록이 없어 복원할 수 없다.
+-- 그런 사람이 대상자이면 그 그룹 DM은 eDiscovery 검색·내보내기와 보존 정리의 법적 보존 제외에서 본인이 보낸 메시지만 잡힌다.
 INSERT INTO "DMGroupMembership" ("groupId", "userId", "joinedAt", "leftAt")
 SELECT "groupId", "userId", "joinedAt", NULL
 FROM "DMGroupMember";

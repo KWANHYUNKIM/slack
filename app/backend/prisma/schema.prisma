@@ -350,7 +350,7 @@ model DMGroupMember {
   @@index([userId])
 }
 
-// 그룹 DM 구성원 이력. 들어온 때마다 한 행(재가입하면 행이 하나 더 생긴다), 나가면 leftAt을 채운다(DB 시각).
+// 그룹 DM 구성원 이력. 들어온 때마다 한 행(재가입하면 행이 하나 더 생긴다), 나가면 leftAt을 채운다(앱 시각, DirectMessage.createdAt과 같은 시계).
 // DMGroupMember는 지금 구성원만 담으므로, "그 사람이 볼 수 있었던 메시지"(eDiscovery, 보존 정리의 법적 보존 제외)는 이 표의 leftAt으로 판단한다
 // (dmGroupService.groupDmVisibleSql). joinedAt은 감사·조사용 기록이며 범위 판단에는 쓰지 않는다. dmGroupService만 쓴다.
 // 마이그레이션에만 있는 부분 유니크 인덱스 "DMGroupMembership_open_key"(groupId, userId WHERE leftAt IS NULL)가 열린 구간을 하나로 묶는다.

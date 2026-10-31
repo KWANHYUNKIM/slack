@@ -218,8 +218,11 @@ describe('eDiscovery', () => {
     await request(app).post(`/dms/groups/${groupId}/members`).set(auth(memberToken)).send({ userIds: [aliceId] }).expect(200);
     await tick();
     const after = await send(bobToken, groupId, 'welcome back');
-    // Delete: 소프트 삭제된 메시지도 표시와 함께 남는다
+    const fileMeta = { mimetype: 'application/pdf', size: 3, url: '/files/g' };
+    const bobFile = await prisma.file.create({ data: { ...fileMeta, filename: 'gb.pdf', originalName: 'group-bob.pdf', userId: bobId, dmId: after } });
+    // Delete: 소프트 삭제된 메시지도 표시와 함께 남고, 분리된 첨부도 파일 결과에 남는다
     await request(app).delete(`/dms/messages/${after}`).set(auth(bobToken)).expect(200);
+    expect(await prisma.file.findUniqueOrThrow({ where: { id: bobFile.id } })).toMatchObject({ dmId: null, detachedFromDmId: after });
 
     const spans = await prisma.dMGroupMembership.findMany({ where: { groupId, userId: aliceId }, orderBy: { id: 'asc' } });
     expect(spans).toHaveLength(2);
@@ -235,6 +238,9 @@ describe('eDiscovery', () => {
     await request(app).delete(`/dms/groups/${late}/members/me`).set(auth(aliceToken)).expect(200);
     await tick();
     const postLeave = await send(adminToken, late, 'after alice left for good');
+    // 범위 밖 메시지에서 분리된 첨부는 빠진다
+    const outFile = await prisma.file.create({ data: { ...fileMeta, filename: 'go.pdf', originalName: 'group-out.pdf', userId: adminId, dmId: postLeave } });
+    await request(app).delete(`/dms/messages/${postLeave}`).set(auth(adminToken)).expect(200);
 
     // 같은 필터를 이미 검색했으므로 건수는 counts=1로 다시 받는다
     const r = await searchQ(`holdId=${holdId}&kind=dm&counts=1`).expect(200);
@@ -247,6 +253,12 @@ describe('eDiscovery', () => {
     const dmIds = lines(res.body as string).filter((x) => x.kind === 'dm').map((x) => x.id);
     expect(dmIds).toEqual([before, aliceSaid, away, after, preJoin]);
     expect(dmIds).not.toContain(postLeave);
+
+    const files = await searchQ(`holdId=${holdId}&kind=file&counts=1`).expect(200);
+    expect(files.body.items.map((i: { id: number }) => i.id)).toEqual([bobFile.id]);
+    expect(files.body.counts.file).toBe(1);
+    expect(files.body.items[0]).toMatchObject({ detachedFromDmId: after, attachedToDeleted: true });
+    expect(files.body.items.map((i: { id: number }) => i.id)).not.toContain(outFile.id);
 
     // alice가 첫 그룹에서도 마지막으로 나가면 그 뒤 메시지는 빠지고, 그 전 것은 그대로다
     await request(app).delete(`/dms/groups/${groupId}/members/me`).set(auth(aliceToken)).expect(200);

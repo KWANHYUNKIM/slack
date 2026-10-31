@@ -131,7 +131,7 @@ export async function findOrCreateGroup(creatorId: number, otherIds: number[]): 
   if (existing) return { groupId: existing.id, created: false };
 
   try {
-    const now = await dbNow(prisma);
+    const now = new Date();
     const group = await prisma.dMGroup.create({
       data: {
         memberKey,
@@ -155,22 +155,18 @@ export async function findOrCreateGroup(creatorId: number, otherIds: number[]): 
 // ── 구성원 이력(DMGroupMembership) ─────────────────────────────────────
 // 구성원이 바뀌는 경로(생성, 추가, 나가기)는 모두 이 파일에 있고, 이력도 여기서만 쓴다.
 // 범위 판단에는 leftAt만 쓴다(아래 groupDmVisibleSql). joinedAt은 감사·조사용 기록이다.
-// 시각은 DB 시각(now())이다. 앱 서버 시계가 어긋나도 메시지 시각과 같은 기준(DB)으로 비교되게 한다.
+// 시각은 앱 시각(new Date())이다. 비교 대상인 DirectMessage.createdAt이 Prisma 기본값(앱 시각)이라 같은 시계를 쓴다.
+// 나가기는 그룹 잠금을 얻은 뒤 시각을 잡는다(잠금을 기다리는 동안 들어온 메시지가 나간 시각 뒤로 밀리지 않게).
 // 같은 사람의 열린 구간은 하나뿐이다(부분 유니크 인덱스 groupId, userId WHERE leftAt IS NULL).
-
-async function dbNow(db: Db): Promise<Date> {
-  const [row] = await db.$queryRaw<Array<{ now: Date }>>`SELECT now() AS now`;
-  return row.now;
-}
 
 /** 가입 구간을 연다. 이미 열린 구간이 있는 사용자는 부분 유니크 인덱스에 걸려 건너뛴다. */
 async function openMemberships(tx: Prisma.TransactionClient, groupId: number, userIds: number[], at: Date): Promise<void> {
   await tx.dMGroupMembership.createMany({ data: userIds.map((userId) => ({ groupId, userId, joinedAt: at })), skipDuplicates: true });
 }
 
-/** 열린 가입 구간을 닫는다 */
+/** 열린 가입 구간을 닫는다. 호출자가 그룹 잠금을 얻은 뒤에 부른다. */
 async function closeMembership(tx: Prisma.TransactionClient, groupId: number, userId: number): Promise<void> {
-  await tx.dMGroupMembership.updateMany({ where: { groupId, userId, leftAt: null }, data: { leftAt: await dbNow(tx) } });
+  await tx.dMGroupMembership.updateMany({ where: { groupId, userId, leftAt: null }, data: { leftAt: new Date() } });
 }
 
 /**
@@ -238,7 +234,7 @@ export async function addGroupMembers(groupId: number, actorId: number, userIds:
       orderBy: { id: 'desc' },
       select: { id: true },
     });
-    const now = await dbNow(tx);
+    const now = new Date(); // 잠금 뒤
     await tx.dMGroupMember.createMany({
       data: newIds.map((userId) => ({ groupId, userId, lastReadDmId: last?.id ?? null, joinedAt: now })),
       skipDuplicates: true,

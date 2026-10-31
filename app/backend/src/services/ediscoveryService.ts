@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../db.js';
 import { auditFilterSchema } from './auditLogService.js';
 import { groupDmVisibleSql } from './dmGroupService.js';
+import { utcTimestamp } from '../db/sqlTime.js';
 
 // eDiscovery(E6). 보존 건의 대상자(custodian)를 기준으로 채널 메시지·DM·파일 메타데이터를 찾고 내보낸다.
 //
@@ -12,7 +13,9 @@ import { groupDmVisibleSql } from './dmGroupService.js';
 //   (구성원 이력 DMGroupMembership에 행이 있는 그룹에서 마지막 구간의 leftAt 이전(경계 포함)에 쓴 것 전체, 지금 구성원이면 제한 없음).
 //   새 구성원도 가입 전 기록을 보므로 가입 전 메시지와 나갔다가 재가입한 사이의 메시지도 들어가고, 마지막으로 나간 뒤의 메시지는 빠진다.
 //   메시지 시각을 이력 시각과 견줘야 해서 DM과 파일은 raw SQL(상관 서브쿼리)로 id를 고른 뒤 그 id로 읽는다. 조건 크기는 대상자 수와 무관하다.
-// - 파일: 대상자가 올린 파일과, 위 DM에 붙은 파일의 메타데이터(본문은 담지 않는다)
+// - 파일: 대상자가 올린 파일과, 위 DM에 붙은 파일, 위 DM·채널 메시지에서 소프트 삭제로 분리된 파일의 메타데이터(본문은 담지 않는다)
+// 한계: 구성원 이력(20261101090000)을 배포하기 전에 이미 그룹을 나간 사람의 과거 구간은 복원할 수 없어,
+//   그런 대상자는 그 그룹 DM에서 본인이 보낸 메시지만 잡힌다.
 // 소프트 삭제된 메시지도 넣고 deletedAt으로 표시한다. 수정 이력 테이블은 없으므로 editedAt(마지막 수정 시각)만 담는다.
 // 일반 API의 멤버십 검사를 건너뛰므로 관리자 라우트(/admin/ediscovery)에서만 부른다.
 
@@ -104,9 +107,9 @@ const dmScopeSql = (ids: number[]) =>
 function rangeSql(col: Prisma.Sql, f: DiscoveryFilter): Prisma.Sql {
   const r = createdAtRange(f);
   const parts = [
-    ...(r?.gte ? [Prisma.sql`${col} >= ${r.gte}`] : []),
-    ...(r?.lt ? [Prisma.sql`${col} < ${r.lt}`] : []),
-    ...(r?.lte ? [Prisma.sql`${col} <= ${r.lte}`] : []),
+    ...(r?.gte ? [Prisma.sql`${col} >= ${utcTimestamp(r.gte)}`] : []),
+    ...(r?.lt ? [Prisma.sql`${col} < ${utcTimestamp(r.lt)}`] : []),
+    ...(r?.lte ? [Prisma.sql`${col} <= ${utcTimestamp(r.lte)}`] : []),
   ];
   return parts.length > 0 ? Prisma.join(parts, ' AND ') : Prisma.sql`TRUE`;
 }
@@ -118,8 +121,11 @@ const likeSql = (col: Prisma.Sql, q: string | undefined) =>
 const dmWhereSql = (ids: number[], f: DiscoveryFilter) =>
   Prisma.sql`${dmScopeSql(ids)} AND ${rangeSql(Prisma.sql`dm."createdAt"`, f)} AND ${likeSql(Prisma.sql`dm.content`, f.q)}`;
 
+/** 대상자가 올린 파일, 범위 안 DM에 붙은 파일, 범위 안 DM·채널 메시지에서 소프트 삭제로 분리된 파일 */
 const fileWhereSql = (ids: number[], f: DiscoveryFilter) => Prisma.sql`(${anyOf(Prisma.sql`fl."userId"`, ids)}
-  OR EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."dmId" AND ${dmScopeSql(ids)}))
+  OR EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."dmId" AND ${dmScopeSql(ids)})
+  OR EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."detachedFromDmId" AND ${dmScopeSql(ids)})
+  OR EXISTS (SELECT 1 FROM "Message" om WHERE om.id = fl."detachedFromMessageId" AND ${anyOf(Prisma.sql`om."userId"`, ids)}))
   AND ${rangeSql(Prisma.sql`fl."createdAt"`, f)} AND ${likeSql(Prisma.sql`fl."originalName"`, f.q)}`;
 
 type PageOpts = { cursor?: number; take: number; order: 'asc' | 'desc' };
