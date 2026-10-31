@@ -2,7 +2,7 @@ import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -26,6 +26,7 @@ import adminRoutes from './routes/admin.js';
 import pushRoutes from './routes/push.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
+import { rateLimitKey } from './middleware/rateLimitKey.js';
 import { JWT_SECRET } from './config.js';
 
 const app = express();
@@ -71,17 +72,7 @@ const apiLimiter = isTest
       standardHeaders: true,
       legacyHeaders: false,
       message: { error: 'Too many requests, please try again later' },
-      keyGenerator: (req) => {
-        const authHeader = req.headers.authorization;
-        if (authHeader?.startsWith('Bearer ')) {
-          try {
-            const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, { algorithms: ['HS256'] }) as any;
-            if (decoded.userId) return `user:${decoded.userId}`;
-          } catch {}
-        }
-        // ipKeyGenerator groups IPv6 addresses by /56 subnet so one host can't dodge the limit with many addresses
-        return req.ip ? ipKeyGenerator(req.ip) : 'unknown';
-      },
+      keyGenerator: rateLimitKey,
     });
 
 // Cache-Control: no-store for all API responses

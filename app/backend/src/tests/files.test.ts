@@ -398,6 +398,67 @@ describe('File Uploads', () => {
       expect(misuse.status).toBe(401);
     });
 
+    it('should not let another user download a private file with their own unscoped token', async () => {
+      // A (authToken) owns a private channel with a message and an attached file
+      const privChannel = await request(app)
+        .post('/channels')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'private-files', isPrivate: true });
+      const privMessage = await request(app)
+        .post(`/channels/${privChannel.body.id}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ content: 'private file here' });
+      const upload = await request(app)
+        .post('/files')
+        .set('Authorization', `Bearer ${authToken}`)
+        .field('messageId', privMessage.body.id.toString())
+        .attach('file', testFilePath);
+      expect(upload.status).toBe(201);
+      const fileId = upload.body.id;
+
+      // B is not a member of the channel
+      const userB = await request(app).post('/auth/register').send({
+        email: 'file-user-b@example.com',
+        password: TEST_PASSWORD,
+        name: 'File User B',
+      });
+      const tokenB = await request(app)
+        .post('/files/download-token')
+        .set('Authorization', `Bearer ${userB.body.token}`)
+        .send({});
+      expect(tokenB.status).toBe(200);
+
+      // B's unscoped token must not open A's file
+      const denied = await request(app).get(`/files/${fileId}/download?token=${tokenB.body.token}`);
+      expect([403, 404]).toContain(denied.status);
+
+      // A's own unscoped token works
+      const tokenA = await request(app)
+        .post('/files/download-token')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({});
+      const allowed = await request(app).get(`/files/${fileId}/download?token=${tokenA.body.token}`);
+      expect(allowed.status).toBe(200);
+
+      // Deleting the message detaches the file; it stays with its owner A and stays closed to B
+      const delMsg = await request(app)
+        .delete(`/messages/${privMessage.body.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(delMsg.status).toBe(200);
+      const deniedAfter = await request(app).get(`/files/${fileId}/download?token=${tokenB.body.token}`);
+      expect([403, 404]).toContain(deniedAfter.status);
+      const ownerAfter = await request(app).get(`/files/${fileId}/download?token=${tokenA.body.token}`);
+      expect(ownerAfter.status).toBe(200);
+
+      // Deleting the file itself makes the download fail for everyone
+      const delFile = await request(app)
+        .delete(`/files/${fileId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+      expect(delFile.status).toBe(200);
+      const afterDelete = await request(app).get(`/files/${fileId}/download?token=${tokenA.body.token}`);
+      expect(afterDelete.status).toBe(404);
+    });
+
     it('should reject download token with invalid fileId', async () => {
       const res = await request(app)
         .post('/files/download-token')

@@ -1,8 +1,9 @@
 import express from 'express';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { JWT_SECRET } from '../config.js';
+import { rateLimitKey } from '../middleware/rateLimitKey.js';
 
 /**
  * Rate limit tests use a standalone Express app with a low limit (3 req/window)
@@ -19,16 +20,7 @@ function createTestApp(max: number) {
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later' },
-    keyGenerator: (req) => {
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        try {
-          const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, { algorithms: ['HS256'] }) as any;
-          if (decoded.userId) return `user:${decoded.userId}`;
-        } catch {}
-      }
-      return req.ip ? ipKeyGenerator(req.ip) : 'unknown';
-    },
+    keyGenerator: rateLimitKey,
   });
 
   app.use('/api', limiter, (_req, res) => {
@@ -109,5 +101,41 @@ describe('Rate Limiting', () => {
       const blocked = await request(app).get('/api').set('Authorization', 'Bearer invalid.token.here');
       expect(blocked.status).toBe(429);
     });
+  });
+});
+
+describe('rateLimitKey', () => {
+  const bearer = (token: string) => ({ authorization: `Bearer ${token}` });
+
+  it('uses user:<id> for a normal login token', () => {
+    expect(rateLimitKey({ headers: bearer(signToken(7)), ip: '1.2.3.4' })).toBe('user:7');
+  });
+
+  it('falls back to the IP for a file-download (purpose) token', () => {
+    const token = jwt.sign({ userId: 7, tokenVersion: 0, purpose: 'file-download' }, JWT_SECRET, { expiresIn: '5m' });
+    expect(rateLimitKey({ headers: bearer(token), ip: '1.2.3.4' })).toBe('1.2.3.4');
+  });
+
+  it('falls back to the IP when tokenVersion is missing', () => {
+    const token = jwt.sign({ userId: 7 }, JWT_SECRET, { expiresIn: '1h' });
+    expect(rateLimitKey({ headers: bearer(token), ip: '1.2.3.4' })).toBe('1.2.3.4');
+  });
+
+  it('falls back to the IP for an invalid token or no header', () => {
+    expect(rateLimitKey({ headers: bearer('garbage'), ip: '1.2.3.4' })).toBe('1.2.3.4');
+    expect(rateLimitKey({ headers: {}, ip: '1.2.3.4' })).toBe('1.2.3.4');
+    expect(rateLimitKey({ headers: {}, ip: undefined })).toBe('unknown');
+  });
+
+  it('keys an IPv4-mapped IPv6 address the same as the plain IPv4 address', () => {
+    expect(rateLimitKey({ headers: {}, ip: '::ffff:1.2.3.4' })).toBe(rateLimitKey({ headers: {}, ip: '1.2.3.4' }));
+  });
+
+  it('groups IPv6 addresses in the same /56 and separates different /56s', () => {
+    const a = rateLimitKey({ headers: {}, ip: '2001:db8:1234:5600::1' });
+    const b = rateLimitKey({ headers: {}, ip: '2001:db8:1234:56ff:ffff::2' });
+    const c = rateLimitKey({ headers: {}, ip: '2001:db8:1234:5700::1' });
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
   });
 });
