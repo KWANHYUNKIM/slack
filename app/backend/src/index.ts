@@ -4,7 +4,7 @@ import { initializeWebSocket } from './websocket/index.js';
 import { startScheduler } from './scheduler.js';
 import prisma from './db.js';
 import { ensureBuiltinRules } from './services/dlpService.js';
-import { getStunConfig, getTotpEncryptionKey } from './config.js';
+import { getStunConfig, getTotpEncryptionKey, warnIfInvalidStunPublicPort } from './config.js';
 import { startStunServer, StunServer } from './stun/stunServer.js';
 
 const PORT = process.env.PORT || 3000;
@@ -36,6 +36,7 @@ server.listen(PORT, () => {
 // Built-in STUN responder (UDP) so huddles don't depend on external STUN servers
 let stunServer: StunServer | null = null;
 const stunConfig = getStunConfig();
+warnIfInvalidStunPublicPort();
 if (stunConfig.enabled) {
   startStunServer({ port: stunConfig.port, host: stunConfig.host })
     .then((s) => {

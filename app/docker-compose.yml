@@ -46,12 +46,14 @@ services:
       STUN_ENABLED: ${STUN_ENABLED:-true}
       STUN_PORT: ${STUN_PORT:-3478}
       STUN_PUBLIC_HOST: ${STUN_PUBLIC_HOST:-}
+      # 호스트 포트를 컨테이너 포트와 다르게 열 때만 설정(예: STUN_PUBLIC_PORT=34780 → 호스트 34780을 컨테이너 STUN_PORT로 매핑하고 이 포트를 광고). 비우면 STUN_PORT를 그대로 쓴다.
+      STUN_PUBLIC_PORT: ${STUN_PUBLIC_PORT:-}
       TURN_URLS: ${TURN_URLS:-}
       TURN_USERNAME: ${TURN_USERNAME:-}
       TURN_CREDENTIAL: ${TURN_CREDENTIAL:-}
     ports:
       - "${APP_PORT:-8080}:8080"
-      - "${STUN_PORT:-3478}:${STUN_PORT:-3478}/udp"
+      - "${STUN_PUBLIC_PORT:-${STUN_PORT:-3478}}:${STUN_PORT:-3478}/udp"
     volumes:
       - uploads:/app/uploads
 

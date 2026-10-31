@@ -37,7 +37,8 @@ router.get('/config', authMiddleware, (req: AuthRequest, res: Response) => {
   const stunPort = stun.enabled ? getStunListeningPort() : null;
   if (stunPort !== null) {
     const host = resolveStunHost(req, stun.publicHost);
-    if (host) iceServers.push({ urls: `stun:${host}:${stunPort}` });
+    // 공개 포트(포트 매핑 뒤의 바깥 포트)가 있으면 그 포트를, 없으면 실제 바인드 포트를 광고한다
+    if (host) iceServers.push({ urls: `stun:${host}:${stun.publicPort ?? stunPort}` });
   }
 
   const turn = getTurnConfig();
