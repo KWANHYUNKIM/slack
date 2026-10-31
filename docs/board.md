@@ -45,12 +45,12 @@
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | 완료(PR #49 머지) | 2h | 2026-10-31 23:23 | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | 완료(PR #68 머지) | 1.5h | 2026-11-01 00:15 | | |
-| mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | dev-4 | opus | PR #107 리뷰 반영 중 | 3h | 2026-11-01 03:16 | | |
+| mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | dev-4 | opus | PR #107 재리뷰 중 | 3h | 2026-11-01 03:16 | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | dev-1 | haiku | 완료(PR #90 머지) | 45분 | 2026-11-01 02:11 | 2026-11-01 02:18 | PR #11 남은 이슈 |
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
 | test/flaky-activity: 원인 2개 확정(소켓 연결 직후 리스너 없음, 활동 후처리 경쟁) → 브랜치 fix/activity-race(b79bf51, #12 위 스택). activity 30회 0 실패. 남은 전체 스위트 간헐 실패(요청 멈춤, DB 컨테이너 연결 끊김)는 원인 미확정 | dev-3 | opus | 완료(PR #13 머지) | 1.5h | 11:12 | 12:20 | 실제 70분 |
-| feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | dev-3 | haiku | 진행 | 20분 | 2026-11-01 03:48 | | PR #10 남은 이슈 |
+| feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | dev-3 | haiku | 완료(PR #109 머지) | 20분 | 2026-11-01 03:48 | 2026-11-01 03:52 | PR #10 남은 이슈 |
 | fix/auth-error-logging: auth 미들웨어 catch가 DB 오류까지 401로 삼켜 진단이 어려움 → logError, 인증 실패와 서버 오류 구분 | dev-1 | haiku | 완료(PR #38 머지) | 30분 | 2026-10-31 22:52 | | PR #15 남은 이슈 |
 | fix/admin-store-rethrow: useAdminStore.editChannel이 실패를 삼켜 컴포넌트가 이름 비교로 추정 → 다시 던지기 | dev-1 | haiku | 완료(PR #38 머지) | 20분 | 2026-10-31 22:52 | | PR #14 남은 이슈 |
 | feat/channel-name-taken-code: 중복 채널 이름 오류에 code(CHANNEL_NAME_TAKEN)와 errors 번역(POST /channels·관리자 변경) | dev-3 | sonnet | 완료(PR #21에 포함) | 30분 | | | PR #14 남은 이슈 |
@@ -76,9 +76,18 @@
 | E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 완료(PR #96 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:51 | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 완료(PR #99), QR 완료(PR #101 머지) | 1.5h | | | E7b 남은 이슈 |
+| spec/E1-multi-workspace: E1 조직·멀티 워크스페이스 스펙과 파트 분할(E2·E3·E8·E9 의존 정리), Enterprise Grid 조사 | planner-1 | opus | 완료(D1~D11 제안안 확정) | 1.5h | 2026-11-01 03:54 | 2026-11-01 04:03 | 엔터프라이즈 3절 |
+| E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | - | opus | 대기(OAuth·그룹 이력 머지 후) | 2h | | | docs/specs/E1-multi-workspace.md 9절 |
+| E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | - | opus | 대기(E1a 후) | 2h | | | E1 스펙 |
+| E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | - | opus | 대기(E1b 후) | 2h | | | E1 스펙 |
+| E1d DM·검색·활동·MCP 워크스페이스 범위 | - | sonnet | 대기(E1c 후) | 2h | | | E1 스펙 |
+| E1e 조직 거버넌스 설정 분리 | - | sonnet | 대기(E1d 후) | 2h | | | E1 스펙 |
+| E1f 프런트 전환기와 /w/:id URL | - | sonnet | 대기(E1c 후, E1d와 병렬 가능) | 2h | | | E1 스펙 |
+| E1g 조직 내부 공유 채널 | - | opus | 대기(E1c·E1f 후) | 2h | | | E1 스펙 |
+| E1h 관리 화면 분리·User.role 제거·누출 매트릭스 | - | sonnet | 대기(E1e·E1f·E1g 후) | 2h | | | E1 스펙 |
 | test/error-code-coverage-consts: 정적 검사가 code를 담은 상수 객체(.json(MFA_TOKEN_EXPIRED) 등)를 오탐 → main에서 실패 | dev-3 | haiku | 완료(PR #104 머지) | 30분 | 2026-11-01 03:24 | 2026-11-01 03:27 | PR #98 검토 중 발견 |
 | fix/dm-delete-detach: DM 삭제도 첨부를 분리할지 결정, 분리 첨부 재연결 방지(detachedFrom* null 조건) | dev-3 | sonnet | 완료(PR #105 머지) | 45분 | 2026-11-01 03:29 | 2026-11-01 03:33 | PR #98 남은 이슈 |
-| feat/group-membership-history: 그룹 DM 구성원 이력(가입·탈퇴 시각)으로 eDiscovery·법적 보존이 나간 대상자의 재직 기간 메시지까지 포함 | dev-1 | opus | PR #106 리뷰 반영 중 | 1.5h | 2026-11-01 03:25 | 2026-11-01 03:32 | PR #98 리뷰 4번 |
+| feat/group-membership-history: 그룹 DM 구성원 이력(가입·탈퇴 시각)으로 eDiscovery·법적 보존이 나간 대상자의 재직 기간 메시지까지 포함 | dev-1 | opus | PR #106 재리뷰 반영 중 | 1.5h | 2026-11-01 03:25 | 2026-11-01 03:32 | PR #98 리뷰 4번 |
 | fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 완료(PR #93 머지) | 45분 | 2026-11-01 02:26 | 2026-11-01 02:30 | PR #91 보고 |
 | refactor/api-401-by-code: 프런트 request()가 401 전체가 아니라 토큰 code(AUTH_INVALID_TOKEN 등)일 때만 로그아웃, 이후 2FA·비밀번호 오류 상태 코드 정리 | dev-4 | sonnet | 완료(PR #97 머지) | 1h | 2026-11-01 02:49 | 2026-11-01 02:56 | PR #89 리뷰 |
 | feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | dev-4 | sonnet | 완료(PR #99 머지) | 45분 | 2026-11-01 02:58 | | PR #86 남은 이슈 |

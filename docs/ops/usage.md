@@ -173,3 +173,9 @@
 | 2026-11-01 03:32 | dev-4 | opus | mcp-4 OAuth 2.1 | 278,048 |
 | 2026-11-01 03:46 | code-review | (리뷰) | PR #107 high | (미보고) |
 | 2026-11-01 03:46 | code-review | (리뷰) | PR #106 medium | 76,462 |
+| 2026-11-01 03:43 | dev-3 | haiku | feat/stun-public-port | 85,939 |
+| 2026-11-01 03:53 | code-review | (리뷰) | PR #109 low | 44,846 |
+| 2026-11-01 03:47 | dev-1 | opus | PR #106 리뷰 반영 | 45,004 |
+| 2026-11-01 03:59 | code-review | (리뷰) | PR #106 medium 재리뷰 | 87,067 |
+| 2026-11-01 03:50 | dev-4 | opus | PR #107 리뷰 반영 | 87,547 |
+| 2026-11-01 04:03 | planner-1 | opus | spec/E1-multi-workspace | 148,365 |
