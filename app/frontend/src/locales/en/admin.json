@@ -11,6 +11,7 @@
     }
   },
   "channels": {
+    "invalidName": "Channel names can only contain letters, numbers, hyphens, and underscores, and must start with a letter or number.",
     "columns": {
       "channel": "Channel",
       "members": "Members",

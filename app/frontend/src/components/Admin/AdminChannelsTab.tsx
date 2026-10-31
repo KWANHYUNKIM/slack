@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Lock, Hash, Trash2, Archive, ArchiveRestore, Pencil, X, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
+import { checkChannelName, normalizeChannelName } from '@/lib/channelName';
 import { ConfirmDialog } from './ConfirmDialog';
 
 export function AdminChannelsTab() {
@@ -12,18 +13,27 @@ export function AdminChannelsTab() {
   const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string; archived: boolean } | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
+  const [editError, setEditError] = useState('');
 
   const startEdit = (channel: { id: number; name: string }) => {
     setEditingId(channel.id);
     setEditName(channel.name);
+    setEditError('');
   };
 
   const saveEdit = async () => {
     if (!editingId || !editName.trim()) return;
     const channel = channels.find((c) => c.id === editingId);
-    if (channel && editName.trim() !== channel.name) {
-      await editChannel(editingId, { name: editName.trim().toLowerCase() });
+    const name = normalizeChannelName(editName);
+    if (channel && name !== channel.name) {
+      // 관리자 수정의 상한은 DB 컬럼 크기(80)
+      if (checkChannelName(name, 80)) {
+        setEditError(t('channels.invalidName'));
+        return;
+      }
+      await editChannel(editingId, { name });
     }
+    setEditError('');
     setEditingId(null);
   };
 
@@ -58,7 +68,9 @@ export function AdminChannelsTab() {
                       <input
                         type="text"
                         value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
+                        onChange={(e) => { setEditName(e.target.value); setEditError(''); }}
+                        aria-invalid={editError ? true : undefined}
+                        title={editError || undefined}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') saveEdit();
                           if (e.key === 'Escape') setEditingId(null);

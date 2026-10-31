@@ -18,7 +18,7 @@
     "close": "Close",
     "errors": {
       "tooLong": "Channel name must be 25 characters or fewer",
-      "invalidChars": "Channel names can only contain lowercase letters, numbers, and hyphens",
+      "invalidChars": "Channel names can only contain letters, numbers, hyphens, and underscores",
       "createFailed": "Failed to create channel"
     }
   },

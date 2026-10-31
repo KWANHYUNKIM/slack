@@ -8,6 +8,7 @@ import { AuthRequest } from '../types.js';
 import { getIO, kickUser } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
+import { validateChannelName } from '../utils/channelName.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 
 const router = Router();
@@ -463,11 +464,9 @@ router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) =
 });
 
 // PATCH /admin/channels/:id - Edit channel name
+const ADMIN_CHANNEL_NAME_MAX = 80;
 const editChannelSchema = z.object({
-  name: z.string().min(1).max(80)
-    .refine(val => val.trim().length > 0, { message: 'Name cannot be empty' })
-    .refine(val => /^[a-z0-9-]+$/.test(val), { message: 'Channel name must be lowercase alphanumeric with hyphens' })
-    .optional(),
+  name: z.string().optional(),
   isPrivate: z.boolean().optional(),
 }).refine(data => data.name !== undefined || data.isPrivate !== undefined, {
   message: 'At least one field must be provided',
@@ -486,6 +485,16 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
       return;
     }
+    // 이름은 생성 경로와 같은 검증을 쓴다. DB 컬럼 상한(80)은 기존 관리자 상한을 유지한다.
+    let newName: string | undefined;
+    if (parsed.data.name !== undefined) {
+      const nameResult = validateChannelName(parsed.data.name, ADMIN_CHANNEL_NAME_MAX);
+      if (!nameResult.ok) {
+        res.status(400).json({ error: nameResult.error, code: nameResult.code });
+        return;
+      }
+      newName = nameResult.name;
+    }
 
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) {
@@ -496,15 +505,17 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
     const updateData: { name?: string; isPrivate?: boolean } = {};
     const changes: string[] = [];
 
-    if (parsed.data.name && parsed.data.name !== channel.name) {
-      // Check for name conflicts
-      const existing = await prisma.channel.findUnique({ where: { name: parsed.data.name } });
+    if (newName && newName !== channel.name) {
+      // Check for name conflicts (case-insensitive, same as create)
+      const existing = await prisma.channel.findFirst({
+        where: { name: { equals: newName, mode: 'insensitive' }, id: { not: id } },
+      });
       if (existing) {
         res.status(400).json({ error: 'A channel with that name already exists' });
         return;
       }
-      updateData.name = parsed.data.name;
-      changes.push(`Renamed from #${channel.name} to #${parsed.data.name}`);
+      updateData.name = newName;
+      changes.push(`Renamed from #${channel.name} to #${newName}`);
     }
 
     if (parsed.data.isPrivate !== undefined && parsed.data.isPrivate !== channel.isPrivate) {

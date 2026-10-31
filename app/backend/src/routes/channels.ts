@@ -10,27 +10,13 @@ import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { validateChannelName } from '../utils/channelName.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
 
 const router = Router();
 
 const createChannelSchema = z.object({
-  name: z.string()
-    .min(1, 'Channel name is required')
-    .max(25, 'Channel name must be 25 characters or fewer')
-    .transform((name) => name.trim().toLowerCase())
-    .refine(
-      (name) => name.length >= 1,
-      { message: 'Channel name is required' }
-    )
-    .refine(
-      (name) => name.length <= 25,
-      { message: 'Channel name must be 25 characters or fewer' }
-    )
-    .refine(
-      (name) => /^[a-z0-9][a-z0-9-]*$/.test(name),
-      { message: 'Channel names can only contain lowercase letters, numbers, and hyphens, and must start with a letter or number' }
-    ),
+  name: z.unknown(),
   isPrivate: z.boolean().optional().default(false),
 });
 
@@ -42,7 +28,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
     const parsed = createChannelSchema.parse(req.body);
-    const name = parsed.name.toLowerCase();
+    const nameResult = validateChannelName(parsed.name);
+    if (!nameResult.ok) {
+      res.status(400).json({ error: nameResult.error, code: nameResult.code });
+      return;
+    }
+    const name = nameResult.name;
     const isPrivate = parsed.isPrivate;
     const userId = req.user!.userId;
 
