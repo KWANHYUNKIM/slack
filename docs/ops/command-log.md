@@ -106,3 +106,14 @@
 | 11:17 | PR #11 리뷰 반영 커밋 0a83299, PR 브랜치에서 tsc·eslint·i18n:check·icu 테스트 재확인 | formatRelative는 지시(floor)와 달리 trunc 채택: 과거 시각에 floor면 90초 전이 2분 전이 되므로 dev-2 판단이 맞음 | |
 | 11:22 | PR #10 리뷰 반영 커밋 27efd52. api.ts는 i18n 변경이 섞여 있어 getHuddleConfig 함수만 옮김. 브랜치에서 tsc와 stun·huddles 27 tests 재확인(dev5 DB) | | |
 | 11:23 | **실수**: docs/architecture/self-contained-assets.md를 STUN PR에도 넣음(PR #2와 add/add 충돌 위험) → STUN PR에서 제거, 문서 PR에 커밋 | | |
+| 12:19 | dev-3 보고: 원인 A 소켓 연결 핸들러가 온라인 기록을 await하는 동안 리스너 없음(재현 30/30 유실 → 0/30), 원인 B 같은 메시지의 생성·편집·삭제 활동 후처리 경쟁(지운 메시지 MENTION 잔존) | activity 30회 0 실패. 전체 스위트는 3회 중 2회 실패(활동과 무관) | |
+| 12:20 | 총괄 검토: app.ts 덮어쓰기 없음(#5·#8·#10 변경 유지 확인). dev-3 변경 4파일만 #12 위 fix/activity-race로 분리, tsc 통과, activity·websocket·unreads 79 tests 통과(통합 DB) | 커밋 b79bf51, 푸시 완료 | |
+| 12:21 | `gh auth status`: 토큰 무효(두 계정 모두) → PR 생성·머지 불가. 사용자에게 `gh auth login` 요청 | 남은 간헐 실패는 test/suite-flaky-rest 파트로 등록 | |
+| 12:23 | dev-5(sonnet) feat/channel-name-unicode 배정. 결정: haiku → sonnet(양방향 제어·제로폭 문자 차단, NFC 정규화 등 보안 판단 포함). 감속 단계라 1명만 | | |
+| 12:31 | dev-5 보고: 공용 검증 함수 utils/channelName.ts(백)·lib/channelName.ts(프런트), 생성·관리자 수정 경로 통일, 22 tests | 로캘 독립 toLowerCase + 소문자 뒤 NFC 한 번 더(İ) 판단 타당. security.test의 '비ASCII 거부' 테스트를 허용으로 바꾼 것은 새 규칙상 맞음 → 승인 | |
+| 12:33 | 공유 트리 channels.ts에 #12 hunk가 섞여 있어 `git show 3753480 -- channels.ts \| git apply -R`로 제거 후 #11 위 feat/channel-name-unicode로 분리. 백 tsc, 98 tests(--runInBand, 통합 DB), 프런트 tsc·eslint·i18n:check 통과 | 커밋 e579505 푸시 | |
+| 12:33 | 결정: 관리자 상한 80/생성 25 차이와 결합 문자·혼합 문자 체계는 후속 feat/channel-name-hardening, 검색 NFC는 fix/search-nfc로 분리 | 이번 PR 범위를 작게 유지 | |
+| 12:36 | DB 컨테이너 점검: OOM·재시작 없음, 126/256MB, max_connections 100. 10:04 KST terminating 로그는 개발자별 DB 생성 때 것 → dev-1(sonnet) test/suite-flaky-rest 배정, 연결 수 측정 지시 | 감속 단계 1명 | |
+| 13:47 | 사용자 지시: "다시 실행줘" (세션 재시작 후 루프 재개) | 자원 점검: 여유 29%, 디스크 14GB → 감속 단계, 한도 1 | |
+| 13:48 | `gh auth status` 정상 복구 확인 → PR #13(fix/activity-race, #12 위), PR #14(feat/channel-name-unicode, #11 위) 생성 | 인증 만료로 막혀 있던 2건 | |
+| 13:49 | dev-1(sonnet) test/suite-flaky-rest 재투입 | 12:36 배정분이 세션 종료로 중단. 남은 부분 작업(scale.test.ts, setup.ts)에서 이어서 | 진행 중 |
