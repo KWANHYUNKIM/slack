@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import request from 'supertest';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket, isUserOnline } from '../websocket/index.js';
@@ -73,7 +74,7 @@ describe('Activity: rapid CRUD overlapping background work', () => {
 
   function connect(u: TestUser): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
-      const s = Client(`http://localhost:${port}`, { auth: { token: u.token }, forceNew: true });
+      const s = Client(`http://127.0.0.1:${port}`, { auth: { token: u.token }, forceNew: true });
       sockets.push(s);
       s.on('connect', () => resolve(s));
       s.on('connect_error', reject);
@@ -88,13 +89,7 @@ describe('Activity: rapid CRUD overlapping background work', () => {
 
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
-    await new Promise<void>((resolve) => {
-      httpServer.listen(() => {
-        const address = httpServer.address();
-        port = typeof address === 'object' && address ? address.port : 3001;
-        resolve();
-      });
-    });
+    port = await listenOnLoopback(httpServer);
   });
 
   afterAll(async () => {

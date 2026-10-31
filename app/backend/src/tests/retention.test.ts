@@ -6,6 +6,7 @@ import { initializeWebSocket } from '../websocket/index.js';
 import fs from 'fs';
 import path from 'path';
 import request from 'supertest';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { uploadDir } from '../services/fileStorage.js';
@@ -461,9 +462,7 @@ describe('Data retention', () => {
     beforeAll(async () => {
       httpServer = createServer(app);
       io = initializeWebSocket(httpServer);
-      await new Promise<void>((resolve) => httpServer.listen(() => resolve()));
-      const address = httpServer.address();
-      port = typeof address === 'object' && address ? address.port : 0;
+      port = await listenOnLoopback(httpServer);
     });
     afterAll(() => {
       io.close();
@@ -486,7 +485,7 @@ describe('Data retention', () => {
       const freshReply = await mkMsg(ch.id, 1, { threadId: parent.id });
       const dm = await prisma.directMessage.create({ data: { content: 'old', fromUserId: memberId, toUserId: otherId, createdAt: ago(60) } });
 
-      const socket = Client(`http://localhost:${port}`, { auth: { token: memberToken } });
+      const socket = Client(`http://127.0.0.1:${port}`, { auth: { token: memberToken } });
       await new Promise<void>((resolve, reject) => {
         socket.on('connect', () => resolve());
         socket.on('connect_error', reject);
