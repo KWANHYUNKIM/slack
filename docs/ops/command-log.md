@@ -163,3 +163,4 @@
 | 2026-10-31 21:31 | PR #23 리뷰 10건 → dev-4 반영 지시. 총괄 결정: 그룹 내 게스트는 행위자와 무관하게 전 멤버와 공유 채널 필요, 멤버 추가는 DMGroup 행 잠금 후 상한 검사, memberKey는 원키 시도 후 P2002면 접미사, 그룹 열 때 서버 읽음 호출, 읽음 커서는 최상위 메시지만 |
 | 2026-10-31 21:40 | PR #23 머지(514b1eb). 실수: 첫 merge 시도가 "Base branch was modified"로 실패했는데 바로 원격 브랜치를 지워 PR이 닫힘 → 브랜치 재푸시, gh pr reopen, 다시 squash 머지. 이후 merge 성공 확인 뒤에만 브랜치 삭제(--delete-branch). 마이그레이션 20261031140000_add_group_dm을 dev1·2·3·5·slackclone·slackclone_dev에 적용. dev-4 worktree 제거 |
 | 2026-10-31 21:42 | 자원 정상(여유 30%, 스왑 84%, 한도 3). 스왑이 90%에 가까워 2개만 배정: planner-1 00b-gap-analysis-v2(sonnet, 사용자 지시, #claude-test에서 CRUD 관찰), dev-5 04-threads-view(sonnet, worktree, dev5 DB) |
+| 2026-10-31 21:47 | planner-1 완료: 00b 차이표 30항목, 스펙 06~10 신규, 04·05 보완. 단 이 세션에 Claude in Chrome 도구가 없어 #claude-test 실관찰 못 함(쓰기 없음) → 문서 기반 추정, 각 스펙에 "검증 필요" 표시. 04 보완(부모 삭제 자리표시자 등)을 진행 중인 dev-5에게 전달. 자원 감속(스왑 92%) 한도 1이라 추가 배정 보류 |

@@ -64,3 +64,11 @@ frontend: Messages/ProfileModal(프로필 관련), Sidebar/Sidebar.tsx(아바타
 
 ## 8. 충돌 주의
 01 선행 필수(`shouldNotify` 자리). schema.prisma는 01, 04와 직렬. users.ts와 websocket/index.ts의 presence 블록은 02(DM) 등과 겹칠 수 있음. 08(알림 설정)이 `shouldNotify`를 이어서 확장하므로 시그니처를 `shouldNotify(userId, ctx?)`로 열어 둔다.
+
+## 7. 보완 (00b 갭 분석 v2, planner-1)
+브라우저 도구가 없어 새 관찰은 하지 못했다. 기존 관찰(CRUD 실습)과 최신 main 코드를 대조해 추가한 점.
+- 01의 `shouldNotify` 훅은 `services/mentionService.ts`·`pushService.ts`에 있다(머지 완료). DND 억제 대상은 (1) 웹 푸시, (2) 활동 탭의 소리·배지 알림음. 활동 항목 자체는 저장한다(DND 해제 후 확인 가능). 09 리마인더도 같은 훅을 쓰므로 이 파트에서 `shouldNotify(userId, kind)` 시그니처를 `kind: 'mention' | 'reminder' | 'dm'`으로 열어둔다.
+- 그룹 DM(02)과 채널 별표(03)가 머지되어 상태 이모지를 표시할 곳이 늘었다: GroupDMItem, DirectMessageItem, 멤버 패널(MembersPanel, GroupMembersPanel), 멘션 드롭다운(MentionDropdown). 최소 범위는 아바타 모서리(관찰 확인)와 DM 사이드바 항목이며 나머지는 후속 가능.
+- Slack은 상태 설정과 DND를 한 호출(`users.profile.set`)과 별도 호출(`dnd.*`)로 나눈다(관찰 확인). 우리도 `PUT /users/me/custom-status`와 `PUT /users/me/dnd`를 분리하되, "상태가 지워질 때까지 알림 일시 중지" 체크 시에는 서버가 한 트랜잭션에서 둘 다 설정한다.
+- 시간대: 기간 옵션 "오늘"의 종료 시각은 사용자 시간대 자정이다. `User.timeZone`은 아직 없으므로(i18n-3 대기) 이 파트에서는 클라이언트가 계산한 절대 시각(ISO)을 보내고 서버는 현재+1분~7일 범위만 검증한다.
+- 추가 완료 기준: DND 중 푸시 억제를 테스트로 증명(`pushService` 호출 스파이), 만료 후 자동 해제 시 소켓 `user:status` 전파.
