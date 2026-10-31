@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireMessageAccess, requireThreadReadAccess } from '../middleware/authorize.js';
+import { requireMessageAccess, requireThreadReadAccess, canAccessDm, canReadChannel } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
 import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES, THREAD_REPLY_INCLUDE } from '../db/selects.js';
@@ -328,6 +328,63 @@ router.delete('/:id/pin', authMiddleware, requireMessageAccess, async (req: Auth
   } catch (error) {
     logError('Unpin message error', error);
     res.status(500).json({ error: 'Failed to unpin message' });
+  }
+});
+
+// GET /messages/:id/locate?kind=channel|dm - 퍼말링크의 메시지가 어느 대화에 있는지 알려 준다.
+// 메시지가 없거나 삭제됐거나 볼 권한이 없으면 모두 같은 404로 답해 존재 여부를 숨긴다.
+// channel(기본)은 Message, dm은 DirectMessage 테이블이다(두 테이블의 id는 서로 독립이다).
+router.get('/:id/locate', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const notFound = () => res.status(404).json({ error: 'Message not found', code: 'MESSAGE_NOT_FOUND' });
+  try {
+    const messageId = parseIntParam(req.params.id);
+    const kind = req.query.kind === 'dm' ? 'dm' : req.query.kind === undefined || req.query.kind === 'channel' ? 'channel' : null;
+    if (!messageId || !kind) {
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
+    const userId = req.user!.userId;
+
+    if (kind === 'dm') {
+      const dm = await prisma.directMessage.findUnique({
+        where: { id: messageId },
+        select: { id: true, fromUserId: true, toUserId: true, groupId: true, threadId: true, deletedAt: true },
+      });
+      if (!dm || dm.deletedAt || !(await canAccessDm(dm, userId))) return notFound();
+      // 1:1 DM의 주소는 상대방 id다
+      const dmUserId = dm.groupId === null ? (dm.fromUserId === userId ? dm.toUserId : dm.fromUserId) : undefined;
+      res.json({
+        messageId: dm.id,
+        ...(dm.groupId !== null ? { groupId: dm.groupId } : { dmUserId }),
+        ...(dm.threadId !== null && { parentId: dm.threadId }),
+      });
+      return;
+    }
+
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: { id: true, channelId: true, threadId: true, deletedAt: true },
+    });
+    if (!message) return notFound();
+    // 삭제됐어도 살아 있는 답글이 남은 부모는 자리표시자로 열 수 있다. 그 외 삭제 메시지는 404.
+    const deleted = !!message.deletedAt;
+    if (deleted) {
+      const liveReplies = message.threadId === null
+        ? await prisma.message.count({ where: { threadId: message.id, deletedAt: null } })
+        : 0;
+      if (liveReplies === 0) return notFound();
+    }
+    const access = await canReadChannel(userId, req.user!.role, message.channelId);
+    if (!access.exists || !access.allowed) return notFound();
+    res.json({
+      messageId: message.id,
+      channelId: message.channelId,
+      ...(message.threadId !== null && { parentId: message.threadId }),
+      ...(deleted && { deleted: true }),
+    });
+  } catch (error) {
+    logError('Locate message error', error);
+    res.status(500).json({ error: 'Failed to locate message' });
   }
 });
 

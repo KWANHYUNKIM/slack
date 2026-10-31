@@ -1,6 +1,6 @@
 import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Pin, Pencil, Trash2, MailOpen } from 'lucide-react';
+import { Pin, Pencil, Trash2, MailOpen, Link2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ interface MessageActionsMenuProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onMarkUnread?: () => void;
+  onCopyLink?: () => void;
   onClose: () => void;
   showOwnerActions: boolean;
   /** Classes applied to the invisible positioning anchor (e.g. absolute -top-4 right-5 mt-9) */
@@ -24,6 +25,7 @@ export function MessageActionsMenu({
   onEdit,
   onDelete,
   onMarkUnread,
+  onCopyLink,
   onClose,
   showOwnerActions,
   anchorClassName,
@@ -76,7 +78,7 @@ export function MessageActionsMenu({
     };
   }, []);
 
-  const hasAnyAction = onPin || showOwnerActions || onMarkUnread;
+  const hasAnyAction = onPin || showOwnerActions || onMarkUnread || onCopyLink;
 
   const menuContent = (
     <div
@@ -99,6 +101,16 @@ export function MessageActionsMenu({
             <Button variant="menu-item" onClick={onMarkUnread}>
               <MailOpen className="h-4 w-4" />
               {t('actionsMenu.markUnread')}
+            </Button>
+          )}
+          {onCopyLink && (
+            <Button
+              variant="menu-item"
+              data-testid={testIdPrefix ? `${testIdPrefix}-copy-link-btn` : 'copy-link-btn'}
+              onClick={onCopyLink}
+            >
+              <Link2 className="h-4 w-4" />
+              {t('actionsMenu.copyLink')}
             </Button>
           )}
           {onPin && (

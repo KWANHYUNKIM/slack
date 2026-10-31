@@ -16,6 +16,8 @@ import { LaterPage } from '@/components/Messages/LaterPage';
 import { QuickSwitcher } from '@/components/QuickSwitcher/QuickSwitcher';
 import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
+import { PermalinkNotFound } from '@/components/Messages/PermalinkNotFound';
+import { Toaster } from '@/components/ui/Toaster';
 import { SearchPage } from '@/components/Messages/SearchPage';
 
 export function AppLayout() {
@@ -47,6 +49,8 @@ export function AppLayout() {
     content = <ThreadsPage />;
   } else if (location.pathname === '/later') {
     content = <LaterPage />;
+  } else if (location.pathname === '/message-not-found') {
+    content = <PermalinkNotFound />;
   } else if (location.pathname === '/search') {
     content = <SearchPage />;
   } else {
@@ -95,6 +99,7 @@ export function AppLayout() {
       {/* 빠른 전환기와 단축키 도움말(06) */}
       <QuickSwitcher />
       <ShortcutsHelpModal />
+      <Toaster />
     </div>
   );
 }

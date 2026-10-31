@@ -7,7 +7,9 @@ import {
   searchAll, type SearchPageResponse, type SearchParsedFilters, type SearchResult,
   type SearchFileResult, type SearchPersonResult, type SearchChannelResult, type SearchTab, type SearchSort,
 } from '@/lib/api';
-import { chipsOf, removeChip, splitHighlights, stripFilters, type FilterChip } from '@/lib/searchQuery';
+import { chipsOf, removeChip, stripFilters, type FilterChip } from '@/lib/searchQuery';
+import { highlightNode } from '@/lib/highlightNode';
+import { renderMessageContent } from '@/lib/renderMessageContent';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useMobileStore } from '@/stores/useMobileStore';
@@ -17,16 +19,12 @@ type Item = SearchPageResponse['results'][number];
 
 const TABS: SearchTab[] = ['messages', 'files', 'people', 'channels'];
 
-/** 서버가 준 구간으로 <mark>를 만든다. 문자열을 HTML로 넣지 않는다. */
-function Highlighted({ text, ranges }: { text: string; ranges?: Array<[number, number]> }) {
-  return (
-    <>
-      {splitHighlights(text, ranges).map((p, i) =>
-        p.mark ? <mark key={i} className="rounded-sm bg-yellow-200 px-0.5 text-slack-primary">{p.text}</mark> : <span key={i}>{p.text}</span>,
-      )}
-    </>
-  );
+/** 이름·파일명 같은 일반 문자열에서 키워드를 <mark>로 감싼다. 문자열을 HTML로 넣지 않는다. */
+function Highlighted({ text, terms }: { text: string; terms: string[] }) {
+  return <>{highlightNode(text, terms)}</>;
 }
+
+const itemKey = (item: Item) => `${item.type}-${item.id}`;
 
 export function SearchPage() {
   const { t } = useTranslation(['messages', 'common']);
@@ -43,6 +41,8 @@ export function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [moreError, setMoreError] = useState(false);
+  const [truncated, setTruncated] = useState(false);
   const requestRef = useRef(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +54,8 @@ export function SearchPage() {
     setItems([]);
     setNextCursor(null);
     setLoadError(false);
+    setMoreError(false);
+    setTruncated(false);
     if (!q.trim()) {
       setFilters(undefined);
       setIsLoading(false);
@@ -66,6 +68,7 @@ export function SearchPage() {
         setItems(data.results);
         setFilters(data.parsedFilters);
         setNextCursor(data.nextCursor ?? null);
+        setTruncated(!!data.truncated);
       })
       .catch(() => { if (id === requestRef.current) setLoadError(true); })
       .finally(() => { if (id === requestRef.current) setIsLoading(false); });
@@ -75,24 +78,30 @@ export function SearchPage() {
     if (!nextCursor || isLoadingMore || isLoading) return;
     const id = requestRef.current;
     setIsLoadingMore(true);
+    setMoreError(false);
     searchAll(q, { tab, sort, cursor: nextCursor })
       .then((data) => {
         if (id !== requestRef.current) return;
-        setItems((prev) => [...prev, ...data.results]);
+        // 페이지 경계에서 겹친 항목은 종류와 id로 걸러 낸다
+        setItems((prev) => {
+          const seen = new Set(prev.map(itemKey));
+          return [...prev, ...data.results.filter((r) => !seen.has(itemKey(r)))];
+        });
         setNextCursor(data.nextCursor ?? null);
+        setTruncated(!!data.truncated);
       })
-      .catch(() => { if (id === requestRef.current) setLoadError(true); })
+      .catch(() => { if (id === requestRef.current) setMoreError(true); })
       .finally(() => setIsLoadingMore(false));
   }, [nextCursor, isLoadingMore, isLoading, q, tab, sort]);
 
-  // 목록 끝이 보이면 다음 20개를 불러온다(무한 스크롤).
+  // 목록 끝이 보이면 다음 20개를 불러온다(무한 스크롤). 실패하면 자동 재시도를 멈추고 버튼으로만 다시 시도한다.
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || !nextCursor || typeof IntersectionObserver === 'undefined') return;
+    if (!el || !nextCursor || moreError || typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver((entries) => { if (entries[0]?.isIntersecting) loadMore(); });
     io.observe(el);
     return () => io.disconnect();
-  }, [nextCursor, loadMore]);
+  }, [nextCursor, moreError, loadMore]);
 
   const update = (next: Record<string, string | null>) => {
     const p = new URLSearchParams(params);
@@ -127,7 +136,9 @@ export function SearchPage() {
     }
   };
 
-  const rowKey = (item: Item) => `${item.type}-${item.id}`;
+  const rowKey = itemKey;
+  const terms = filters?.terms ?? [];
+  const ignored = filters?.ignored ?? [];
   const hasFilters = chips.length > 0;
 
   return (
@@ -156,7 +167,7 @@ export function SearchPage() {
           </form>
         </div>
 
-        {hasFilters && (
+        {(hasFilters || ignored.length > 0) && (
           <div data-testid="search-chips" className="flex flex-wrap items-center gap-1.5 px-5 pb-2">
             {chips.map((chip: FilterChip) => (
               <span key={chip.label} data-testid="search-chip" className="inline-flex items-center gap-1 rounded-full bg-slack-hover px-2 py-0.5 text-[12px] text-slack-primary">
@@ -170,6 +181,11 @@ export function SearchPage() {
                 >
                   <X className="h-3 w-3" />
                 </button>
+              </span>
+            ))}
+            {ignored.map((ig, i) => (
+              <span key={`${ig.token}-${i}`} data-testid="search-chip-ignored" className="inline-flex items-center rounded-full border border-dashed border-slack-border px-2 py-0.5 text-[12px] text-slack-hint">
+                {t(ig.reason === 'limit' ? 'messages:search.ignoredLimitChip' : 'messages:search.ignoredChip', { token: ig.token })}
               </span>
             ))}
           </div>
@@ -242,25 +258,36 @@ export function SearchPage() {
                   onClick={() => openItem(item)}
                   className="w-full rounded-lg border border-slack-border-light px-3 py-2 text-start hover:bg-slack-hover"
                 >
-                  <ResultRow item={item} />
+                  <ResultRow item={item} terms={terms} />
                 </button>
               </li>
             ))}
           </ul>
         )}
-        {nextCursor !== null && (
+        {nextCursor !== null && !moreError && (
           <div ref={sentinelRef} className="py-3 text-center">
             <button type="button" onClick={loadMore} disabled={isLoadingMore} className="text-sm text-slack-link hover:underline">
               {t('messages:search.loadMore')}
             </button>
           </div>
         )}
+        {moreError && (
+          <div data-testid="search-more-error" className="py-3 text-center text-sm">
+            <div className="text-slack-error">{t('messages:search.loadFailed')}</div>
+            <button type="button" data-testid="search-retry" onClick={loadMore} className="mt-1 text-slack-link hover:underline">
+              {t('messages:search.retry')}
+            </button>
+          </div>
+        )}
+        {truncated && nextCursor === null && (
+          <div data-testid="search-truncated" className="py-3 text-center text-sm text-slack-hint">{t('messages:search.truncatedNotice')}</div>
+        )}
       </div>
     </div>
   );
 }
 
-function ResultRow({ item }: { item: Item }) {
+function ResultRow({ item, terms }: { item: Item; terms: string[] }) {
   const { t } = useTranslation('messages');
 
   if (item.type === 'person') {
@@ -268,7 +295,7 @@ function ResultRow({ item }: { item: Item }) {
     return (
       <div className="flex items-center gap-3">
         <Avatar src={p.avatar ?? undefined} alt={p.name} fallback={p.name} size="md" />
-        <span className="text-[15px] font-bold text-slack-primary"><Highlighted text={p.name} ranges={p.highlights} /></span>
+        <span className="text-[15px] font-bold text-slack-primary"><Highlighted text={p.name} terms={terms} /></span>
       </div>
     );
   }
@@ -278,7 +305,7 @@ function ResultRow({ item }: { item: Item }) {
     return (
       <div className="flex items-center gap-2">
         {c.isPrivate ? <Lock className="h-4 w-4 text-slack-secondary" /> : <Hash className="h-4 w-4 text-slack-secondary" />}
-        <span className="text-[15px] font-bold text-slack-primary"><Highlighted text={c.name} ranges={c.highlights} /></span>
+        <span className="text-[15px] font-bold text-slack-primary"><Highlighted text={c.name} terms={terms} /></span>
         {c.isMember && <span className="text-[12px] text-slack-secondary">{t('search.joined')}</span>}
         {c.archived && <span className="text-[12px] text-slack-secondary">{t('search.archivedChannel')}</span>}
         {c.topic && <span className="truncate text-[13px] text-slack-hint">{c.topic}</span>}
@@ -292,7 +319,7 @@ function ResultRow({ item }: { item: Item }) {
       <div className="flex items-start gap-3">
         <FileText className="mt-0.5 h-5 w-5 flex-shrink-0 text-slack-secondary" />
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-bold text-slack-primary"><Highlighted text={f.filename} ranges={f.highlights} /></div>
+          <div className="text-[15px] font-bold text-slack-primary"><Highlighted text={f.filename} terms={terms} /></div>
           <div className="flex flex-wrap items-center gap-1 text-xs text-slack-hint">
             <span>{f.user.name}</span>
             <span>{formatDateTime(f.createdAt)}</span>
@@ -317,7 +344,7 @@ function ResultRow({ item }: { item: Item }) {
           {r.threadId && <span className="rounded bg-slack-hover px-1">{t('search.threadReply')}</span>}
         </div>
         <div className="mt-0.5 line-clamp-3 whitespace-pre-wrap break-words text-[15px] text-slack-primary">
-          <Highlighted text={r.content} ranges={r.highlights} />
+          {highlightNode(renderMessageContent(r.content), terms)}
         </div>
       </div>
     </div>

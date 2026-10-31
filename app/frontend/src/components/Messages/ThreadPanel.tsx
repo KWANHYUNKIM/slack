@@ -36,6 +36,8 @@ interface ThreadPanelProps {
   readOnly?: boolean;
   /** ?reply=로 지정된 답글. 열릴 때 그 답글로 스크롤하고 강조한다. */
   highlightReplyId?: number | null;
+  /** DM 스레드의 링크 복사가 가리킬 대화 */
+  permalinkBase?: { kind: 'channel' | 'dm' | 'group'; conversationId: number };
 }
 
 function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
@@ -84,7 +86,7 @@ function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
   };
 }
 
-export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly, highlightReplyId }: ThreadPanelProps) {
+export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly, highlightReplyId, permalinkBase }: ThreadPanelProps) {
   const { t } = useTranslation('messages');
   const isDM = variant === 'dm';
   const testPrefix = isDM ? 'dm-thread' : 'thread';
@@ -363,6 +365,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                   message={parentMessage}
                   showAvatar={true}
                   variant="thread"
+                  permalinkBase={permalinkBase}
                   readOnly={readOnly}
                   onEditMessage={handleEditMessage}
                   onDeleteMessage={handleDeleteMessage}
@@ -383,6 +386,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 message={reply}
                 showAvatar={true}
                 variant="thread"
+                permalinkBase={permalinkBase}
                 readOnly={readOnly}
                 onEditMessage={handleEditMessage}
                 onDeleteMessage={handleDeleteMessage}

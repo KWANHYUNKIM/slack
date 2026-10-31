@@ -6,16 +6,28 @@ import { authMiddleware } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import {
-  parseSearchQuery, termVariants, dateRangeOf, findHighlights, MAX_QUERY_LENGTH,
+  parseSearchQuery, termVariants, dateRangeOf, findHighlights, resolveTimeZone, MAX_QUERY_LENGTH,
   type ParsedQuery,
 } from '../utils/searchQuery.js';
 
 const router = Router();
 
-const MAX_OFFSET = 450;       // 커서가 가리킬 수 있는 최대 위치
-const RELEVANCE_WINDOW = 200; // 관련도 정렬은 최신 후보 200건 안에서 점수를 매긴다
+// 한 질의가 돌려줄 수 있는 결과의 상한. 관련도와 최신 정렬이 같은 상한을 쓴다.
+// 상한에 닿으면 응답의 truncated가 true가 되고 화면이 필터를 더 추가하라고 안내한다.
+const MAX_RESULTS = 450;
 
 const firstString = (v: unknown) => (Array.isArray(v) ? v[0] : v);
+
+/** 검색 범위: 날짜 필터의 시간대와 페이지 도중 새 글이 끼어들지 않게 하는 스냅샷 시각 */
+interface Scope { tz: string; snapshot: Date }
+
+function createdAtFilter(
+  filters: Pick<ParsedQuery['filters'], 'before' | 'after' | 'on'>,
+  scope: Scope,
+): Prisma.DateTimeFilter {
+  const range = dateRangeOf(filters, scope.tz);
+  return { ...(range.gte && { gte: range.gte }), ...(range.lt && { lt: range.lt }), lte: scope.snapshot };
+}
 
 const searchQuerySchema = z.object({
   q: z.preprocess(firstString, z.string().min(1).max(MAX_QUERY_LENGTH)),
@@ -23,16 +35,29 @@ const searchQuerySchema = z.object({
   channelId: z.coerce.number().int().positive().optional(),
   sort: z.preprocess(firstString, z.enum(['relevance', 'recent']).optional().default('relevance')),
   limit: z.coerce.number().int().min(1).max(50).optional().default(50),
-  cursor: z.preprocess(firstString, z.string().max(20).optional()),
+  cursor: z.preprocess(firstString, z.string().max(64).optional()),
+  // 날짜 연산자를 해석할 IANA 시간대(예 Asia/Seoul). 잘못된 값은 UTC로 대체한다.
+  tz: z.preprocess(firstString, z.string().max(64).optional()),
 });
 
-/** 커서는 결과 목록 안의 위치(offset)를 base64url로 감싼 값이다. 잘못된 값은 처음부터 시작한다. */
-function decodeCursor(cursor?: string): number {
-  if (!cursor) return 0;
-  const n = Number(Buffer.from(cursor, 'base64url').toString('utf8'));
-  return Number.isInteger(n) && n >= 0 && n <= MAX_OFFSET ? n : 0;
+/**
+ * 커서는 "결과 목록 안의 위치(offset)"와 "첫 요청 시각(snapshot)"을 base64url로 감싼 값이다.
+ * 이후 페이지는 snapshot 이후에 생긴 글을 빼서 새 글 때문에 위치가 밀려 중복되는 일을 막는다.
+ * 잘못된 커서는 처음부터 시작한다.
+ */
+function decodeCursor(cursor?: string): { offset: number; snapshot: number | null } {
+  if (!cursor) return { offset: 0, snapshot: null };
+  try {
+    const v = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as { o?: unknown; s?: unknown };
+    if (Number.isInteger(v.o) && (v.o as number) >= 0 && (v.o as number) <= MAX_RESULTS
+      && Number.isInteger(v.s) && (v.s as number) > 0 && (v.s as number) <= Date.now() + 60_000) {
+      return { offset: v.o as number, snapshot: v.s as number };
+    }
+  } catch { /* 잘못된 커서 */ }
+  return { offset: 0, snapshot: null };
 }
-const encodeCursor = (offset: number) => Buffer.from(String(offset), 'utf8').toString('base64url');
+const encodeCursor = (offset: number, snapshot: number) =>
+  Buffer.from(JSON.stringify({ o: offset, s: snapshot }), 'utf8').toString('base64url');
 
 /** 키워드 하나가 문자열에 들어 있는지(대소문자 무시, NFC/NFD 모두). */
 function textHasTerm(text: string | null | undefined, term: string): boolean {
@@ -47,9 +72,9 @@ const equalsAny = (value: string) =>
   termVariants(value).map((v) => ({ equals: v, mode: 'insensitive' as const }));
 
 /** 채널 메시지 검색 조건. 권한(내 채널)은 호출 쪽이 channelIds로 이미 좁혀 넘긴다. */
-function channelMessageWhere(p: ParsedQuery, userId: number, channelIds: number[]): Prisma.MessageWhereInput {
+function channelMessageWhere(p: ParsedQuery, userId: number, channelIds: number[], scope: Scope): Prisma.MessageWhereInput {
   const { filters } = p;
-  const range = dateRangeOf(filters);
+  const created = createdAtFilter(filters, scope);
   const and: Prisma.MessageWhereInput[] = [];
 
   for (const term of p.terms) {
@@ -81,15 +106,15 @@ function channelMessageWhere(p: ParsedQuery, userId: number, channelIds: number[
   return {
     channelId: { in: channelIds },
     deletedAt: null,
-    ...(range.gte || range.lt ? { createdAt: { ...(range.gte && { gte: range.gte }), ...(range.lt && { lt: range.lt }) } } : {}),
+    ...(created ? { createdAt: created } : {}),
     AND: and,
   };
 }
 
 /** DM 메시지 검색 조건. access는 내가 볼 수 있는 DM·그룹 DM 범위다. */
-function dmMessageWhere(p: ParsedQuery, access: Prisma.DirectMessageWhereInput[]): Prisma.DirectMessageWhereInput {
+function dmMessageWhere(p: ParsedQuery, access: Prisma.DirectMessageWhereInput[], scope: Scope): Prisma.DirectMessageWhereInput {
   const { filters } = p;
-  const range = dateRangeOf(filters);
+  const created = createdAtFilter(filters, scope);
   const and: Prisma.DirectMessageWhereInput[] = [{ OR: access }];
 
   for (const term of p.terms) {
@@ -116,7 +141,7 @@ function dmMessageWhere(p: ParsedQuery, access: Prisma.DirectMessageWhereInput[]
 
   return {
     deletedAt: null,
-    ...(range.gte || range.lt ? { createdAt: { ...(range.gte && { gte: range.gte }), ...(range.lt && { lt: range.lt }) } } : {}),
+    ...(created ? { createdAt: created } : {}),
     AND: and,
   };
 }
@@ -130,7 +155,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
     const { q: rawQuery, type, channelId, sort, limit } = parsedParams.data;
-    const offset = decodeCursor(parsedParams.data.cursor);
+    const cursor = decodeCursor(parsedParams.data.cursor);
+    const { offset } = cursor;
+    const scope: Scope = { tz: resolveTimeZone(parsedParams.data.tz), snapshot: new Date(cursor.snapshot ?? Date.now()) };
+    const end = Math.min(offset + limit, MAX_RESULTS);
     const userId = req.user!.userId;
     const isGuest = req.user!.role === 'GUEST';
 
@@ -138,9 +166,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { filters } = parsed;
     const hasFilter = filters.from.length + filters.in.length + filters.has.length + filters.is.length > 0
       || !!(filters.before || filters.after || filters.on);
-    const keywordLength = parsed.terms.join('').length;
-    // 연산자가 있으면 키워드 없이도 검색한다. 키워드만 있을 때는 예전처럼 2자 이상이어야 한다.
-    if (!hasFilter && keywordLength < 2) {
+    // 키워드는 하나하나 2자 이상이어야 하고(파서가 짧은 것은 ignored로 뺀다), 연산자가 있으면 키워드 없이도 검색한다.
+    // 쓸 수 있는 키워드도 연산자도 없으면 400이다.
+    if (!hasFilter && parsed.terms.length === 0) {
       res.status(400).json({ error: 'Search query must be at least 2 characters' });
       return;
     }
@@ -151,7 +179,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const needsVerify = parsed.terms.some((t) => /[%_\\]/.test(t));
     const verified = (texts: Array<string | null | undefined>) =>
       !needsVerify || parsed.terms.every((term) => texts.some((t) => textHasTerm(t, term)));
-    const take = sort === 'recent' && !needsVerify ? Math.min(offset + limit + 1, MAX_OFFSET + 51) : RELEVANCE_WINDOW;
+    // 각 원본에서 가져올 후보 수. 최신순은 필요한 만큼(+1은 더 있는지 보려는 것), 관련도순과 재확인이 필요한 질의는 상한 전체.
+    const take = sort === 'recent' && !needsVerify ? Math.min(end + 1, MAX_RESULTS + 1) : MAX_RESULTS + 1;
 
     const userChannels = await prisma.channelMember.findMany({ where: { userId }, select: { channelId: true } });
     const channelIds = userChannels.map((c) => c.channelId);
@@ -191,14 +220,13 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     type Item = { _score: number; createdAt: Date; [k: string]: unknown };
     const items: Item[] = [];
-    const counts = { messages: 0, dms: 0, files: 0, people: 0, channels: 0, total: 0 };
 
     const scoreOf = (parts: Array<[string | null | undefined, number]>) =>
       parsed.terms.reduce((s, term) => s + parts.reduce((a, [text, w]) => a + (textHasTerm(text, term) ? w : 0), 0), 0);
 
     if (wantsMessages && scopedChannelIds.length > 0) {
       const rows = await prisma.message.findMany({
-        where: channelMessageWhere(parsed, userId, scopedChannelIds),
+        where: channelMessageWhere(parsed, userId, scopedChannelIds, scope),
         include: {
           user: { select: { id: true, name: true, avatar: true } },
           channel: { select: { id: true, name: true } },
@@ -219,7 +247,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           highlights: findHighlights(m.content, parsed.terms),
           _score: scoreOf([[m.content, 1], [m.user?.name, 2], [m.channel?.name, 1]]),
         });
-        counts.messages++;
       }
     }
 
@@ -227,7 +254,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       const access = await buildDmAccess();
       if (access.length > 0) {
         const rows = await prisma.directMessage.findMany({
-          where: dmMessageWhere(parsed, access),
+          where: dmMessageWhere(parsed, access, scope),
           include: {
             fromUser: { select: { id: true, name: true, avatar: true } },
             toUser: { select: { id: true, name: true, avatar: true } },
@@ -252,14 +279,13 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             highlights: findHighlights(dm.content, parsed.terms),
             _score: scoreOf([[dm.content, 1], [dm.fromUser?.name, 2], [otherUser?.name, 2]]),
           });
-          counts.dms++;
         }
       }
     }
 
     if (type === 'files') {
       const access = await buildDmAccess();
-      const range = dateRangeOf(filters);
+      const created = createdAtFilter(filters, scope);
       const and: Prisma.FileWhereInput[] = [{
         OR: [
           ...(scopedChannelIds.length > 0 ? [{ message: { channelId: { in: scopedChannelIds }, deletedAt: null } }] : []),
@@ -278,7 +304,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       }
       const rows = await prisma.file.findMany({
         where: {
-          ...(range.gte || range.lt ? { createdAt: { ...(range.gte && { gte: range.gte }), ...(range.lt && { lt: range.lt }) } } : {}),
+          ...(created ? { createdAt: created } : {}),
           AND: and,
         },
         include: {
@@ -309,21 +335,25 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           highlights: findHighlights(f.originalName, parsed.terms),
           _score: scoreOf([[f.originalName, 1], [f.filename, 1]]),
         });
-        counts.files++;
       }
     }
 
     if (type === 'people' && parsed.terms.length > 0) {
       const and: Prisma.UserWhereInput[] = parsed.terms.map((term) => ({ OR: containsAny(term).map((x) => ({ name: x })) }));
       if (isGuest) {
-        // 게스트는 자기와 같은 채널에 있는 사람만 본다
-        const shared = scopedChannelIds.length > 0
+        // 게스트가 볼 수 있는 사람: 자기 자신 + 같은 채널 멤버 + 같은 그룹 DM 멤버.
+        // channelId 파라미터와 무관하게 내 모든 채널과 그룹을 기준으로 한다.
+        const sharedChannel = channelIds.length > 0
           ? await prisma.channelMember.findMany({ where: { channelId: { in: channelIds } }, select: { userId: true }, distinct: ['userId'] })
           : [];
-        and.push({ id: { in: [...shared.map((s) => s.userId), userId] } });
+        const myGroupIds = (await prisma.dMGroupMember.findMany({ where: { userId }, select: { groupId: true } })).map((g) => g.groupId);
+        const sharedGroup = myGroupIds.length > 0
+          ? await prisma.dMGroupMember.findMany({ where: { groupId: { in: myGroupIds } }, select: { userId: true }, distinct: ['userId'] })
+          : [];
+        and.push({ id: { in: [...sharedChannel.map((s) => s.userId), ...sharedGroup.map((s) => s.userId), userId] } });
       }
       const rows = await prisma.user.findMany({
-        where: { deactivatedAt: null, AND: and },
+        where: { deactivatedAt: null, createdAt: { lte: scope.snapshot }, AND: and },
         select: { id: true, name: true, avatar: true, createdAt: true },
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
         take,
@@ -334,7 +364,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           id: u.id, type: 'person', name: u.name, avatar: u.avatar, user: { id: u.id, name: u.name, avatar: u.avatar },
           createdAt: u.createdAt, highlights: findHighlights(u.name, parsed.terms), _score: scoreOf([[u.name, 1]]),
         });
-        counts.people++;
       }
     }
 
@@ -347,7 +376,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       if (!isGuest) visible.push({ isPrivate: false });
       and.push({ OR: visible });
       const rows = await prisma.channel.findMany({
-        where: { AND: and },
+        where: { createdAt: { lte: scope.snapshot }, AND: and },
         select: { id: true, name: true, topic: true, isPrivate: true, archivedAt: true, createdAt: true },
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
         take,
@@ -359,7 +388,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           isMember: channelIds.includes(c.id), archived: !!c.archivedAt, createdAt: c.createdAt,
           highlights: findHighlights(c.name, parsed.terms), _score: scoreOf([[c.name, 2], [c.topic, 1]]),
         });
-        counts.channels++;
       }
     }
 
@@ -370,18 +398,30 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       items.sort(sort === 'recent' ? byDate : (a, b) => b._score - a._score || byDate(a, b));
     }
 
-    const page = items.slice(offset, offset + limit);
-    const hasMore = items.length > offset + limit && offset + limit <= MAX_OFFSET;
+    const page = items.slice(offset, end);
+    const hasMore = items.length > end && end < MAX_RESULTS;
+    // 상한(450)까지 다 보여 줬는데도 더 있으면 결과가 잘렸다는 뜻이다. 화면이 필터를 추가하라고 안내한다.
+    const truncated = end >= MAX_RESULTS && items.length > MAX_RESULTS;
     const results = page.map(({ _score, ...rest }) => rest);
-    counts.total = results.length;
+    // counts는 "이번 페이지에 담긴 결과" 개수다. 전체 일치 개수가 아니다(전체는 비싸고 상한 때문에 부정확하다).
+    const counts = { messages: 0, dms: 0, files: 0, people: 0, channels: 0, total: results.length };
+    for (const r of results) {
+      const kind = r.type as string;
+      if (kind === 'message') counts.messages++;
+      else if (kind === 'dm') counts.dms++;
+      else if (kind === 'file') counts.files++;
+      else if (kind === 'person') counts.people++;
+      else if (kind === 'channel') counts.channels++;
+    }
 
     res.json({
       results,
       query: rawQuery,
-      parsedFilters: { terms: parsed.terms, ...filters },
+      parsedFilters: { terms: parsed.terms, ...filters, ignored: parsed.ignored },
       counts,
       hasMore,
-      nextCursor: hasMore ? encodeCursor(offset + limit) : null,
+      truncated,
+      nextCursor: hasMore ? encodeCursor(end, scope.snapshot.getTime()) : null,
     });
   } catch (error) {
     logError('Search error', error);

@@ -1,4 +1,4 @@
-import { parseSearchQuery, dateRangeOf, findHighlights, parseDateOnly, termVariants, MAX_TERMS } from '../utils/searchQuery.js';
+import { parseSearchQuery, dateRangeOf, findHighlights, parseDateOnly, termVariants, resolveTimeZone, startOfZonedDay, MAX_TERMS } from '../utils/searchQuery.js';
 
 // 파트 08: 검색 질의 파서 단위 테스트(순수 함수, DB 불필요)
 
@@ -134,5 +134,67 @@ describe('findHighlights and termVariants', () => {
   it('returns both forms for Hangul and one for ASCII', () => {
     expect(termVariants('한글').length).toBe(2);
     expect(termVariants('abc')).toEqual(['abc']);
+  });
+});
+
+describe('ignored tokens (one-character keywords, over-limit values)', () => {
+  it('drops one-character keywords into ignored and keeps the rest', () => {
+    const p = parseSearchQuery('a plan 한 "b" alpha');
+    expect(p.terms).toEqual(['plan', 'alpha']);
+    expect(p.ignored).toEqual([
+      { token: 'a', reason: 'short' }, { token: '한', reason: 'short' }, { token: 'b', reason: 'short' },
+    ]);
+  });
+
+  it('keeps operator-only queries valid even when keywords are all ignored', () => {
+    const p = parseSearchQuery('x from:@kim');
+    expect(p.terms).toEqual([]);
+    expect(p.filters.from).toEqual(['kim']);
+  });
+
+  it('reports operator values beyond the limit instead of silently dropping them', () => {
+    const p = parseSearchQuery('in:a in:b in:c in:d in:e in:f has:file');
+    expect(p.filters.in).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(p.ignored).toEqual([{ token: 'in:f', reason: 'limit' }]);
+  });
+
+  it('reports keywords beyond the term limit', () => {
+    const p = parseSearchQuery(Array.from({ length: 12 }, (_, i) => `w${i}`).join(' '));
+    expect(p.ignored.map((i) => i.token)).toEqual(['w10', 'w11']);
+  });
+});
+
+describe('time zones', () => {
+  it('resolveTimeZone falls back to UTC for invalid or empty values', () => {
+    expect(resolveTimeZone('Asia/Seoul')).toBe('Asia/Seoul');
+    expect(resolveTimeZone('Not/AZone')).toBe('UTC');
+    expect(resolveTimeZone('')).toBe('UTC');
+    expect(resolveTimeZone(undefined)).toBe('UTC');
+  });
+
+  it('KST day starts at 15:00 UTC the day before', () => {
+    expect(startOfZonedDay(2026, 9, 16, 'Asia/Seoul').toISOString()).toBe('2026-09-15T15:00:00.000Z');
+  });
+
+  it('on: in KST covers [09-15 15:00Z, 09-16 15:00Z)', () => {
+    const r = dateRangeOf({ on: '2026-09-16' }, 'Asia/Seoul');
+    expect(r.gte?.toISOString()).toBe('2026-09-15T15:00:00.000Z');
+    expect(r.lt?.toISOString()).toBe('2026-09-16T15:00:00.000Z');
+  });
+
+  it('after: and before: use the zone day boundary', () => {
+    const r = dateRangeOf({ after: '2026-09-01', before: '2026-10-01' }, 'Asia/Seoul');
+    expect(r.gte?.toISOString()).toBe('2026-09-01T15:00:00.000Z');
+    expect(r.lt?.toISOString()).toBe('2026-09-30T15:00:00.000Z');
+  });
+
+  it('handles daylight saving days (23 hour day in New York)', () => {
+    const r = dateRangeOf({ on: '2026-03-08' }, 'America/New_York');
+    expect(r.gte?.toISOString()).toBe('2026-03-08T05:00:00.000Z');
+    expect(r.lt?.toISOString()).toBe('2026-03-09T04:00:00.000Z');
+  });
+
+  it('invalid zone behaves as UTC', () => {
+    expect(dateRangeOf({ on: '2026-09-16' }, 'Bogus/Zone').gte?.toISOString()).toBe('2026-09-16T00:00:00.000Z');
   });
 });

@@ -60,7 +60,11 @@
     "placeholder": "Search",
     "searching": "Searching...",
     "noResults": "No results found",
-    "resultCount": "{count, plural, one {# result} other {# results}}",
+    "previewHint": "{count, plural, one {Top # result} other {Top # results}} · View all (Enter)",
+    "truncatedNotice": "There are many results. Add filters to narrow them down.",
+    "retry": "Retry",
+    "ignoredChip": "{token} (ignored)",
+    "ignoredLimitChip": "{token} (ignored: too many)",
     "inChannel": "in #{channel}",
     "title": "Search results",
     "resultsFor": "Results for \"{query}\"",
@@ -121,7 +125,8 @@
     "pin": "Pin message",
     "unpin": "Unpin message",
     "edit": "Edit message",
-    "delete": "Delete message"
+    "delete": "Delete message",
+    "copyLink": "Copy link"
   },
   "area": {
     "selectChannel": "Select a channel to start messaging",
@@ -280,5 +285,11 @@
     "openThread": "Open thread",
     "loadMore": "Load more",
     "loading": "Loading..."
+  },
+  "permalink": {
+    "copied": "Link copied",
+    "notFound": "This message can't be found, or you don't have permission to view it",
+    "goHome": "Go home",
+    "copyManually": "Couldn't copy automatically. Copy this link: {url}"
   }
 }

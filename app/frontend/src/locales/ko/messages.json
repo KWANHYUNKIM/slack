@@ -60,7 +60,11 @@
     "placeholder": "검색",
     "searching": "검색하는 중...",
     "noResults": "검색 결과가 없습니다",
-    "resultCount": "검색 결과 {count}개",
+    "previewHint": "상위 {count}개 · 전체 보기(Enter)",
+    "truncatedNotice": "결과가 많습니다. 필터를 추가해 범위를 좁혀 보세요.",
+    "retry": "다시 시도",
+    "ignoredChip": "{token} (무시됨)",
+    "ignoredLimitChip": "{token} (초과로 무시됨)",
     "inChannel": "#{channel} 채널",
     "title": "검색 결과",
     "resultsFor": "\"{query}\" 검색 결과",
@@ -121,7 +125,8 @@
     "pin": "메시지 고정",
     "unpin": "메시지 고정 해제",
     "edit": "메시지 수정",
-    "delete": "메시지 삭제"
+    "delete": "메시지 삭제",
+    "copyLink": "링크 복사"
   },
   "area": {
     "selectChannel": "채널을 선택해 대화를 시작하세요",
@@ -280,5 +285,11 @@
     "openThread": "스레드 열기",
     "loadMore": "더 보기",
     "loading": "불러오는 중..."
+  },
+  "permalink": {
+    "copied": "링크를 복사했습니다",
+    "notFound": "이 메시지를 찾을 수 없거나 볼 권한이 없습니다",
+    "goHome": "홈으로 가기",
+    "copyManually": "자동으로 복사하지 못했습니다. 이 링크를 직접 복사하세요: {url}"
   }
 }
