@@ -32,7 +32,8 @@
 | 09:36 | 3 | dev-3 | sonnet | 프런트 의존성 보안 업그레이드(백엔드는 dev-1과 충돌해 분리) | 진행 중 | |
 | 09:58 | 4 | dev-4 | sonnet | 백엔드 의존성 보안(critical 1) | 완료, PR #6 | 64,057 |
 | 09:58 | 4 | dev-5 | sonnet | 프런트 tsc·lint 수정(덮기 금지 지시) | 진행 중 | |
-| 09:58 | 4 | planner-1 | sonnet | #claude-test CRUD 실습, 04·05 스펙 보완 | 진행 중 | |
+| 09:58 | 4 | planner-1 | sonnet | #claude-test CRUD 실습, 04·05 스펙 보완 | 완료, 정리 확인 | 147,073 |
+| 10:05 | 4 | dev-1 | sonnet | 01a 멘션·활동 백엔드(프런트는 dev-5와 충돌해 분리) | 진행 중 | |
 | 09:23 | 2 | dev-2 | haiku | ci.yml (정형화된 설정 작업이라 haiku) | 완료, PR #3 | 72,961 |
 
 ## 총괄 실행 명령

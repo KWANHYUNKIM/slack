@@ -3,7 +3,8 @@
 | 파트 | 담당 | 모델 | 상태 | 예상 시간 | 시작 | 종료 | 비고 |
 |---|---|---|---|---|---|---|---|
 | 00-gap-analysis (Slack ↔ slawk 기능 비교와 파트 분할) | planner-1 | sonnet | 완료 | 60분 | 2026-10-31 08:55 | 2026-10-31 08:58 | 루프 1, 실제 약 3분. 결과: specs/00~03 |
-| 01-mentions-activity | - | sonnet | 대기 | 2h | | | P0, 스키마 변경 |
+| 01a-mentions-activity (백엔드) | dev-1 | sonnet | 진행 중 | 1.5h | 2026-10-31 10:05 | | P0, 스키마 변경. PR #5 위에 쌓음 |
+| 01b-mentions-activity (프런트) | - | sonnet | 대기(dev-5 이후) | 1h | | | 활동 탭, 배지, @channel |
 | 03-channel-meta-star | - | sonnet | 대기 | 1.5h | | | P0, 스키마 변경 |
 | 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
 | 04-threads-view, 05-user-status-dnd 스펙 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3, Slack 테스트 채널 CRUD 실습 포함 |
@@ -19,13 +20,13 @@
 | security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | PR #6 (리뷰 중) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
 | REA run2: Claude Code 재시작 후 MCP 경로로 재평가 | - | sonnet | 대기(재시작 필요) | 30분 | | | run1과 같은 질문 Q1~Q3 |
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
-| 04-threads-view | - | sonnet | 대기(01 이후) | 2h | | | 스키마 변경(ThreadRead) |
+| 04-threads-view | - | sonnet | 대기(01 이후) | 2.5h | | | 스키마 변경(ThreadRead) |
 | 05-user-status-dnd | - | sonnet | 대기(01 이후) | 1.5h | | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 진행 중 | 1.5h | 2026-10-31 09:58 | | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | - | haiku | 대기 | 45분 | | | 총괄 결정: Slack과 같게 |
 | security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
-| 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 진행 중 | 40분 | 2026-10-31 09:58 | | #claude-test |
+| 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
 | test/avatar-upload: 아바타 업로드(sharp) 테스트 추가 | - | haiku | 대기 | 30분 | | | PR #6에서 발견한 공백 |
