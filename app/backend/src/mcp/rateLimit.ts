@@ -32,3 +32,63 @@ export function createMcpTokenLimiter(max = 120) {
     keyGenerator: (req: Request) => `pat:${(req as AuthRequest).accessToken?.tokenId ?? 'none'}`,
   });
 }
+
+/**
+ * 호출 횟수 저장소. express-rate-limit의 Store.increment와 같은 모양(totalHits, resetTime)이라
+ * 다중 인스턴스에서는 Redis 같은 공유 저장소 구현으로 바꿔 끼울 수 있다.
+ */
+export interface WriteRateStore {
+  /** key의 창 안 호출 수를 1 올리고 현재 값을 돌려준다. 창이 지났으면 1부터 다시 센다. */
+  increment(key: string, windowMs: number): Promise<{ totalHits: number; resetTime: Date }> | { totalHits: number; resetTime: Date };
+  resetAll?(): void;
+}
+
+/**
+ * 기본 저장소: 프로세스 메모리의 고정 창.
+ * 인스턴스가 여러 개면 인스턴스마다 따로 세므로 실제 한도가 인스턴스 수만큼 커진다(docs/architecture/mcp.md 5절).
+ */
+export class MemoryWriteStore implements WriteRateStore {
+  private readonly hits = new Map<string, { totalHits: number; resetAt: number }>();
+
+  increment(key: string, windowMs: number, now = Date.now()) {
+    if (this.hits.size > 1000) {
+      for (const [k, entry] of this.hits) if (entry.resetAt <= now) this.hits.delete(k);
+    }
+    let entry = this.hits.get(key);
+    if (!entry || entry.resetAt <= now) {
+      entry = { totalHits: 0, resetAt: now + windowMs };
+      this.hits.set(key, entry);
+    }
+    entry.totalHits += 1;
+    return { totalHits: entry.totalHits, resetTime: new Date(entry.resetAt) };
+  }
+
+  resetAll(): void {
+    this.hits.clear();
+  }
+}
+
+/**
+ * 쓰기 도구 전용 호출 제한(토큰 단위, 기본 분당 30). 읽기까지 합친 HTTP 단위 제한(분당 120)보다 낮다.
+ * 도구 호출은 JSON-RPC 본문 안에 있어 HTTP 미들웨어로는 구분할 수 없으므로 도구 실행 직전에 센다.
+ */
+export class WriteRateLimiter {
+  constructor(
+    public max = 30,
+    private readonly windowMs = 60_000,
+    private readonly store: WriteRateStore = new MemoryWriteStore(),
+  ) {}
+
+  /** 허용되면 null, 막히면 다시 시도할 때까지 남은 초 */
+  async consume(tokenId: number): Promise<number | null> {
+    const { totalHits, resetTime } = await this.store.increment(`pat:${tokenId}`, this.windowMs);
+    if (totalHits <= this.max) return null;
+    return Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
+  }
+
+  reset(): void {
+    this.store.resetAll?.();
+  }
+}
+
+export const mcpWriteLimiter = new WriteRateLimiter();

@@ -2,6 +2,9 @@
 # 그 PR이 머지되면 태그와 GitHub Release를 만든 뒤 release.yml을 호출해 설치 파일을 올린다.
 # 규칙: docs/conventions/git.md 5절. 설정: release-please-config.json, .release-please-manifest.json
 #
+# 대상은 저장소 전체(루트 ".")라 app 어디에서 feat/fix가 나와도 버전이 오른다. app/desktop/package.json은 extra-files로 함께 올린다.
+# 릴리스는 draft로 만들어지고(태그는 force-tag-creation으로 미리 생성), release.yml이 설치 파일을 모두 올린 뒤 공개한다.
+#
 # 왜 release.yml을 직접 호출하나: GITHUB_TOKEN으로 만든 태그는 다른 워크플로의 push 트리거를 일으키지 않는다.
 # 개인 토큰(PAT)을 저장소 시크릿에 넣지 않아도 되도록 workflow_call로 이어 붙였다.
 #
@@ -29,8 +32,8 @@ jobs:
       contents: write # 태그, 릴리스, 브랜치
       pull-requests: write # 릴리스 PR
     outputs:
-      released: ${{ steps.rp.outputs['app/desktop--release_created'] }}
-      tag: ${{ steps.rp.outputs['app/desktop--tag_name'] }}
+      released: ${{ steps.rp.outputs.release_created }}
+      tag: ${{ steps.rp.outputs.tag_name }}
     steps:
       - name: Run release-please
         id: rp

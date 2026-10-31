@@ -1,12 +1,20 @@
 {
+  "bootstrap-sha": "e09cc77c0afad5d06f1c6916d6bdb6914e4e21f4",
   "packages": {
-    "app/desktop": {
-      "release-type": "node",
-      "package-name": "team-messenger-desktop",
+    ".": {
+      "release-type": "simple",
+      "package-name": "team-messenger",
       "include-component-in-tag": false,
       "changelog-path": "CHANGELOG.md",
-      "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": false
+      "draft": true,
+      "force-tag-creation": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "app/desktop/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   },
   "include-v-in-tag": true,

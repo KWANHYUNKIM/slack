@@ -18,16 +18,13 @@ import {
   wsUserIdSchema,
 } from '../middleware/authorize.js';
 // Huddle schemas imported by huddles.ts directly
-import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM_INCLUDE_USERS } from '../db/selects.js';
+import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, onThreadParentDeleted } from '../services/threadService.js';
+import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
-  processNewChannelMessage,
-  syncActivitiesOnEdit,
-  deleteActivitiesForMessage,
   createActivitiesForDm,
 } from '../services/mentionService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
@@ -347,75 +344,22 @@ export function initializeWebSocket(httpServer: HttpServer) {
           return;
         }
 
-        // Block messaging in archived channels
-        const channel = await prisma.channel.findUnique({
-          where: { id: data.channelId },
-          select: { archivedAt: true },
+        // 보관 채널·스레드 검사, 저장, 활동·푸시는 REST·MCP와 같은 서비스가 처리한다.
+        // message:new는 방 참여와 관계없이 보낸 사람에게 먼저 보내고, 나머지는 방 전체에 보낸다.
+        await sendChannelMessage(socket.user.userId, data.channelId, data, {
+          broadcast: (message) => {
+            socket.emit('message:new', message);
+            socket.to(`channel:${data.channelId}`).emit('message:new', message);
+          },
         });
-        if (channel?.archivedAt) {
-          sendError('This channel has been archived');
-          return;
-        }
-
-        // Validate threadId belongs to the same channel and is not deleted
-        if (data.threadId) {
-          const parentMessage = await prisma.message.findUnique({
-            where: { id: data.threadId },
-          });
-          if (!parentMessage || parentMessage.deletedAt || parentMessage.channelId !== data.channelId) {
-            sendError('Thread parent must belong to the same channel');
-            return;
-          }
-          if (parentMessage.threadId !== null) {
-            sendError('Cannot reply to a reply. Reply to the parent message instead.');
-            return;
-          }
-        }
-
-        // Create message and atomically attach files in a transaction
-        const finalMessage = await prisma.$transaction(async (tx) => {
-          const msg = await tx.message.create({
-            data: {
-              content: data.content,
-              userId: socket.user!.userId,
-              channelId: data.channelId,
-              threadId: data.threadId,
-              alsoSendToChannel: !!data.threadId && !!data.alsoSendToChannel,
-            },
-          });
-
-          // Attach files atomically — validates ownership and unattached status
-          if (data.fileIds && data.fileIds.length > 0) {
-            const updated = await tx.file.updateMany({
-              where: { id: { in: data.fileIds }, userId: socket.user!.userId, messageId: null, dmId: null },
-              data: { messageId: msg.id },
-            });
-            if (updated.count !== data.fileIds.length) {
-              throw new Error('Invalid file IDs or files already attached');
-            }
-          }
-
-          return tx.message.findUnique({
-            where: { id: msg.id },
-            include: { ...MESSAGE_INCLUDE_FULL, ...PARENT_EXCERPT_INCLUDE },
-          });
-        }).then((m) => (m ? withParentExcerpt(m) : m));
-
-        // Always emit to the sender so they see their own message immediately,
-        // even if their socket hasn't joined the channel room yet.
-        socket.emit('message:new', finalMessage);
-        // Broadcast to all OTHER users in the channel room
-        socket.to(`channel:${data.channelId}`).emit('message:new', finalMessage);
 
         // Ack success to the sender
         if (typeof ack === 'function') ack({});
-
-        // ack 뒤에: 활동 생성, 활동 이벤트, 푸시 (HTTP 경로와 같은 서비스, await하지 않는다)
-        if (finalMessage) {
-          void processNewChannelMessage(finalMessage, { generalPush: true });
-          void onThreadReplyCreated(finalMessage);
-        }
       } catch (error) {
+        if (error instanceof ServiceError) {
+          sendError(error.message);
+          return;
+        }
         logError('WebSocket message error', error);
         sendError('Failed to send message');
       }
@@ -452,30 +396,12 @@ export function initializeWebSocket(httpServer: HttpServer) {
           return;
         }
 
-        if (message.userId !== socket.user.userId) {
-          socket.emit('error', { message: 'You can only edit your own messages' });
-          return;
-        }
-
-        // Block edits in archived channels
-        const editChannel = await prisma.channel.findUnique({
-          where: { id: message.channelId },
-          select: { archivedAt: true },
-        });
-        if (editChannel?.archivedAt) {
-          socket.emit('error', { message: 'This channel has been archived' });
-          return;
-        }
-
-        const updatedMessage = await prisma.message.update({
-          where: { id: data.messageId },
-          data: { content: data.content, editedAt: new Date() },
-          include: { user: { select: USER_SELECT_BASIC }, ...PARENT_EXCERPT_INCLUDE },
-        }).then(withParentExcerpt);
-
-        io.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
-        void syncActivitiesOnEdit(updatedMessage);
+        await editChannelMessage(socket.user.userId, message, data.content);
       } catch (error) {
+        if (error instanceof ServiceError) {
+          socket.emit('error', { message: error.message });
+          return;
+        }
         logError('WebSocket edit message error', error);
         socket.emit('error', { message: 'Failed to edit message' });
       }
@@ -512,43 +438,12 @@ export function initializeWebSocket(httpServer: HttpServer) {
           return;
         }
 
-        if (message.userId !== socket.user.userId) {
-          socket.emit('error', { message: 'You can only delete your own messages' });
-          return;
-        }
-
-        // Block deletes in archived channels
-        const delChannel = await prisma.channel.findUnique({
-          where: { id: message.channelId },
-          select: { archivedAt: true },
-        });
-        if (delChannel?.archivedAt) {
-          socket.emit('error', { message: 'This channel has been archived' });
-          return;
-        }
-
-        // Soft-delete message and detach its files so they don't become orphaned
-        await prisma.$transaction([
-          prisma.message.update({
-            where: { id: data.messageId },
-            data: { deletedAt: new Date() },
-          }),
-          prisma.file.updateMany({
-            where: { messageId: data.messageId },
-            data: { messageId: null },
-          }),
-        ]);
-
-        void deleteActivitiesForMessage(data.messageId);
-        if (message.threadId) void onThreadReplyDeleted(message);
-        else void onThreadParentDeleted(message);
-
-        io.to(`channel:${message.channelId}`).emit('message:deleted', {
-          messageId: data.messageId,
-          threadId: message.threadId ?? null,
-          channelId: message.channelId,
-        });
+        await deleteChannelMessage(socket.user.userId, message);
       } catch (error) {
+        if (error instanceof ServiceError) {
+          socket.emit('error', { message: error.message });
+          return;
+        }
         logError('WebSocket delete message error', error);
         socket.emit('error', { message: 'Failed to delete message' });
       }

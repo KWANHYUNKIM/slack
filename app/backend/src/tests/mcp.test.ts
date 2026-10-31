@@ -129,7 +129,7 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       const renamed = await request(app).patch(`/tokens/${created.id}`).set(auth(alice)).send({ name: 'desktop' });
       expect(renamed.status).toBe(200);
       expect(renamed.body.name).toBe('desktop');
-      const badPatch = await request(app).patch(`/tokens/${created.id}`).set(auth(alice)).send({ name: 'x', scopes: ['chat:write'] });
+      const badPatch = await request(app).patch(`/tokens/${created.id}`).set(auth(alice)).send({ name: 'x', scopes: ['channels:read'] });
       expect(badPatch.status).toBe(400);
 
       // 토큰이 동작한다
@@ -163,7 +163,7 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       expect(await bad({})).toBe(400);
       expect(await bad({ name: '   ' })).toBe(400);
       expect(await bad({ name: 'a'.repeat(101) })).toBe(400);
-      expect(await bad({ name: 'x', scopes: ['chat:write'] })).toBe(400);
+      expect(await bad({ name: 'x', scopes: ['admin:all'] })).toBe(400);
       expect(await bad({ name: 'x', scopes: [] })).toBe(400);
       expect(await bad({ name: 'x', expiresInDays: 0 })).toBe(400);
       expect(await bad({ name: 'x', expiresInDays: 366 })).toBe(400);

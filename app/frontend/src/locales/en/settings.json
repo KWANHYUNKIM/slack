@@ -47,14 +47,16 @@
   },
   "accessTokens": {
     "title": "Personal access tokens",
-    "description": "Tokens let Claude and other MCP clients read your workspace with your permissions. Treat them like a password.",
+    "description": "Tokens let Claude and other MCP clients read and, if you allow it, write in your workspace with your permissions. Treat them like a password.",
     "nameLabel": "Token name",
     "namePlaceholder": "e.g. Claude Code on my laptop",
     "scopesLabel": "Permissions",
     "scope": {
       "channelsRead": "List channels",
       "channelsHistory": "Read messages, threads and activity",
-      "usersRead": "View people"
+      "usersRead": "View people",
+      "chatWrite": "Post, edit and delete your messages",
+      "reactionsWrite": "Add and remove your reactions"
     },
     "expiryLabel": "Expires",
     "expiryDays": "{count, plural, one {# day} other {# days}}",
