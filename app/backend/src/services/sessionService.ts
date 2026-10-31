@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import net from 'net';
 import jwt from 'jsonwebtoken';
 import { Request } from 'express';
 import prisma from '../db.js';
@@ -15,7 +16,7 @@ const REVOKED_KEEP_MS = DAY_MS;
 // 세션 상태 확인은 요청마다 DB를 치지 않게 5초 캐시한다(tokenVersion 캐시와 같은 TTL). 폐기는 캐시를 바로 비운다.
 // 테스트에서는 DB를 직접 고치는 경우가 있어 끈다.
 const SESSION_CACHE_TTL = process.env.NODE_ENV === 'test' ? 0 : 5_000;
-interface CachedSession { userId: number; lastSeenAt: number; expiresAt: number; revoked: boolean; cachedUntil: number }
+interface CachedSession { missing?: boolean; userId: number; lastSeenAt: number; expiresAt: number; revoked: boolean; cachedUntil: number }
 const sessionCache = new Map<string, CachedSession>();
 
 if (process.env.NODE_ENV !== 'test') {
@@ -33,29 +34,59 @@ export function clearSessionCache(): void {
   sessionCache.clear();
 }
 
-/** IPv4는 마지막 옥텟, IPv6는 앞 3그룹 뒤를 가린다. 원문 IP는 저장하지 않는다. */
-export function maskIp(ip: string | undefined | null): string | null {
-  if (!ip) return null;
-  const v4 = ip.replace(/^::ffff:/i, '');
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4)) return v4.replace(/\.\d{1,3}$/, '.x');
-  if (ip.includes(':')) return ip.split(':').slice(0, 3).join(':') + '::x';
-  return null;
+/** IPv6를 8그룹으로 펼친다(소문자 hex, 앞자리 0 제거). 형식이 틀리면 null. */
+function expandIPv6(ip: string): string[] | null {
+  const addr = ip.split('%')[0].toLowerCase();
+  if (!net.isIPv6(addr)) return null;
+  const [headStr, tailStr] = addr.includes('::') ? addr.split('::') : [addr, null];
+  const toGroups = (part: string): string[] => {
+    if (part === '') return [];
+    const groups = part.split(':');
+    const last = groups[groups.length - 1];
+    if (last.includes('.')) {
+      const o = last.split('.').map(Number);
+      groups.splice(groups.length - 1, 1, ((o[0] << 8) | o[1]).toString(16), ((o[2] << 8) | o[3]).toString(16));
+    }
+    return groups.map((g) => g.replace(/^0+(?=.)/, ''));
+  };
+  const head = toGroups(headStr);
+  const tail = tailStr === null ? [] : toGroups(tailStr);
+  const fill = tailStr === null ? 0 : 8 - head.length - tail.length;
+  const all = [...head, ...Array(Math.max(fill, 0)).fill('0'), ...tail];
+  return all.length === 8 ? all : null;
 }
 
-/** User-Agent를 "브라우저 / OS" 정도로 줄인다. 원문 전체는 저장하지 않는다(식별 정보가 되지 않게). */
-export function summarizeUserAgent(ua: string | undefined | null): string | null {
+/**
+ * IP를 저장용으로 줄인다. IPv4는 마지막 옥텟(a.b.c.x), IPv6는 펼친 뒤 앞 3그룹(/48)만 남기고 나머지는 `::`로 표시한다.
+ * IPv4-mapped(::ffff:a.b.c.d)는 IPv4 규칙을 따른다. 원문 IP는 저장하지 않는다.
+ */
+export function maskIp(ip: string | undefined | null): string | null {
+  if (!ip) return null;
+  const mapped = ip.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i);
+  const v4 = mapped ? mapped[1] : ip;
+  if (net.isIPv4(v4)) return v4.replace(/\.\d{1,3}$/, '.x');
+  const groups = expandIPv6(ip);
+  if (!groups) return null;
+  // 16진 형태의 IPv4-mapped(::ffff:102:304)도 IPv4로 본다
+  if (groups.slice(0, 5).every((g) => g === '0') && groups[5] === 'ffff') {
+    const hi = parseInt(groups[6], 16);
+    const lo = parseInt(groups[7], 16);
+    return `${hi >> 8}.${hi & 255}.${lo >> 8}.x`;
+  }
+  return `${groups.slice(0, 3).join(':')}::`;
+}
+
+/** 기기 요약. 영어 문구 없이 코드와 고유명사만 담는다(화면이 번역 키로 보여 준다). */
+export interface DeviceInfo {
+  client: 'desktop' | 'browser' | 'unknown';
+  browser: string | null;
+  os: string | null;
+}
+
+/** User-Agent를 기기 요약으로 줄인다. 원문 전체는 저장하지 않는다(식별 정보가 되지 않게). */
+export function summarizeUserAgent(ua: string | undefined | null): DeviceInfo | null {
   if (!ua) return null;
   const s = ua.slice(0, 512);
-  // 순서가 중요하다: Edge/Opera/Electron은 Chrome 문자열을 함께 가진다.
-  const browser =
-    /Electron\//.test(s) ? 'Desktop app'
-    : /Edg(e|A|iOS)?\//.test(s) ? 'Edge'
-    : /OPR\/|Opera/.test(s) ? 'Opera'
-    : /Firefox\/|FxiOS\//.test(s) ? 'Firefox'
-    : /Chrome\/|CriOS\//.test(s) ? 'Chrome'
-    : /Safari\//.test(s) ? 'Safari'
-    : /curl\//i.test(s) ? 'curl'
-    : 'Unknown browser';
   const os =
     /Windows/.test(s) ? 'Windows'
     : /Android/.test(s) ? 'Android'
@@ -64,7 +95,38 @@ export function summarizeUserAgent(ua: string | undefined | null): string | null
     : /CrOS/.test(s) ? 'ChromeOS'
     : /Linux/.test(s) ? 'Linux'
     : null;
-  return os ? `${browser} / ${os}` : browser;
+  // 순서가 중요하다: Edge/Opera/Electron은 Chrome 문자열을 함께 가진다.
+  if (/Electron\//.test(s)) return { client: 'desktop', browser: null, os };
+  const browser =
+    /Edg(e|A|iOS)?\//.test(s) ? 'Edge'
+    : /OPR\/|Opera/.test(s) ? 'Opera'
+    : /Firefox\/|FxiOS\//.test(s) ? 'Firefox'
+    : /Chrome\/|CriOS\//.test(s) ? 'Chrome'
+    : /Safari\//.test(s) ? 'Safari'
+    : null;
+  return browser ? { client: 'browser', browser, os } : { client: 'unknown', browser: null, os };
+}
+
+/** DB 저장 형식: `client|browser|os` (빈 값은 비운다). */
+export function serializeDevice(d: DeviceInfo | null): string | null {
+  return d ? `${d.client}|${d.browser ?? ''}|${d.os ?? ''}` : null;
+}
+
+/**
+ * 저장된 값을 응답용 기기 요약으로 푼다. 이전 형식("Chrome / macOS", "Desktop app / macOS", "Unknown browser")도
+ * 마이그레이션 없이 여기서 풀어 준다.
+ */
+export function parseDevice(stored: string | null): DeviceInfo | null {
+  if (!stored) return null;
+  if (/^(desktop|browser|unknown)\|/.test(stored)) {
+    const [client, browser, os] = stored.split('|');
+    return { client: client as DeviceInfo['client'], browser: browser || null, os: os || null };
+  }
+  const [name, os] = stored.split(' / ');
+  const osValue = os || null;
+  if (name === 'Desktop app') return { client: 'desktop', browser: null, os: osValue };
+  if (name === 'Unknown browser') return { client: 'unknown', browser: null, os: osValue };
+  return { client: 'browser', browser: name, os: osValue };
 }
 
 /** 로그인(또는 가입, 비밀번호 변경)마다 세션 한 행을 만들고 JWT를 서명해 돌려준다. */
@@ -83,7 +145,7 @@ export async function createSessionToken(
       createdAt: new Date(now),
       lastSeenAt: new Date(now),
       expiresAt,
-      userAgent: summarizeUserAgent(req.headers['user-agent'] as string | undefined),
+      userAgent: serializeDevice(summarizeUserAgent(req.headers['user-agent'] as string | undefined)),
       ip: maskIp(req.ip),
     },
   });
@@ -118,7 +180,11 @@ export async function checkSession(sid: string, userId: number): Promise<boolean
       where: { id: sid },
       select: { userId: true, lastSeenAt: true, expiresAt: true, revokedAt: true },
     });
-    if (!row) return false;
+    if (!row) {
+      // 없는 세션도 TTL 동안 기억한다(지워진 토큰이 계속 와도 매번 DB를 치지 않게)
+      sessionCache.set(sid, { missing: true, userId: 0, lastSeenAt: 0, expiresAt: 0, revoked: true, cachedUntil: now + SESSION_CACHE_TTL });
+      return false;
+    }
     entry = {
       userId: row.userId,
       lastSeenAt: row.lastSeenAt.getTime(),
@@ -128,7 +194,7 @@ export async function checkSession(sid: string, userId: number): Promise<boolean
     };
     sessionCache.set(sid, entry);
   }
-  if (entry.userId !== userId) return false;
+  if (entry.missing || entry.userId !== userId) return false;
   if (entry.revoked || !isSessionAlive({ expiresAt: entry.expiresAt, lastSeenAt: entry.lastSeenAt }, now)) return false;
 
   if (now - entry.lastSeenAt >= LAST_SEEN_INTERVAL_MS) {
@@ -139,6 +205,33 @@ export async function checkSession(sid: string, userId: number): Promise<boolean
       .catch(() => { /* 갱신 실패는 인증을 막지 않는다. 다음 요청이 다시 시도한다 */ });
   }
   return true;
+}
+
+const touchedAt = new Map<string, number>();
+
+/**
+ * 소켓 이벤트(메시지 전송, 타이핑 등)를 활동으로 반영한다. HTTP와 같은 규칙으로 1분에 한 번만 쓴다.
+ * 이미 폐기·만료·유휴 초과인 세션은 되살리지 않는다. 연결만 유지된 것은 호출하지 않는다.
+ */
+export function touchSession(sid: string): void {
+  const now = Date.now();
+  const last = touchedAt.get(sid) ?? 0;
+  if (now - last < LAST_SEEN_INTERVAL_MS) return;
+  if (touchedAt.size > 10_000) touchedAt.clear();
+  touchedAt.set(sid, now);
+  const entry = sessionCache.get(sid);
+  if (entry && !entry.missing) entry.lastSeenAt = now;
+  void prisma.session
+    .updateMany({
+      where: {
+        id: sid,
+        revokedAt: null,
+        expiresAt: { gt: new Date(now) },
+        lastSeenAt: { gt: new Date(now - getSessionIdleTimeoutHours() * HOUR_MS), lt: new Date(now - LAST_SEEN_INTERVAL_MS) },
+      },
+      data: { lastSeenAt: new Date(now) },
+    })
+    .catch(() => { /* 갱신 실패는 연결을 막지 않는다 */ });
 }
 
 /** 사용자의 살아 있는 세션 목록(최근 사용 순). */

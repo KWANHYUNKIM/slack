@@ -8,7 +8,7 @@ import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { JWT_SECRET } from '../config.js';
-import { purgeSessions, maskIp, summarizeUserAgent } from '../services/sessionService.js';
+import { purgeSessions, maskIp, summarizeUserAgent, parseDevice } from '../services/sessionService.js';
 import { purgeSessionsIfDue } from '../scheduler.js';
 
 const CHROME_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
@@ -105,12 +105,16 @@ describe('세션 관리 (E7)', () => {
       expect(res.body.find((s: { id: string }) => s.id === sidOf(t1)).current).toBe(true);
       expect(res.body.find((s: { id: string }) => s.id === sidOf(t2)).current).toBe(false);
 
-      const uas = res.body.map((s: { userAgent: string }) => s.userAgent);
-      expect(uas).toEqual(expect.arrayContaining(['Chrome / macOS', 'Firefox / Windows']));
+      const devices = res.body.map((s: { device: unknown }) => s.device);
+      expect(devices).toEqual(expect.arrayContaining([
+        { client: 'browser', browser: 'Chrome', os: 'macOS' },
+        { client: 'browser', browser: 'Firefox', os: 'Windows' },
+      ]));
+      expect(res.body[0]).not.toHaveProperty('userAgent');
       // 원문 UA와 마스킹 전 IP는 저장하지도 응답하지도 않는다
       expect(JSON.stringify(res.body)).not.toContain('Mozilla');
       const row = await prisma.session.findUnique({ where: { id: sidOf(t1) } });
-      expect(row?.ip === null || /\.x$|::x$/.test(row!.ip)).toBe(true);
+      expect(row?.ip === null || /\.x$|::$/.test(row!.ip)).toBe(true);
 
       // 다른 사용자의 목록에는 보이지 않는다
       const bobTok = await login('bob-sess@example.com');
@@ -187,8 +191,15 @@ describe('세션 관리 (E7)', () => {
     it('로그아웃 API는 이 기기의 세션을 폐기한다', async () => {
       const t = await login('bob-sess@example.com');
       const s = await connect(t);
+      const logoutBefore = (await auditActions('auth.logout')).length;
+      const revokedBefore = (await auditActions('session.revoked')).length;
       await request(app).post('/auth/logout').set(auth(t)).expect(200);
       await waitDisconnect(s);
+      // 서버가 세션 폐기와 auth.logout 기록을 함께 한다(session.revoked는 따로 남기지 않는다)
+      const logoutLogs = await auditActions('auth.logout');
+      expect(logoutLogs).toHaveLength(logoutBefore + 1);
+      expect(logoutLogs[logoutLogs.length - 1]).toMatchObject({ actorId: bobId });
+      expect(await auditActions('session.revoked')).toHaveLength(revokedBefore);
       await request(app).get('/users/me/sessions').set(auth(t)).expect(401);
     });
   });
@@ -236,9 +247,26 @@ describe('세션 관리 (E7)', () => {
       await request(app).get('/users/me/sessions').set(auth(a2)).expect(200);
       await request(app).delete(`/admin/users/${aliceId}/sessions/${sidOf(a1)}`).set(auth(adminToken)).expect(404);
 
+      const aliceVersion = (await prisma.user.findUniqueOrThrow({ where: { id: aliceId } })).tokenVersion;
+      const legacy = jwt.sign({ userId: aliceId, tokenVersion: aliceVersion }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
+      await request(app).get('/users/me/sessions').set(auth(legacy)).expect(200);
+
       const all = await request(app).delete(`/admin/users/${aliceId}/sessions`).set(auth(adminToken)).expect(200);
       expect(all.body.revoked).toBeGreaterThanOrEqual(1);
+      expect(all.body.tokenVersionBumped).toBe(true);
       await request(app).get('/users/me/sessions').set(auth(a2)).expect(401);
+      // sid 없는 옛 토큰도 막힌다
+      await request(app).get('/users/me/sessions').set(auth(legacy)).expect(401);
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: aliceId } })).tokenVersion).toBe(aliceVersion + 1);
+
+      // 폐기할 세션이 없으면 감사 로그를 남기지 않는다
+      const allBefore = (await auditActions('session.revoked_all')).length;
+      const none = await request(app).delete(`/admin/users/${aliceId}/sessions`).set(auth(adminToken)).expect(200);
+      expect(none.body.revoked).toBe(0);
+      // tokenVersion을 올리는 관리자 조치이므로 0건이어도 기록한다
+      const allAfter = await auditActions('session.revoked_all');
+      expect(allAfter).toHaveLength(allBefore + 1);
+      expect(allAfter[allAfter.length - 1].details).toContain('count=0; tokenVersion=bumped');
 
       const revoked = (await auditActions('session.revoked')).filter((l) => l.actorId === adminId);
       expect(revoked.length).toBeGreaterThanOrEqual(1);
@@ -347,6 +375,69 @@ describe('세션 관리 (E7)', () => {
     });
   });
 
+  describe('소켓 활동', () => {
+    const waitFor = async <T,>(fn: () => Promise<T>, ok: (v: T) => boolean) => {
+      let v = await fn();
+      for (let i = 0; i < 40 && !ok(v); i++) {
+        await new Promise((r) => setTimeout(r, 50));
+        v = await fn();
+      }
+      return v;
+    };
+    const seenAt = async (sid: string) => (await prisma.session.findUniqueOrThrow({ where: { id: sid } })).lastSeenAt.getTime();
+
+    it('소켓 이벤트는 활동이라 lastSeenAt이 갱신되고, 연결만 유지하면 갱신되지 않는다', async () => {
+      const t = await login('alice-sess@example.com');
+      const sid = sidOf(t);
+      const sock = await connect(t);
+
+      // 연결만 유지: 오래된 값으로 되돌려도 그대로다
+      const old = Date.now() - 5 * 60 * 1000;
+      await prisma.session.update({ where: { id: sid }, data: { lastSeenAt: new Date(old) } });
+      await new Promise((r) => setTimeout(r, 300));
+      expect(await seenAt(sid)).toBe(old);
+
+      // 이벤트를 보내면 갱신된다
+      sock.emit('focus:none');
+      const after = await waitFor(() => seenAt(sid), (v) => v > old);
+      expect(after).toBeGreaterThan(old);
+
+      // 1분 안의 다음 이벤트는 다시 쓰지 않는다
+      const mid = Date.now() - 5 * 60 * 1000;
+      await prisma.session.update({ where: { id: sid }, data: { lastSeenAt: new Date(mid) } });
+      sock.emit('focus:none');
+      await new Promise((r) => setTimeout(r, 300));
+      expect(await seenAt(sid)).toBe(mid);
+    });
+
+    it('소켓으로만 대화하는 사용자는 유휴 판정으로 끊기지 않고, 이미 유휴인 세션은 되살리지 않는다', async () => {
+      process.env.SESSION_IDLE_TIMEOUT_HOURS = '1';
+      const t = await login('bob-sess@example.com');
+      const sid = sidOf(t);
+      const sock = await connect(t);
+      // 50분 전이 마지막 HTTP 활동(유휴 한도 1시간 안)
+      const stale = Date.now() - 50 * 60 * 1000;
+      await prisma.session.update({ where: { id: sid }, data: { lastSeenAt: new Date(stale) } });
+      sock.emit('typing:stop', 1);
+      await waitFor(() => seenAt(sid), (v) => v > stale);
+      // 한도(1시간)를 넘겼을 시점 이후에도 소켓 활동이 갱신해 둔 값이라 HTTP가 통한다
+      expect(await seenAt(sid)).toBeGreaterThan(stale);
+      await request(app).get('/users/me/sessions').set(auth(t)).expect(200);
+
+      // 이미 유휴를 넘긴 세션은 소켓 이벤트가 와도 되살리지 않는다
+      const dead = Date.now() - 2 * 3600 * 1000;
+      await prisma.session.update({ where: { id: sid }, data: { lastSeenAt: new Date(dead) } });
+      // 1분 제한을 피하려고 다른 세션으로 새 소켓을 쓰지 않고, touch 간격 맵을 우회하는 대신 새 로그인으로 확인한다
+      const t2 = await login('bob-sess@example.com');
+      const sock2 = await connect(t2);
+      await prisma.session.update({ where: { id: sidOf(t2) }, data: { lastSeenAt: new Date(dead) } });
+      sock2.emit('focus:none');
+      await new Promise((r) => setTimeout(r, 300));
+      expect(await seenAt(sidOf(t2))).toBe(dead);
+      await request(app).get('/users/me/sessions').set(auth(t2)).expect(401);
+    });
+  });
+
   describe('호환과 격리', () => {
     it('sid 없는 옛 토큰은 tokenVersion 규칙으로 계속 통한다', async () => {
       const user = await prisma.user.findUniqueOrThrow({ where: { id: aliceId } });
@@ -443,15 +534,30 @@ describe('세션 관리 (E7)', () => {
     it('IP는 마지막 부분을 가리고 UA는 브라우저와 OS만 남긴다', () => {
       expect(maskIp('203.0.113.77')).toBe('203.0.113.x');
       expect(maskIp('::ffff:203.0.113.77')).toBe('203.0.113.x');
-      expect(maskIp('2001:db8:85a3:8d3:1319:8a2e:370:7348')).toBe('2001:db8:85a3::x');
+      expect(maskIp('::ffff:1.2.3.4')).toBe('1.2.3.x');
+      expect(maskIp('::ffff:102:304')).toBe('1.2.3.x');
+      expect(maskIp('2001:db8:85a3:8d3:1319:8a2e:370:7348')).toBe('2001:db8:85a3::');
+      expect(maskIp('2001:db8::1')).toBe('2001:db8:0::');
+      expect(maskIp('fe80::abcd:1234')).toBe('fe80:0:0::');
+      expect(maskIp('::1')).toBe('0:0:0::');
+      expect(maskIp('2001:0db8:0000:0000:0000:0000:0000:0001')).toBe('2001:db8:0::');
+      expect(maskIp('fe80::1%eth0')).toBe('fe80:0:0::');
       expect(maskIp(undefined)).toBeNull();
       expect(maskIp('garbage')).toBeNull();
-      expect(summarizeUserAgent(CHROME_MAC)).toBe('Chrome / macOS');
-      expect(summarizeUserAgent(FIREFOX_WIN)).toBe('Firefox / Windows');
-      expect(summarizeUserAgent('Mozilla/5.0 (X11; Linux x86_64) Chrome/120 Safari/537 Edg/120')).toBe('Edge / Linux');
-      expect(summarizeUserAgent('Mozilla/5.0 Electron/30 Chrome/124 (Macintosh; Intel Mac OS X)')).toBe('Desktop app / macOS');
+      expect(summarizeUserAgent(CHROME_MAC)).toEqual({ client: 'browser', browser: 'Chrome', os: 'macOS' });
+      expect(summarizeUserAgent(FIREFOX_WIN)).toEqual({ client: 'browser', browser: 'Firefox', os: 'Windows' });
+      expect(summarizeUserAgent('Mozilla/5.0 (X11; Linux x86_64) Chrome/120 Safari/537 Edg/120')).toEqual({ client: 'browser', browser: 'Edge', os: 'Linux' });
+      expect(summarizeUserAgent('Mozilla/5.0 Electron/30 Chrome/124 (Macintosh; Intel Mac OS X)')).toEqual({ client: 'desktop', browser: null, os: 'macOS' });
       expect(summarizeUserAgent(undefined)).toBeNull();
-      expect(summarizeUserAgent('x'.repeat(5000))).toBe('Unknown browser');
+      expect(summarizeUserAgent('x'.repeat(5000))).toEqual({ client: 'unknown', browser: null, os: null });
+    });
+
+    it('이전 저장 형식(영어 문구)도 마이그레이션 없이 풀어 준다', () => {
+      expect(parseDevice('Chrome / macOS')).toEqual({ client: 'browser', browser: 'Chrome', os: 'macOS' });
+      expect(parseDevice('Desktop app / Windows')).toEqual({ client: 'desktop', browser: null, os: 'Windows' });
+      expect(parseDevice('Unknown browser')).toEqual({ client: 'unknown', browser: null, os: null });
+      expect(parseDevice('desktop||macOS')).toEqual({ client: 'desktop', browser: null, os: 'macOS' });
+      expect(parseDevice(null)).toBeNull();
     });
   });
 });

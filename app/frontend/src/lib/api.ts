@@ -1171,7 +1171,8 @@ export function adminUpdateUserRole(userId: number, role: 'ADMIN' | 'MEMBER' | '
 export interface UserSession {
   id: string;
   current: boolean;
-  userAgent: string | null;
+  /** 서버가 코드와 고유명사만 보낸다. 문구는 화면이 번역 키로 만든다. */
+  device: { client: 'desktop' | 'browser' | 'unknown'; browser: string | null; os: string | null } | null;
   ip: string | null;
   createdAt: string;
   lastSeenAt: string;

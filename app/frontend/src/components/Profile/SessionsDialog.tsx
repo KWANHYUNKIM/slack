@@ -41,12 +41,12 @@ export function SessionsDialog({ onClose }: SessionsDialogProps) {
     setBusyId(session.id);
     setError(null);
     try {
-      await api.revokeMySession(session.id);
-      // 이 기기를 지우면 토큰이 곧바로 무효가 되므로 로그아웃 화면으로 보낸다
+      // 이 기기는 logout() 하나만 부른다. 서버 /auth/logout이 세션 폐기와 로그아웃 기록을 함께 한다.
       if (session.current) {
         logout();
         return;
       }
+      await api.revokeMySession(session.id);
       setSessions((cur) => cur.filter((s) => s.id !== session.id));
       showToast(t('sessions.revoked'));
     } catch {
@@ -69,6 +69,15 @@ export function SessionsDialog({ onClose }: SessionsDialogProps) {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const deviceLabel = (d: UserSession['device']): string => {
+    if (!d) return t('sessions.unknownDevice');
+    if (d.client === 'desktop') return d.os ? t('sessions.device.desktopOn', { os: d.os }) : t('sessions.device.desktop');
+    if (d.client === 'browser' && d.browser) {
+      return d.os ? t('sessions.device.browserOn', { browser: d.browser, os: d.os }) : t('sessions.device.browser', { browser: d.browser });
+    }
+    return d.os ? t('sessions.device.unknownOn', { os: d.os }) : t('sessions.unknownDevice');
   };
 
   const others = sessions.filter((s) => !s.current);
@@ -103,7 +112,7 @@ export function SessionsDialog({ onClose }: SessionsDialogProps) {
                 <li key={s.id} data-testid="session-row" className="flex items-start justify-between gap-3 border-b border-slack-border-light py-3">
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 truncate text-[14px] font-medium text-slack-primary">
-                      {s.userAgent ?? t('sessions.unknownDevice')}
+                      {deviceLabel(s.device)}
                       {s.current && (
                         <span data-testid="session-current" className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
                           {t('sessions.thisDevice')}
@@ -121,7 +130,7 @@ export function SessionsDialog({ onClose }: SessionsDialogProps) {
                     type="button"
                     data-testid="session-revoke"
                     disabled={busyId !== null}
-                    aria-label={t(s.current ? 'sessions.signOutThisLabel' : 'sessions.signOutLabel', { device: s.userAgent ?? t('sessions.unknownDevice') })}
+                    aria-label={t(s.current ? 'sessions.signOutThisLabel' : 'sessions.signOutLabel', { device: deviceLabel(s.device) })}
                     onClick={() => void handleRevoke(s)}
                     className="shrink-0 rounded-md border border-red-300 px-3 py-1 text-[13px] text-red-600 hover:bg-red-50 disabled:opacity-50"
                   >

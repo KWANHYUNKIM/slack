@@ -5,7 +5,7 @@ import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { kickSession } from '../websocket/index.js';
-import { listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
+import { parseDevice, listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
 
 const router = Router();
 
@@ -20,7 +20,7 @@ export function sessionView(
   return {
     id: s.id,
     current: s.id === currentSid,
-    userAgent: s.userAgent,
+    device: parseDevice(s.userAgent),
     ip: s.ip,
     createdAt: s.createdAt,
     lastSeenAt: s.lastSeenAt,

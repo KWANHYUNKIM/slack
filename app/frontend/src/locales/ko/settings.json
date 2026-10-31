@@ -117,6 +117,13 @@
     "errors": {
       "loadFailed": "기기 목록을 불러오지 못했습니다.",
       "revokeFailed": "로그아웃하지 못했습니다. 다시 시도해 주세요."
+    },
+    "device": {
+      "desktop": "데스크톱 앱",
+      "desktopOn": "{os} 데스크톱 앱",
+      "browser": "{browser}",
+      "browserOn": "{os}의 {browser}",
+      "unknownOn": "{os}의 알 수 없는 기기"
     }
   }
 }
