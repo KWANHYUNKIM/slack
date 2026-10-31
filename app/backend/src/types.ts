@@ -8,7 +8,8 @@ export interface WorkspaceContext {
   organizationId: number;
   /**
    * 이 워크스페이스에서의 역할. req.user.role(기본 워크스페이스 역할 = User.role)과 별개다.
-   * 새 /workspaces·/org API와, 현재 워크스페이스 안의 목록·생성(GET/POST /channels, GET /users의 게스트 제한, E1c)만 쓴다.
+   * 새 /workspaces·/org API, 현재 워크스페이스 안의 목록·생성(GET/POST /channels, GET /users의 게스트 제한), /admin의 채널·초대와
+   * /webhooks 관리 권한(requireCurrentWorkspaceAdmin)만 쓴다(E1c).
    * id로 오는 채널·사용자는 이 값이 아니라 리소스의 워크스페이스에서 역할을 고른다(services/workspaceScopeService.ts).
    */
   role: Role;

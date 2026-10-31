@@ -9,8 +9,8 @@ import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { guestVisibleUserIds } from '../middleware/authorize.js';
 import { invalidateWorkspaceCache, requestWorkspaceState } from '../middleware/workspace.js';
-import { activeMemberWhere, workspaceSummaryForUser } from '../services/workspaceService.js';
-import { canSeeUser } from '../services/workspaceScopeService.js';
+import { workspaceSummaryForUser } from '../services/workspaceService.js';
+import { canSeeUser, memberOfWorkspaceWhere } from '../services/workspaceScopeService.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -23,6 +23,9 @@ import {
   cleanStatusText, isSingleEmoji, statusView, toPublicUser, setCustomStatus, clearCustomStatus, setDnd, endDnd,
   computeDnd,
 } from '../services/statusService.js';
+
+// 없는 사용자와 공유 워크스페이스가 없어 숨긴 사용자는 같은 본문으로 답한다(존재 은닉, E1c)
+const USER_NOT_FOUND = { error: 'User not found', code: ERR.USER_NOT_FOUND } as const;
 
 // Avatar upload setup
 const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
@@ -101,7 +104,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
 
@@ -234,7 +237,7 @@ router.get('/me/dnd', authMiddleware, async (req: AuthRequest, res: Response) =>
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user!.userId }, select: STATUS_SELECT });
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
     res.json(computeDnd(user));
@@ -455,13 +458,13 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
 
     // 같은 워크스페이스 사람이나 DM 이력이 있는 사람만 보인다(E1c, 5.3). 게스트는 같은 채널에 있는 사람만
     if (!(await canSeeUser(req.user!.userId, userId, req.workspaceState?.memberships))) {
-      res.status(404).json({ error: 'User not found', code: ERR.USER_NOT_FOUND });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
 
@@ -491,16 +494,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     // 현재 워크스페이스의 활성 멤버만(E1c). 게스트(이 워크스페이스에서의 역할)는 같은 채널에 있는 사람만
     const visibleUserIds = await guestVisibleUserIds(req.user!.userId, req.workspace!.role);
 
-    const where = {
-      AND: [
-        activeMemberWhere(req.workspace!.id),
-        {
-          deactivatedAt: null,
-          ...(visibleUserIds && { id: { in: visibleUserIds } }),
-          ...(search && { name: { contains: search, mode: 'insensitive' as const } }),
-        },
-      ],
-    };
+    const where = memberOfWorkspaceWhere(req.workspace!.id, {
+      deactivatedAt: null,
+      ...(visibleUserIds && { id: { in: visibleUserIds } }),
+      ...(search && { name: { contains: search, mode: 'insensitive' as const } }),
+    });
 
     const users = await prisma.user.findMany({
       where,
@@ -579,13 +577,13 @@ router.get('/:id/presence', authMiddleware, async (req: AuthRequest, res: Respon
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
 
     // 프로필 단건과 같은 규칙(E1c)
     if (!(await canSeeUser(req.user!.userId, userId, req.workspaceState?.memberships))) {
-      res.status(404).json({ error: 'User not found', code: ERR.USER_NOT_FOUND });
+      res.status(404).json(USER_NOT_FOUND);
       return;
     }
 

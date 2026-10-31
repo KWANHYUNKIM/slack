@@ -1,7 +1,7 @@
 import { Prisma, Role } from '@prisma/client';
 import prisma from '../db.js';
 import { getWorkspaceState } from '../middleware/workspace.js';
-import { ActiveMembership, activeMemberWhere, loadUserWorkspaceState, roleRank } from './workspaceService.js';
+import { ActiveMembership, activeMemberWhere, roleRank } from './workspaceService.js';
 
 // 채널·사용자 범위 격리(E1c, docs/specs/E1-multi-workspace.md 5.3).
 // 목록은 현재 워크스페이스(req.workspace.id)로 거르고, id로 오는 채널·사용자는 리소스에서 워크스페이스를 역산한다.
@@ -56,28 +56,30 @@ export async function targetRoleInChannelWorkspaces(
   targetUserId: number,
   workspaceIds: number[],
 ): Promise<Role | null> {
-  const state = await loadUserWorkspaceState(prisma, targetUserId);
-  if (!state) return null;
-  return roleInWorkspaces(state.memberships, workspaceIds);
+  return roleInWorkspaces(await membershipsOf(targetUserId), workspaceIds);
 }
 
-/** 워크스페이스 활성 멤버인 사용자 조건에 id 조건을 더한다(관리 API가 대상 사용자를 고를 때) */
+/** 워크스페이스 활성 멤버인 사용자 조건에 다른 조건을 더한다(사용자 목록과 관리 API의 대상 고르기) */
 export function memberOfWorkspaceWhere(workspaceId: number, where: Prisma.UserWhereInput = {}): Prisma.UserWhereInput {
   return { AND: [where, activeMemberWhere(workspaceId)] };
 }
 
+/** 워크스페이스에 보이는 채널(공유 채널 포함) 조건에 다른 조건을 더한다. 채널 목록·관리·웹훅이 함께 쓴다 */
+export function channelInWorkspaceWhere(workspaceId: number, where: Prisma.ChannelWhereInput = {}): Prisma.ChannelWhereInput {
+  return { ...where, workspaces: { some: { workspaceId } } };
+}
+
 /**
- * 다른 사용자의 프로필·프레즌스를 볼 수 있는지(5.3). 본인, 활성 워크스페이스를 하나 이상 공유하는 사람, DM 이력이 있는 사람.
- * 공유 워크스페이스에서 요청자가 모두 게스트이면 기존 게스트 규칙(같은 채널에 있는 사람만)을 따른다.
- * 조직 관리자라도 공유 워크스페이스가 없으면 404다(관리는 /org, 스펙 5.2).
+ * 다른 사용자의 프로필·프레즌스를 볼 수 있는지(5.3). 본인, DM 이력이 있는 사람(게스트도, D3), 활성 워크스페이스를 하나 이상
+ * 공유하는 사람. 공유 워크스페이스에서 요청자가 모두 게스트이면 기존 게스트 규칙(같은 채널에 있는 사람만)을 따른다.
+ * 조직 관리자라도 공유 워크스페이스가 없으면 404다(관리는 /org, 스펙 5.2). 대상이 없으면 false.
  */
 export async function canSeeUser(viewerId: number, targetId: number, known?: ActiveMembership[]): Promise<boolean> {
   if (viewerId === targetId) return true;
-  const [viewer, target] = await Promise.all([membershipsOf(viewerId, known), loadUserWorkspaceState(prisma, targetId)]);
-  if (!target) return false;
-  const shared = target.memberships.map((m) => m.workspaceId);
-  const role = roleInWorkspaces(viewer, shared);
-  if (role === null) return hasDmHistory(viewerId, targetId);
+  if (await hasDmHistory(viewerId, targetId)) return true;
+  const [viewer, target] = await Promise.all([membershipsOf(viewerId, known), membershipsOf(targetId)]);
+  const role = roleInWorkspaces(viewer, target.map((m) => m.workspaceId));
+  if (role === null) return false;
   if (role !== 'GUEST') return true;
   return sharesChannel(viewerId, targetId);
 }

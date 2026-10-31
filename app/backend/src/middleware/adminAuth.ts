@@ -13,12 +13,32 @@ export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction
   next();
 }
 
-// /admin(채널·사용자·초대·웹훅 관리)은 기본 워크스페이스 범위다(E1c, 조직 단위 관리 화면 분리는 E1h).
-// requireAdmin에 더해 기본 워크스페이스의 활성 관리자 멤버십을 본다. 기본 워크스페이스 역할은 User.role이라 결과는 같지만,
+// /admin의 권한(E1c). req.user.role(기본 워크스페이스 역할)은 헤더로 바뀌지 않고, 아래 판정은 모두 멤버십에서 읽는다.
+// 기본 워크스페이스 역할 변경·사용자 목록·소유권 이전: 기본 워크스페이스의 활성 관리자 멤버십(역할은 User.role과 같다).
 // 기본 워크스페이스 멤버가 아닌 조직 관리자(User.role이 ADMIN이어도)는 여기를 쓰지 못하고 /org를 쓴다(스펙 5.2).
 export function requireDefaultWorkspaceAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
   const membership = req.workspaceState?.memberships.find((m) => m.workspaceId === DEFAULT_WORKSPACE_ID);
-  if (!isWorkspaceAdminRole(membership?.role) || (req.user?.role !== 'ADMIN' && req.user?.role !== 'OWNER')) {
+  if (!isWorkspaceAdminRole(membership?.role)) {
+    res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });
+    return;
+  }
+  next();
+}
+
+// 현재 워크스페이스(req.workspace)의 채널·초대·웹훅 관리: 그 워크스페이스의 관리자이거나 조직 관리자.
+export function requireCurrentWorkspaceAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+  if (!req.workspace || (!isWorkspaceAdminRole(req.workspace.role) && !isOrgAdminRole(req.user?.orgRole))) {
+    res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });
+    return;
+  }
+  next();
+}
+
+// 계정 단위 작업(비활성화·재활성화·세션·2FA 초기화·보안 설정)은 조직 단위다: 조직 관리자, 또는 기본 워크스페이스 관리자
+// (E1h 전까지 기존 관리자 호환). 조직 소유자는 기본 워크스페이스를 떠나도 쓸 수 있다.
+export function requireAccountAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+  const defaultRole = req.workspaceState?.memberships.find((m) => m.workspaceId === DEFAULT_WORKSPACE_ID)?.role;
+  if (!isOrgAdminRole(req.user?.orgRole) && !isWorkspaceAdminRole(defaultRole)) {
     res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });
     return;
   }

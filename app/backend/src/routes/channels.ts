@@ -14,11 +14,14 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { validateChannelName } from '../utils/channelName.js';
 import { updateChannel, CHANNEL_NAME_TAKEN } from '../services/channelService.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
-import { channelHostData, channelNameKey, isWorkspaceAdminRole } from '../services/workspaceService.js';
+import { channelHostData, channelNameKey, isWorkspaceAdminRole, lockWorkspaceChannelNames } from '../services/workspaceService.js';
 import { channelScopeFor, targetRoleInChannelWorkspaces } from '../services/workspaceScopeService.js';
 import { ERR } from '../utils/errorCodes.js';
 
 const router = Router();
+
+// 없는 채널과 다른 워크스페이스라 숨긴 채널은 같은 본문으로 답한다(존재 은닉, E1c D7)
+const CHANNEL_NOT_FOUND = { error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND } as const;
 
 const createChannelSchema = z.object({
   name: z.unknown(),
@@ -44,39 +47,43 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const isPrivate = parsed.isPrivate;
     const userId = req.user!.userId;
 
-    // 이름 유일성은 워크스페이스 단위(대소문자 무시 nameKey). 다른 워크스페이스의 같은 이름은 상관없다
-    const existing = await prisma.channelWorkspace.findUnique({
-      where: { workspaceId_nameKey: { workspaceId: workspace.id, nameKey: channelNameKey(name) } },
-      select: { channelId: true },
-    });
-    if (existing) {
-      res.status(400).json({ error: 'Channel name already exists', code: CHANNEL_NAME_TAKEN });
-      return;
-    }
-
-    const channel = await prisma.channel.create({
-      data: {
-        name,
-        isPrivate,
-        createdBy: userId,
-        ...channelHostData(name, workspace.id),
-        members: {
-          create: {
-            userId,
-            role: 'OWNER',
-          },
-        },
-      },
-      include: {
-        members: {
-          include: {
-            user: {
-              select: { id: true, name: true, avatar: true },
+    // 이름 유일성은 워크스페이스 단위(대소문자 무시 nameKey). 다른 워크스페이스의 같은 이름은 상관없다.
+    // 기본 채널 자리 채우기·이름 변경과 같은 워크스페이스 잠금 안에서 확인하고 만든다
+    const channel = await prisma.$transaction(async (tx) => {
+      await lockWorkspaceChannelNames(tx, [workspace.id]);
+      const existing = await tx.channelWorkspace.findUnique({
+        where: { workspaceId_nameKey: { workspaceId: workspace.id, nameKey: channelNameKey(name) } },
+        select: { channelId: true },
+      });
+      if (existing) return null;
+      return tx.channel.create({
+        data: {
+          name,
+          isPrivate,
+          createdBy: userId,
+          ...channelHostData(name, workspace.id),
+          members: {
+            create: {
+              userId,
+              role: 'OWNER',
             },
           },
         },
-      },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: { id: true, name: true, avatar: true },
+              },
+            },
+          },
+        },
+      });
     });
+    if (!channel) {
+      res.status(400).json({ error: 'Channel name already exists', code: CHANNEL_NAME_TAKEN });
+      return;
+    }
 
     void writeAuditLog({
       action: 'channel.created',
@@ -216,7 +223,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const unreadRow = unreadRows?.[0];
 
     if (!channel) {
-      res.status(404).json({ error: 'Channel not found' });
+      res.status(404).json(CHANNEL_NOT_FOUND);
       return;
     }
 
@@ -227,7 +234,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (!isMember) {
       const scope = await channelScopeFor(userId, channelId, req.workspaceState?.memberships);
       if (scope.role === null || channel.isPrivate || scope.role === 'GUEST') {
-        res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
+        res.status(404).json(CHANNEL_NOT_FOUND);
         return;
       }
     }
@@ -295,7 +302,7 @@ router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => 
     const isWorkspaceAdmin = isWorkspaceAdminRole(scope.role);
     // 다른 워크스페이스의 채널과 비공개 채널의 비멤버에게는 존재 자체를 숨긴다(워크스페이스 관리자는 예외)
     if (!channel || (!membership && (scope.role === null || (channel.isPrivate && !isWorkspaceAdmin)))) {
-      res.status(404).json({ error: 'Channel not found' });
+      res.status(404).json(CHANNEL_NOT_FOUND);
       return;
     }
     const canEdit = isWorkspaceAdmin || membership?.role === 'OWNER' || membership?.role === 'MODERATOR';
@@ -382,7 +389,7 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
 
     // 채널이 보이는 워크스페이스의 활성 멤버만 참여할 수 있다. 아니면 존재를 숨긴다(E1c, D7)
     if (!channel || scope.role === null) {
-      res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
+      res.status(404).json(CHANNEL_NOT_FOUND);
       return;
     }
     if (scope.role === 'GUEST') {
@@ -392,7 +399,7 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
 
     // Prevent joining private channels without invite
     if (channel.isPrivate) {
-      res.status(404).json({ error: 'Channel not found' });
+      res.status(404).json(CHANNEL_NOT_FOUND);
       return;
     }
 
@@ -733,7 +740,7 @@ router.delete('/:id/members/:userId', authMiddleware, requireChannelMembership, 
     });
 
     if (!channel) {
-      res.status(404).json({ error: 'Channel not found' });
+      res.status(404).json(CHANNEL_NOT_FOUND);
       return;
     }
 

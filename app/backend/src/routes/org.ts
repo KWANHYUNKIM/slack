@@ -17,7 +17,7 @@ import {
   DEFAULT_WORKSPACE_ID, joinWorkspaceDefaultChannels,
 } from '../services/workspaceService.js';
 import { fillDefaultSlot } from '../services/defaultChannelService.js';
-import { workspaceRoom } from '../services/workspaceMemberService.js';
+import { workspaceMembersRoom, workspaceRoom } from '../services/workspaceMemberService.js';
 
 // 조직 관리(E1b, docs/specs/E1-multi-workspace.md 6.1). 서버당 조직은 하나(D1)라 조직 생성 API는 없다.
 // 워크스페이스는 하드 삭제 없이 보관만 한다(D6). 조직 설정(/org/settings)과 orgRole 변경은 E1e 이후.
@@ -241,7 +241,7 @@ router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Respons
     invalidateWorkspaceCache(actorId);
     const io = getIO();
     if (io) {
-      io.in(`user:${actorId}`).socketsJoin(workspaceRoom(ws.id));
+      io.in(`user:${actorId}`).socketsJoin([workspaceRoom(ws.id), workspaceMembersRoom(ws.id)]);
       io.to(`user:${actorId}`).emit('workspace:member:added', { workspaceId: ws.id, userId: actorId, role: 'OWNER' });
     }
     void writeAuditLog({
@@ -338,7 +338,7 @@ router.post('/workspaces/:id/archive', authMiddleware, requireWorkspaceIdParam, 
     const io = getIO();
     if (io) {
       io.to(workspaceRoom(ws.id)).emit('workspace:archived', { id: ws.id });
-      io.in(workspaceRoom(ws.id)).socketsLeave(workspaceRoom(ws.id));
+      io.in(workspaceRoom(ws.id)).socketsLeave([workspaceRoom(ws.id), workspaceMembersRoom(ws.id)]);
     }
     void writeAuditLog({ action: 'workspace.archived', actorId: req.user!.userId, targetType: 'workspace', targetId: ws.id, targetName: ws.name });
     res.json(ws);
@@ -361,8 +361,15 @@ router.post('/workspaces/:id/unarchive', authMiddleware, requireWorkspaceIdParam
     clearWorkspaceCache();
     const io = getIO();
     if (io) {
-      const members = await prisma.user.findMany({ where: { AND: [activeMemberWhere(ws.id), { deactivatedAt: null }] }, select: { id: true } });
+      const rows = await prisma.user.findMany({
+        where: { AND: [activeMemberWhere(ws.id), { deactivatedAt: null }] },
+        select: { id: true, workspaces: { where: { workspaceId: ws.id }, select: { role: true } } },
+      });
+      const members = rows.map((r) => ({ id: r.id, role: r.workspaces[0]?.role ?? 'MEMBER' }));
       if (members.length > 0) io.in(members.map((m) => `user:${m.id}`)).socketsJoin(workspaceRoom(ws.id));
+      // 기본 워크스페이스는 보관할 수 없으므로 여기서 역할은 WorkspaceMember.role이다
+      const nonGuests = members.filter((m) => m.role !== 'GUEST');
+      if (nonGuests.length > 0) io.in(nonGuests.map((m) => `user:${m.id}`)).socketsJoin(workspaceMembersRoom(ws.id));
       io.to(workspaceRoom(ws.id)).emit('workspace:unarchived', { id: ws.id });
     }
     void writeAuditLog({ action: 'workspace.unarchived', actorId: req.user!.userId, targetType: 'workspace', targetId: ws.id, targetName: ws.name });

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
-import { requireDefaultWorkspaceAdmin } from '../middleware/adminAuth.js';
+import { requireAccountAdmin, requireCurrentWorkspaceAdmin, requireDefaultWorkspaceAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../types.js';
 import { getIO, kickUser, kickSession, MFA_KICK_MESSAGE } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
@@ -15,23 +15,29 @@ import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
-import { DEFAULT_WORKSPACE_ID, activeMemberWhere, setUserRole } from '../services/workspaceService.js';
-import { memberOfWorkspaceWhere, targetRoleInChannelWorkspaces, channelWorkspaceIds } from '../services/workspaceScopeService.js';
+import { DEFAULT_WORKSPACE_ID, setUserRole } from '../services/workspaceService.js';
+import {
+  channelInWorkspaceWhere, memberOfWorkspaceWhere, targetRoleInChannelWorkspaces, channelWorkspaceIds,
+} from '../services/workspaceScopeService.js';
 
 const router = Router();
 
-// All admin routes require authentication + admin role
-// /admin은 기본 워크스페이스 범위다(E1c). 사용자·채널·초대는 기본 워크스페이스의 것만 보이고 고칠 수 있으며,
-// 다른 워크스페이스의 대상은 존재를 숨겨 404다. 다른 워크스페이스 관리는 /workspaces/:id, 조직 단위는 /org(E1h에서 화면 분리).
-router.use(authMiddleware, requireDefaultWorkspaceAdmin);
+// All admin routes require authentication; 권한과 범위는 경로 묶음마다 다르다(E1c, 스펙 5.3·5.5).
+// - 사용자 목록·역할 변경·소유권 이전: 기본 워크스페이스(역할이 User.role = 기본 워크스페이스 역할이다). requireDefaultWorkspaceAdmin
+// - 계정 단위(비활성화·재활성화·세션·2FA 초기화·보안 설정): 조직 단위. 조직 관리자 또는 기본 워크스페이스 관리자가 같은 조직의
+//   모든 사용자에게 한다(기본 워크스페이스 멤버십 불필요). requireAccountAdmin
+// - 채널·초대: 현재 워크스페이스(req.workspace). 그 워크스페이스의 관리자 또는 조직 관리자. requireCurrentWorkspaceAdmin.
+//   다른 워크스페이스의 대상은 존재를 숨겨 404다. req.user.role은 어디서도 헤더로 바꾸지 않는다(E1b 결정).
+router.use(authMiddleware);
 
-const ADMIN_WORKSPACE_ID = DEFAULT_WORKSPACE_ID;
+/** 기본 워크스페이스 범위 대상 사용자(계정 비활성 사용자 포함) */
+const defaultWorkspaceUserWhere = (id: number) => memberOfWorkspaceWhere(DEFAULT_WORKSPACE_ID, { id });
 
-/** 대상 사용자 조건: 기본 워크스페이스 활성 멤버(계정 비활성 사용자 포함) */
-const adminUserWhere = (id: number) => memberOfWorkspaceWhere(ADMIN_WORKSPACE_ID, { id });
+/** 조직 범위 대상 사용자(계정 단위 작업) */
+const orgUserWhere = (req: AuthRequest, id: number) => ({ id, organizationId: req.workspaceState!.organizationId });
 
-/** 대상 채널 조건: 기본 워크스페이스에 보이는 채널(공유 채널 포함) */
-const adminChannelWhere = (id: number) => ({ id, workspaces: { some: { workspaceId: ADMIN_WORKSPACE_ID } } });
+/** 현재 워크스페이스에 보이는 채널(공유 채널 포함) */
+const workspaceChannelWhere = (req: AuthRequest, id: number) => channelInWorkspaceWhere(req.workspace!.id, { id });
 
 const ADMIN_USER_SELECT = {
   id: true,
@@ -47,10 +53,10 @@ const ADMIN_USER_SELECT = {
 } as const;
 
 // GET /admin/users - List all users
-router.get('/users', async (req: AuthRequest, res: Response) => {
+router.get('/users', requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany({
-      where: activeMemberWhere(ADMIN_WORKSPACE_ID),
+      where: memberOfWorkspaceWhere(DEFAULT_WORKSPACE_ID),
       select: ADMIN_USER_SELECT,
       orderBy: { createdAt: 'asc' },
     });
@@ -64,12 +70,22 @@ router.get('/users', async (req: AuthRequest, res: Response) => {
 // Role hierarchy: OWNER > ADMIN > MEMBER > GUEST
 const ROLE_RANK: Record<string, number> = { OWNER: 3, ADMIN: 2, MEMBER: 1, GUEST: 0 };
 
+// 계정 단위 작업의 등급: 조직 역할과 기본 워크스페이스 역할 중 높은 것(행위자는 기본 워크스페이스 멤버일 때만 그 역할을 센다)
+function accountActorRank(req: AuthRequest): number {
+  const defaultRole = req.workspaceState?.memberships.find((m) => m.workspaceId === DEFAULT_WORKSPACE_ID)?.role;
+  return Math.max(ROLE_RANK[req.user!.orgRole ?? 'MEMBER'] ?? 0, defaultRole ? ROLE_RANK[defaultRole] : 0);
+}
+
+function accountTargetRank(target: { role: string; orgRole: string }): number {
+  return Math.max(ROLE_RANK[target.role] ?? 0, ROLE_RANK[target.orgRole] ?? 0);
+}
+
 // PATCH /admin/users/:id - Change user role
 const updateRoleSchema = z.object({
   role: z.enum(['ADMIN', 'MEMBER', 'GUEST']),
 });
 
-router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
+router.patch('/users/:id', requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseIntParam(req.params.id);
     if (!userId) {
@@ -86,7 +102,7 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
     const actorRole = req.user!.role || 'MEMBER';
 
     const target = await prisma.user.findFirst({
-      where: adminUserWhere(userId),
+      where: defaultWorkspaceUserWhere(userId),
       select: { id: true, role: true },
     });
 
@@ -143,7 +159,7 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // POST /admin/users/:id/deactivate - Deactivate user
-router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => {
+router.post('/users/:id/deactivate', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseIntParam(req.params.id);
     if (!userId) {
@@ -157,8 +173,8 @@ router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => 
     }
 
     const target = await prisma.user.findFirst({
-      where: adminUserWhere(userId),
-      select: { id: true, role: true },
+      where: orgUserWhere(req, userId),
+      select: { id: true, role: true, orgRole: true },
     });
 
     if (!target) {
@@ -166,12 +182,12 @@ router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const actorRole = req.user!.role || 'MEMBER';
-    if (target.role === 'OWNER') {
+    const actorRank = accountActorRank(req);
+    if (target.role === 'OWNER' || target.orgRole === 'OWNER') {
       res.status(403).json({ error: 'Cannot deactivate the workspace owner' });
       return;
     }
-    if (actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
+    if (actorRank < ROLE_RANK.OWNER && accountTargetRank(target) >= actorRank) {
       res.status(403).json({ error: 'Cannot deactivate a user with equal or higher role' });
       return;
     }
@@ -210,13 +226,13 @@ async function loadSessionTarget(req: AuthRequest, res: Response): Promise<{ id:
     res.status(400).json({ error: 'Invalid user ID' });
     return null;
   }
-  const target = await prisma.user.findFirst({ where: adminUserWhere(userId), select: { id: true, name: true, role: true } });
+  const target = await prisma.user.findFirst({ where: orgUserWhere(req, userId), select: { id: true, name: true, role: true, orgRole: true } });
   if (!target) {
     res.status(404).json({ error: 'User not found' });
     return null;
   }
-  const actorRole = req.user!.role || 'MEMBER';
-  if (userId !== req.user!.userId && actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
+  const actorRank = accountActorRank(req);
+  if (userId !== req.user!.userId && actorRank < ROLE_RANK.OWNER && accountTargetRank(target) >= actorRank) {
     res.status(403).json({ error: 'Cannot manage sessions of a user with equal or higher role' });
     return null;
   }
@@ -224,7 +240,7 @@ async function loadSessionTarget(req: AuthRequest, res: Response): Promise<{ id:
 }
 
 // GET /admin/users/:id/sessions - 사용자의 로그인된 기기 목록
-router.get('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
+router.get('/users/:id/sessions', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
@@ -237,7 +253,7 @@ router.get('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
 });
 
 // DELETE /admin/users/:id/sessions/:sid - 기기 하나 로그아웃
-router.delete('/users/:id/sessions/:sid', async (req: AuthRequest, res: Response) => {
+router.delete('/users/:id/sessions/:sid', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
@@ -260,7 +276,7 @@ router.delete('/users/:id/sessions/:sid', async (req: AuthRequest, res: Response
 });
 
 // DELETE /admin/users/:id/sessions - 사용자의 모든 기기 로그아웃. sid 없는 옛 토큰까지 막도록 tokenVersion도 올린다(force-logout과 같은 효과).
-router.delete('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
+router.delete('/users/:id/sessions', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
@@ -281,7 +297,7 @@ router.delete('/users/:id/sessions', async (req: AuthRequest, res: Response) => 
 });
 
 // POST /admin/users/:id/force-logout - 사용자의 모든 세션을 끊는다(토큰 버전 증가 + 세션 폐기 + 소켓 종료). 계정은 그대로 둔다.
-router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) => {
+router.post('/users/:id/force-logout', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
@@ -311,7 +327,7 @@ router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) =
 
 // POST /admin/users/:id/2fa/reset - 휴대폰을 잃은 사용자의 2FA를 지운다(E7b). 그 사용자의 세션도 모두 끊는다.
 // 자기 자신은 초기화할 수 없다(본인은 비밀번호와 코드로 해제한다. 관리자 권한으로 본인 확인을 건너뛰지 않게).
-router.post('/users/:id/2fa/reset', async (req: AuthRequest, res: Response) => {
+router.post('/users/:id/2fa/reset', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
@@ -343,7 +359,7 @@ router.post('/users/:id/2fa/reset', async (req: AuthRequest, res: Response) => {
 });
 
 // GET /admin/settings/security - 조직 보안 정책. mfaAvailable이 false면(암호화 키 없음) 필수 정책을 켤 수 없고 걸리지도 않는다.
-router.get('/settings/security', async (_req: AuthRequest, res: Response) => {
+router.get('/settings/security', requireAccountAdmin, async (_req: AuthRequest, res: Response) => {
   try {
     res.json({ requireMfa: await getRequireMfa(), mfaAvailable: isMfaAvailable(), allowOAuthApps: await getAllowOAuthApps() });
   } catch (error) {
@@ -353,7 +369,7 @@ router.get('/settings/security', async (_req: AuthRequest, res: Response) => {
 });
 
 // PATCH /admin/settings/security - "모든 사용자 2FA 필수", "OAuth 앱 연결 허용"(mcp-4) 켜고 끄기. 바꿀 값만 보낸다.
-router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
+router.patch('/settings/security', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const parsed = z.object({ requireMfa: z.boolean().optional(), allowOAuthApps: z.boolean().optional() }).strict()
       .refine((v) => v.requireMfa !== undefined || v.allowOAuthApps !== undefined, { message: 'Nothing to update' })
@@ -413,7 +429,7 @@ router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
 });
 
 // POST /admin/users/:id/reactivate - Reactivate user
-router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => {
+router.post('/users/:id/reactivate', requireAccountAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseIntParam(req.params.id);
     if (!userId) {
@@ -422,8 +438,8 @@ router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => 
     }
 
     const target = await prisma.user.findFirst({
-      where: adminUserWhere(userId),
-      select: { id: true, role: true },
+      where: orgUserWhere(req, userId),
+      select: { id: true, role: true, orgRole: true },
     });
     if (!target) {
       res.status(404).json({ error: 'User not found' });
@@ -433,8 +449,8 @@ router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => 
     // Enforce same role hierarchy as deactivation:
     // only OWNER can reactivate ADMIN-level users; an ADMIN cannot
     // reactivate someone at or above their own rank.
-    const actorRole = req.user!.role || 'MEMBER';
-    if (actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
+    const actorRank = accountActorRank(req);
+    if (actorRank < ROLE_RANK.OWNER && accountTargetRank(target) >= actorRank) {
       res.status(403).json({ error: 'Cannot reactivate a user with equal or higher role' });
       return;
     }
@@ -461,10 +477,10 @@ router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => 
 });
 
 // GET /admin/invites - List all invite links
-router.get('/invites', async (_req: AuthRequest, res: Response) => {
+router.get('/invites', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const invites = await prisma.inviteLink.findMany({
-      where: { workspaceId: ADMIN_WORKSPACE_ID },
+      where: { workspaceId: req.workspace!.id },
       include: {
         creator: { select: { id: true, name: true } },
       },
@@ -484,7 +500,7 @@ const createInviteSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional(),
 });
 
-router.post('/invites', async (req: AuthRequest, res: Response) => {
+router.post('/invites', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { role, maxUses, expiresAt } = createInviteSchema.parse(req.body);
 
@@ -493,7 +509,7 @@ router.post('/invites', async (req: AuthRequest, res: Response) => {
     const invite = await prisma.inviteLink.create({
       data: {
         code,
-        workspaceId: ADMIN_WORKSPACE_ID,
+        workspaceId: req.workspace!.id,
         createdBy: req.user!.userId,
         role,
         maxUses: maxUses ?? null,
@@ -524,7 +540,7 @@ router.post('/invites', async (req: AuthRequest, res: Response) => {
 });
 
 // DELETE /admin/invites/:id - Delete invite link
-router.delete('/invites/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/invites/:id', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = parseIntParam(req.params.id);
     if (!id) {
@@ -533,7 +549,7 @@ router.delete('/invites/:id', async (req: AuthRequest, res: Response) => {
     }
 
     // 다른 워크스페이스의 초대는 없는 것으로 답한다
-    const invite = await prisma.inviteLink.findFirst({ where: { id, workspaceId: ADMIN_WORKSPACE_ID }, select: { id: true } });
+    const invite = await prisma.inviteLink.findFirst({ where: { id, workspaceId: req.workspace!.id }, select: { id: true } });
     if (!invite) {
       res.status(404).json({ error: 'Invite not found', code: ERR.NOT_FOUND });
       return;
@@ -555,10 +571,10 @@ router.delete('/invites/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // GET /admin/channels - List all channels with counts
-router.get('/channels', async (_req: AuthRequest, res: Response) => {
+router.get('/channels', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const channels = await prisma.channel.findMany({
-      where: { workspaces: { some: { workspaceId: ADMIN_WORKSPACE_ID } } },
+      where: channelInWorkspaceWhere(req.workspace!.id),
       include: {
         _count: {
           select: { members: true, messages: true },
@@ -574,7 +590,7 @@ router.get('/channels', async (_req: AuthRequest, res: Response) => {
 });
 
 // DELETE /admin/channels/:id - Delete a channel (permanent)
-router.delete('/channels/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/channels/:id', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = parseIntParam(req.params.id);
     if (!id) {
@@ -582,7 +598,7 @@ router.delete('/channels/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id), select: { id: true, name: true, isPrivate: true } });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, id), select: { id: true, name: true, isPrivate: true } });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -611,7 +627,7 @@ router.delete('/channels/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // POST /admin/channels/:id/archive - Archive a channel (soft delete)
-router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => {
+router.post('/channels/:id/archive', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = parseIntParam(req.params.id);
     if (!id) {
@@ -619,7 +635,7 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -653,7 +669,7 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
 });
 
 // POST /admin/channels/:id/unarchive - Unarchive a channel
-router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) => {
+router.post('/channels/:id/unarchive', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = parseIntParam(req.params.id);
     if (!id) {
@@ -661,7 +677,7 @@ router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) =
       return;
     }
 
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -702,7 +718,7 @@ const editChannelSchema = z.object({
   message: 'At least one field must be provided',
 });
 
-router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
+router.patch('/channels/:id', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = parseIntParam(req.params.id);
     if (!id) {
@@ -715,7 +731,7 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
       return;
     }
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -742,7 +758,7 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // GET /admin/channels/:id/members - List members of any channel
-router.get('/channels/:id/members', async (req: AuthRequest, res: Response) => {
+router.get('/channels/:id/members', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = parseIntParam(req.params.id);
     if (!channelId) {
@@ -750,7 +766,7 @@ router.get('/channels/:id/members', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    if (!(await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { id: true } }))) {
+    if (!(await prisma.channel.findFirst({ where: workspaceChannelWhere(req, channelId), select: { id: true } }))) {
       res.status(404).json({ error: 'Channel not found' });
       return;
     }
@@ -777,7 +793,7 @@ const addMemberSchema = z.object({
   userId: z.number().int().positive(),
 });
 
-router.post('/channels/:id/members', async (req: AuthRequest, res: Response) => {
+router.post('/channels/:id/members', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = parseIntParam(req.params.id);
     if (!channelId) {
@@ -787,7 +803,7 @@ router.post('/channels/:id/members', async (req: AuthRequest, res: Response) => 
 
     const { userId } = addMemberSchema.parse(req.body);
 
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { name: true } });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, channelId), select: { name: true } });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -837,7 +853,7 @@ router.post('/channels/:id/members', async (req: AuthRequest, res: Response) => 
 });
 
 // DELETE /admin/channels/:id/members/:userId - Remove user from any channel
-router.delete('/channels/:id/members/:userId', async (req: AuthRequest, res: Response) => {
+router.delete('/channels/:id/members/:userId', requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const channelId = parseIntParam(req.params.id);
     const userId = parseIntParam(req.params.userId);
@@ -846,7 +862,7 @@ router.delete('/channels/:id/members/:userId', async (req: AuthRequest, res: Res
       return;
     }
 
-    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { name: true } });
+    const channel = await prisma.channel.findFirst({ where: workspaceChannelWhere(req, channelId), select: { name: true } });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -888,7 +904,7 @@ const transferOwnershipSchema = z.object({
   userId: z.number().int().positive(),
 });
 
-router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
+router.post('/transfer-ownership', requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     if (req.user!.role !== 'OWNER') {
       res.status(403).json({ error: 'Only the workspace owner can transfer ownership' });
@@ -904,7 +920,7 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
     }
 
     const target = await prisma.user.findFirst({
-      where: adminUserWhere(userId),
+      where: defaultWorkspaceUserWhere(userId),
       select: { id: true, name: true, role: true, deactivatedAt: true },
     });
 

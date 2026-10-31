@@ -5,7 +5,8 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam, MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { ERR } from '../utils/errorCodes.js';
 import { ActiveMembership } from '../services/workspaceService.js';
-import { channelScopeFor } from '../services/workspaceScopeService.js';
+import { channelInWorkspaceWhere, channelScopeFor } from '../services/workspaceScopeService.js';
+import { Prisma } from '@prisma/client';
 
 // ── Express Middleware ──────────────────────────────────────────────
 
@@ -461,18 +462,17 @@ async function messageReadAccess(
  * workspaceId를 주면 그 워크스페이스에 보이는 채널(ChannelWorkspace)만 고르고(E1c), role은 그 워크스페이스에서의 역할이다.
  * GET /channels와 MCP list_channels가 같이 쓴다(MCP의 워크스페이스 인자는 E1d).
  */
-export function listableChannelsWhere(userId: number, role: string | undefined, workspaceId?: number) {
-  const scope = workspaceId === undefined ? {} : { workspaces: { some: { workspaceId } } };
-  return role === 'GUEST'
-    ? { ...scope, members: { some: { userId } }, archivedAt: null }
+export function listableChannelsWhere(userId: number, role: string | undefined, workspaceId?: number): Prisma.ChannelWhereInput {
+  const where: Prisma.ChannelWhereInput = role === 'GUEST'
+    ? { members: { some: { userId } }, archivedAt: null }
     : {
-        ...scope,
         archivedAt: null,
         OR: [
           { isPrivate: false },
           { members: { some: { userId } } },
         ],
       };
+  return workspaceId === undefined ? where : channelInWorkspaceWhere(workspaceId, where);
 }
 
 /**

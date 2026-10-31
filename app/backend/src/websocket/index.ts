@@ -181,6 +181,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
     try {
       const state = await getWorkspaceState(result.user.userId);
       socket.data.workspaceIds = state?.memberships.map((m) => m.workspaceId) ?? [];
+      // 게스트가 아닌 멤버만 들어가는 room(ws:<id>:members, E1c). 공개 채널 이벤트는 게스트에게 가지 않는다
+      socket.data.memberWorkspaceIds = state?.memberships.filter((m) => m.role !== 'GUEST').map((m) => m.workspaceId) ?? [];
     } catch (error) {
       logError('Socket workspace lookup error', error);
       return next(new Error('Server error'));
@@ -530,6 +532,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
       // 워크스페이스 room(E1b). 이후 참여·제거·보관은 REST가 io.in('user:<id>').socketsJoin/Leave로 맞춘다
       const workspaceIds: number[] = Array.isArray(socket.data.workspaceIds) ? socket.data.workspaceIds : [];
       if (workspaceIds.length > 0) socket.join(workspaceIds.map((id) => `ws:${id}`));
+      const memberWorkspaceIds: number[] = Array.isArray(socket.data.memberWorkspaceIds) ? socket.data.memberWorkspaceIds : [];
+      if (memberWorkspaceIds.length > 0) socket.join(memberWorkspaceIds.map((id) => `ws:${id}:members`));
     }
 
     // Join DM conversation room

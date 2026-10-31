@@ -5,8 +5,8 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireDefaultWorkspaceAdmin } from '../middleware/adminAuth.js';
-import { DEFAULT_WORKSPACE_ID } from '../services/workspaceService.js';
+import { requireCurrentWorkspaceAdmin } from '../middleware/adminAuth.js';
+import { channelInWorkspaceWhere } from '../services/workspaceScopeService.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -29,8 +29,7 @@ const webhookSendLimiter = rateLimit({
   keyGenerator: (req) => `webhook:${req.params.token}`,
 });
 
-// 웹훅 관리는 /admin과 같은 기본 워크스페이스 범위다(E1c). 다른 워크스페이스 채널의 웹훅은 없는 것으로 답한다.
-const managedChannelWhere = { workspaces: { some: { workspaceId: DEFAULT_WORKSPACE_ID } } };
+// 웹훅 관리는 /admin 채널 관리와 같은 현재 워크스페이스 범위다(E1c). 다른 워크스페이스 채널의 웹훅은 없는 것으로 답한다.
 
 // Validation schemas
 const createWebhookSchema = z.object({
@@ -43,14 +42,14 @@ const incomingWebhookSchema = z.object({
 });
 
 // POST /webhooks - Create a new webhook (admin only)
-router.post('/', authMiddleware, requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { name, channelId } = createWebhookSchema.parse(req.body);
     const userId = req.user!.userId;
 
     // Verify channel exists and is not archived
     const channel = await prisma.channel.findFirst({
-      where: { id: channelId, ...managedChannelWhere },
+      where: channelInWorkspaceWhere(req.workspace!.id, { id: channelId }),
       select: { id: true, name: true, archivedAt: true },
     });
 
@@ -101,13 +100,13 @@ router.post('/', authMiddleware, requireDefaultWorkspaceAdmin, async (req: AuthR
 });
 
 // GET /webhooks - List webhooks (admin only, optionally filtered by channelId)
-router.get('/', authMiddleware, requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
+router.get('/', authMiddleware, requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const channelIdRaw = req.query.channelId as string | undefined;
     const channelId = channelIdRaw ? parseInt(channelIdRaw, 10) : undefined;
 
     const webhooks = await prisma.webhook.findMany({
-      where: { ...(channelId ? { channelId } : {}), channel: managedChannelWhere },
+      where: { ...(channelId ? { channelId } : {}), channel: channelInWorkspaceWhere(req.workspace!.id) },
       include: {
         channel: { select: { id: true, name: true } },
         creator: { select: { id: true, name: true } },
@@ -123,7 +122,7 @@ router.get('/', authMiddleware, requireDefaultWorkspaceAdmin, async (req: AuthRe
 });
 
 // DELETE /webhooks/:id - Delete a webhook (admin only)
-router.delete('/:id', authMiddleware, requireDefaultWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
+router.delete('/:id', authMiddleware, requireCurrentWorkspaceAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const webhookId = parseIntParam(req.params.id);
     if (!webhookId) {
@@ -132,7 +131,7 @@ router.delete('/:id', authMiddleware, requireDefaultWorkspaceAdmin, async (req: 
     }
 
     const webhook = await prisma.webhook.findFirst({
-      where: { id: webhookId, channel: managedChannelWhere },
+      where: { id: webhookId, channel: channelInWorkspaceWhere(req.workspace!.id) },
       include: {
         channel: { select: { name: true } },
       },

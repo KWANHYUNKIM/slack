@@ -7,6 +7,7 @@ import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { listenOnLoopback } from './listenLoopback.js';
 import { DEFAULT_WORKSPACE_ID, channelNameKey, setUserRole } from '../services/workspaceService.js';
+import { joinDefaultChannels } from '../services/defaultChannelService.js';
 import { FixtureUser, WorkspaceFixture, createFixtureUser, createWorkspaceFixture } from './helpers/workspaces.js';
 
 // E1c 누출 매트릭스 1차(docs/specs/E1-multi-workspace.md 5.3, 5.4, 5.6): 채널·메시지·파일·사용자·관리·소켓.
@@ -151,6 +152,21 @@ describe('Workspace isolation (E1c)', () => {
         const res = await req;
         expect([label, res.status]).toEqual([label, 404]);
       }
+      // 없는 id와 숨긴 id는 본문까지 같다(존재 은닉)
+      const pairs: Array<[string, string]> = [
+        [`/channels/${ch}`, '/channels/999999'],
+        [`/channels/${ch}/messages`, '/channels/999999/messages'],
+        [`/users/${fx.users.b.id}`, '/users/999999'],
+        [`/users/${fx.users.b.id}/presence`, '/users/999999/presence'],
+      ];
+      for (const [hidden, missing] of pairs) {
+        const h = await request(app).get(hidden).set(auth(t));
+        const m = await request(app).get(missing).set(auth(t));
+        expect([hidden, h.status, h.body]).toEqual([hidden, 404, m.body]);
+      }
+      const putHidden = await request(app).put(`/channels/${ch}/star`).set(auth(t));
+      const putMissing = await request(app).put('/channels/999999/star').set(auth(t));
+      expect([putHidden.status, putHidden.body]).toEqual([404, putMissing.body]);
       // 같은 워크스페이스 사람(ab)은 공개 채널을 읽는다
       await request(app).get(`/channels/${ch}/messages`).set(inWs(fx.users.ab.token, fx.workspaceB)).expect(200);
     });
@@ -215,6 +231,12 @@ describe('Workspace isolation (E1c)', () => {
       // 조직 관리자라도 공유 워크스페이스가 없으면 일반 API에서는 보이지 않는다(스펙 5.2)
       await request(app).get(`/users/${fx.users.b.id}`).set(auth(fx.users.orgAdmin.token)).expect(404);
 
+      // 게스트도 DM 이력이 있으면 보인다(공유 워크스페이스 여부보다 먼저 본다)
+      await request(app).get(`/users/${fx.users.b.id}`).set(auth(fx.users.ga.token)).expect(404);
+      const gdm = await prisma.directMessage.create({ data: { fromUserId: fx.users.ga.id, toUserId: fx.users.b.id, content: 'hi' } });
+      await request(app).get(`/users/${fx.users.b.id}`).set(auth(fx.users.ga.token)).expect(200);
+      await prisma.directMessage.delete({ where: { id: gdm.id } });
+
       // 기존 DM 대화가 있으면 계속 보인다(D3) -> 지우면 다시 404
       const dm = await prisma.directMessage.create({ data: { fromUserId: fx.users.b.id, toUserId: fx.users.a.id, content: 'hi' } });
       await request(app).get(`/users/${fx.users.b.id}`).set(auth(fx.users.a.token)).expect(200);
@@ -232,8 +254,8 @@ describe('Workspace isolation (E1c)', () => {
 
   // ─── /admin은 기본 워크스페이스 범위 ───────────────────────────
 
-  describe('/admin is scoped to the default workspace', () => {
-    it('hides channels, users, invites and webhooks of other workspaces', async () => {
+  describe('/admin scopes', () => {
+    it('hides channels, users, invites and webhooks of other workspaces (current workspace = default)', async () => {
       const admin = await defaultAdmin('iso-admin@example.com');
       const own = await request(app).post('/channels').set(auth(admin.token)).send({ name: 'general' });
       expect(own.status).toBe(201); // A·B에도 general이 있지만 기본 워크스페이스에서는 처음이다
@@ -251,8 +273,6 @@ describe('Workspace isolation (E1c)', () => {
 
       for (const res of [
         await request(app).patch(`/admin/users/${fx.users.b.id}`).set(auth(admin.token)).send({ role: 'GUEST' }),
-        await request(app).post(`/admin/users/${fx.users.b.id}/deactivate`).set(auth(admin.token)),
-        await request(app).post(`/admin/users/${fx.users.b.id}/force-logout`).set(auth(admin.token)),
         await request(app).post(`/admin/channels/${fx.channels.bPublic}/archive`).set(auth(admin.token)),
         await request(app).patch(`/admin/channels/${fx.channels.bPublic}`).set(auth(admin.token)).send({ name: 'x' }),
         await request(app).delete(`/admin/channels/${fx.channels.bPublic}`).set(auth(admin.token)),
@@ -263,7 +283,7 @@ describe('Workspace isolation (E1c)', () => {
         expect(res.status).toBe(404);
       }
       expect(await prisma.channel.findUnique({ where: { id: fx.channels.bPublic }, select: { archivedAt: true } })).toEqual({ archivedAt: null });
-      expect((await prisma.user.findUnique({ where: { id: fx.users.b.id } }))?.deactivatedAt).toBeNull();
+      expect((await prisma.user.findUnique({ where: { id: fx.users.b.id }, select: { role: true } }))?.role).toBe('MEMBER');
 
       // 기본 워크스페이스 채널에 다른 워크스페이스 사람은 넣을 수 없다
       const addB = await request(app).post(`/admin/channels/${own.body.id}/members`).set(auth(admin.token)).send({ userId: fx.users.b.id });
@@ -284,12 +304,82 @@ describe('Workspace isolation (E1c)', () => {
       await request(app).delete(`/webhooks/${hook.id}`).set(auth(admin.token)).expect(404);
     });
 
-    it('refuses an org admin who is not a default workspace member', async () => {
-      // orgAdmin은 User.role이 ADMIN이지만 기본 워크스페이스 멤버가 아니다. 조직 단위 관리는 /org
+    it('refuses default workspace user management to an org admin who is not a default workspace member', async () => {
+      // orgAdmin은 User.role이 ADMIN이지만 기본 워크스페이스 멤버가 아니다. 기본 워크스페이스 역할 관리는 못 한다
       const res = await request(app).get('/admin/users').set(auth(fx.users.orgAdmin.token));
       expect(res.status).toBe(403);
       expect(res.body.code).toBe('ADMIN_REQUIRED');
+      await request(app).patch(`/admin/users/${fx.users.a.id}`).set(auth(fx.users.orgAdmin.token)).send({ role: 'GUEST' }).expect(403);
       await request(app).get('/org/workspaces').set(auth(fx.users.orgAdmin.token)).expect(200);
+    });
+
+    it('lets an org admin manage accounts of any user in the organization (deactivate -> reactivate, sessions, force logout)', async () => {
+      // b는 워크스페이스 B에만 있다. orgAdmin은 기본 워크스페이스 멤버가 아니다. 계정 단위 작업은 조직 단위다
+      for (let round = 0; round < 2; round++) {
+        await request(app).post(`/admin/users/${fx.users.b.id}/deactivate`).set(auth(fx.users.orgAdmin.token)).expect(200);
+        expect((await prisma.user.findUnique({ where: { id: fx.users.b.id } }))?.deactivatedAt).not.toBeNull();
+        await request(app).post(`/admin/users/${fx.users.b.id}/reactivate`).set(auth(fx.users.orgAdmin.token)).expect(200);
+        expect((await prisma.user.findUnique({ where: { id: fx.users.b.id } }))?.deactivatedAt).toBeNull();
+      }
+      await request(app).get(`/admin/users/${fx.users.b.id}/sessions`).set(auth(fx.users.orgAdmin.token)).expect(200);
+      await request(app).delete(`/admin/users/${fx.users.b.id}/sessions`).set(auth(fx.users.orgAdmin.token)).expect(200);
+      await request(app).post(`/admin/users/${fx.users.b.id}/force-logout`).set(auth(fx.users.orgAdmin.token)).expect(200);
+      // 일반 워크스페이스 관리자(bOwner, 조직 역할 MEMBER)는 계정 단위 작업을 못 한다
+      await request(app).post(`/admin/users/${fx.users.b.id}/deactivate`).set(auth(fx.users.bOwner.token)).expect(403);
+      // 조직 관리자라도 자기보다 높은 조직 역할은 못 건드린다
+      const owner = await createFixtureUser('iso-org-owner@example.com', 'Org Owner');
+      await setUserRole(prisma, owner.id, 'OWNER', { joinDefaultWorkspace: false });
+      await request(app).post(`/admin/users/${owner.id}/deactivate`).set(auth(fx.users.orgAdmin.token)).expect(403);
+    });
+
+    it('lets an org owner outside the default workspace change security settings', async () => {
+      const owner = await createFixtureUser('iso-org-owner2@example.com', 'Org Owner');
+      await setUserRole(prisma, owner.id, 'OWNER', { joinDefaultWorkspace: false });
+      await prisma.workspaceMember.create({ data: { workspaceId: fx.workspaceA, userId: owner.id, role: 'MEMBER' } });
+      await request(app).get('/admin/settings/security').set(auth(owner.token)).expect(200);
+      await request(app).patch('/admin/settings/security').set(auth(owner.token)).send({ allowOAuthApps: false }).expect(200);
+      await request(app).patch('/admin/settings/security').set(auth(owner.token)).send({ allowOAuthApps: true }).expect(200);
+      // 일반 멤버는 못 한다
+      await request(app).get('/admin/settings/security').set(auth(fx.users.a.token)).expect(403);
+    });
+
+    it('a workspace OWNER manages channels, invites and webhooks of that workspace with its header, not of another', async () => {
+      const h = inWs(fx.users.bOwner.token, fx.workspaceB);
+      // 채널: 목록 -> 이름 변경 -> 보관 -> 보관 해제
+      const list = await request(app).get('/admin/channels').set(h).expect(200);
+      expect(list.body.map((c: { id: number }) => c.id)).toEqual(expect.arrayContaining([fx.channels.bPublic, fx.channels.bGeneral]));
+      expect(list.body.map((c: { id: number }) => c.id)).not.toContain(fx.channels.aPublic);
+      await request(app).patch(`/admin/channels/${fx.channels.bPublic}`).set(h).send({ name: 'isob-renamed' }).expect(200);
+      await request(app).post(`/admin/channels/${fx.channels.bPublic}/archive`).set(h).expect(200);
+      await request(app).post(`/admin/channels/${fx.channels.bPublic}/unarchive`).set(h).expect(200);
+      await request(app).get(`/admin/channels/${fx.channels.aPublic}/members`).set(h).expect(404);
+      // 초대: 만들기 -> 목록 -> 지우기 -> 목록에서 사라짐
+      const inv = await request(app).post('/admin/invites').set(h).send({ role: 'MEMBER' }).expect(201);
+      expect((await prisma.inviteLink.findUnique({ where: { id: inv.body.id } }))?.workspaceId).toBe(fx.workspaceB);
+      const invites = await request(app).get('/admin/invites').set(h).expect(200);
+      expect(invites.body.map((i: { id: number }) => i.id)).toEqual([inv.body.id]);
+      await request(app).delete(`/admin/invites/${inv.body.id}`).set(h).expect(200);
+      expect((await request(app).get('/admin/invites').set(h)).body).toEqual([]);
+      // 웹훅: 만들기 -> 목록 -> 지우기
+      const hook = await request(app).post('/webhooks').set(h).send({ name: 'b-hook', channelId: fx.channels.bPublic }).expect(201);
+      const hooks = await request(app).get('/webhooks').set(h).expect(200);
+      expect(hooks.body.map((x: { id: number }) => x.id)).toEqual([hook.body.id]);
+      await request(app).post('/webhooks').set(h).send({ name: 'a-hook', channelId: fx.channels.aPublic }).expect(404);
+      await request(app).delete(`/webhooks/${hook.body.id}`).set(h).expect(200);
+
+      // ab는 B의 ADMIN, A의 MEMBER: 헤더 A로는 관리 권한이 없다(헤더 B 권한이 A로 넘어가지 않는다)
+      await prisma.workspaceMember.update({ where: { workspaceId_userId: { workspaceId: fx.workspaceB, userId: fx.users.ab.id } }, data: { role: 'ADMIN' } });
+      await request(app).get('/admin/channels').set(inWs(fx.users.ab.token, fx.workspaceB)).expect(200);
+      for (const res of [
+        await request(app).get('/admin/channels').set(inWs(fx.users.ab.token, fx.workspaceA)),
+        await request(app).get('/admin/invites').set(inWs(fx.users.ab.token, fx.workspaceA)),
+        await request(app).get('/webhooks').set(inWs(fx.users.ab.token, fx.workspaceA)),
+        await request(app).post(`/admin/channels/${fx.channels.aPublic}/archive`).set(inWs(fx.users.ab.token, fx.workspaceA)),
+      ]) {
+        expect(res.status).toBe(403);
+      }
+      // 기본 워크스페이스 역할(req.user.role)은 그대로다
+      await request(app).get('/admin/users').set(inWs(fx.users.ab.token, fx.workspaceB)).expect(403);
     });
   });
 
@@ -309,6 +399,42 @@ describe('Workspace isolation (E1c)', () => {
       // 다시 참여해도 지운 채널 멤버십은 저절로 돌아오지 않는다(기본 채널만 다시 가입)
       await request(app).post(`/workspaces/${fx.workspaceB}/members`).set(auth(fx.users.bOwner.token)).send({ userId: fx.users.ab.id }).expect(201);
       expect(await prisma.channelMember.findUnique({ where: { userId_channelId: { userId: fx.users.ab.id, channelId: fx.channels.bPublic } } })).toBeNull();
+    });
+
+    it('leaving deletes a private channel left with no members (same as the last member leaving), keeps archived ones', async () => {
+      const make = async (name: string, archived: boolean) => {
+        const res = await request(app).post('/channels').set(inWs(fx.users.ab.token, fx.workspaceB)).send({ name, isPrivate: true }).expect(201);
+        if (archived) await prisma.channel.update({ where: { id: res.body.id }, data: { archivedAt: new Date() } });
+        return res.body.id as number;
+      };
+      const solo = await make('isob-solo', false);
+      const archived = await make('isob-archived', true);
+      // b도 있는 비공개 채널은 남는다
+      const pair = await make('isob-pair', false);
+      await prisma.channelMember.create({ data: { channelId: pair, userId: fx.users.b.id } });
+
+      await request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.ab.token)).expect(200);
+      expect(await prisma.channel.findUnique({ where: { id: solo } })).toBeNull();
+      expect(await prisma.channel.findUnique({ where: { id: archived } })).not.toBeNull();
+      expect(await prisma.channel.findUnique({ where: { id: pair } })).not.toBeNull();
+      expect(await prisma.channelMember.count({ where: { channelId: pair } })).toBe(1);
+    });
+
+    it('fills default channel slots once under concurrent sign-ups (workspace lock)', async () => {
+      await prisma.channel.deleteMany({ where: { workspaceId: DEFAULT_WORKSPACE_ID } });
+      const users = await Promise.all([1, 2, 3, 4, 5].map((i) => createFixtureUser(`iso-race${i}@example.com`, `Race ${i}`)));
+      const results = await Promise.all(users.map((u) => joinDefaultChannels(prisma, u.id)));
+      const generals = await prisma.channel.findMany({ where: { workspaceId: DEFAULT_WORKSPACE_ID, name: 'general' }, select: { id: true } });
+      const randoms = await prisma.channel.findMany({ where: { workspaceId: DEFAULT_WORKSPACE_ID, name: 'random' }, select: { id: true } });
+      expect(generals).toHaveLength(1);
+      expect(randoms).toHaveLength(1);
+      // 호스트 행이 없는 채널(경쟁에서 생긴 고아)이 없고, 모두 같은 두 채널에 들어갔다
+      expect(await prisma.channel.count({ where: { workspaces: { none: {} } } })).toBe(0);
+      for (const ids of results) expect([...ids].sort()).toEqual([generals[0].id, randoms[0].id].sort());
+      // 사용자가 같은 이름으로 동시에 만들어도 워크스페이스 안에서는 하나만 생긴다
+      const admin = await defaultAdmin('iso-race-admin@example.com');
+      const creates = await Promise.all([1, 2, 3].map(() => request(app).post('/channels').set(auth(admin.token)).send({ name: 'race-room' })));
+      expect(creates.map((r) => r.status).sort()).toEqual([201, 400, 400]);
     });
 
     it('POST /org/workspaces creates a default general channel with the creator in it', async () => {
@@ -415,6 +541,43 @@ describe('Channel events stay in their workspace (E1c)', () => {
     await Promise.all([abNext, ownerNext2]);
     expect(abGot.map((p) => (p as { id: number }).id)).toEqual([fx.channels.aPublic, fx.channels.bPublic]);
     expect(ownerGot.map((p) => (p as { id: number }).id)).toEqual([fx.channels.aPublic, fx.channels.bPublic]);
+  });
+
+  it('public channel events skip guests of the workspace who are not in the channel', async () => {
+    const a = await connect(fx.users.a.token);
+    const ga = await connect(fx.users.ga.token);
+    const gaGot = record(ga, 'channel:updated');
+    const aNext = next(a, 'channel:updated');
+    await request(app).patch(`/channels/${fx.channels.aPublic}`).set(auth(fx.users.aAdmin.token)).send({ topic: 'members only' }).expect(200);
+    await aNext;
+    // 게스트가 채널 멤버가 되면 받는다. 그 전에 받은 것이 없어야 한다
+    await prisma.channelMember.create({ data: { channelId: fx.channels.aPublic, userId: fx.users.ga.id } });
+    const gaNext = next(ga, 'channel:updated');
+    await request(app).patch(`/channels/${fx.channels.aPublic}`).set(auth(fx.users.aAdmin.token)).send({ topic: 'guest member too' }).expect(200);
+    expect(await gaNext).toMatchObject({ topic: 'guest member too' });
+    expect(gaGot.map((p) => (p as { topic: string }).topic)).toEqual(['guest member too']);
+  });
+
+  it('a role change moves the socket in and out of the non-guest room', async () => {
+    const ga = await connect(fx.users.ga.token);
+    const room = `ws:${fx.workspaceA}:members`;
+    const before = io.sockets.adapter.rooms.get(room)?.size ?? 0;
+    const promoted = next(ga, 'workspace:member:updated');
+    await request(app).patch(`/workspaces/${fx.workspaceA}/members/${fx.users.ga.id}`).set(auth(fx.users.aAdmin.token)).send({ role: 'MEMBER' }).expect(200);
+    await promoted;
+    expect(io.sockets.adapter.rooms.get(room)?.size).toBe(before + 1);
+    const demoted = next(ga, 'workspace:member:updated');
+    await request(app).patch(`/workspaces/${fx.workspaceA}/members/${fx.users.ga.id}`).set(auth(fx.users.aAdmin.token)).send({ role: 'GUEST' }).expect(200);
+    await demoted;
+    expect(io.sockets.adapter.rooms.get(room)?.size ?? 0).toBe(before);
+  });
+
+  it('leaving deletes an orphaned private channel and tells the leaver with channel:deleted', async () => {
+    const created = await request(app).post('/channels').set(inWs(fx.users.ab.token, fx.workspaceB)).send({ name: 'isy-solo', isPrivate: true }).expect(201);
+    const ab = await connect(fx.users.ab.token);
+    const deleted = next(ab, 'channel:deleted');
+    await request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.ab.token)).expect(200);
+    expect(await deleted).toEqual({ channelId: created.body.id, workspaceIds: [fx.workspaceB] });
   });
 
   it('archive, unarchive and delete events from /admin do not reach other workspaces', async () => {

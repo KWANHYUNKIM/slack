@@ -17,7 +17,7 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 | 이벤트 | 방향 | 대상 room | payload | 시점 |
 |---|---|---|---|---|
-| `channel:updated` | 서버 -> 클라이언트 | 공개 채널은 채널이 보이는 워크스페이스의 `ws:<id>`(E1c, 전체 방송 없음), 비공개 채널은 멤버 각자의 `user:<id>` | `{ id, name, topic, description, workspaceIds }` | `PATCH /channels/:id` 또는 `PATCH /admin/channels/:id`로 이름·주제·설명·공개 여부가 바뀌었을 때(변경 없으면 보내지 않음) |
+| `channel:updated` | 서버 -> 클라이언트 | 공개 채널은 채널이 보이는 워크스페이스의 비게스트 room `ws:<id>:members`와 채널 멤버 각자의 `user:<id>`(E1c, 전체 방송 없음), 비공개 채널은 멤버 각자의 `user:<id>` | `{ id, name, topic, description, workspaceIds }` | `PATCH /channels/:id` 또는 `PATCH /admin/channels/:id`로 이름·주제·설명·공개 여부가 바뀌었을 때(변경 없으면 보내지 않음) |
 | `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'channel' \| 'dm', id, isStarred }` | `PUT/DELETE /channels/:id/star`, `/dms/:userId/star` (다른 탭 동기화) |
 
 ## 그룹 DM - 파트 02
@@ -78,14 +78,17 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 ### 채널 이벤트의 워크스페이스 범위 - 파트 E1c
 
-`io.emit` 전체 방송을 없앴다. 채널 이벤트는 바뀐 뒤(삭제는 바뀌기 전) 상태로 대상을 정한다: 공개 채널은 `ChannelWorkspace`의 워크스페이스마다 `ws:<id>`(배열 대상이라 여러 워크스페이스 멤버도 한 번만 받는다), 비공개 채널은 멤버 각자의 `user:<id>`. payload에 `workspaceIds: number[]`(채널이 보이는 워크스페이스)를 붙인다. 클라이언트는 현재 워크스페이스가 아니면 사이드바 목록만 갱신한다.
+`io.emit` 전체 방송을 없앴다. 채널 이벤트는 바뀐 뒤(삭제는 바뀌기 전) 상태로 대상을 정한다: 공개 채널은 `ChannelWorkspace`의 워크스페이스마다 비게스트 room `ws:<id>:members`와 채널 멤버(게스트 멤버 포함) 각자의 `user:<id>`(배열 대상이라 중복 수신이 없다), 비공개 채널은 멤버 각자의 `user:<id>`. 게스트는 자기가 속하지 않은 공개 채널의 이벤트를 받지 않는다.
+
+`ws:<id>:members`: 소켓 연결 때 게스트가 아닌 활성 멤버십마다 들어간다. 참여(`workspace:member:added`)·역할 변경(`workspace:member:updated`) 때 역할에 맞춰 넣거나 빼고, 제거·나가기·보관 때 `ws:<id>`와 함께 뺀다. 보관 해제 때 비게스트 멤버를 다시 넣는다. 기본 워크스페이스 역할 변경은 소켓을 끊으므로 다시 연결할 때 맞춰진다. payload에 `workspaceIds: number[]`(채널이 보이는 워크스페이스)를 붙인다. 클라이언트는 현재 워크스페이스가 아니면 사이드바 목록만 갱신한다.
 
 | 이벤트 | 대상 room | payload | 시점 |
 |---|---|---|---|
 | `channel:updated` | 위 규칙 | `{ id, name, topic, description, workspaceIds }` | `PATCH /channels/:id`, `PATCH /admin/channels/:id` |
-| `channel:archived` / `channel:unarchived` | 위 규칙 | `{ channelId, name, workspaceIds }` | `POST /admin/channels/:id/archive`·`unarchive` |
+| `channel:archived` / `channel:unarchived` | 위 규칙 | `{ channelId, name, workspaceIds }` | `POST /admin/channels/:id/archive`·`unarchive`(현재 워크스페이스의 채널) |
 | `channel:deleted` | 위 규칙(삭제 전 계산) | `{ channelId, workspaceIds }` | `DELETE /admin/channels/:id`. 보낸 뒤 `channel:<id>` room을 비운다 |
 | `channel:member-left` | `channel:<id>` | `{ channelId, userId, memberCount }` | 기존 시점에 더해 워크스페이스 제거·나가기로 그 워크스페이스에만 보이던 채널의 멤버십을 잃었을 때(채널마다 하나). 대상 소켓은 `channel:<id>` room에서 빠진다 |
+| `channel:deleted` | `user:<나간 사람>` | `{ channelId, workspaceIds }` | 워크스페이스 제거·나가기로 멤버가 아무도 남지 않은 비공개 채널을 지웠을 때(채널 나가기의 마지막 멤버 규칙과 같다. 보관·법적 보존 채널은 남긴다). 보낸 뒤 `channel:<id>` room을 비운다 |
 
 ## 기존 이벤트 (slawk에서 이어받음)
 
