@@ -27,6 +27,8 @@
 | 09:00 | 2 | planner-2 | sonnet | Slack 기술 구조 공개 문서 조사 | 완료 | 58,267 |
 | 09:13 | 2 | planner-1 | opus | REA로 Slack 데스크톱 앱 분석, REA 평가 | 완료 | 190,958 |
 | 09:23 | 2 | dev-1 | sonnet | fix/baseline-failing-tests (원인 분류 필요, 디버깅이라 sonnet) | 진행 중 | |
+| 09:36 | 3 | planner-2 | sonnet | 04, 05 스펙 + 테스트 채널 CRUD 실습(사용자 08:59 지시를 명시) | 진행 중 | |
+| 09:36 | 3 | dev-3 | sonnet | 프런트 의존성 보안 업그레이드(백엔드는 dev-1과 충돌해 분리) | 진행 중 | |
 | 09:23 | 2 | dev-2 | haiku | ci.yml (정형화된 설정 작업이라 haiku) | 완료, PR #3 | 72,961 |
 
 ## 총괄 실행 명령
@@ -49,3 +51,7 @@
 | 09:28 | `git worktree add ... origin/main` 후 커밋 | 작업 폴더 브랜치를 바꾸지 않고 main 기준 PR 만들기 | 이후 PR도 이 방식 |
 | 09:32 | `npx rea-agents@6.8.0 doctor --client claude_code --json` | REA MCP 경로 확인 | 등록은 됨, 현재 세션에는 MCP 도구 없음(재시작 필요) |
 | 09:36 | 결정 | REA 판정은 잠정 '낮음', 재시작 후 run2로 확정. 소켓 쓰기 경로를 REST로 바꾸는 refactor 파트 추가 | board |
+| 09:35 | 사용자: 계속 진행 | | |
+| 09:39 | 리뷰: dev-3 lockfile diff | 바뀐 것은 런타임 패키지 7개뿐, TS/ESLint 그대로라 lint·tsc 실패는 원래 있던 문제로 판단. 프런트 타입·린트 수정 파트 신설 | PR #4 |
+| 09:39 | 결정: quill 2.0.2 다운그레이드 안 함 | audit 숫자만 줄이는 조치라서. HTML export 미사용 규칙 유지 | |
+| 09:39 | 리뷰: planner-2 04·05 스펙 | 스키마 파트 01→04/05 순서로 직렬. 테스트 채널이 확정되지 않아 쓰기 실습은 보류. 사용자에게 테스트 채널 확정 요청 | |
