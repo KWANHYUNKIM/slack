@@ -208,12 +208,10 @@ test.describe('E2E smoke', () => {
     await expect(panel.getByText(plain)).toBeVisible();
     await expect(page.locator(MSG).filter({ hasText: plain })).toHaveCount(0);
 
-    // 채널에도 보내기
+    // 채널에도 보내기: 앞선 답글의 전송 응답이 와도 체크 상태가 풀리지 않아야 한다
     const also = `also reply ${Date.now()}`;
-    // 앞선 답글의 전송 응답이 체크 상태를 되돌릴 수 있어(소켓 응답이 API 응답보다 먼저 올 때) 반복해 확인한다
-    await expect(async () => {
-      await panel.getByTestId('thread-also-send').check({ timeout: 2_000 });
-    }).toPass();
+    await panel.getByTestId('thread-also-send').check();
+    await expect(panel.getByTestId('thread-also-send')).toBeChecked();
     await panel.locator('.ql-editor').click();
     await page.keyboard.type(also);
     await page.keyboard.press('Enter');
@@ -485,9 +483,15 @@ test.describe('E2E smoke', () => {
 
   test('관리자 화면 탭이 열리고 DLP 규칙 CRUD와 차단 문구(ko)가 입력창에 번역돼 보인다', async ({ page }) => {
     await login(page, 'alice@slawk.dev', TEST_PASSWORD);
-    // 로그인 직후 마지막 채널로 이동하는 동작과 겹치지 않도록 주소로 바로 들어간다(새로고침 경로도 함께 확인)
-    await page.goto('/admin');
+    // 로그인 직후 사이드바의 관리자 아이콘을 누른다(마지막 채널로 이동하는 동작이 관리자 화면을 덮으면 실패)
+    await page.getByTestId('nav-item-admin').click();
+    await expect(page).toHaveURL(/\/admin$/);
     const main = page.locator('main');
+    await expect(main.getByText(tr('en', 'admin', 'page.title'))).toBeVisible();
+    // 새로고침 경로도 확인한다: 검색 화면을 쿼리스트링과 함께 새로고침한 뒤 관리자 주소를 직접 연다
+    await page.goto('/search?q=smoke');
+    await expect(page.getByTestId('search-page')).toBeVisible();
+    await page.goto('/admin');
     await expect(main.getByText(tr('en', 'admin', 'page.title'))).toBeVisible();
 
     // 탭 열림: 보존, 보안, 법적 보존, DLP
@@ -536,7 +540,9 @@ test.describe('E2E smoke', () => {
 
     // Delete: 영어로 돌아가 규칙을 지운다
     await page.evaluate(() => localStorage.setItem('locale', 'en'));
-    await page.goto('/admin');
+    await page.goto('/');
+    await expect(page.getByTestId('sidebar')).toBeVisible();
+    await page.getByTestId('nav-item-admin').click();
     await main.getByRole('button', { name: tr('en', 'admin', 'page.tabs.dlp') }).click();
     await main.getByRole('button', { name: new RegExp(ruleName) }).last().click();
     await page.getByRole('button', { name: tr('en', 'admin', 'dlp.delete'), exact: true }).click();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessagesSquare, Hash, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useThreadStore } from '@/stores/useThreadStore';
+import { shouldClearAlsoSend } from '@/lib/alsoSend';
 
 function ThreadLine({ msg }: { msg: ApiMessage }) {
   const { t } = useTranslation('messages');
@@ -37,6 +38,8 @@ function ThreadCard({ item }: { item: ApiThreadItem }) {
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const [alsoSend, setAlsoSend] = useState(false);
+  // 사용자가 체크를 바꾼 횟수. 전송 응답이 올 때 그사이 바뀌었는지 확인하는 데 쓴다
+  const alsoSendVersion = useRef(0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(false);
   const unread = item.unreadCount > 0;
@@ -48,12 +51,14 @@ function ThreadCard({ item }: { item: ApiThreadItem }) {
   const send = async () => {
     const content = text.trim();
     if (!content || sending) return;
+    const sentAlsoSend = alsoSend;
+    const sentAlsoSendVersion = alsoSendVersion.current;
     setSending(true);
     setError(false);
     try {
-      await replyToMessage(item.parent.id, content, undefined, alsoSend);
+      await replyToMessage(item.parent.id, content, undefined, sentAlsoSend);
       setText('');
-      setAlsoSend(false);
+      if (shouldClearAlsoSend(sentAlsoSendVersion, alsoSendVersion.current)) setAlsoSend(false);
       // thread:updated가 목록을 갱신한다. 이벤트가 늦어도 보이게 앞쪽만 직접 한 번 더 합친다.
       void useThreadStore.getState().refreshHead();
     } catch {
@@ -115,7 +120,10 @@ function ThreadCard({ item }: { item: ApiThreadItem }) {
               type="checkbox"
               data-testid="thread-card-also-send"
               checked={alsoSend}
-              onChange={(e) => setAlsoSend(e.target.checked)}
+              onChange={(e) => {
+                alsoSendVersion.current += 1;
+                setAlsoSend(e.target.checked);
+              }}
             />
             {t('threads.alsoSendToChannel')}
           </label>

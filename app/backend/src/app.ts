@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import dotenv from 'dotenv';
+import { SPA_ROUTES, createSpaNavigationMiddleware, sendIndex } from './spaRoutes.js';
 
 dotenv.config();
 
@@ -74,6 +75,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: 'credentialless' as any,
   hsts: secureTransport ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
 }));
+// 프로덕션 프런트엔드 빌드 위치(SPA 응답과 정적 파일이 함께 쓴다)
+const frontendDist = path.join(process.cwd(), 'public');
+
 const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173');
 app.use(cors({ origin: corsOrigin as string | boolean }));
 app.use(compression());
@@ -127,21 +131,7 @@ app.use((req, res, next) => {
 // In production, intercept browser navigations (Accept: text/html) for SPA routes
 // that collide with API routes (e.g. /files, /admin) and serve index.html
 if (process.env.NODE_ENV === 'production') {
-  const spaRoutes = ['/files', '/admin', '/dms', '/activity', '/threads'];
-  const frontendDist = path.join(process.cwd(), 'public');
-  app.use(spaRoutes, (req, res, next) => {
-    // Skip API calls: they carry Authorization or explicitly request JSON
-    const isApiCall = req.headers.authorization || req.headers.accept === 'application/json';
-    if (!isApiCall && req.method === 'GET' && req.accepts('html') && !req.path.includes('.')) {
-      // Only for top-level navigation (no sub-paths like /files/:id/download)
-      if (req.originalUrl === req.baseUrl || req.originalUrl === req.baseUrl + '/') {
-        res.setHeader('Cache-Control', 'no-cache');
-        res.sendFile(path.join(frontendDist, 'index.html'));
-        return;
-      }
-    }
-    next();
-  });
+  app.use(SPA_ROUTES, createSpaNavigationMiddleware(frontendDist));
 }
 
 // Routes
@@ -192,11 +182,9 @@ app.get('/health', (req, res) => {
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-  const frontendDist = path.join(process.cwd(), 'public');
   app.use(express.static(frontendDist, { dotfiles: 'deny' }));
   app.get('/{*splat}', (req, res) => {
-    res.setHeader('Cache-Control', 'no-cache');
-    res.sendFile(path.join(frontendDist, 'index.html'));
+    sendIndex(res, frontendDist);
   });
 }
 
