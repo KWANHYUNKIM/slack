@@ -1120,7 +1120,21 @@ export interface AuditLogEntry {
   targetName?: string | null;
   details?: string | null;
   createdAt: string;
-  actor: { id: number; name: string; avatar?: string | null };
+  actor: { id: number; name: string; avatar?: string | null } | null;
+}
+
+export interface AuditLogFilter {
+  action: string[];
+  actorId?: number;
+  targetType?: string;
+  /** ISO 8601 (UTC 기준으로 해석된다) */
+  from?: string;
+  to?: string;
+}
+
+export interface AuditLogPage {
+  items: AuditLogEntry[];
+  nextCursor: number | null;
 }
 
 export interface AdminInvite {
@@ -1190,8 +1204,36 @@ export function adminRemoveChannelMember(channelId: number, userId: number) {
   });
 }
 
-export function adminGetAuditLog(limit = 50, offset = 0) {
-  return request<{ entries: AuditLogEntry[]; total: number }>(`/admin/audit-log?limit=${limit}&offset=${offset}`);
+function auditQuery(filter: AuditLogFilter): URLSearchParams {
+  const q = new URLSearchParams();
+  for (const a of filter.action) q.append('action', a);
+  if (filter.actorId) q.set('actorId', String(filter.actorId));
+  if (filter.targetType) q.set('targetType', filter.targetType);
+  if (filter.from) q.set('from', filter.from);
+  if (filter.to) q.set('to', filter.to);
+  return q;
+}
+
+export function adminListAuditLogs(filter: AuditLogFilter, cursor?: number | null, limit = 50) {
+  const q = auditQuery(filter);
+  q.set('limit', String(limit));
+  if (cursor) q.set('cursor', String(cursor));
+  return request<AuditLogPage>(`/admin/audit-logs?${q.toString()}`);
+}
+
+/** 같은 필터로 내보낸 파일을 Blob으로 받는다. 파일 응답이라 request()를 쓰지 않는다. */
+export async function adminExportAuditLogs(filter: AuditLogFilter, format: 'csv' | 'json'): Promise<Blob> {
+  const q = auditQuery(filter);
+  q.set('format', format);
+  const token = localStorage.getItem('token');
+  const res = await fetch(`/admin/audit-logs/export?${q.toString()}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: t('errors:client.requestFailed') }));
+    throw new ApiError(typeof body.error === 'string' ? body.error : t('errors:client.requestFailed'), res.status, body.code, body.reason);
+  }
+  return res.blob();
 }
 
 export function adminGetInvites() {

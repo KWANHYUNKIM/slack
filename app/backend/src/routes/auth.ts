@@ -12,6 +12,7 @@ import { kickUser } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
+import { writeAuditLog, hashEmailForAudit } from '../utils/auditLog.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -194,10 +195,14 @@ router.post('/login', async (req: Request, res: Response) => {
         current.lastAttempt = now;
         if (current.count >= MAX_FAILED_ATTEMPTS) {
           current.lockedUntil = now + LOCKOUT_DURATION_MS;
+          // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
+          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', details: `emailHash=${hashEmailForAudit(email)}` });
           current.count = 0;
         }
         loginAttempts.set(email, current);
       }
+      // 이메일 원문은 남기지 않고 해시만 남긴다(사용자를 특정할 수 없으니 actorId는 비운다)
+      void writeAuditLog({ action: 'auth.login_failed', actorId: null, targetType: 'user', details: `reason=unknown_user; emailHash=${hashEmailForAudit(email)}` });
       res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
@@ -205,6 +210,7 @@ router.post('/login', async (req: Request, res: Response) => {
     // Block deactivated accounts — still run bcrypt to prevent timing enumeration
     const validPassword = await bcrypt.compare(password, user.password);
     if (user.deactivatedAt) {
+      void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: 'reason=deactivated' });
       res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
@@ -216,16 +222,20 @@ router.post('/login', async (req: Request, res: Response) => {
         current.lastAttempt = now;
         if (current.count >= MAX_FAILED_ATTEMPTS) {
           current.lockedUntil = now + LOCKOUT_DURATION_MS;
+          // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
+          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', details: `emailHash=${hashEmailForAudit(email)}` });
           current.count = 0;
         }
         loginAttempts.set(email, current);
       }
+      void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: 'reason=bad_password' });
       res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
 
     // Clear failed attempts on successful login
     loginAttempts.delete(email);
+    void writeAuditLog({ action: 'auth.login', actorId: user.id, targetType: 'user', targetId: user.id });
 
     const token = jwt.sign({ userId: user.id, tokenVersion: user.tokenVersion }, JWT_SECRET, {
       algorithm: 'HS256',
@@ -253,6 +263,13 @@ router.post('/login', async (req: Request, res: Response) => {
     logError('Login error', error);
     res.status(500).json({ error: 'Failed to login', code: ERR.INTERNAL_ERROR });
   }
+});
+
+// POST /auth/logout - 토큰은 상태가 없어서 서버가 끊는 것은 없다. 로그아웃 사실만 감사 로그에 남긴다.
+router.post('/logout', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  await writeAuditLog({ action: 'auth.logout', actorId: userId, targetType: 'user', targetId: userId });
+  res.json({ message: 'Logged out' });
 });
 
 // POST /auth/change-password
@@ -345,6 +362,8 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
       algorithm: 'HS256',
       expiresIn: '7d',
     });
+
+    void writeAuditLog({ action: 'auth.password_changed', actorId: userId, targetType: 'user', targetId: userId });
 
     res.json({ message: 'Password changed successfully', token });
   } catch (error) {

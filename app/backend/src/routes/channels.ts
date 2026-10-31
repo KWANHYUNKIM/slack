@@ -71,6 +71,15 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       },
     });
 
+    void writeAuditLog({
+      action: 'channel.created',
+      actorId: userId,
+      targetType: 'channel',
+      targetId: channel.id,
+      targetName: channel.name,
+      details: isPrivate ? 'private' : 'public',
+    });
+
     res.status(201).json(channel);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -572,6 +581,16 @@ router.post('/:id/members', authMiddleware, requireChannelMembership, async (req
         memberCount,
       });
     }
+
+    // 관리자 경로(/admin/channels/:id/members)와 같은 action 이름으로 기록한다
+    void writeAuditLog({
+      action: 'channel.member_added',
+      actorId: req.user!.userId,
+      targetType: 'channel',
+      targetId: channelId,
+      targetName: channel?.name,
+      details: `Added user ${userId} to channel`,
+    });
 
     res.json({ message: 'Member added successfully' });
   } catch (error) {
