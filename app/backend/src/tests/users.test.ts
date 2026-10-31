@@ -68,23 +68,38 @@ describe('User Profiles', () => {
       expect(res.body.bio).toBe('This is my bio');
     });
 
-    it('should update user avatar', async () => {
-      const res = await request(app)
-        .patch('/users/me')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ avatar: 'https://example.com/avatar.png' });
-
-      expect(res.status).toBe(200);
-      expect(res.body.avatar).toBe('https://example.com/avatar.png');
+    it('should reject external avatar URLs (self-contained rule)', async () => {
+      for (const avatar of ['https://example.com/avatar.png', 'http://example.com/a.png', '//example.com/a.png', 'not-a-url', '/users/me/avatar/../../x']) {
+        const res = await request(app)
+          .patch('/users/me')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({ avatar });
+        expect(res.status).toBe(400);
+      }
     });
 
-    it('should validate avatar URL', async () => {
-      const res = await request(app)
+    it('should set, read, change, and clear a local avatar path', async () => {
+      const set = async (avatar: string | null) => request(app)
         .patch('/users/me')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ avatar: 'not-a-url' });
+        .send({ avatar });
+      const read = async () => (await request(app).get('/users/me').set('Authorization', `Bearer ${authToken}`)).body.avatar;
 
-      expect(res.status).toBe(400);
+      for (let i = 0; i < 2; i++) {
+        // Create
+        const created = await set('/users/me/avatar/first.png');
+        expect(created.status).toBe(200);
+        expect(created.body.avatar).toBe('/users/me/avatar/first.png');
+        // Read
+        expect(await read()).toBe('/users/me/avatar/first.png');
+        // Update
+        expect((await set('/users/me/avatar/second.png')).status).toBe(200);
+        expect(await read()).toBe('/users/me/avatar/second.png');
+        // Delete
+        const cleared = await set(null);
+        expect(cleared.status).toBe(200);
+        expect(await read()).toBeNull();
+      }
     });
 
     it('should validate status values', async () => {

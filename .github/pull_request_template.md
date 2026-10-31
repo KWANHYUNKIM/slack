@@ -24,6 +24,7 @@
 - [ ] 사용자 콘텐츠 렌더링 시 XSS 방지
 - [ ] Prisma raw 쿼리 없음 (있으면 파라미터 바인딩)
 - [ ] 새 의존성 없음 (있으면 이유, npm audit 결과, install script 여부)
+- [ ] 런타임에 외부 https 요청 없음 (CDN, 원격 JSON, 이미지, 폰트; check-external-urls.sh 통과)
 - [ ] 비밀 정보와 개인정보를 로그·코드에 남기지 않음
 
 ## REA 사용 여부

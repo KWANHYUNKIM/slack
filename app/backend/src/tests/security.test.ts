@@ -1090,45 +1090,36 @@ describe('Security - Input Validation', () => {
     });
   });
 
-  describe('CSP media-src scoping', () => {
-    it('should NOT allow the entire storage.googleapis.com domain in media-src', async () => {
-      // Any authenticated request will return the CSP header
-      const res = await request(app)
-        .get('/channels')
-        .set('Authorization', `Bearer ${authToken}`);
-
-      const csp = res.headers['content-security-policy'];
-      expect(csp).toBeDefined();
-
-      // media-src must NOT contain the bare domain (would allow any GCS bucket)
-      expect(csp).not.toMatch(/media-src[^;]*https:\/\/storage\.googleapis\.com[^/]/);
-
-      // If GCS_BUCKET_NAME is set, media-src should scope to that bucket only
-      // If not set, media-src should only allow 'self' and blob:
-      if (process.env.GCS_BUCKET_NAME) {
-        expect(csp).toContain(`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`);
-      }
-    });
-
-    it('should scope img-src and media-src consistently for GCS', async () => {
+  describe('CSP self-contained (no external origins)', () => {
+    it('should not allow any external https origin in img-src, media-src, or connect-src', async () => {
       const res = await request(app)
         .get('/channels')
         .set('Authorization', `Bearer ${authToken}`);
 
       const csp = res.headers['content-security-policy'] as string;
+      expect(csp).toBeDefined();
+      for (const name of ['img-src', 'media-src', 'connect-src', 'script-src', 'style-src', 'font-src']) {
+        const value = csp.match(new RegExp(`${name}\\s+([^;]+)`))?.[1] || '';
+        expect(value).not.toMatch(/https?:\/\//);
+      }
+      expect(csp).not.toMatch(/randomuser|googleapis/);
+      // 맨 ws:/wss:(임의 호스트 소켓)도 허용하지 않는다
+      expect(csp.match(/connect-src\s+([^;]+)/)?.[1]).toBe("'self'");
+    });
 
-      // Extract the GCS origins from img-src and media-src
-      const imgSrc = csp.match(/img-src\s+([^;]+)/)?.[1] || '';
-      const mediaSrc = csp.match(/media-src\s+([^;]+)/)?.[1] || '';
-
-      const imgGcs = imgSrc.match(/https:\/\/storage\.googleapis\.com\S*/g) || [];
-      const mediaGcs = mediaSrc.match(/https:\/\/storage\.googleapis\.com\S*/g) || [];
-
-      // Both should either be empty (no GCS) or scoped to the same bucket
-      // Neither should contain the bare domain without a bucket path
-      for (const origin of [...imgGcs, ...mediaGcs]) {
-        // Each GCS origin must have a bucket path (not just the bare domain)
-        expect(origin).toMatch(/https:\/\/storage\.googleapis\.com\/.+/);
+    it('should not add a GCS origin even when GCS_BUCKET_NAME is set', async () => {
+      // CSP는 app 생성 시 한 번 계산되므로 환경변수를 켠 채 app을 새로 import해서 확인한다
+      process.env.GCS_BUCKET_NAME = 'test-bucket';
+      try {
+        const specifier = '../app.js?gcs-csp'; // 쿼리로 모듈 캐시를 우회한다
+        const fresh = (await import(specifier)) as { default: typeof app };
+        const res = await request(fresh.default).get('/health');
+        const csp = res.headers['content-security-policy'] as string;
+        expect(csp).toBeDefined();
+        expect(csp).not.toContain('storage.googleapis.com');
+        expect(csp).not.toContain('test-bucket');
+      } finally {
+        delete process.env.GCS_BUCKET_NAME;
       }
     });
   });
