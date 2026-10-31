@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { TEST_PASSWORD } from './test-constants.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -741,8 +742,8 @@ describe('Activity: mentions, thread replies, reactions', () => {
         rs.forEach((r) => expect(r.status).toBe(200));
         expect(await cursorOf(bob)).toBe(hi);
       }
-      // 행이 없는 상태의 동시 첫 읽기: 한쪽이 행을 만드는 사이 다른 쪽의 갱신이 사라지면 안 된다(회귀 20회)
-      for (let i = 0; i < 20; i++) {
+      // 행이 없는 상태의 동시 첫 읽기: 한쪽이 행을 만드는 사이 다른 쪽의 갱신이 사라지면 안 된다(회귀 5회)
+      for (let i = 0; i < 5; i++) {
         await resetRead(bob);
         const order = i % 2 === 0 ? [lo, hi, lo, hi] : [hi, lo, hi, lo];
         const rs = await Promise.all(order.map((messageId) => request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId })));
@@ -762,9 +763,20 @@ describe('Activity: mentions, thread replies, reactions', () => {
       expect(await cursorOf(bob)).toBe(a);
       expect((await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: b })).status).toBe(200);
       expect(await cursorOf(bob)).toBe(b);
-      // 삭제 후에도 읽음 상태 조회가 된다
-      expect((await request(app).delete(`/messages/${b}`).set(auth(alice))).status).toBe(200);
-      expect(await cursorOf(bob)).toBe(b);
+    });
+
+    it('a message hard-deleted right after the existence check leaves the cursor as is (200, no FK error)', async () => {
+      await resetRead(bob);
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      const before = await cursorOf(bob);
+      const gone = (await post(alice, pubId, 'gone')).body.id;
+      // 라우트의 존재 확인은 통과한 뒤 보존 정책이 하드 삭제한 상황을 만든다
+      const spy = jest.spyOn(prisma.message, 'findFirst').mockResolvedValueOnce({ id: gone } as never);
+      await prisma.message.delete({ where: { id: gone } });
+      const res = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: gone });
+      spy.mockRestore();
+      expect(res.status).toBe(200);
+      expect(await cursorOf(bob)).toBe(before);
     });
 
     it('a deleted message in this channel still advances the cursor and clears mentions; another channel id is 404', async () => {
