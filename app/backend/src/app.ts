@@ -26,6 +26,7 @@ import adminRoutes from './routes/admin.js';
 import pushRoutes from './routes/push.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
+import { rateLimitKey } from './middleware/rateLimitKey.js';
 import { JWT_SECRET } from './config.js';
 
 const app = express();
@@ -71,17 +72,7 @@ const apiLimiter = isTest
       standardHeaders: true,
       legacyHeaders: false,
       message: { error: 'Too many requests, please try again later' },
-      keyGenerator: (req) => {
-        const authHeader = req.headers.authorization;
-        if (authHeader?.startsWith('Bearer ')) {
-          try {
-            const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, { algorithms: ['HS256'] }) as any;
-            if (decoded.userId) return `user:${decoded.userId}`;
-          } catch {}
-        }
-        return req.ip || 'unknown';
-      },
-      validate: { keyGeneratorIpFallback: false },
+      keyGenerator: rateLimitKey,
     });
 
 // Cache-Control: no-store for all API responses

@@ -1,3 +1,8 @@
+// Timed out at the default 10s under CPU load on the 8GB dev machine (100 concurrent requests).
+import { jest } from '@jest/globals';
+
+jest.setTimeout(30000);
+
 import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';

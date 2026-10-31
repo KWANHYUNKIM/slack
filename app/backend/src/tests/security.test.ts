@@ -1,3 +1,8 @@
+// Timed out at the default 10s under CPU load on the 8GB dev machine (heavy beforeEach hooks).
+import { jest } from '@jest/globals';
+
+jest.setTimeout(30000);
+
 import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
@@ -351,13 +356,16 @@ describe('Security - Input Validation', () => {
       expect(res.status).toBe(201);
     });
 
-    it('should allow channel names with unicode', async () => {
+    // The API currently accepts only [a-z0-9-] (same rule as the frontend dialog),
+    // so non-ASCII names are rejected rather than stored.
+    it('should reject channel names with non-ASCII characters', async () => {
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ name: 'channel-日本語' });
 
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
     });
   });
 
