@@ -32,15 +32,15 @@
 | build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | - | sonnet | 대기 | 1.5h | | | PR #6 리뷰 1번. 웹 배포 전제 |
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만) | 1h | | | PR #7 수동 확인 항목 |
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | - | haiku | 대기 | 30분 | | | PR #8 남은 이슈 |
-| i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | - | sonnet | **다음 최우선**(01b 반영 후) | 2.5h | | | docs/architecture/i18n.md |
+| i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | dev-2 | sonnet | 진행 중 (10:50) | 2.5h | | | docs/architecture/i18n.md |
 | i18n-2 ko: 한국어 번역 전체와 검수 | - | sonnet | 대기 | 1.5h | | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | - | sonnet | 대기(스키마 순서) | 2h | | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
 | i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI | - | haiku | 대기 | 2h | | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | - | sonnet | 대기(우선) | 1.5h | | | docs/architecture/self-contained-assets.md |
-| feat/builtin-stun: 내장 STUN, /huddles/config | - | sonnet | 대기 | 1.5h | | | Google STUN 제거 |
+| feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 진행 중 (10:50) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | - | opus | 대기(01a 머지 후) | 2.5h | | | docs/architecture/mcp.md |
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | - | sonnet | 대기 | 2h | | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | - | sonnet | 대기(06 이후) | 1.5h | | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
-| fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | - | sonnet | 대기 | 45분 | | | PR #9 브라우저 확인에서 발견 |
+| fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 진행 중 (10:50) | 45분 | | | PR #9 브라우저 확인에서 발견 |
