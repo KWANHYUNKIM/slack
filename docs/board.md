@@ -32,7 +32,7 @@
 | fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | dev-4 | sonnet | 완료(PR #33에 포함) | 1h | | | 06 search-v2와 함께 |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
-| build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | dev-5 | sonnet | 진행 | 1.5h | 2026-10-31 23:23 | | PR #6 리뷰 1번. 웹 배포 전제 |
+| build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | dev-5 | sonnet | PR #55 리뷰 반영 중 | 1.5h | 2026-10-31 23:23 | | PR #6 리뷰 1번. 웹 배포 전제 |
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만, no-external-requests.spec 포함) | 1h | | | PR #7 수동 확인 항목 |
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #8 남은 이슈 |
 | i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | dev-2 | sonnet | 완료(PR #11 머지) | 2.5h | | | docs/architecture/i18n.md |
@@ -65,3 +65,4 @@
 | feat/dm-unread-divider: 1:1 DM·그룹 DM 안 읽음 구분선(기준점 필드, 열 때 읽음 처리 순서) | dev-3 | sonnet | 완료(PR #41 머지) | 1h | 2026-10-31 23:01 | | PR #36 남은 이슈 |
 | fix/admin-store-actions: useAdminStore 나머지 액션(delete/archive/role) 실패 전달과 호출 측 처리 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #38 남은 이슈 |
 | mcp-2b send_dm: MCP DM·그룹 DM 쓰기·읽기 도구(DM 공용 서비스 추출) | dev-2 | sonnet | 진행 | 1.5h | 2026-10-31 23:40 | | PR #49 남은 이슈 |
+| feat/bootstrap-owner: 빈 DB 배포에서 첫 OWNER 생성 경로(사용자 0명일 때만, 동시성 안전) | dev-5 | opus | 진행 | 1h | 2026-10-31 23:44 | | PR #55에서 발견 |
