@@ -108,3 +108,5 @@
 | 2026-10-31 23:58 | dev-5 | opus | PR #57 리뷰 반영 | 33,663 |
 | 2026-11-01 00:03 | dev-3 | haiku | chore/ops-followups | 93,202 |
 | 2026-11-01 00:05 | code-review | (리뷰) | PR #61 low | 48,446 |
+| 2026-11-01 00:05 | dev-2 | sonnet | PR #58 리뷰 반영 | 43,580 |
+| 2026-11-01 00:05 | dev-1 | sonnet | fix/emoji-cdn-runtime | 90,745 |
