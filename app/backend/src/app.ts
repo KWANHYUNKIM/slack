@@ -37,16 +37,20 @@ import { rateLimitKey } from './middleware/rateLimitKey.js';
 import { accessTokenAuth } from './middleware/accessTokenAuth.js';
 import { createMcpAuthFailureLimiter, createMcpTokenLimiter } from './mcp/rateLimit.js';
 import { JWT_SECRET } from './config.js';
+import { parseTrustProxy, useSecureTransport } from './runtimeConfig.js';
 
 const app = express();
 
-// Trust first proxy (e.g. Cloud Run, nginx) for correct rate-limit keying
-app.set('trust proxy', 1);
+// TRUST_PROXY: 앞단 프록시 홉 수(기본 0 = 신뢰 안 함). 프록시 뒤에서는 1 등으로 설정해야 rate limit이 클라이언트 IP로 키잉된다.
+app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
+const secureTransport = useSecureTransport(process.env);
 
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      // PUBLIC_URL이 http이면 https로 강제 승격하지 않는다(LAN 시험용).
+      'upgrade-insecure-requests': secureTransport ? [] : null,
       // 규칙 17: 외부 출처를 허용하지 않는다. 파일(GCS 포함)은 서버가 스트리밍하므로 'self'로 충분하다.
       'img-src': ["'self'", 'blob:', 'data:'],
       // CSP3: 'self'는 같은 호스트·포트의 ws/wss도 허용한다. 소켓은 io()로 같은 출처에 붙는다.
@@ -55,7 +59,7 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: 'credentialless' as any,
-  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  hsts: secureTransport ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
 }));
 const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173');
 app.use(cors({ origin: corsOrigin as string | boolean }));

@@ -28,7 +28,7 @@ import {
   createActivitiesForDm,
 } from '../services/mentionService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
-
+import { useSecureTransport } from '../runtimeConfig.js';
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
 }
@@ -142,7 +142,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
     cookie: {
       name: 'io',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && useSecureTransport(process.env),
       sameSite: 'strict',
     },
     maxHttpBufferSize: 16384,
