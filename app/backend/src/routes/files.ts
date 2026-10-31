@@ -1,4 +1,5 @@
 import { Router, Response, NextFunction } from 'express';
+import { ERR } from '../utils/errorCodes.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -325,7 +326,7 @@ router.post('/download-token', authMiddleware, async (req: AuthRequest, res: Res
     const userId = req.user!.userId;
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { tokenVersion: true } });
     if (!user) {
-      res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized', code: ERR.AUTH_INVALID_TOKEN });
       return;
     }
 
@@ -361,7 +362,7 @@ router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
     try {
       const raw = req.query.token;
       if (typeof raw !== 'string') {
-        res.status(401).json({ error: 'Invalid or expired download token' });
+        res.status(401).json({ error: 'Invalid or expired download token', code: ERR.FILE_TOKEN_INVALID });
         return;
       }
       const payload = jwt.verify(raw, JWT_SECRET, { algorithms: ['HS256'] }) as any;
@@ -380,12 +381,12 @@ router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
         select: { tokenVersion: true, deactivatedAt: true },
       });
       if (!user || user.deactivatedAt || user.tokenVersion !== payload.tokenVersion) {
-        res.status(401).json({ error: 'Invalid or expired download token' });
+        res.status(401).json({ error: 'Invalid or expired download token', code: ERR.FILE_TOKEN_INVALID });
         return;
       }
       req.user = { userId: payload.userId };
     } catch {
-      res.status(401).json({ error: 'Invalid or expired download token' });
+      res.status(401).json({ error: 'Invalid or expired download token', code: ERR.FILE_TOKEN_INVALID });
       return;
     }
   }

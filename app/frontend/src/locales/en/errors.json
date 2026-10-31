@@ -21,6 +21,7 @@
     "UPLOAD_FAILED": "The upload failed.",
     "AUTH_NO_TOKEN": "Please sign in.",
     "AUTH_INVALID_TOKEN": "Your session has expired. Please sign in again.",
+    "FILE_TOKEN_INVALID": "This file link has expired or is invalid. Try again.",
     "AUTH_INVALID_CREDENTIALS": "Incorrect email or password.",
     "AUTH_ACCOUNT_LOCKED": "Too many failed attempts. The account is temporarily locked. Try again later.",
     "AUTH_REGISTRATION_FAILED": "We could not complete sign-up. Check your details or use a different email.",
