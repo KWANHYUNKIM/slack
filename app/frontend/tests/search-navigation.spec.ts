@@ -13,7 +13,7 @@ test.describe('Search result navigation', () => {
     // Search for "semantic" — present in seed data in #ml-research and #engineering channels
     const searchInput = page.locator('input[placeholder="Search"]');
     await searchInput.fill('semantic');
-    await searchInput.press('Enter');
+    // 입력하면 300ms 뒤 드롭다운 미리보기가 열린다(Enter는 전체 검색 페이지 /search로 이동한다)
 
     // Wait for search results dropdown to appear
     const searchDropdown = page.locator('[data-testid="search-results-dropdown"]');
@@ -40,7 +40,7 @@ test.describe('Search result navigation', () => {
       await clickChannel(page, 'general');
       // Re-open search dropdown
       await searchInput.fill('semantic');
-      await searchInput.press('Enter');
+      // 입력하면 300ms 뒤 드롭다운 미리보기가 열린다(Enter는 전체 검색 페이지 /search로 이동한다)
       await expect(searchDropdown).toBeVisible({ timeout: 10_000 });
       await expect(resultItems.first()).toBeVisible({ timeout: 5_000 });
     }
@@ -68,7 +68,7 @@ test.describe('Search result navigation', () => {
 
     const searchInput = page.locator('input[placeholder="Search"]');
     await searchInput.fill('semantic');
-    await searchInput.press('Enter');
+    // 입력하면 300ms 뒤 드롭다운 미리보기가 열린다(Enter는 전체 검색 페이지 /search로 이동한다)
 
     const searchDropdown = page.locator('[data-testid="search-results-dropdown"]');
     await expect(searchDropdown).toBeVisible({ timeout: 10_000 });
@@ -84,5 +84,40 @@ test.describe('Search result navigation', () => {
 
     // Input must be cleared
     await expect(searchInput).toHaveValue('');
+  });
+
+  test('pressing Enter opens the search page with the query, tabs and highlighted results', async ({ page }) => {
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+
+    await clickChannel(page, 'general');
+    await expect(page.locator('.ql-editor')).toBeVisible();
+
+    const searchInput = page.locator('input[placeholder="Search"]');
+    await searchInput.fill('semantic');
+    await searchInput.press('Enter');
+
+    await expect(page).toHaveURL(/\/search\?q=semantic/);
+    await expect(page.getByTestId('search-page')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('search-page-input')).toHaveValue('semantic');
+
+    const results = page.getByTestId('search-page-result');
+    await expect(results.first()).toBeVisible({ timeout: 10_000 });
+    // 일치한 부분은 <mark>로 감싸진다
+    await expect(results.first().locator('mark').first()).toBeVisible();
+
+    // 탭 전환은 같은 질의로 다시 조회한다
+    await page.getByTestId('search-tab-channels').click();
+    await expect(page).toHaveURL(/tab=channels/);
+  });
+
+  test('a filter chip can be removed from the search page', async ({ page }) => {
+    await login(page, 'alice@slawk.dev', TEST_PASSWORD);
+
+    await page.goto('/search?q=' + encodeURIComponent('semantic from:@alice'));
+    const chip = page.getByTestId('search-chip').first();
+    await expect(chip).toContainText('from:@alice', { timeout: 10_000 });
+    await page.getByTestId('search-chip-remove').first().click();
+    await expect(page).toHaveURL(/q=semantic(&|$)/);
+    await expect(page.getByTestId('search-chip')).toHaveCount(0);
   });
 });

@@ -72,7 +72,10 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-      handleSearch();
+      const q = searchQuery.trim();
+      if (!q) return;
+      navigate(`/search?${new URLSearchParams({ q })}`);
+      onClose();
     } else if (e.key === 'Escape') {
       onClose();
     }
@@ -125,7 +128,7 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
         ) : searchResults.length > 0 ? (
           <div>
             <div className="px-3 py-2 text-xs font-medium text-slack-hint border-b border-slack-border">
-              {t('search.resultCount', { count: searchResults.length })}
+              {t('search.previewHint', { count: searchResults.length })}
             </div>
             {searchResults.map((result) => (
               <button

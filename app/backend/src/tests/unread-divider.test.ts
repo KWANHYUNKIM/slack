@@ -8,6 +8,7 @@ describe('GET /channels/:id unread baseline', () => {
   let aToken: string;
   let bToken: string;
   let channelId: number;
+  let bUserId: number;
 
   const post = async (token: string, content: string, extra: object = {}) => {
     const res = await request(app).post(`/channels/${channelId}/messages`).set('Authorization', `Bearer ${token}`).send({ content, ...extra });
@@ -15,7 +16,7 @@ describe('GET /channels/:id unread baseline', () => {
     return res.body.id as number;
   };
   const open = async (token: string) => {
-    const res = await request(app).get(`/channels/${channelId}`).set('Authorization', `Bearer ${token}`);
+    const res = await request(app).get(`/channels/${channelId}?withUnread=1`).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     return res.body as { lastReadMessageId: number | null; unreadCount: number };
   };
@@ -36,6 +37,7 @@ describe('GET /channels/:id unread baseline', () => {
     aToken = a.body.token;
     const b = await request(app).post('/auth/register').send({ email: 'divider-b@example.com', password: TEST_PASSWORD, name: 'Divider B' });
     bToken = b.body.token;
+    bUserId = b.body.user.id;
     const ch = await request(app).post('/channels').set('Authorization', `Bearer ${aToken}`).send({ name: 'divider-channel' });
     channelId = ch.body.id;
     await request(app).post(`/channels/${channelId}/join`).set('Authorization', `Bearer ${bToken}`);
@@ -92,8 +94,46 @@ describe('GET /channels/:id unread baseline', () => {
 
   it('비멤버가 공개 채널을 열어도 기준점 필드는 없다', async () => {
     const c = await request(app).post('/auth/register').send({ email: 'divider-c@example.com', password: TEST_PASSWORD, name: 'Divider C' });
-    const res = await request(app).get(`/channels/${channelId}`).set('Authorization', `Bearer ${c.body.token}`);
+    const res = await request(app).get(`/channels/${channelId}?withUnread=1`).set('Authorization', `Bearer ${c.body.token}`);
     expect(res.status).toBe(200);
     expect(res.body.lastReadMessageId).toBeUndefined();
+  });
+
+  it('?withUnread=1이 없으면 기준점을 계산하지 않는다', async () => {
+    await post(bToken, 'x');
+    const res = await request(app).get(`/channels/${channelId}`).set('Authorization', `Bearer ${aToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.lastReadMessageId).toBeUndefined();
+    expect(res.body.unreadCount).toBeUndefined();
+  });
+
+  it('처음 여는 채널(읽음 행 없음): 기준점 조회 -> baseline -> 재조회 순서', async () => {
+    const ids = [await post(bToken, 'one'), await post(bToken, 'two')];
+    await prisma.channelRead.deleteMany({ where: { channelId } });
+    // 프런트는 기준점을 먼저 받고 그다음에 baseline을 부른다: 기준점은 전부 안 읽음
+    expect(await open(aToken)).toMatchObject({ lastReadMessageId: null, unreadCount: 2 });
+    const baseline = await request(app).post(`/channels/${channelId}/read/baseline`).set('Authorization', `Bearer ${aToken}`);
+    expect(baseline.status).toBe(200);
+    // baseline 뒤에는 최신이 기준점이 된다(순서를 거꾸로 하면 구분선이 사라지는 이유)
+    expect(await open(aToken)).toMatchObject({ lastReadMessageId: ids[1], unreadCount: 0 });
+  });
+
+  it('범위 밖 60개에 실시간 10개: 서버 수는 열 때 60, 이후 70이다', async () => {
+    await prisma.message.createMany({
+      data: Array.from({ length: 60 }, (_, i) => ({ content: `bulk ${i}`, channelId, userId: bUserId })),
+    });
+    expect((await open(aToken)).unreadCount).toBe(60);
+    await prisma.message.createMany({
+      data: Array.from({ length: 10 }, (_, i) => ({ content: `live ${i}`, channelId, userId: bUserId })),
+    });
+    expect((await open(aToken)).unreadCount).toBe(70);
+  });
+
+  it('모두 읽음 후 새 메시지가 오면 기준점은 마지막 읽은 메시지, 안 읽음은 1이다', async () => {
+    const ids = [await post(bToken, 'm1'), await post(bToken, 'm2')];
+    await read(aToken, ids[1]);
+    expect((await open(aToken)).unreadCount).toBe(0);
+    await post(bToken, 'm3');
+    expect(await open(aToken)).toMatchObject({ lastReadMessageId: ids[1], unreadCount: 1 });
   });
 });

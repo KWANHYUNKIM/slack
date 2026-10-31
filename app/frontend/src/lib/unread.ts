@@ -62,3 +62,8 @@ export function previousTimelineId(messages: readonly UnreadCandidate[], message
   }
   return prev;
 }
+
+/** "여기서부터 읽지 않음으로 표시"한 뒤의 안 읽음 수: messageId 이상인 타임라인 메시지(삭제 제외, 내 것 포함 = 서버 수와 같은 규칙) */
+export function countUnreadFrom(messages: readonly UnreadCandidate[], messageId: number): number {
+  return messages.filter((m) => m.id >= messageId && isTimeline(m)).length;
+}

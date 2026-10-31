@@ -15,7 +15,7 @@ export function NewMessagesBar({ count, atLeast, onJump, onMarkRead }: NewMessag
   return (
     <div
       data-testid="new-messages-bar"
-      className="absolute inset-x-3 top-1 z-10 flex items-center justify-between rounded-md bg-slack-btn px-3 py-1.5 text-[13px] text-white shadow"
+      className="absolute inset-x-3 top-1 z-10 flex items-center justify-between rounded-md bg-slack-unread-bar px-3 py-1.5 text-sm text-slack-unread-text shadow"
     >
       <button onClick={onJump} className="flex items-center gap-1 font-semibold hover:underline">
         <ArrowUp className="h-3.5 w-3.5" />

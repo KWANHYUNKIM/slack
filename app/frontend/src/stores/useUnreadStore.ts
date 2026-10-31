@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useMessageStore } from '@/stores/useMessageStore';
-import { previousTimelineId } from '@/lib/unread';
+import { countUnreadFrom, previousTimelineId } from '@/lib/unread';
 
 /**
  * 안 읽음 구분선의 기준점. 채널을 열 때 서버에서 한 번 받아 고정하고, 채널을 떠나면 버린다.
@@ -42,7 +42,7 @@ export const useUnreadStore = create<UnreadState>((set, get) => ({
   markUnreadFrom: (channelId, messageId) => {
     if (get().channelId !== channelId) return;
     const messages = useMessageStore.getState().messages.filter((m) => m.channelId === channelId);
-    const total = messages.filter((m) => m.id >= messageId && !m.isDeleted).length;
+    const total = countUnreadFrom(messages, messageId);
     set({ ready: true, lastReadId: previousTimelineId(messages, messageId), total, pinnedBeforeId: messageId });
   },
   markReadUpTo: (channelId, messageId) => {

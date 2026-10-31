@@ -18,6 +18,7 @@ import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { PermalinkNotFound } from '@/components/Messages/PermalinkNotFound';
 import { Toaster } from '@/components/ui/Toaster';
+import { SearchPage } from '@/components/Messages/SearchPage';
 
 export function AppLayout() {
   const { t } = useTranslation('errors');
@@ -50,6 +51,8 @@ export function AppLayout() {
     content = <LaterPage />;
   } else if (location.pathname === '/message-not-found') {
     content = <PermalinkNotFound />;
+  } else if (location.pathname === '/search') {
+    content = <SearchPage />;
   } else {
     content = <MessageArea />;
   }
