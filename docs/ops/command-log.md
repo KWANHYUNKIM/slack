@@ -19,6 +19,9 @@
 | 10-31 09:19 | 전부 총괄이 직접 하고 총괄이 결정 | 이 로그에 기록(CLAUDE.md 수정은 권한 단계에서 거부됨) |
 | 10-31 09:22 | 사용자가 CLAUDE.md에 권한 위임 한 줄 추가(IDE), 계속 진행 | 09:23 기준 디스크에 미저장 상태 확인 |
 | 10-31 09:24 | 권한 위임을 총괄이 직접 CLAUDE.md에 기록 | CLAUDE.md 상단 |
+| 10-31 10:24 | 한국말로도, 세계 언어로 전부 할 수 있게 | i18n.md, CLAUDE.md 16 |
+| 10-31 10:25 | https import로 가져오는 기능은 전부 in code 형식으로 | self-contained-assets.md, CLAUDE.md 17 |
+| 10-31 10:25 | MCP 기능, Claude와 연동 | mcp.md, CLAUDE.md 18 |
 | 10-31 10:14 | 기능 구현 진행 상황을 띄워서 보여 달라 | 시연 서버 http://localhost:3100 |
 | 10-31 09:52 | 테스트 채널은 새로 만들어서 쓴다 | `#claude-test` 생성, CLAUDE.md 0장 |
 
@@ -81,3 +84,6 @@
 | 10:19 | 시연 서버 기동: 전용 DB `slackclone_dev`(테스트 DB와 분리) migrate+seed, 프런트 vite build, 백엔드 NODE_ENV=production PORT=3100 | 사용자 요청. 3000·5173은 다른 프로젝트가 사용 중이라 피함 | http://localhost:3100 정상, seed 계정으로 로그인 확인 |
 | 10:21 | PR #7 리뷰 반영 커밋 62857d6 | lint 0, build 성공 | |
 | 10:22 | 감속(CPU 부하 7.1)으로 01b 배정 보류 | 시연 서버(3100)는 사용자 요청이라 유지 | |
+| 10:26 | 외부 URL 전수 조사(grep) | emoji-mart i18n CDN fetch, Google STUN, CSP 예외 2건, 죽은 mocks 발견 | self-contained-assets.md |
+| 10:28 | 결정: MCP는 백엔드 내장 Streamable HTTP + PAT 먼저, OAuth 2.1은 다음 | 프로세스 추가 없이 메모리 절약, Claude Code 연결이 가장 빠름 | mcp.md |
+| 10:28 | 결정: i18n은 i18next+ICU, 한국어 1등급, 31개 언어 2등급, 나머지는 영어 대체 + Intl | | i18n.md |

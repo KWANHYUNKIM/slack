@@ -43,6 +43,9 @@
 13. **형상관리와 PR 리뷰**: `docs/conventions/git.md`를 따른다(GitHub Flow, Conventional Commits, squash merge). 파트가 끝나면 총괄이 브랜치를 만들어 커밋하고 PR을 연 뒤 `/code-review`로 리뷰하고 머지한다. 개발자 에이전트는 커밋하거나 푸시하지 않는다.
 14. **코드 규칙과 보안**: 개발 지시에는 `docs/conventions/frontend.md`, `docs/conventions/backend.md`, `docs/security/nodejs-security.md`를 읽으라고 넣는다. 루프마다 보안 문서 10절의 점검을 돌린다.
 15. **배포 범위**: 웹 버전과 데스크톱 설치 파일(Windows exe 등)을 모두 만든다. 구조는 `docs/architecture/enterprise-and-distribution.md`를 따르고, 설치 파일은 GitHub Releases에 올린다.
+16. **다국어**: 모든 UI 문자열은 번역 키로 작성한다(하드코딩 금지). 한국어는 1등급(누락 0), 전 세계 로캘을 지원한다. `docs/architecture/i18n.md`를 따른다.
+17. **외부 https 의존 금지**: 실행 중에 외부 https(CDN, 웹폰트, 원격 이미지·JSON, 외부 STUN 등)에서 리소스를 가져오지 않고 전부 코드나 번들에 포함한다. 예외(브라우저 웹 푸시)는 `docs/architecture/self-contained-assets.md`에 문서화한다.
+18. **MCP 연동**: 메신저는 Claude가 연결할 수 있는 MCP 서버(`/mcp`)를 제공한다. 도구는 토큰 소유자의 권한으로만 동작한다. `docs/architecture/mcp.md`를 따른다.
 
 ### 기획
 1. Slack이 **어떻게 동작하는지**(화면, 사용자 흐름, 상태 변화)와 **어떻게 만들어졌는지**(API 호출, WebSocket 이벤트, 데이터 모델, 클라이언트 구조)를 분석한다.
@@ -93,6 +96,7 @@ RAM이 8GB이므로 8명이 동시에 돌 수 없다. `memory_pressure`의 여�
 - `docs/specs/`: 기획 스펙
 - `docs/architecture/tech-stack.md`: 프런트엔드·백엔드·DB 선택과 이유 분석
 - `docs/research/`: 외부 기술 문서 링크와 요약
+- `docs/architecture/i18n.md`, `mcp.md`, `self-contained-assets.md`, `events.md`: 다국어, MCP, 외부 의존 제거, 소켓 이벤트
 - `docs/architecture/enterprise-and-distribution.md`: 엔터프라이즈 기능, 웹과 데스크톱 배포 구조
 - `docs/conventions/`: `git.md`, `frontend.md`, `backend.md`
 - `docs/security/nodejs-security.md`: Node.js 보안 가이드와 루프별 점검
