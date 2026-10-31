@@ -55,26 +55,34 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { name, scopes, expiresInDays } = createSchema.parse(req.body);
     const userId = req.user!.userId;
 
-    const activeCount = await prisma.personalAccessToken.count({ where: activeWhere(userId) });
-    if (activeCount >= MAX_ACTIVE_TOKENS) {
+    const { token, publicId, tokenHash } = generateToken();
+    const now = new Date();
+    // 동시 발급이 상한을 넘지 않게 사용자 행을 잠그고 그 안에서 세고 만든다.
+    // 만료된 토큰은 쓸 수 없으므로 상한에서 뺀다(폐기하지 않아도 새로 만들 수 있게).
+    const row = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+      const activeCount = await tx.personalAccessToken.count({
+        where: { ...activeWhere(userId), OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      });
+      if (activeCount >= MAX_ACTIVE_TOKENS) return null;
+      return tx.personalAccessToken.create({
+        data: {
+          userId,
+          name,
+          publicId,
+          tokenHash,
+          scopes: [...new Set(scopes)],
+          expiresAt: expiresInDays === null ? null : new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000),
+        },
+      });
+    });
+    if (!row) {
       res.status(409).json({ error: 'Too many tokens', code: 'TOKEN_LIMIT_REACHED' });
       return;
     }
 
-    const { token, publicId, tokenHash } = generateToken();
-    const row = await prisma.personalAccessToken.create({
-      data: {
-        userId,
-        name,
-        publicId,
-        tokenHash,
-        scopes: [...new Set(scopes)],
-        expiresAt: expiresInDays === null ? null : new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
-      },
-    });
-
-    // 원문과 해시는 감사 로그에 남기지 않는다
-    await writeAuditLog({
+    // 원문과 해시는 감사 로그에 남기지 않는다. 기록은 기다리지 않는다(실패는 writeAuditLog가 logError로 남긴다).
+    void writeAuditLog({
       action: 'token.create',
       actorId: userId,
       targetType: TOKEN_TARGET,
@@ -143,7 +151,7 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
       return;
     }
 
-    await writeAuditLog({
+    void writeAuditLog({
       action: 'token.revoke',
       actorId: userId,
       targetType: TOKEN_TARGET,

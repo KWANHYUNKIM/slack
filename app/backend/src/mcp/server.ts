@@ -53,7 +53,8 @@ async function runTool(ctx: ToolContext, tool: string, fn: () => Promise<unknown
       result = fail('Internal error');
     }
   }
-  await writeAuditLog({
+  // 기다리지 않는다: 감사 로그 쓰기가 도구 응답을 늦추지 않게(실패는 writeAuditLog가 logError로 남긴다)
+  void writeAuditLog({
     action: 'mcp.tool_call',
     actorId: ctx.userId,
     targetType: 'mcp_tool',

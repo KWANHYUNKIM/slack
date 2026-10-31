@@ -12,6 +12,8 @@ import { initializeWebSocket } from '../websocket/index.js';
 import { settleBackgroundWork } from '../services/mentionService.js';
 import { hashSecret } from '../services/accessTokenService.js';
 import { createMcpAuthFailureLimiter, createMcpTokenLimiter } from '../mcp/rateLimit.js';
+import { accessTokenAuth } from '../middleware/accessTokenAuth.js';
+import mcpRoutes from '../routes/mcp.js';
 
 interface TestUser { id: number; token: string; name: string }
 
@@ -30,6 +32,16 @@ async function createToken(u: TestUser, body: object = { name: 'claude' }) {
   const res = await request(app).post('/tokens').set(auth(u)).send(body);
   expect(res.status).toBe(201);
   return res.body as { id: number; token: string; prefix: string; scopes: string[] };
+}
+
+async function waitFor<T>(fn: () => Promise<T>, predicate: (v: T) => boolean, timeoutMs = 3000): Promise<T> {
+  const start = Date.now();
+  for (;;) {
+    const v = await fn();
+    if (predicate(v)) return v;
+    if (Date.now() - start > timeoutMs) return v;
+    await new Promise((r) => setTimeout(r, 50));
+  }
 }
 
 /** JSON-RPC 한 번을 HTTP로 직접 보낸다(인증·상태 코드 검사용) */
@@ -185,13 +197,54 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       await request(app).delete(`/tokens/${t.id}`).set(auth(alice));
     });
 
+    it('enforces the active token limit under concurrent creation', async () => {
+      const carl = await register('Carl');
+      // 19개를 미리 만들어 두고 동시에 5개를 요청하면 1개만 성공해야 한다
+      await prisma.personalAccessToken.createMany({
+        data: Array.from({ length: 19 }, (_, i) => ({
+          userId: carl.id, name: `pre-${i}`, publicId: `c0ffee${String(i).padStart(6, '0')}`, tokenHash: '0'.repeat(64), scopes: ['users:read'],
+        })),
+      });
+      const results = await Promise.all(
+        Array.from({ length: 5 }, (_, i) => request(app).post('/tokens').set(auth(carl)).send({ name: `race-${i}` })),
+      );
+      const statuses = results.map((r) => r.status).sort();
+      expect(statuses).toEqual([201, 409, 409, 409, 409]);
+      for (const r of results.filter((x) => x.status === 409)) expect(r.body.code).toBe('TOKEN_LIMIT_REACHED');
+      expect(await prisma.personalAccessToken.count({ where: { userId: carl.id, revokedAt: null } })).toBe(20);
+
+      // 폐기하면 다시 만들 수 있다
+      const one = await prisma.personalAccessToken.findFirstOrThrow({ where: { userId: carl.id, name: 'pre-0' } });
+      expect((await request(app).delete(`/tokens/${one.id}`).set(auth(carl))).status).toBe(200);
+      expect((await request(app).post('/tokens').set(auth(carl)).send({ name: 'after-revoke' })).status).toBe(201);
+      expect((await request(app).post('/tokens').set(auth(carl)).send({ name: 'over' })).status).toBe(409);
+    });
+
+    it('does not count expired tokens toward the limit', async () => {
+      const ella = await register('Ella');
+      await prisma.personalAccessToken.createMany({
+        data: Array.from({ length: 20 }, (_, i) => ({
+          userId: ella.id, name: `old-${i}`, publicId: `e11a00${String(i).padStart(6, '0')}`, tokenHash: '0'.repeat(64),
+          scopes: ['users:read'], expiresAt: i < 2 ? new Date(Date.now() - 1000) : null,
+        })),
+      });
+      // 2개가 만료돼 활성은 18개: 2개 더 만들 수 있고 그다음은 409
+      expect((await request(app).post('/tokens').set(auth(ella)).send({ name: 'n1' })).status).toBe(201);
+      expect((await request(app).post('/tokens').set(auth(ella)).send({ name: 'n2' })).status).toBe(201);
+      expect((await request(app).post('/tokens').set(auth(ella)).send({ name: 'n3' })).status).toBe(409);
+    });
+
     it('writes audit logs for create, revoke and tool calls without the raw token', async () => {
       const t = await createToken(alice, { name: 'audited' });
       const client = await connectClient(t.token);
       await call(client, 'list_channels');
       await request(app).delete(`/tokens/${t.id}`).set(auth(alice));
 
-      const logs = await prisma.auditLog.findMany({ where: { actorId: alice.id }, orderBy: { id: 'asc' } });
+      // 감사 로그는 응답을 기다리게 하지 않고 뒤에서 기록된다
+      const logs = await waitFor(
+        () => prisma.auditLog.findMany({ where: { actorId: alice.id }, orderBy: { id: 'asc' } }),
+        (rows) => ['token.create', 'token.revoke', 'mcp.tool_call'].every((a) => rows.some((r) => r.action === a)),
+      );
       const actions = logs.map((l) => l.action);
       expect(actions).toEqual(expect.arrayContaining(['token.create', 'token.revoke', 'mcp.tool_call']));
       const toolLog = logs.find((l) => l.action === 'mcp.tool_call' && l.targetName === 'list_channels')!;
@@ -334,6 +387,20 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       }
     });
 
+    it('read_thread rejects a deleted reply id like a missing message, same as the REST thread route', async () => {
+      const r = await request(app).post(`/messages/${parentId}/reply`).set(auth(alice)).send({ content: 'to be deleted' });
+      expect((await call(client, 'read_thread', { messageId: r.body.id })).isError).toBe(false);
+      await request(app).delete(`/messages/${r.body.id}`).set(auth(alice));
+
+      expect((await request(app).get(`/messages/${r.body.id}/thread`).set(auth(alice))).status).toBe(404);
+      const res = await call(client, 'read_thread', { messageId: r.body.id });
+      expect(res.isError).toBe(true);
+      expect(res.text).toBe((await call(client, 'read_thread', { messageId: 999999 })).text);
+      // 부모로 읽으면 지운 답글은 빠진다
+      const viaParent = await call(client, 'read_thread', { messageId: parentId });
+      expect(viaParent.data.replies.map((x: any) => x.content)).toEqual(['thread reply']);
+    });
+
     it('reflects edits and deletes made through the app (CRUD round trip)', async () => {
       const created = await request(app).post(`/channels/${pubId}/messages`).set(auth(alice)).send({ content: 'crud v1' });
       const msgId = created.body.id;
@@ -420,15 +487,55 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       expect((await request(mini).post('/mcp').set('x-token-id', '2')).status).toBe(200);
     });
 
-    it('limits failed authentication attempts per IP, not successful ones', async () => {
+    it('limits failed authentication attempts per IP, counting only 401', async () => {
       const mini = express();
       mini.use(createMcpAuthFailureLimiter(2));
-      mini.post('/mcp', (req, res) => { res.status(req.headers['x-ok'] ? 200 : 401).json({}); });
+      mini.all('/mcp', (req, res) => { res.status(Number(req.headers['x-status'] ?? 401)).json({}); });
+      const hit = (status?: number, method: 'get' | 'post' = 'post') => {
+        const r = request(mini)[method]('/mcp');
+        if (status) r.set('x-status', String(status));
+        return r;
+      };
 
-      for (let i = 0; i < 3; i++) expect((await request(mini).post('/mcp').set('x-ok', '1')).status).toBe(200);
-      expect((await request(mini).post('/mcp')).status).toBe(401);
-      expect((await request(mini).post('/mcp')).status).toBe(401);
-      expect((await request(mini).post('/mcp')).status).toBe(429);
+      // 200, 405(GET /mcp), 토큰 단위 429는 인증 실패가 아니므로 몇 번이 와도 IP가 잠기지 않는다
+      for (let i = 0; i < 5; i++) {
+        expect((await hit(200)).status).toBe(200);
+        expect((await hit(405, 'get')).status).toBe(405);
+        expect((await hit(429)).status).toBe(429);
+      }
+      expect((await hit()).status).toBe(401);
+      expect((await hit()).status).toBe(401);
+      // 401 두 번 뒤에야 잠긴다(잠긴 뒤에는 정상 요청도 429)
+      const locked = await hit(200);
+      expect(locked.status).toBe(429);
+      expect(locked.body.error).toMatch(/Too many attempts/);
+    });
+
+    it('does not lock the IP after repeated GET /mcp 405 or per-token 429 with the real /mcp stack', async () => {
+      // app.ts와 같은 순서로 조립하되 한도를 낮춘다(테스트 환경의 app은 limiter를 끈다)
+      const mini = express();
+      mini.use(express.json());
+      mini.use('/mcp', createMcpAuthFailureLimiter(3), accessTokenAuth, createMcpTokenLimiter(5), mcpRoutes);
+      const t = await createToken(alice, { name: 'get-loop' });
+      const get = () => request(mini).get('/mcp').set(bearer(t.token)).set(MCP_ACCEPT);
+      const post = (token: string) => request(mini).post('/mcp').set(bearer(token)).set(MCP_ACCEPT)
+        .send({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
+
+      const statuses: number[] = [];
+      for (let i = 0; i < 10; i++) statuses.push((await get()).status);
+      // 토큰 한도 5회까지 405, 그 뒤는 토큰 단위 429
+      expect(statuses.slice(0, 5)).toEqual([405, 405, 405, 405, 405]);
+      expect(statuses.slice(5).every((st) => st === 429)).toBe(true);
+
+      // 같은 IP의 다른 토큰은 잠기지 않았다(405·429는 인증 실패로 세지 않는다)
+      const other = await createToken(alice, { name: 'get-loop-2' });
+      expect((await post(other.token)).status).toBe(200);
+      // 인증 실패는 IP 단위로 3번 뒤 잠긴다
+      for (let i = 0; i < 3; i++) expect((await post('scpat_nope')).status).toBe(401);
+      expect((await post(other.token)).status).toBe(429);
+
+      await request(app).delete(`/tokens/${t.id}`).set(auth(alice));
+      await request(app).delete(`/tokens/${other.id}`).set(auth(alice));
     });
   });
 });
