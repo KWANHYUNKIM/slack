@@ -23,6 +23,7 @@ function describeActivity(item: ApiActivity, t: TFunction<'activity'>): string {
     case 'HERE_MENTION': return t('describe.hereMention', { actor, where });
     case 'THREAD_REPLY': return t('describe.threadReply', { actor, where });
     case 'REACTION': return t('describe.reaction', { actor, emoji: item.emoji ?? '', where });
+    case 'REMINDER': return t('describe.reminder');
   }
 }
 
@@ -58,6 +59,9 @@ export function ActivityPage() {
     const state = targetId ? { scrollToMessageId: targetId } : undefined;
     if (item.dmGroupId) {
       navigate(`/g/${item.dmGroupId}`, { state });
+    } else if (item.type === 'REMINDER' && item.dmId !== null) {
+      // 1:1 DM 리마인더는 활동에 상대 정보가 없다(배우가 본인). 목록에서 열 수 있게 한다
+      navigate('/later');
     } else if (item.dmId !== null) {
       navigate(`/d/${item.actor.id}`, { state });
     } else if (item.channelId !== null) {
@@ -136,7 +140,10 @@ export function ActivityPage() {
                         {formatDateTime(item.createdAt)}
                       </span>
                     </div>
-                    <div className="line-clamp-2 break-words text-[14px] text-slack-primary">{renderMessageContent(item.message.excerpt)}</div>
+                    <div className="line-clamp-2 break-words text-[14px] text-slack-primary">
+                      {item.reminder?.text && <div>{item.reminder.text}</div>}
+                      {item.message ? renderMessageContent(item.message.excerpt) : !item.reminder?.text && t('page.messageDeleted')}
+                    </div>
                   </div>
                   {item.readAt === null && (
                     <span aria-label={t('page.unread')} className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-red-500" />

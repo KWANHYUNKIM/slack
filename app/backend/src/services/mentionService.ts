@@ -61,6 +61,7 @@ export interface ActivityView {
   messageId: number | null;
   dmId: number | null;
   dmGroupId: number | null;
+  reminder: { id: number; text: string | null } | null;
   threadId: number | null;
   message: { id: number; content: string; excerpt: string } | null;
   emoji: string | null;
@@ -98,7 +99,8 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
   const messageIds = missing(rows.map((r) => r.messageId), messageMap);
   const dmIds = missing(rows.map((r) => r.dmId), dmMap);
 
-  const [actors, channels, messages, dms] = await Promise.all([
+  const reminderIds = [...new Set(rows.map((r) => r.reminderId).filter((v): v is number => v !== null))];
+  const [actors, channels, messages, dms, reminders] = await Promise.all([
     actorIds.length ? prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, avatar: true } }) : [],
     channelIds.length ? prisma.channel.findMany({ where: { id: { in: channelIds } }, select: { id: true, name: true } }) : [],
     messageIds.length
@@ -107,7 +109,9 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
     dmIds.length
       ? prisma.directMessage.findMany({ where: { id: { in: dmIds }, deletedAt: null }, select: { id: true, content: true, threadId: true } })
       : [],
+    reminderIds.length ? prisma.reminder.findMany({ where: { id: { in: reminderIds } }, select: { id: true, text: true } }) : [],
   ]);
+  const reminderMap = new Map(reminders.map((r) => [r.id, r]));
   actors.forEach((a) => actorMap.set(a.id, a));
   channels.forEach((c) => channelMap.set(c.id, c));
   messages.forEach((m) => messageMap.set(m.id, m));
@@ -117,7 +121,8 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
   for (const r of rows) {
     const target = r.messageId !== null ? messageMap.get(r.messageId) : r.dmId !== null ? dmMap.get(r.dmId) : undefined;
     const actor = actorMap.get(r.actorId);
-    if (!target || !actor) continue;
+    // 리마인더는 대상 메시지가 지워지거나 처음부터 없어도(/remind 본문) 남는다
+    if (!actor || (!target && r.type !== 'REMINDER')) continue;
     views.push({
       id: r.id,
       type: r.type,
@@ -127,8 +132,9 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
       messageId: r.messageId,
       dmId: r.dmId,
       dmGroupId: r.dmGroupId,
-      threadId: target.threadId,
-      message: { id: target.id, content: target.content, excerpt: excerpt(target.content) },
+      reminder: r.reminderId !== null ? reminderMap.get(r.reminderId) ?? null : null,
+      threadId: target?.threadId ?? null,
+      message: target ? { id: target.id, content: target.content, excerpt: excerpt(target.content) } : null,
       emoji: r.emoji,
       readAt: r.readAt,
       createdAt: r.createdAt,
@@ -375,7 +381,7 @@ async function syncActivitiesOnEditImpl(snapshot: ChannelMessageLike): Promise<A
 /** 메시지(채널 또는 스레드 답글)가 지워질 때 그 메시지와 연결된 Activity를 정리한다. */
 async function deleteActivitiesForMessageImpl(messageId: number): Promise<void> {
   try {
-    await removeRows(await prisma.activity.findMany({ where: { messageId }, select: { id: true, userId: true } }));
+    await removeRows(await prisma.activity.findMany({ where: { messageId, type: { not: 'REMINDER' } }, select: { id: true, userId: true } }));
   } catch (err) {
     logError('Delete activities failed', err);
   }
@@ -489,7 +495,7 @@ async function createActivitiesForDmImpl(snapshot: DmLike): Promise<Activity[]> 
 
 async function deleteActivitiesForDmImpl(dmId: number): Promise<void> {
   try {
-    await removeRows(await prisma.activity.findMany({ where: { dmId }, select: { id: true, userId: true } }));
+    await removeRows(await prisma.activity.findMany({ where: { dmId, type: { not: 'REMINDER' } }, select: { id: true, userId: true } }));
   } catch (err) {
     logError('Delete DM activities failed', err);
   }
@@ -564,6 +570,48 @@ async function removeReactionActivityImpl(t: Pick<ReactionTarget, 'actorId' | 'e
     emitRemoved(rows);
   } catch (err) {
     logError('Remove reaction activity failed', err);
+  }
+}
+
+// ── 리마인더 ─────────────────────────────────────────────────────────
+
+interface ReminderTarget {
+  id: number;
+  userId: number;
+  messageId: number | null;
+  dmId: number | null;
+  channelId: number | null;
+}
+
+/** 리마인더 시각이 되면 본인에게 REMINDER 활동을 만들고 알린다. 이미 있으면 null(중복 발송 방지). */
+async function createReminderActivityImpl(r: ReminderTarget): Promise<Activity | null> {
+  try {
+    const dm = r.dmId !== null ? await prisma.directMessage.findUnique({ where: { id: r.dmId }, select: { groupId: true } }) : null;
+    const [created] = await insertActivities([{
+      userId: r.userId,
+      actorId: r.userId,
+      type: 'REMINDER',
+      messageId: r.messageId,
+      dmId: r.dmId,
+      channelId: r.channelId,
+      dmGroupId: dm?.groupId ?? null,
+      reminderId: r.id,
+    }]);
+    if (!created) return null;
+    await emitNew([created]);
+    return created;
+  } catch (err) {
+    logError('Create reminder activity failed', err);
+    return null;
+  }
+}
+
+/** 스누즈·완료·삭제로 더는 유효하지 않은 리마인더 활동을 지운다. */
+async function deleteReminderActivitiesImpl(reminderId: number): Promise<void> {
+  try {
+    await removeRows(await prisma.activity.findMany({ where: { reminderId }, select: { id: true, userId: true } }));
+  } catch (err) {
+    logError('Delete reminder activities failed', err);
   }
 }
 
@@ -693,3 +741,6 @@ export function removeReactionActivity(...a: Parameters<typeof removeReactionAct
   return key ? activityQueue.run(key, () => removeReactionActivityImpl(...a)) : Promise.resolve();
 }
 export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => trackBackground(markThreadMentionsReadImpl(...a));
+export const createReminderActivity = (r: ReminderTarget) => activityQueue.run(`r:${r.id}`, () => createReminderActivityImpl(r));
+export const deleteReminderActivities = (reminderId: number) =>
+  activityQueue.run(`r:${reminderId}`, () => deleteReminderActivitiesImpl(reminderId));

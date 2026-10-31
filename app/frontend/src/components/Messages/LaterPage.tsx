@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bookmark, Hash, Menu, Clock } from 'lucide-react';
+import { Bookmark, Hash, Menu, Clock, AlarmClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/lib/i18n/format';
 import { getBookmarks } from '@/lib/api';
@@ -9,6 +9,7 @@ import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { useNavigate } from 'react-router-dom';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { ScheduledMessagesTab } from './ScheduledMessagesTab';
+import { RemindersTab } from './RemindersTab';
 import { cn } from '@/lib/utils';
 
 interface BookmarkedMessage {
@@ -23,7 +24,7 @@ interface BookmarkedMessage {
   };
 }
 
-type Tab = 'saved' | 'scheduled';
+type Tab = 'saved' | 'scheduled' | 'reminders';
 
 export function LaterPage() {
   const { t } = useTranslation('messages');
@@ -102,12 +103,27 @@ export function LaterPage() {
             <Clock className="h-3.5 w-3.5" />
             {t('later.scheduled')}
           </button>
+          <button
+            data-testid="later-tab-reminders"
+            onClick={() => setActiveTab('reminders')}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors',
+              activeTab === 'reminders'
+                ? 'bg-slack-active-tab text-slack-primary'
+                : 'text-slack-secondary hover:bg-slack-hover'
+            )}
+          >
+            <AlarmClock className="h-3.5 w-3.5" />
+            {t('later.reminders')}
+          </button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         {activeTab === 'scheduled' ? (
           <ScheduledMessagesTab />
+        ) : activeTab === 'reminders' ? (
+          <RemindersTab />
         ) : isLoading ? (
           <div className="text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (

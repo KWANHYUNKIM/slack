@@ -326,7 +326,7 @@ export interface ApiReaction {
 
 // ---- Activity ----
 
-export type ActivityType = 'MENTION' | 'CHANNEL_MENTION' | 'HERE_MENTION' | 'THREAD_REPLY' | 'REACTION';
+export type ActivityType = 'MENTION' | 'CHANNEL_MENTION' | 'HERE_MENTION' | 'THREAD_REPLY' | 'REACTION' | 'REMINDER';
 export type ActivityFilter = 'all' | 'mentions' | 'threads' | 'reactions';
 
 export interface ApiActivity {
@@ -340,7 +340,9 @@ export interface ApiActivity {
   /** 그룹 DM 활동이면 그룹 id */
   dmGroupId?: number | null;
   threadId: number | null;
-  message: { id: number; content: string; excerpt: string };
+  /** 리마인더 활동은 대상이 없거나 지워졌을 수 있어 null */
+  message: { id: number; content: string; excerpt: string } | null;
+  reminder?: { id: number; text: string | null } | null;
   emoji: string | null;
   readAt: string | null;
   createdAt: string;
@@ -983,6 +985,41 @@ export function addBookmark(messageId: number) {
 
 export function removeBookmark(messageId: number) {
   return request<{ message: string }>(`/messages/${messageId}/bookmark`, { method: 'DELETE' });
+}
+
+// ---- Reminders ----
+
+export interface ApiReminder {
+  id: number;
+  messageId: number | null;
+  dmId: number | null;
+  channelId: number | null;
+  text: string | null;
+  remindAt: string;
+  firedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  channel: { id: number; name: string } | null;
+  messageDeleted: boolean;
+  message: { id: number; excerpt: string; user: { id: number; name: string }; threadId: number | null } | null;
+  dmUserId: number | null;
+  dmGroupId: number | null;
+}
+
+export function getReminders(status: 'pending' | 'done') {
+  return request<{ items: ApiReminder[]; nextCursor: null }>(`/reminders?status=${status}`);
+}
+
+export function createReminder(body: { messageId?: number; dmId?: number; text?: string; remindAt: string }) {
+  return request<ApiReminder>('/reminders', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function updateReminder(id: number, body: { remindAt: string } | { completed: boolean }) {
+  return request<ApiReminder>(`/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export function deleteReminder(id: number) {
+  return request<{ message: string }>(`/reminders/${id}`, { method: 'DELETE' });
 }
 
 // ---- Unreads ----

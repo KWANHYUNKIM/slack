@@ -14,6 +14,7 @@ import { ActivityPage } from '@/components/Messages/ActivityPage';
 import { ThreadsPage } from '@/components/Messages/ThreadsPage';
 import { LaterPage } from '@/components/Messages/LaterPage';
 import { QuickSwitcher } from '@/components/QuickSwitcher/QuickSwitcher';
+import { ReminderToast } from '@/components/Messages/ReminderToast';
 import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { PermalinkNotFound } from '@/components/Messages/PermalinkNotFound';
@@ -98,6 +99,7 @@ export function AppLayout() {
 
       {/* 빠른 전환기와 단축키 도움말(06) */}
       <QuickSwitcher />
+      <ReminderToast />
       <ShortcutsHelpModal />
       <Toaster />
     </div>

@@ -428,6 +428,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
           anchorClassName="absolute -top-4 end-5 mt-9"
           onClose={() => setShowMoreMenu(false)}
           onCopyLink={handleCopyLink}
+          reminderTarget={{ messageId: message.id }}
           onMarkUnread={!isThread ? () => {
             setShowMoreMenu(false);
             const allMessages = useMessageStore.getState().messages;

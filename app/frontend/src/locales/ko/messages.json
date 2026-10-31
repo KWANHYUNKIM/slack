@@ -108,7 +108,8 @@
     "loadFailed": "저장한 메시지를 불러오지 못했습니다.",
     "empty": "저장한 메시지가 아직 없습니다. 메시지의 북마크 아이콘을 눌러 저장해 보세요.",
     "removeSaved": "저장 목록에서 제거",
-    "menu": "메뉴"
+    "menu": "메뉴",
+    "reminders": "리마인더"
   },
   "linkModal": {
     "title": "링크 추가",
@@ -126,7 +127,8 @@
     "unpin": "메시지 고정 해제",
     "edit": "메시지 수정",
     "delete": "메시지 삭제",
-    "copyLink": "링크 복사"
+    "copyLink": "링크 복사",
+    "remind": "리마인더 추가"
   },
   "area": {
     "selectChannel": "채널을 선택해 대화를 시작하세요",
@@ -298,5 +300,48 @@
     "newMessagesBarAtLeast": "새 메시지 {count, plural, other {#}}개 이상",
     "markRead": "읽음으로 표시",
     "jumpFailed": "안 읽음 위치를 불러오지 못했습니다"
+  },
+  "reminder": {
+    "set": "리마인더 설정",
+    "customLabel": "리마인더 날짜와 시각",
+    "dismiss": "닫기",
+    "preset": {
+      "in20": "20분 후",
+      "in1h": "1시간 후",
+      "in3h": "3시간 후",
+      "tomorrow": "내일",
+      "nextWeek": "다음 주",
+      "custom": "사용자 지정..."
+    },
+    "status": {
+      "pending": "예정",
+      "done": "완료"
+    },
+    "snooze": {
+      "m10": "10분",
+      "h1": "1시간",
+      "tomorrow": "내일"
+    },
+    "loadFailed": "리마인더를 불러오지 못했습니다.",
+    "empty": "리마인더가 없습니다. 메시지의 더 보기 메뉴나 /remind 명령으로 추가하세요.",
+    "emptyDone": "완료한 리마인더가 없습니다.",
+    "dueAt": "{time} 예정",
+    "firedAt": "{time}에 알림",
+    "completedAt": "{time}에 완료",
+    "messageDeleted": "삭제된 메시지",
+    "complete": "완료로 표시",
+    "reopen": "완료 취소",
+    "delete": "리마인더 삭제",
+    "toast": {
+      "created": "리마인더가 설정되었습니다",
+      "due": "리마인더: {text}",
+      "createFailed": "리마인더를 설정하지 못했습니다. 다시 시도해 주세요."
+    },
+    "command": {
+      "syntax": "사용법: /remind me [내용] in [숫자] [분|시간|일]  (예: /remind me 물 마시기 in 2 분)",
+      "tooShort": "리마인더는 지금부터 1분 이후여야 합니다.",
+      "tooLong": "리마인더는 1년 이내여야 합니다.",
+      "created": "{time}에 알려 드립니다"
+    }
   }
 }
