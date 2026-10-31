@@ -130,3 +130,19 @@
 | 14:42 | 총괄이 scripts/check-resources.sh에 스왑 사용률 추가: 90% 이상이면 정상 → 감속(한도 1) | memory_pressure만으로는 스왑 압박이 안 잡힘(dev-1 제안). 현재 88% | |
 | 14:43 | 7 | dev-1 sonnet: PR #12 리뷰 7건 반영(공유 트리, channels.ts /read·/read/baseline만) / `/code-review medium 14` | 정상 단계. #14 base를 main으로 변경. 수정 전 파일 스냅샷을 scratchpad에 저장(추출용) | 진행 중 |
 | 14:43 | 후속 파트 등록: fix/auth-error-logging(auth 미들웨어가 DB 오류도 401로 삼킴, catch에서 logError) | dev-1 남은 이슈 3 | |
+| 14:45 | PR #14 리뷰 9건 분류: ①보이지 않는 문자(변형 선택자·한글 채움 문자) 차단, ②NFKC 접기 + 라틴/키릴·그리스 혼합 거부, ③관리자 변경 P2002 → 400, ④⑤⑥ 관리자 UI 오류 표시·tooLong 메시지·실패 시 편집 유지, ⑦한글 NFD 테스트, ⑨중복 정규화 정리 → #14에서 수정. ⑧프런트·백 규칙 복붙은 공용 패키지 대신 공통 테스트 벡터로 | 결정: 문자 필터링은 사칭 채널 보안 문제라 규칙 3에 따라 opus. feat/channel-name-hardening 중 혼합 문자 체계 차단을 이번 PR로 앞당김 | |
+| 14:46 | 8 | dev-5 opus: PR #14 리뷰 반영(channels.ts 제외, dev-1과 파일 분리) | 정상 단계, 동시 2명 | 진행 중 |
+| 14:44 | dev-1 보고(PR #12 리뷰 반영): 조건부 커서 갱신 advanceReadCursor, baseline에서 멘션 정리, /read는 이동 시 요청 위치까지, 삭제 메시지 id 허용(타 채널 404 유지). 전체 506 통과 | 총괄 검토: 스냅샷 diff로 범위 확인(channels.ts /read 핸들러만, mentionService 무변경). #12 브랜치에 patch 적용, tsc 통과 → cdd07a6 푸시, PR #12 머지 | 남은 이슈(기존 행 있는 사용자의 baseline 무동작, 레거시 데이터)는 활동 기능이 오늘 도입돼 운영 데이터가 없으므로 마이그레이션 불필요로 결정 |
+| 14:45 | dev-1이 발견: PR #15 scale.test의 `res.req` 타입 오류(jest는 변환만 해서 못 잡음) → 총괄 수정 32e4fd3 | CI가 막혀 있어 tsc는 총괄이 PR마다 직접 확인 | |
+| 14:47 | PR #13 base를 main으로, 병합 커밋(겹치는 파일 없음, #13 4개 파일 + main) 푸시. `/code-review medium` #13·#15 | | |
+| 14:50 | PR #15 리뷰 8건: isolatedModules 무효(tsconfig에 이미 있음, deprecation 경고만) 제거, settle 10초 상한, 파일별 setTimeout 중복 제거, CRUD 50→10건, find 결과 확인 → 총괄 직접 수정(작은 범위). testTimeout 30s는 유지(원인이 호스트 스왑 멈춤이라 환경 대응), 이중 settle·expectCreated 출력 중복은 무해해 유지 | `npm test` scale·activity 50 통과, tsc 통과 → PR #15 머지 | **실수**: 앞서 worktree에서 jest 실패를 node_modules 탓으로 봤으나 실제로는 `npm test`(--experimental-vm-modules) 대신 `npx jest`를 써서였음 |
+| 14:52 | PR #13 리뷰 9건 전부 반영 지시 | 9 | dev-3 opus: presence 쓰기 추적·크래시, 삭제 응답 비대기, 큐 차례에 메시지 재조회, 상태 덮어쓰기, keyedQueue 통합 | 동시성이라 opus. dev-5와 파일 분리 | 진행 중 |
+| 15:07 | dev-3 보고(PR #13 리뷰 9건 반영, 실제 1.5h/예상 1h): KeyedQueue 통합, 삭제 비대기, 큐 차례 재조회, presence 조건부 갱신. tsc 통과, 전체 713 중 712 통과 | activity.test 간헐 실패 2건(baseline 13→12, THREAD_REPLY 복원) 원인 미확정 | |
+| 15:10 | 총괄 검토: 두 테스트 모두 settle 후 조회라 테스트 경쟁 가설은 틀림(넣었던 settle 되돌림). 큐는 호출 즉시 추적·라우트는 응답과 같은 틱에 등록해 settle 누락 경로 못 찾음. 30분 규칙상 직접 파지 않고 반복 실행으로 회귀 여부 판정 | #13 브랜치에 반영 커밋 ce4c4cf(로컬, 미푸시). **실수**: 추출 중 잘못된 rm으로 src/index.ts를 지웠다가 git checkout으로 복구, tsc 통과 확인 | 스왑 90% → 감속. dev-5 jest 종료 후 activity.test 단독 10회 |
+| 17:44 | dev-5 보고(PR #14 리뷰 9건 반영, opus): Default_Ignorable 거부, NFKC(한글 호환 자모 제외), 라틴·키릴·그리스·아르메니아·체로키 혼합 거부, 숫자 체계 혼합 거부, P2002 400, 관리자 오류 표시, 공통 테스트 벡터로 프런트·백 일치 검사. 3파일 테스트는 스왑 부족으로 강제 종료돼 미확인 | 총괄 판단: 지시보다 넓힌 규칙(아르메니아·체로키, 숫자 체계)은 사칭 방지 목적이 맞아 승인 | |
+| 17:50 | 총괄이 파일별로 하나씩 실행(감속 단계·스왑 92%): channel-name-unicode 222, security 49, admin 45 모두 통과 | | |
+| 17:55 | #14를 main 위에 재구성(원래 diff `git apply -3` 깨끗이 적용 + 스냅샷과 같은 파일에 dev-5 최종본). be·fe tsc, eslint, i18n:check 통과. force push 대신 (기존 브랜치, main) 두 부모 커밋 44894df로 푸시 → PR #14 머지 | **실수**: zsh가 `$C:refs`의 `:r`을 수식자로 해석해 첫 푸시 실패 → `${C}`로 해결 | |
+| 17:56 | 후속 파트 등록: fix/admin-store-rethrow, feat/channel-name-taken-code(중복 이름 오류 code·번역), feat/channel-name-skeleton(UTS #39 skeleton 유니크, 스키마), docs i18n.md 4절 정규화 문구 갱신 | dev-5 남은 이슈 2·3·4·6 | |
+| 17:57 | PR #13 회귀 판정: activity + activity-race 단독 10회 실행 시작(통합 DB) | | 진행 중 |
+| 17:51 | PR #13 회귀 판정: activity + activity-race 단독 10회 모두 57/57 통과 → dev-3 실행 때 실패 2건은 동시 jest(dev-5) + 스왑 92% 압박 탓으로 판단 | ce4c4cf 푸시, main 병합(겹친 setup.ts는 #15 버전 채택), tsc 통과 → PR #13 머지 | 열린 PR 0 |
+| 17:53 | 공유 작업 트리 점검: main과 다른 것은 문서 3개뿐(api.ts는 함수 위치만 다름, ci.yml은 예전 되돌림 커밋으로 빠져 있던 것) → 문서 PR 머지 후 공유 트리를 main으로 정리 | 이후 개발자는 main 기준 깨끗한 트리에서 시작 | |
