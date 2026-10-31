@@ -297,3 +297,6 @@
 | 2026-11-01 04:07 | PR #107 재리뷰 10건 → dev-4: Host 신뢰 금지(PUBLIC_URL 없으면 운영 503·개발 no-store), audience는 정식 resource 기준, 발급 트랜잭션에서 정책 행 잠금 재확인, 폐기 계열은 재사용 이벤트 제외, 연결 해제 응답, lastIssuedAt 조건부, 설정 캐시 공용화, 죽은 래퍼·중복 조건 제거 |
 | 2026-11-01 04:12 | PR #106 재리뷰 반영 검토: retention 27·ediscovery 9·file-detach 8·dm-groups 24, tsc, 외부 URL → 머지(06cc09d). 090000을 slackclone, slackclone_dev, dev2·3·5에 적용(dev4는 OAuth PR 검토 때). 채널 정리 파일 삭제 순서 통일은 별도 파트 |
 | 2026-11-01 04:14 | 자원 정상(스왑 85%). 배정: dev-2 verify/e2e-smoke(sonnet, 포트 3120/5180, dev2 DB), dev-3 fix/channel-purge-order(sonnet, 채널 정리도 DB 우선·재시도 표 마이그레이션 110000). 진행 3명(dev-4 OAuth 재리뷰 반영, dev-2, dev-3) |
+| 2026-11-01 04:18 | PR #107 재리뷰 반영 검토: main(#106) 리베이스, dev4 DB에 090000 적용, oauth 42·mcp 30·mfa 32·dm-groups 24·retention 27·error-code-coverage 11, tsc, lint, i18n, 물리 방향, 외부 URL. .env.example에 운영 PUBLIC_URL 필수 안내(총괄) → 머지(0c51f1f). 080000을 slackclone, slackclone_dev, dev1·3·5에 적용(dev2는 E2E 진행 중이라 끝난 뒤) |
+| 2026-11-01 04:19 | PR #112 리뷰 8건 → dev-3: 저장소 삭제 아웃박스(같은 트랜잭션에서 기록), 트랜잭션 timeout, 재시도 전량·예산 포함, 채널 파일 DELETE 분리 조건, raw DELETE RETURNING 공유, blankParents UPDATE RETURNING, 실제 오류 원인 기록·영구 실패 즉시 제거, 주석 갱신 |
+| 2026-11-01 04:22 | 배정: dev-4 E1a 스키마와 백필(opus, 마이그레이션 20261102010000, retentionService·설정 표 불가침). 진행 3명(dev-2 E2E, dev-3 #112, dev-4 E1a) |
