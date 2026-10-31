@@ -339,3 +339,6 @@
 | 2026-11-01 05:57 | 배정: dev-5 i18n-5g fi·cs·el·hu·ro(haiku, 시작 직전 ff 최신화·WALK 목록 포함 지시). 진행 2명(dev-4 E1b, dev-5) |
 | 2026-11-01 06:02 | PR #128 재리뷰 반영 검토: 리베이스 충돌 0, dev4 DB에 015000 적용, workspaces 41·auth 25·admin 48·websocket 11·security 49·error-code-coverage 11, tsc, 외부 URL → 머지(4b2f481). 20261102015000을 slackclone, slackclone_dev, dev1·2·3·5에 적용 |
 | 2026-11-01 06:03 | 배정: dev-4 E1c(opus, 마이그레이션 20261102020000, req.user.role 헤더 불변 원칙 유지). 진행 2명(dev-4, dev-5 i18n-5g) |
+| 2026-11-01 06:06 | i18n-5g 검토: 리베이스 충돌 0(시작 전 최신화 지시 효과), tsc, lint, i18n:test 38, 외부 URL → PR #134, /code-review low. 경고 504건(E1b 새 키 18×28)은 후속 일괄 |
+| 2026-11-01 06:08 | PR #134 리뷰 지적 0 → 머지(28/31) |
+| 2026-11-01 06:09 | 배정: dev-5 i18n-5h E1b 새 키 18개 × 2등급 28개 언어 일괄(haiku). 진행 2명(dev-4 E1c, dev-5), 감속(스왑 95%) |
