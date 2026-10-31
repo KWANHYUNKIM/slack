@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { loginFieldErrorKey } from '@/lib/authErrors';
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
@@ -23,9 +24,9 @@ export function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      // 서버 code로 문구를 고른다(영어 원문 비교 금지). 이메일 형식 오류만 전용 문구를 쓴다.
+      // 서버 code로 문구를 고른다(영어 원문 비교 금지). 검증 실패는 이메일 필드일 때만 이메일 안내를 보인다.
       setError(err instanceof ApiError && err.code === 'VALIDATION_FAILED'
-        ? t('login.errors.invalidEmail')
+        ? t(loginFieldErrorKey(err.fields))
         : apiErrorMessage(err, 'auth:login.errors.generic'));
     }
   };

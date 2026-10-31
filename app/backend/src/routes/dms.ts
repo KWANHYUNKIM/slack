@@ -386,7 +386,7 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
     // Push notification for DM thread reply (fire-and-forget)
     if (reply && fromUserId !== toUserId) {
       if (!isUserOnline(toUserId)) {
-        const senderName = reply.fromUser?.name || 'Someone';
+        const senderName = reply.fromUser?.name;
         sendPushToUser(toUserId, {
           titleKey: 'dmThread', sender: senderName, content, plainBody: true,
           url: `/d/${fromUserId}`,

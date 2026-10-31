@@ -219,3 +219,6 @@
 | 2026-11-01 00:32 | i18n-3 완료 보고 검토: 커밋 후 main 리베이스에서 dms.ts·websocket/index.ts 충돌(PR #63 dmService 이동과 겹침). 의미 충돌이라 총괄이 기계적으로 합치지 않고 dev-4에게 dmService 기준으로 푸시 i18n 이식·리베이스 완료 지시. 푸시·머지는 리베이스 완료 확인 뒤 별도 단계 |
 | 2026-11-01 00:35 | PR #68(mcp-3) 머지: 리베이스(충돌 없음 확인) 후 mcp-search-files 16·files 52·search 33·tsc·eslint 통과, 변경 20파일 확인 후 푸시 |
 | 2026-11-01 00:36 | dev-4에 추가 안내: PR #68이 search 로직을 searchService로 옮겨 i18n-3의 tz·code 변경도 서비스 기준으로 이식 필요, 최신 main 재리베이스 지시. 자원 감속(스왑 95%) → 새 배정 없음 |
+| 2026-11-01 00:43 | i18n-3 리베이스 완료 확인(충돌 0, origin/main 기준 최신), 남은 테스트 수정은 총괄이 별도 커밋. tsc·eslint·i18n·외부 URL·i18n-backend 18·dms 27·auth 24·search 33 → PR #71, /code-review |
+| 2026-11-01 00:45 | PR #71 리뷰 10건 → dev-4 반영 지시. 총괄 결정: 상태별 기본 code는 "구체 code 없음"으로 보고 화면별 fallback 문구 우선, JSON-RPC 응답엔 code 미부착, userPrefsSync는 400 거부만 기억·로그아웃 시 초기화, VALIDATION_FAILED에 fields(path·reason) 추가로 가입·로그인 필드별 문구 |
+| 2026-11-01 00:48 | 자원 정상(여유 30%, 스왑 89%) 한도 3. 배정: dev-1 E4 감사 로그 강화(sonnet, 엔터프라이즈 첫 파트·선행 없음), dev-3 i18n-4 RTL(sonnet, i18n-3·E4 파일은 최소 수정). 진행: dev-4 PR #71 반영 |

@@ -9,6 +9,17 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ): void {
+  // body-parser가 던지는 상태 오류(본문이 너무 큼 413, 지원하지 않는 형식 415)
+  const status = (err as { status?: number }).status;
+  if (status === 413) {
+    res.status(413).json({ error: 'Payload too large', code: ERR.PAYLOAD_TOO_LARGE });
+    return;
+  }
+  if (status === 415) {
+    res.status(415).json({ error: 'Unsupported media type', code: ERR.UNSUPPORTED_MEDIA_TYPE });
+    return;
+  }
+
   // Handle Zod validation errors
   if (err instanceof ZodError) {
     res.status(400).json({ error: err.issues, code: ERR.VALIDATION_FAILED });
