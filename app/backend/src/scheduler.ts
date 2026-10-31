@@ -8,15 +8,23 @@ import { processDueReminders } from './services/reminderService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
-let isProcessing = false;
+// 처리 중이면 진행 중인 Promise를 돌려준다. 호출자는 끝날 때까지 기다린 뒤 결과를 본다(건너뛰지 않는다).
+let inFlight: Promise<void> | null = null;
 
 /**
  * 시각이 된 예약 메시지를 보낸다. 스케줄러 틱과 테스트가 함께 부르는 단일 진입점이다.
- * 겹치는 호출은 isProcessing으로 건너뛴다. 같은 예약을 두 번 보내지 않게 claim(sent=false → true)도 한다.
+ * 같은 예약을 두 번 보내지 않게 claim(sent=false → true)도 한다.
  */
-export async function processDueScheduledMessages(): Promise<void> {
-  if (isProcessing) return;
-  isProcessing = true;
+export function processDueScheduledMessages(): Promise<void> {
+  if (!inFlight) {
+    inFlight = runDueScheduledMessages().finally(() => {
+      inFlight = null;
+    });
+  }
+  return inFlight;
+}
+
+async function runDueScheduledMessages(): Promise<void> {
   try {
     const due = await prisma.scheduledMessage.findMany({
       where: {
@@ -125,8 +133,6 @@ export async function processDueScheduledMessages(): Promise<void> {
     }
   } catch (err) {
     logError('Scheduler tick error', err);
-  } finally {
-    isProcessing = false;
   }
 }
 

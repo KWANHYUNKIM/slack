@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Avatar } from '@/components/ui/avatar';
-import { apiErrorMessage } from '@/lib/apiErrors';
+import { useAdminAction } from '@/hooks/useAdminAction';
 import { ConfirmDialog } from './ConfirmDialog';
 
 const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
@@ -24,49 +24,33 @@ export function AdminMembersTab() {
     userId: number;
     userName: string;
   } | null>(null);
-  // 역할 변경처럼 대화상자가 없는 동작의 실패는 표 위에, 대화상자 동작의 실패는 대화상자 안에 보여 준다.
-  const [actionError, setActionError] = useState('');
-  const [dialogError, setDialogError] = useState('');
-  const [busy, setBusy] = useState(false);
+  // 역할 변경은 표 위에, 대화상자 동작은 대화상자 안에 실패 문구를 보여 준다. 인스턴스를 따로 둔다.
+  const roleAction = useAdminAction('admin:errors.updateRole');
+  const dialogAction = useAdminAction('admin:errors.transferOwnership');
 
   const isOwner = currentUser?.role === 'OWNER';
 
-  const handleRoleChange = async (userId: number, role: 'ADMIN' | 'MEMBER' | 'GUEST') => {
-    setActionError('');
-    try {
-      await updateUserRole(userId, role);
-    } catch (err) {
-      setActionError(apiErrorMessage(err, 'admin:errors.updateRole'));
-    }
+  const handleRoleChange = (userId: number, role: 'ADMIN' | 'MEMBER' | 'GUEST') => {
+    void roleAction.run(() => updateUserRole(userId, role));
   };
 
   const handleConfirm = async () => {
-    if (!confirmAction || busy) return;
+    if (!confirmAction) return;
     const { type, userId } = confirmAction;
-    setBusy(true);
-    setDialogError('');
-    try {
-      if (type === 'transfer') {
-        await transferOwnership(userId);
-      } else if (type === 'deactivate') {
-        await deactivateUser(userId);
-      } else {
-        await reactivateUser(userId);
-      }
-      setConfirmAction(null);
-    } catch (err) {
-      const fallbackKey = type === 'transfer'
-        ? 'admin:errors.transferOwnership'
-        : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
-      setDialogError(apiErrorMessage(err, fallbackKey));
-    } finally {
-      setBusy(false);
-    }
+    const fallbackKey = type === 'transfer'
+      ? 'admin:errors.transferOwnership'
+      : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
+    const ok = await dialogAction.run(() => {
+      if (type === 'transfer') return transferOwnership(userId);
+      if (type === 'deactivate') return deactivateUser(userId);
+      return reactivateUser(userId);
+    }, fallbackKey);
+    if (ok) setConfirmAction(null);
   };
 
   const closeConfirm = () => {
     setConfirmAction(null);
-    setDialogError('');
+    dialogAction.reset();
   };
 
   const filtered = users.filter(
@@ -104,8 +88,8 @@ export function AdminMembersTab() {
         />
       </div>
 
-      {actionError && (
-        <p role="alert" className="mb-3 text-sm text-slack-error">{actionError}</p>
+      {roleAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{roleAction.error}</p>
       )}
 
       <div className="rounded-lg border border-slack-border overflow-x-auto">
@@ -146,6 +130,7 @@ export function AdminMembersTab() {
                     ) : (
                       <select
                         value={user.role}
+                        disabled={roleAction.busy}
                         onChange={(e) => handleRoleChange(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
                         className="rounded border border-slack-border px-2 py-1 text-xs focus:border-slack-focus focus:outline-none"
                       >
@@ -206,8 +191,8 @@ export function AdminMembersTab() {
           title={t(`members.dialogs.${confirmAction.type}.title`)}
           message={t(`members.dialogs.${confirmAction.type}.message`, { name: confirmAction.userName })}
           confirmLabel={t(`members.dialogs.${confirmAction.type}.confirm`)}
-          error={dialogError}
-          busy={busy}
+          error={dialogAction.error}
+          busy={dialogAction.busy}
           onConfirm={handleConfirm}
           onCancel={closeConfirm}
         />

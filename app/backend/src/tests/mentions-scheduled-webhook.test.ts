@@ -153,6 +153,23 @@ describe('예약 메시지와 웹훅의 멘션 활동', () => {
       expect(res.body.items.some((a: { type: string; actor: { id: number } }) => a.type === 'MENTION' && a.actor.id === author.id)).toBe(true);
     });
 
+    it('처리 중에 다시 부르면 건너뛰지 않고 진행 중인 작업을 기다렸다가, 메시지와 활동을 한 번만 만든다', async () => {
+      const createRes = await request(app)
+        .post('/messages/schedule')
+        .set('Authorization', `Bearer ${author.token}`)
+        .send({ content: `<@${mentioned.id}|Smw-Mentioned> 동시 호출`, channelId, scheduledAt: new Date(Date.now() + 3600_000).toISOString() });
+      await makeDue(createRes.body.id);
+
+      // 두 번 동시에 불러도 같은 Promise를 돌려받는다
+      const first = processDueScheduledMessages();
+      const second = processDueScheduledMessages();
+      await Promise.all([first, second]);
+      await settleBackgroundWork();
+
+      expect(await prisma.message.count({ where: { channelId, content: { contains: '동시 호출' } } })).toBe(1);
+      expect(await mentionActivities(mentioned.id)).toHaveLength(1);
+    });
+
     it('멘션이 없는 예약은 활동을 만들지 않는다', async () => {
       const createRes = await request(app)
         .post('/messages/schedule')
@@ -200,6 +217,45 @@ describe('예약 메시지와 웹훅의 멘션 활동', () => {
 
       // Read: 메시지가 채널에 남아 있다
       expect(await prisma.message.findUnique({ where: { id: messageId } })).not.toBeNull();
+    });
+
+    it('생성자가 비활성화되면 웹훅 요청을 403으로 거부하고 메시지·활동을 만들지 않는다', async () => {
+      await prisma.user.update({ where: { id: author.id }, data: { deactivatedAt: new Date() } });
+
+      const res = await request(app)
+        .post(`/webhooks/${token}`)
+        .send({ content: `<@${mentioned.id}|Smw-Mentioned> 비활성 생성자` });
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Webhook creator is deactivated');
+      await settleBackgroundWork();
+      expect(await prisma.message.count({ where: { channelId, content: { contains: '비활성 생성자' } } })).toBe(0);
+      expect(await mentionActivities(mentioned.id)).toHaveLength(0);
+    });
+
+    it('생성자가 채널 멤버가 아니면 웹훅 요청을 403으로 거부한다', async () => {
+      await prisma.channelMember.delete({ where: { userId_channelId: { userId: author.id, channelId } } });
+
+      const res = await request(app).post(`/webhooks/${token}`).send({ content: '멤버 아님' });
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Webhook creator is not a channel member');
+      expect(await prisma.message.count({ where: { channelId, content: '멤버 아님' } })).toBe(0);
+    });
+
+    it('웹훅 토큰마다 분당 60회까지 받고, 61번째는 429로 막히며 다른 웹훅은 영향이 없다', async () => {
+      const statuses: number[] = [];
+      for (let i = 0; i < 61; i++) {
+        const res = await request(app).post(`/webhooks/${token}`).send({ content: `반복 ${i}` });
+        statuses.push(res.status);
+      }
+      expect(statuses.slice(0, 60).every((s) => s === 201)).toBe(true);
+      expect(statuses[60]).toBe(429);
+
+      const other = await request(app)
+        .post('/webhooks')
+        .set('Authorization', `Bearer ${author.token}`)
+        .send({ name: 'Smw Other', channelId });
+      const otherRes = await request(app).post(`/webhooks/${other.body.token}`).send({ content: '다른 웹훅' });
+      expect(otherRes.status).toBe(201);
     });
 
     it('웹훅을 지우면 토큰으로 더 이상 보낼 수 없고, 그 뒤로 활동도 생기지 않는다', async () => {
