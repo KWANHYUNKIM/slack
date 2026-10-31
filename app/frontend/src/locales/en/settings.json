@@ -3,7 +3,8 @@
     "label": "Language"
   },
   "avatar": {
-    "alt": "Avatar"
+    "alt": "Avatar",
+    "dnd": "Notifications paused"
   },
   "profile": {
     "title": "Profile",
@@ -32,7 +33,8 @@
       "notImage": "Please select an image file.",
       "tooLarge": "Image must be under 5MB.",
       "uploadFailed": "Failed to upload photo. Please try again."
-    }
+    },
+    "statusUntil": "Until {time}"
   },
   "crop": {
     "title": "Crop your photo",

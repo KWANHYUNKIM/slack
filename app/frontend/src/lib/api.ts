@@ -1,4 +1,5 @@
 import { t } from '@/lib/i18n';
+import type { CustomStatus, Dnd } from '@/lib/types';
 
 /**
  * Manages a short-lived download token for file URLs.
@@ -607,6 +608,8 @@ export interface UserProfile {
   bio?: string | null;
   createdAt: string;
   _count?: { messages: number; channels: number };
+  customStatus?: CustomStatus | null;
+  dnd?: Dnd;
 }
 
 export function getMyProfile() {
@@ -645,10 +648,38 @@ export function getUserProfile(userId: number) {
   return request<UserProfile>(`/users/${userId}`);
 }
 
+// ---- 커스텀 상태와 방해금지 ----
+
+export interface StatusResult {
+  id: number;
+  customStatus: CustomStatus | null;
+  dnd: Dnd;
+}
+
+export function setCustomStatus(data: { emoji?: string | null; text?: string | null; expiresAt?: string | null; pauseNotifications?: boolean }) {
+  return request<StatusResult>('/users/me/custom-status', { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export function clearCustomStatus() {
+  return request<StatusResult>('/users/me/custom-status', { method: 'DELETE' });
+}
+
+export function getDnd() {
+  return request<Dnd>('/users/me/dnd');
+}
+
+export function startDnd(data: { minutes?: number; until?: string }) {
+  return request<Dnd>('/users/me/dnd', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function endDnd() {
+  return request<Dnd>('/users/me/dnd', { method: 'DELETE' });
+}
+
 // ---- Direct Messages ----
 
 export interface ApiDMConversation {
-  otherUser: { id: number; name: string; email: string; avatar?: string | null; status?: string };
+  otherUser: { id: number; name: string; email: string; avatar?: string | null; status?: string; customStatus?: CustomStatus | null; dnd?: Dnd };
   lastMessage: { content: string; createdAt: string; fromUserId: number } | null;
   unreadCount: number;
   mentionCount?: number;

@@ -9,7 +9,8 @@ import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { AvatarCropModal } from './AvatarCropModal';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '@/lib/i18n/format';
+import { formatDate, formatTime } from '@/lib/i18n/format';
+import { isStatusActive, isDndActive } from '@/stores/useStatusStore';
 import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { toUserStatus } from '@/lib/types';
 
@@ -136,6 +137,8 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   fallback={profile.name}
                   size="lg"
                   status={toUserStatus(profile.status)}
+                  statusEmoji={isStatusActive(profile.customStatus, Date.now()) ? profile.customStatus?.emoji : null}
+                  dnd={isDndActive(profile.dnd, Date.now())}
                 />
                 {isOwnProfile && isEditing && (
                   <button
@@ -225,6 +228,19 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.status')}</p>
                   <p className="text-[14px] text-slack-primary ">{t(`profile.statusValue.${profile.status || 'offline'}`, { defaultValue: profile.status })}</p>
                 </div>
+
+                {/* Custom status (05) */}
+                {isStatusActive(profile.customStatus, Date.now()) && (
+                  <div className="mb-4" data-testid="profile-custom-status">
+                    <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.status')}</p>
+                    <p
+                      className="text-[14px] text-slack-primary"
+                      title={profile.customStatus?.expiresAt ? t('profile.statusUntil', { time: formatTime(profile.customStatus.expiresAt) }) : undefined}
+                    >
+                      {profile.customStatus?.emoji} {profile.customStatus?.text}
+                    </p>
+                  </div>
+                )}
 
                 {/* Joined date */}
                 <div className="mb-4">

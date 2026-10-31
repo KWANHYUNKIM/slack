@@ -3,6 +3,7 @@ import { getIO } from './websocket/index.js';
 import { USER_SELECT_BASIC, FILE_SELECT } from './db/selects.js';
 import { logError } from './utils/logger.js';
 import { processNewChannelMessage } from './services/mentionService.js';
+import { clearExpired } from './services/statusService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
@@ -14,6 +15,9 @@ export function startScheduler(): NodeJS.Timeout {
     if (isProcessing) return;
     isProcessing = true;
     try {
+      // 만료된 커스텀 상태와 방해금지를 정리한다(예약 메시지가 없어도 매 틱 돈다).
+      await clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
+
       const due = await prisma.scheduledMessage.findMany({
         where: {
           sent: false,

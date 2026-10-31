@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
+import { useStatusStore } from './useStatusStore';
 import { toUserStatus, type Channel, type DirectMessage, type GroupDM } from '@/lib/types';
 
 export type SidebarSection = keyof api.SidebarCollapsed;
@@ -167,6 +168,15 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   fetchDirectMessages: async () => {
     try {
       const conversations = await api.getDirectMessages();
+      // 상대의 커스텀 상태와 방해금지는 상태 스토어에 둔다(user:status 이벤트가 이어서 갱신)
+      for (const c of conversations) {
+        if (c?.otherUser) {
+          useStatusStore.getState().setEntry(c.otherUser.id, {
+            customStatus: c.otherUser.customStatus ?? null,
+            dnd: c.otherUser.dnd ?? { active: false, until: null },
+          });
+        }
+      }
       const dms: DirectMessage[] = conversations.filter((c) => c?.otherUser).map((c) => ({
         id: c.otherUser.id,
         userId: c.otherUser.id,

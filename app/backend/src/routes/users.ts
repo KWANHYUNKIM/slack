@@ -11,6 +11,11 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline, presenceQueue } from '../websocket/index.js';
+import {
+  STATUS_SELECT, MAX_STATUS_TEXT, MIN_FUTURE_MS, MAX_FUTURE_MS,
+  cleanStatusText, isSingleEmoji, statusView, setCustomStatus, clearCustomStatus, setDnd, endDnd,
+  computeDnd,
+} from '../services/statusService.js';
 
 // Avatar upload setup
 const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
@@ -80,6 +85,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
         bio: true,
         createdAt: true,
         updatedAt: true,
+        ...STATUS_SELECT,
         _count: {
           select: {
             messages: true,
@@ -96,10 +102,12 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Enrich with real-time WebSocket presence
     const online = isUserOnline(userId);
+    const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = user;
     res.json({
-      ...user,
+      ...rest,
       status: online ? 'online' : (user.status || 'offline'),
       isOnline: online,
+      ...statusView(user),
     });
   } catch (error) {
     logError('Get profile error', error);
@@ -158,6 +166,110 @@ router.patch('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Respon
   } catch (error) {
     logError('Update sidebar pref error', error);
     res.status(500).json({ error: 'Failed to update sidebar preferences' });
+  }
+});
+
+// ---- 커스텀 상태와 방해금지(05). '/:id'보다 먼저 등록한다. ----
+
+function futureDate(label: string) {
+  return z.string().datetime({ offset: true }).transform((v) => new Date(v)).superRefine((d, ctx) => {
+    const delta = d.getTime() - Date.now();
+    if (delta < MIN_FUTURE_MS) ctx.addIssue({ code: 'custom', message: `${label} must be at least 1 minute in the future` });
+    else if (delta > MAX_FUTURE_MS) ctx.addIssue({ code: 'custom', message: `${label} must be within 7 days` });
+  });
+}
+
+const customStatusSchema = z.object({
+  emoji: z.string().max(50).refine(isSingleEmoji, { message: 'Emoji must be a single emoji' }).nullish(),
+  text: z.string().max(MAX_STATUS_TEXT).transform(cleanStatusText).nullish(),
+  expiresAt: futureDate('expiresAt').nullish(),
+  pauseNotifications: z.boolean().optional(),
+}).strict().refine((v) => !!v.emoji || !!v.text, { message: 'Emoji or text is required' });
+
+const dndSchema = z.object({
+  minutes: z.number().int().min(1).max(10080).optional(),
+  until: futureDate('until').optional(),
+}).strict().refine((v) => (v.minutes === undefined) !== (v.until === undefined), { message: 'Provide either minutes or until' });
+
+function statusResponse(userId: number, user: Parameters<typeof statusView>[0]) {
+  return { id: userId, ...statusView(user) };
+}
+
+// GET /users/me/dnd - 방해금지 상태 조회 (만료는 조회 시점에 계산)
+router.get('/me/dnd', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId }, select: STATUS_SELECT });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json(computeDnd(user));
+  } catch (error) {
+    logError('Get dnd error', error);
+    res.status(500).json({ error: 'Failed to get dnd' });
+  }
+});
+
+// PUT|POST /users/me/dnd - 방해금지 켜기 (minutes 또는 until)
+async function turnOnDnd(req: AuthRequest, res: Response) {
+  try {
+    const parsed = dndSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
+      return;
+    }
+    const until = parsed.data.until ?? new Date(Date.now() + parsed.data.minutes! * 60_000);
+    const user = await setDnd(req.user!.userId, until);
+    res.json(computeDnd(user));
+  } catch (error) {
+    logError('Set dnd error', error);
+    res.status(500).json({ error: 'Failed to set dnd' });
+  }
+}
+router.post('/me/dnd', authMiddleware, turnOnDnd);
+router.put('/me/dnd', authMiddleware, turnOnDnd);
+
+// DELETE /users/me/dnd - 방해금지 끄기
+router.delete('/me/dnd', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await endDnd(req.user!.userId);
+    res.json(computeDnd(user));
+  } catch (error) {
+    logError('End dnd error', error);
+    res.status(500).json({ error: 'Failed to end dnd' });
+  }
+});
+
+// PUT /users/me/custom-status - 커스텀 상태 설정/수정 (이모지, 문구, 만료, 상태가 지워질 때까지 알림 일시 중지)
+router.put('/me/custom-status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const parsed = customStatusSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
+      return;
+    }
+    const { emoji, text, expiresAt, pauseNotifications } = parsed.data;
+    const user = await setCustomStatus(req.user!.userId, {
+      emoji: emoji || null,
+      text: text || null,
+      expiresAt: expiresAt ?? null,
+      pauseNotifications: pauseNotifications === true,
+    });
+    res.json(statusResponse(req.user!.userId, user));
+  } catch (error) {
+    logError('Set custom status error', error);
+    res.status(500).json({ error: 'Failed to set custom status' });
+  }
+});
+
+// DELETE /users/me/custom-status - 커스텀 상태 지우기 (상태에 묶인 DND도 해제)
+router.delete('/me/custom-status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await clearCustomStatus(req.user!.userId);
+    res.json(statusResponse(req.user!.userId, user));
+  } catch (error) {
+    logError('Clear custom status error', error);
+    res.status(500).json({ error: 'Failed to clear custom status' });
   }
 });
 
@@ -301,6 +413,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
         status: true,
         bio: true,
         createdAt: true,
+        ...STATUS_SELECT,
       },
     });
 
@@ -326,10 +439,15 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Enrich with real-time presence status
     const online = isUserOnline(userId);
+    const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...publicFields } = user;
+    const view = statusView(user);
     const enrichedUser = {
-      ...user,
+      ...publicFields,
       status: online ? 'online' : (user.status || 'offline'),
       isOnline: online,
+      customStatus: view.customStatus,
+      // 타인에게는 켜짐 여부와 끝나는 시각만 보인다(상태에 묶인 DND 여부 같은 내부 값은 숨긴다).
+      dnd: view.dnd,
     };
 
     res.json(enrichedUser);
@@ -377,17 +495,22 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         name: true,
         avatar: true,
         status: true,
+        ...STATUS_SELECT,
       },
       orderBy: { name: 'asc' },
       take: limit,
     });
 
     // Augment with real-time WebSocket presence
-    const augmented = users.map((u) => ({
-      ...u,
-      status: isUserOnline(u.id) ? 'online' : u.status,
-      isOnline: isUserOnline(u.id),
-    }));
+    const augmented = users.map((u) => {
+      const { customStatusEmoji, customStatusText, customStatusExpiresAt, dndUntil, dndWithStatus, ...rest } = u;
+      return {
+        ...rest,
+        status: isUserOnline(u.id) ? 'online' : u.status,
+        isOnline: isUserOnline(u.id),
+        ...statusView(u),
+      };
+    });
 
     res.json(augmented);
   } catch (error) {

@@ -1,19 +1,26 @@
 import webpush from 'web-push';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
+import { isUserDnd } from './statusService.js';
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@slawk.dev';
 
-const isConfigured = !!(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
+// 키는 환경 변수에서 호출 시점에 읽는다(테스트가 키를 주입할 수 있게). 설정은 키가 바뀔 때만 다시 한다.
+let appliedKeys: string | null = null;
 
-if (isConfigured) {
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY!, VAPID_PRIVATE_KEY!);
+function ensureConfigured(): boolean {
+  const pub = process.env.VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv) return false;
+  if (appliedKeys !== `${pub}:${priv}`) {
+    webpush.setVapidDetails(VAPID_SUBJECT, pub, priv);
+    appliedKeys = `${pub}:${priv}`;
+  }
+  return true;
 }
 
 export function getVapidPublicKey(): string | null {
-  return VAPID_PUBLIC_KEY || null;
+  return process.env.VAPID_PUBLIC_KEY || null;
 }
 
 interface PushPayload {
@@ -24,20 +31,22 @@ interface PushPayload {
 
 // 알림 맥락. 05 상태/DND 파트가 이 값으로 억제 여부를 판단한다.
 export interface NotifyContext {
-  kind?: 'message' | 'mention' | 'dm' | 'thread';
+  kind?: 'message' | 'mention' | 'dm' | 'thread' | 'reminder';
   channelId?: number;
 }
 
 /**
- * 알림을 보내도 되는지 판단하는 훅 자리. 지금은 항상 true.
- * 05 파트(상태/DND)가 방해 금지 시간, 채널 뮤트 등을 여기서 검사하도록 채운다.
+ * 알림을 보내도 되는지 판단하는 훅. 채널 메시지, 1:1 DM, 그룹 DM, 스레드 답글 푸시가 모두 sendPushToUser를 거치므로 여기서 한 번만 막으면 된다.
+ * 지금은 방해금지(DND)가 켜져 있으면 false. 채널 뮤트 등은 08 파트가 이어서 채운다.
+ * 활동(Activity) 기록은 이 훅과 무관하게 남는다(DND가 끝난 뒤 활동 탭에서 확인).
  */
-export async function shouldNotify(_userId: number, _ctx?: NotifyContext): Promise<boolean> {
+export async function shouldNotify(userId: number, _ctx?: NotifyContext): Promise<boolean> {
+  if (await isUserDnd(userId)) return false;
   return true;
 }
 
 export async function sendPushToUser(userId: number, payload: PushPayload, ctx?: NotifyContext): Promise<void> {
-  if (!isConfigured) return;
+  if (!ensureConfigured()) return;
   if (!(await shouldNotify(userId, ctx))) return;
 
   const subscriptions = await prisma.pushSubscription.findMany({

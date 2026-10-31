@@ -26,6 +26,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Avatar } from '@/components/ui/avatar';
+import { UserMenuStatus } from '@/components/Profile/UserMenuStatus';
+import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
@@ -56,6 +58,8 @@ export function Sidebar() {
   const starredExpanded = !sidebarCollapsed.starred;
   const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/threads' ? 'threads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const myCustomStatus = useCustomStatus(user?.id);
+  const myDndOn = useIsDnd(user?.id);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
   const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
   const [showAddTeammates, setShowAddTeammates] = useState(false);
@@ -279,15 +283,18 @@ export function Sidebar() {
                 fallback={user.name}
                 size="md"
                 status={user.status}
+                statusEmoji={myCustomStatus?.emoji}
+                dnd={myDndOn}
                 className="cursor-pointer"
               />
             </button>
             {showAvatarMenu && (
-              <div className="absolute bottom-10 start-0 z-50 w-48 rounded-lg border border-slack-border bg-white py-1 shadow-lg">
+              <div className="absolute bottom-10 start-0 z-50 w-56 rounded-lg border border-slack-border bg-white py-1 shadow-lg">
                 <div className="px-4 py-2 border-b border-slack-border-light">
                   <p className="text-sm font-medium text-slack-primary">{user.name}</p>
                   <p className="text-xs text-slack-hint">{user.email}</p>
                 </div>
+                <UserMenuStatus onDone={() => setShowAvatarMenu(false)} />
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); openProfile(); }}>
                   <User className="h-4 w-4" />
                   {t('userMenu.profile')}

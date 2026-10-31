@@ -6,6 +6,19 @@ export function toUserStatus(status: string | undefined): UserStatus | undefined
   return USER_STATUSES.find((s) => s === status);
 }
 
+/** 커스텀 상태(05). 프레즌스(UserStatus)와 별개 값이다. */
+export interface CustomStatus {
+  emoji: string | null;
+  text: string | null;
+  expiresAt: string | null;
+}
+
+/** 방해금지(05). 타인에게는 켜짐 여부와 끝나는 시각만 온다. */
+export interface Dnd {
+  active: boolean;
+  until: string | null;
+}
+
 export interface User {
   id: number;
   name: string;
