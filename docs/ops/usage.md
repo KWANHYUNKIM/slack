@@ -143,3 +143,10 @@
 | 2026-11-01 02:18 | code-review | (리뷰) | PR #90 low | (미보고) |
 | 2026-11-01 02:23 | dev-3 | haiku | test/socket-listen-loopback | 106,555 |
 | 2026-11-01 02:25 | code-review | (리뷰) | PR #91 low | 49,707 |
+| 2026-11-01 02:27 | dev-3 | sonnet | fix/read-cursor-race | 64,908 |
+| 2026-11-01 02:31 | code-review | (리뷰) | PR #93 medium | 55,040 |
+| 2026-11-01 02:32 | dev-4 | opus | PR #89 리뷰 반영 | 98,741 |
+| 2026-11-01 02:34 | dev-1 | sonnet | feat/channel-name-hardening | 86,712 |
+| 2026-11-01 02:34 | dev-3 | sonnet | PR #93 리뷰 반영 | 11,133 |
+| 2026-11-01 02:40 | code-review | (리뷰) | PR #94 low | (미보고) |
+| 2026-11-01 02:41 | code-review | (리뷰) | PR #89 medium 재리뷰 | 139,398 |
