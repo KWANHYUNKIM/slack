@@ -79,3 +79,5 @@
 | 10:16 | PR #8 리뷰 10건, PR #7 리뷰 9건 전부 반영 지시 | dev-1, dev-5에게 되돌림 | |
 | 10:18 | PR #6 리뷰 반영 커밋 7b778f1 | 435 tests, audit 0 | |
 | 10:19 | 시연 서버 기동: 전용 DB `slackclone_dev`(테스트 DB와 분리) migrate+seed, 프런트 vite build, 백엔드 NODE_ENV=production PORT=3100 | 사용자 요청. 3000·5173은 다른 프로젝트가 사용 중이라 피함 | http://localhost:3100 정상, seed 계정으로 로그인 확인 |
+| 10:21 | PR #7 리뷰 반영 커밋 62857d6 | lint 0, build 성공 | |
+| 10:22 | 감속(CPU 부하 7.1)으로 01b 배정 보류 | 시연 서버(3100)는 사용자 요청이라 유지 | |

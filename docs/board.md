@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---|
 | 00-gap-analysis (Slack ↔ slawk 기능 비교와 파트 분할) | planner-1 | sonnet | 완료 | 60분 | 2026-10-31 08:55 | 2026-10-31 08:58 | 루프 1, 실제 약 3분. 결과: specs/00~03 |
 | 01a-mentions-activity (백엔드) | dev-1 | sonnet | PR #8 (high 리뷰 중) | 1.5h | 2026-10-31 10:05 | 2026-10-31 10:11 | P0, 스키마 변경. PR #5 위에 쌓음 |
-| 01b-mentions-activity (프런트) | - | sonnet | 대기(dev-5 이후) | 1h | | | 활동 탭, 배지, @channel |
+| 01b-mentions-activity (프런트) | dev-5 예정 | sonnet | 대기(감속, dev-1 이후) | 1h | | | 활동 탭, 배지, @channel |
 | 03-channel-meta-star | - | sonnet | 대기 | 1.5h | | | P0, 스키마 변경 |
 | 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
 | 04-threads-view, 05-user-status-dnd 스펙 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3, Slack 테스트 채널 CRUD 실습 포함 |
@@ -22,7 +22,7 @@
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
 | 04-threads-view | - | sonnet | 대기(01 이후) | 2.5h | | | 스키마 변경(ThreadRead) |
 | 05-user-status-dnd | - | sonnet | 대기(01 이후) | 1.5h | | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
-| fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | PR #7 (리뷰 대기, 감속) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
+| fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | PR #7 (리뷰 반영 완료) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | - | haiku | 대기 | 45분 | | | 총괄 결정: Slack과 같게 |
 | security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
