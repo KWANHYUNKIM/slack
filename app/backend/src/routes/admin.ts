@@ -5,7 +5,7 @@ import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../types.js';
-import { getIO, kickUser, kickSession } from '../websocket/index.js';
+import { getIO, kickUser, kickSession, MFA_KICK_MESSAGE } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { updateChannel } from '../services/channelService.js';
@@ -360,6 +360,14 @@ router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
         action: 'workspace.mfa_policy_changed', actorId: req.user!.userId, targetType: 'workspace',
         details: `requireMfa=${requireMfa}`,
       });
+    }
+    // 켜면 2FA가 없는 사용자의 실시간 연결을 바로 끊는다(다시 붙으려 해도 핸드셰이크가 거부한다). HTTP는 다음 요청부터 막힌다.
+    if (requireMfa) {
+      const unenrolled = await prisma.user.findMany({ where: { mfaEnabledAt: null, deactivatedAt: null }, select: { id: true } });
+      for (const u of unenrolled) {
+        invalidateTokenCache(u.id);
+        kickUser(u.id, MFA_KICK_MESSAGE);
+      }
     }
     res.json({ requireMfa, mfaAvailable: isMfaAvailable() });
   } catch (error) {

@@ -163,16 +163,20 @@ export function setupMfa() {
   return request<{ secret: string; otpauthUri: string }>('/users/me/2fa/setup', { method: 'POST' });
 }
 
-/** 켜기. 현재 비밀번호를 다시 받고, 켜면 이 기기를 뺀 다른 세션이 로그아웃된다. 복구 코드는 이 응답에서 한 번만 받는다. */
+/**
+ * 켜기. 현재 비밀번호를 다시 받는다. 켜면 다른 기기는 로그아웃되고 이전 토큰은 모두 무효라 응답의 token으로 바꿔야 한다.
+ * 복구 코드는 이 응답에서 한 번만 받는다.
+ */
 export function enableMfa(password: string, code: string) {
-  return request<{ enabled: true; recoveryCodes: string[]; revokedSessions: number }>('/users/me/2fa/enable', {
+  return request<{ enabled: true; recoveryCodes: string[]; revokedSessions: number; token: string }>('/users/me/2fa/enable', {
     method: 'POST',
     body: JSON.stringify({ password, code }),
   });
 }
 
+/** 끄기. 켤 때처럼 다른 기기는 로그아웃되고 응답의 token으로 바꿔야 한다. 조직이 필수로 했으면 MFA_REQUIRED_BY_POLICY. */
 export function disableMfa(password: string, code: string) {
-  return request<{ enabled: false }>('/users/me/2fa/disable', {
+  return request<{ enabled: false; revokedSessions: number; token: string }>('/users/me/2fa/disable', {
     method: 'POST',
     body: JSON.stringify({ password, code }),
   });

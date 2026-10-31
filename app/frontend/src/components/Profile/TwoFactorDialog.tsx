@@ -6,6 +6,7 @@ import type { MfaStatus } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import { formatDateTime, DATE_TIME_MEDIUM } from '@/lib/i18n/format';
 import { useToastStore } from '@/stores/useToastStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { TwoFactorSetup } from './TwoFactorSetup';
 
 interface TwoFactorDialogProps {
@@ -16,6 +17,7 @@ interface TwoFactorDialogProps {
 export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
   const { t } = useTranslation('settings');
   const showToast = useToastStore((s) => s.show);
+  const replaceSessionToken = useAuthStore((s) => s.replaceSessionToken);
   const [status, setStatus] = useState<MfaStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [disabling, setDisabling] = useState(false);
@@ -41,7 +43,9 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
     setBusy(true);
     setError(null);
     try {
-      await api.disableMfa(password, code.trim());
+      const res = await api.disableMfa(password, code.trim());
+      // 끄면 이전 토큰이 모두 무효가 되므로 새 토큰으로 바꾼다
+      replaceSessionToken(res.token);
       setDisabling(false);
       setPassword('');
       setCode('');

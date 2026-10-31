@@ -3,6 +3,10 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { purgeMfaChallengesIfDue } from '../scheduler.js';
+import { JWT_SECRET } from '../config.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
@@ -123,8 +127,8 @@ describe('2단계 인증 API (E7b)', () => {
     return r.body;
   }
 
-  /** 등록하고 켠다. 비밀(raw)과 복구 코드를 돌려준다. */
-  async function enroll(token: string): Promise<{ secret: Buffer; recoveryCodes: string[] }> {
+  /** 등록하고 켠다. 비밀(raw), 복구 코드, 켠 뒤 받은 새 토큰(이전 토큰은 무효)을 돌려준다. */
+  async function enroll(token: string): Promise<{ secret: Buffer; recoveryCodes: string[]; token: string }> {
     const setup = await request(app).post('/users/me/2fa/setup').set(auth(token));
     expect(setup.status).toBe(200);
     const secret = base32Decode(setup.body.secret)!;
@@ -132,7 +136,7 @@ describe('2단계 인증 API (E7b)', () => {
     const enable = await request(app).post('/users/me/2fa/enable').set(auth(token)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
     expect(enable.status).toBe(200);
     secretsSeen.push(...enable.body.recoveryCodes);
-    return { secret, recoveryCodes: enable.body.recoveryCodes };
+    return { secret, recoveryCodes: enable.body.recoveryCodes, token: enable.body.token };
   }
 
   /** 마지막으로 받은 창을 지워 다음 로그인에서 현재 코드를 다시 쓸 수 있게 한다(테스트 편의). */
@@ -214,16 +218,28 @@ describe('2단계 인증 API (E7b)', () => {
     expect(badPw.body.code).toBe('AUTH_CURRENT_PASSWORD_INCORRECT');
     expect((await prisma.user.findUniqueOrThrow({ where: { id } })).mfaEnabledAt).toBeNull();
 
-    // 다른 기기 세션 두 개를 만들어 두고 켠다: 이 기기만 남고 나머지는 폐기된다
+    // 다른 기기 세션 두 개와 세션 도입 전 형식의 옛 토큰(sid 없음)을 만들어 두고 켠다
     const otherA = (await passwordStep(email)).token as string;
     const otherB = (await passwordStep(email)).token as string;
+    const legacy = jwt.sign({ userId: id, tokenVersion: row.tokenVersion }, JWT_SECRET, { algorithm: 'HS256', expiresIn: 3600 });
+    expect((await request(app).get('/channels').set(auth(legacy))).status).toBe(200);
+    const sockOther = await connect(otherA);
+    const sockHere = await connect(token);
+    const otherKicked = new Promise<void>((resolve) => sockOther.on('disconnect', () => resolve()));
     const enable = await request(app).post('/users/me/2fa/enable').set(auth(token)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
     expect(enable.status).toBe(200);
     expect(enable.body.recoveryCodes).toHaveLength(10);
     expect(enable.body.revokedSessions).toBe(2);
-    expect((await request(app).get('/channels').set(auth(otherA))).status).toBe(401);
-    expect((await request(app).get('/channels').set(auth(otherB))).status).toBe(401);
-    expect((await request(app).get('/channels').set(auth(token))).status).toBe(200);
+    // 이전 토큰은 모두(이 기기 것, 옛 형식 포함) 무효이고 이 기기는 응답의 새 토큰을 쓴다
+    const newToken = enable.body.token as string;
+    for (const old of [otherA, otherB, legacy, token]) {
+      expect((await request(app).get('/channels').set(auth(old))).status).toBe(401);
+    }
+    expect((await request(app).get('/channels').set(auth(newToken))).status).toBe(200);
+    // 다른 기기 소켓은 끊기고 이 기기 소켓은 남는다(프런트가 새 토큰으로 다시 붙는다)
+    await otherKicked;
+    expect(sockHere.connected).toBe(true);
+    sockHere.disconnect();
     const enabledLog = await prisma.auditLog.findFirst({ where: { action: 'mfa.enabled', targetId: id } });
     expect(enabledLog?.details).toBe('revokedSessions=2');
     secretsSeen.push(...enable.body.recoveryCodes);
@@ -234,9 +250,9 @@ describe('2단계 인증 API (E7b)', () => {
       expect(stored.some((s) => s.codeHash.includes(c.replace(/-/g, '')))).toBe(false);
     }
     // 이미 켜져 있으면 setup도 enable도 거부
-    expect((await request(app).post('/users/me/2fa/setup').set(auth(token))).status).toBe(409);
+    expect((await request(app).post('/users/me/2fa/setup').set(auth(newToken))).status).toBe(409);
 
-    status = await request(app).get('/users/me/2fa').set(auth(token));
+    status = await request(app).get('/users/me/2fa').set(auth(newToken));
     expect(status.body).toMatchObject({ enabled: true, recoveryCodesRemaining: 10 });
 
     // 로그인: 비밀번호만으로는 세션이 생기지 않는다
@@ -268,8 +284,21 @@ describe('2단계 인증 API (E7b)', () => {
     const noCode = await request(app).post('/users/me/2fa/disable').set(auth(token2)).send({ password: TEST_PASSWORD, code: '000000' === totp(secret, Date.now()) ? '111111' : '000000' });
     expect(noCode.status).toBe(403);
     expect(noCode.body.code).toBe('MFA_INVALID_CODE');
+    // 조직이 필수로 했으면 해제할 수 없다
+    await setRequireMfa(true);
+    const byPolicy = await request(app).post('/users/me/2fa/disable').set(auth(token2)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
+    expect(byPolicy.status).toBe(403);
+    expect(byPolicy.body.code).toBe('MFA_REQUIRED_BY_POLICY');
+    await setRequireMfa(false);
     const off = await request(app).post('/users/me/2fa/disable').set(auth(token2)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
     expect(off.status).toBe(200);
+    // 해제도 다른 세션을 폐기하고 이 기기에 새 토큰을 준다
+    expect((await request(app).get('/channels').set(auth(token2))).status).toBe(401);
+    expect((await request(app).get('/channels').set(auth(newToken))).status).toBe(401);
+    expect((await request(app).get('/channels').set(auth(off.body.token))).status).toBe(200);
+    expect(off.body.revokedSessions).toBe(1);
+    const disabledLog = await prisma.auditLog.findFirst({ where: { action: 'mfa.disabled', targetId: id } });
+    expect(disabledLog?.details).toBe('method=totp; revokedSessions=1');
     const cleared = await prisma.user.findUniqueOrThrow({ where: { id } });
     expect(cleared.mfaSecret).toBeNull();
     expect(cleared.mfaEnabledAt).toBeNull();
@@ -353,6 +382,67 @@ describe('2단계 인증 API (E7b)', () => {
     expect((await request(app).post('/auth/login/2fa').send({ mfaToken: 'not-a-real-token-xxxxxxxxxxxxx', code: '123456' })).body.code).toBe('MFA_TOKEN_INVALID');
   });
 
+  it('같은 mfaToken으로 동시에 50건이 와도 검증은 5건을 넘지 않는다', async () => {
+    const email = 'burst-mfa@example.com';
+    const { id, token } = await register(email);
+    const { secret } = await enroll(token);
+    const s = await passwordStep(email);
+    const wrong = totp(secret, Date.now()) === '000000' ? '111111' : '000000';
+    const results = await Promise.all(
+      Array.from({ length: 50 }, () => request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: wrong })),
+    );
+    const codes = results.map((r) => r.body.code as string);
+    const verified = codes.filter((c) => c === 'MFA_INVALID_CODE').length;
+    expect(verified).toBeGreaterThan(0);
+    expect(verified).toBeLessThanOrEqual(5);
+    // 나머지는 대기 소진(401) 또는 계정 잠금(429)
+    expect(codes.every((c) => ['MFA_INVALID_CODE', 'MFA_TOKEN_INVALID', 'AUTH_ACCOUNT_LOCKED'].includes(c))).toBe(true);
+    const row = await prisma.mfaChallenge.findFirstOrThrow({ where: { userId: id } });
+    expect(row.attempts).toBeLessThanOrEqual(5);
+    // 감사 로그의 2단계 실패도 검증한 만큼만 남는다
+    await new Promise((r) => setTimeout(r, 50));
+    expect(await prisma.auditLog.count({ where: { action: 'auth.login_failed', targetId: id } })).toBe(verified);
+  });
+
+  it('같은 대기에 복구 코드 두 개가 동시에 와도 세션은 하나, 복구 코드는 하나만 소모된다', async () => {
+    const email = 'race-recovery-mfa@example.com';
+    const { id, token } = await register(email);
+    const { recoveryCodes } = await enroll(token);
+    for (let round = 0; round < 3; round++) {
+      const before = await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } });
+      const s = await passwordStep(email);
+      const [a, b] = await Promise.all([
+        request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: recoveryCodes[round * 2] }),
+        request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: recoveryCodes[round * 2 + 1] }),
+      ]);
+      expect([a.status, b.status].sort()).toEqual([200, 401]);
+      expect([a, b].find((r) => r.status === 401)!.body.code).toBe('MFA_TOKEN_INVALID');
+      // 진 쪽이 쓴 복구 코드는 되돌려진다
+      expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(before - 1);
+    }
+  });
+
+  it('로그인 경로는 다른 대기를 지우지 않고, 정리는 스케줄러 작업이 한다', async () => {
+    const email = 'purge-mfa@example.com';
+    const { id, token } = await register(email);
+    await enroll(token);
+    const live = await passwordStep(email);
+    const old = await passwordStep(email);
+    await prisma.mfaChallenge.updateMany({ where: { userId: id, usedAt: null }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    const used = await passwordStep(email);
+    await prisma.mfaChallenge.update({ where: { id: crypto.createHash('sha256').update(used.mfaToken).digest('hex') }, data: { usedAt: new Date() } });
+    // 새로 로그인해도(대기 생성) 만료·사용된 대기는 그대로 남는다
+    const fresh = await passwordStep(email);
+    expect(await prisma.mfaChallenge.count({ where: { userId: id } })).toBe(4);
+    expect(live && old && fresh).toBeTruthy();
+    const purged = await purgeMfaChallengesIfDue();
+    expect(purged).toBeGreaterThanOrEqual(3);
+    const left = await prisma.mfaChallenge.findMany({ where: { userId: id } });
+    expect(left.map((c) => c.id)).toEqual([crypto.createHash('sha256').update(fresh.mfaToken).digest('hex')]);
+    // 10분 안에 다시 불러도 돌지 않는다
+    expect(await purgeMfaChallengesIfDue()).toBe(0);
+  });
+
   it('2단계 실패는 로그인 잠금 카운터를 함께 쓴다', async () => {
     const email = 'lock-mfa@example.com';
     const { token } = await register(email);
@@ -405,10 +495,33 @@ describe('2단계 인증 API (E7b)', () => {
     // 일반 사용자는 설정을 못 바꾼다
     expect((await request(app).patch('/admin/settings/security').set(auth(token)).send({ requireMfa: true })).status).toBe(403);
 
-    await enroll(adminToken);
+    adminToken = (await enroll(adminToken)).token;
     await forgetLastStep(adminId);
+
+    // 정책을 켜기 전에 만든 PAT와 연결된 소켓
+    const pat = await request(app).post('/tokens').set(auth(token)).send({ name: 'mcp-before-policy' });
+    expect(pat.status).toBe(201);
+    secretsSeen.push(pat.body.token);
+    const mcpCall = (t: string) => request(app).post('/mcp').set({ Accept: 'application/json, text/event-stream', Authorization: `Bearer ${t}` })
+      .send({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
+    expect((await mcpCall(pat.body.token)).status).toBe(200);
+    const live = await connect(token);
+    const kicked = new Promise<string>((resolve) => {
+      live.on('error', (e: { message?: string }) => resolve(e?.message ?? ''));
+    });
+    const liveDisconnected = new Promise<void>((resolve) => live.on('disconnect', () => resolve()));
+
     const on = await request(app).patch('/admin/settings/security').set(auth(adminToken)).send({ requireMfa: true });
     expect(on.status).toBe(200);
+    // 켜는 순간 2FA가 없는 사용자의 소켓은 등록 필요 사유와 함께 끊긴다
+    expect(await kicked).toBe('MFA enrollment required');
+    await liveDisconnected;
+    // PAT(/mcp)도 등록 전에는 막힌다(JSON-RPC 형식)
+    const mcpBlocked = await mcpCall(pat.body.token);
+    expect(mcpBlocked.status).toBe(403);
+    expect(mcpBlocked.body).toMatchObject({ jsonrpc: '2.0', error: { data: { code: 'MFA_ENROLLMENT_REQUIRED' } } });
+    // 2FA가 있는 관리자의 소켓은 그대로 붙는다
+    expect((await connect(adminToken)).connected).toBe(true);
     expect(on.body).toEqual({ requireMfa: true, mfaAvailable: true });
     expect((await request(app).get('/admin/settings/security').set(auth(adminToken))).body.requireMfa).toBe(true);
 
@@ -431,10 +544,11 @@ describe('2단계 인증 API (E7b)', () => {
     expect(fresh.body.mfaEnrollmentRequired).toBe(true);
 
     // 등록을 마치면 풀린다
-    await enroll(login.token);
-    expect((await request(app).get('/channels').set(auth(login.token))).status).toBe(200);
-    const s = await connect(login.token);
+    const enrolled = await enroll(login.token);
+    expect((await request(app).get('/channels').set(auth(enrolled.token))).status).toBe(200);
+    const s = await connect(enrolled.token);
     expect(s.connected).toBe(true);
+    expect((await mcpCall(pat.body.token)).status).toBe(200);
 
     // 정책 변경은 감사 로그에 남는다
     const changed = await prisma.auditLog.findFirst({ where: { action: 'workspace.mfa_policy_changed' } });
@@ -466,8 +580,8 @@ describe('2단계 인증 API (E7b)', () => {
 
   it('관리자 초기화: 2FA를 지우고 세션을 폐기하며 감사 로그를 남긴다', async () => {
     const email = 'reset-mfa@example.com';
-    const { id, token } = await register(email);
-    await enroll(token);
+    const { id, token: firstToken } = await register(email);
+    const { token } = await enroll(firstToken);
     const before = await prisma.session.count({ where: { userId: id, revokedAt: null } });
     expect(before).toBeGreaterThan(0);
 
@@ -500,10 +614,10 @@ describe('2단계 인증 API (E7b)', () => {
   });
 
   it('PAT 발급: 2FA 사용자는 코드를 다시 확인한다', async () => {
-    const { id, token } = await register('pat-mfa@example.com');
+    const { id, token: firstToken } = await register('pat-mfa@example.com');
     // 2FA가 없으면 코드 없이 발급
-    expect((await request(app).post('/tokens').set(auth(token)).send({ name: 'plain' })).status).toBe(201);
-    const { secret } = await enroll(token);
+    expect((await request(app).post('/tokens').set(auth(firstToken)).send({ name: 'plain' })).status).toBe(201);
+    const { secret, token } = await enroll(firstToken);
     await forgetLastStep(id);
     const missing = await request(app).post('/tokens').set(auth(token)).send({ name: 'needs-code' });
     expect(missing.status).toBe(403);

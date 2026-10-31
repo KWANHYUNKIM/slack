@@ -4,6 +4,7 @@ import { Copy } from 'lucide-react';
 import * as api from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import { useToastStore } from '@/stores/useToastStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { RecoveryCodesPanel } from './RecoveryCodesPanel';
 
 interface TwoFactorSetupProps {
@@ -17,6 +18,7 @@ interface TwoFactorSetupProps {
 export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
   const { t } = useTranslation('settings');
   const showToast = useToastStore((s) => s.show);
+  const replaceSessionToken = useAuthStore((s) => s.replaceSessionToken);
   const [setup, setSetup] = useState<{ secret: string; otpauthUri: string } | null>(null);
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -42,6 +44,8 @@ export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
     setError(null);
     try {
       const res = await api.enableMfa(password, code.trim());
+      // 켜면 이전 토큰이 모두 무효가 되므로 바로 새 토큰으로 바꾼다(복구 코드를 보는 동안에도 로그인이 유지되게)
+      replaceSessionToken(res.token);
       setSetup(null);
       setCode('');
       setPassword('');

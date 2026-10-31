@@ -172,7 +172,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
     }
     // 2FA 등록이 필요한 사용자는 등록을 마칠 때까지 실시간 연결도 열지 않는다
     if (result.user.mfaEnrollmentRequired) {
-      return next(new Error('MFA enrollment required'));
+      return next(new Error(MFA_KICK_MESSAGE));
     }
 
     socket.user = result.user;
@@ -810,16 +810,39 @@ export function kickSession(userId: number, sid: string): void {
   }
 }
 
-// Forcibly disconnect all sockets for a user (used by admin deactivation)
-export function kickUser(userId: number): void {
+/**
+ * 사용자의 소켓 중 keepSid 세션만 남기고 끊는다(2FA를 켜고 끌 때, E7b). 이 기기는 새 토큰으로 프런트가 다시 붙는다.
+ * keepSid가 없으면(세션 도입 전 토큰) 지금 기기를 가려낼 수 없어 sid 있는 소켓만 끊는다. 나머지는 tokenVersion 재검증이 끊는다.
+ */
+export function kickUserExcept(userId: number, keepSid: string | undefined): void {
   const io = getIO();
   if (!io) return;
   const userSockets = onlineUsers.get(userId);
   if (!userSockets) return;
-  for (const socketId of userSockets) {
+  for (const socketId of [...userSockets]) {
+    const socket = io.sockets.sockets.get(socketId);
+    const sid = (socket as AuthenticatedSocket | undefined)?.user?.sid;
+    if (socket && sid !== keepSid && sid !== undefined) {
+      socket.emit('error', { message: 'Session revoked' });
+      socket.disconnect(true);
+    }
+  }
+}
+
+// Forcibly disconnect all sockets for a user (used by admin deactivation)
+/** 2FA 등록이 필요해 소켓을 거부하거나 끊을 때의 사유. 프런트(lib/socket.ts)가 이 문구를 보고 로그아웃 대신 등록 화면으로 간다. */
+export const MFA_KICK_MESSAGE = 'MFA enrollment required';
+
+// message는 끊기 직전에 보내는 이유다. MFA_KICK_MESSAGE면 프런트가 로그아웃 대신 2FA 등록 화면으로 간다(E7b).
+export function kickUser(userId: number, message = 'Account deactivated'): void {
+  const io = getIO();
+  if (!io) return;
+  const userSockets = onlineUsers.get(userId);
+  if (!userSockets) return;
+  for (const socketId of [...userSockets]) {
     const socket = io.sockets.sockets.get(socketId);
     if (socket) {
-      socket.emit('error', { message: 'Account deactivated' });
+      socket.emit('error', { message });
       socket.disconnect(true);
     }
   }

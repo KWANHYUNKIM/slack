@@ -7,11 +7,11 @@ import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
 import { writeAuditLog } from '../utils/auditLog.js';
-import { kickSession } from '../websocket/index.js';
-import { revokeUserSessions } from '../services/sessionService.js';
+import { kickUserExcept } from '../websocket/index.js';
+import { revokeUserSessions, createSessionToken } from '../services/sessionService.js';
 import {
   isMfaAvailable, getMfaStatus, startMfaSetup, enableMfa, clearMfa, verifySecondFactor, getRequireMfa,
-  isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures,
+  isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures, isMfaPolicyEnforced,
 } from '../services/mfaService.js';
 
 // 내 2단계 인증(E7b). /users/me/2fa 아래에 /users보다 먼저 붙는다.
@@ -25,6 +25,24 @@ const UNAVAILABLE = { error: 'Two-factor authentication is not available on this
 const INVALID_CODE = { error: 'Invalid authentication code', code: ERR.MFA_INVALID_CODE };
 
 const codeSchema = z.string().trim().min(1).max(32);
+
+/**
+ * 2FA를 켜거나 끈 뒤: tokenVersion을 올려 sid 없는 옛 토큰까지 막고, 세션을 모두 폐기한 뒤 이 기기에만 새 세션 토큰을 준다.
+ * 다른 기기의 소켓은 끊고, 이 기기의 소켓은 프런트가 새 토큰으로 다시 붙는다(끊으면 프런트가 로그아웃으로 처리한다).
+ */
+async function rotateSessions(req: AuthRequest, userId: number): Promise<{ token: string; revokedOthers: number }> {
+  const currentSid = req.user!.sid;
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } },
+    select: { id: true, tokenVersion: true },
+  });
+  const revoked = await revokeUserSessions(userId);
+  invalidateTokenCache(userId);
+  kickUserExcept(userId, currentSid);
+  const { token } = await createSessionToken(updated, req);
+  return { token, revokedOthers: revoked.filter((sid) => sid !== currentSid).length };
+}
 
 // GET /users/me/2fa - 내 2FA 상태. available은 서버에 암호화 키가 있는지, required는 조직 정책이다.
 router.get('/', async (req: AuthRequest, res: Response) => {
@@ -105,13 +123,10 @@ router.post('/enable', async (req: AuthRequest, res: Response) => {
       }
     }
     clearMfaVerifyFailures(userId);
-    // 필수 정책 판단(mfaEnabled)이 바로 바뀌도록 인증 캐시를 비운다
-    invalidateTokenCache(userId);
-    const revoked = await revokeUserSessions(userId, req.user!.sid);
-    revoked.forEach((sid) => kickSession(userId, sid));
-    await writeAuditLog({ action: 'mfa.enabled', actorId: userId, targetType: 'user', targetId: userId, details: `revokedSessions=${revoked.length}` });
+    const { token, revokedOthers } = await rotateSessions(req, userId);
+    await writeAuditLog({ action: 'mfa.enabled', actorId: userId, targetType: 'user', targetId: userId, details: `revokedSessions=${revokedOthers}` });
     res.setHeader('Cache-Control', 'no-store');
-    res.json({ enabled: true, recoveryCodes: result.recoveryCodes, revokedSessions: revoked.length });
+    res.json({ enabled: true, recoveryCodes: result.recoveryCodes, revokedSessions: revokedOthers, token });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
@@ -136,6 +151,11 @@ router.post('/disable', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
       return;
     }
+    // 조직이 필수로 했으면 끌 수 없다(기기를 잃었으면 관리자 초기화를 쓴다)
+    if (await isMfaPolicyEnforced()) {
+      res.status(403).json({ error: 'Two-factor authentication is required by your organization', code: ERR.MFA_REQUIRED_BY_POLICY });
+      return;
+    }
     // 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 헛되이 쓰지 않게)
     if (!(await bcrypt.compare(password, user.password))) {
       recordMfaVerifyFailure(userId);
@@ -151,9 +171,13 @@ router.post('/disable', async (req: AuthRequest, res: Response) => {
     }
     clearMfaVerifyFailures(userId);
     await clearMfa(userId);
-    invalidateTokenCache(userId);
-    await writeAuditLog({ action: 'mfa.disabled', actorId: userId, targetType: 'user', targetId: userId, details: `method=${result.method}` });
-    res.json({ enabled: false });
+    const { token, revokedOthers } = await rotateSessions(req, userId);
+    await writeAuditLog({
+      action: 'mfa.disabled', actorId: userId, targetType: 'user', targetId: userId,
+      details: `method=${result.method}; revokedSessions=${revokedOthers}`,
+    });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ enabled: false, revokedSessions: revokedOthers, token });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });

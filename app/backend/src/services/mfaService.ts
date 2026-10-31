@@ -3,6 +3,7 @@ import prisma from '../db.js';
 import { getTotpEncryptionKey, getMfaIssuer } from '../config.js';
 import { sealSecret, openSecret } from '../utils/secretBox.js';
 import { base32Encode, buildOtpauthUri, verifyTotp } from '../utils/totp.js';
+import { createAttemptLimiter } from '../utils/attemptLimiter.js';
 
 // 2단계 인증(E7b). TOTP 비밀은 암호화해 두고, 복구 코드는 해시만 둔다. 라우트(auth, mfa, admin, tokens)가 함께 쓴다.
 
@@ -167,7 +168,7 @@ export async function clearMfa(userId: number): Promise<void> {
 
 export type SecondFactorResult =
   | { ok: true; method: 'totp' }
-  | { ok: true; method: 'recovery'; remaining: number }
+  | { ok: true; method: 'recovery'; remaining: number; consumed: ConsumedRecoveryCode }
   | { ok: false; reason: 'bad_totp' | 'bad_recovery_code' | 'unavailable' | 'not_enabled' };
 
 /**
@@ -190,88 +191,63 @@ async function verifyEnabledTotp(userId: number, code: string, now: number): Pro
   return count === 1 ? { ok: true, method: 'totp' } : { ok: false, reason: 'bad_totp' };
 }
 
-/** 복구 코드를 한 번 쓴다. 남은 개수를 돌려주고, 없거나 이미 쓴 코드면 실패. 키가 없어도 된다(해시 비교). */
+/** 쓴 복구 코드를 되돌릴 때 쓰는 표시(해시와 쓴 시각). 원문은 담지 않는다. */
+export interface ConsumedRecoveryCode { codeHash: string; usedAt: Date }
+
+/**
+ * 복구 코드를 한 번 쓴다. 조건부 UPDATE 한 번이라 같은 코드를 동시에 보내도 하나만 통과한다.
+ * 남은 개수를 돌려주고, 없거나 이미 쓴 코드면 실패. 키가 없어도 된다(해시 비교).
+ */
 async function consumeRecoveryCode(userId: number, input: string, now: number): Promise<SecondFactorResult> {
   const normalized = normalizeRecoveryCode(input);
   if (!normalized) return { ok: false, reason: 'bad_recovery_code' };
-  const row = await prisma.mfaRecoveryCode.findFirst({
-    where: { userId, codeHash: hashRecoveryCode(normalized), usedAt: null },
-    select: { id: true },
-  });
-  if (!row) return { ok: false, reason: 'bad_recovery_code' };
-  const { count } = await prisma.mfaRecoveryCode.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: new Date(now) } });
+  const codeHash = hashRecoveryCode(normalized);
+  const usedAt = new Date(now);
+  const { count } = await prisma.mfaRecoveryCode.updateMany({ where: { userId, codeHash, usedAt: null }, data: { usedAt } });
   if (count !== 1) return { ok: false, reason: 'bad_recovery_code' };
   const remaining = await prisma.mfaRecoveryCode.count({ where: { userId, usedAt: null } });
-  return { ok: true, method: 'recovery', remaining };
+  return { ok: true, method: 'recovery', remaining, consumed: { codeHash, usedAt } };
+}
+
+/** 방금 쓴 복구 코드를 되돌린다(로그인 대기를 다른 요청이 먼저 닫은 경우). 그 사이 다른 곳에서 다시 쓰였으면 건드리지 않는다. */
+export async function restoreRecoveryCode(userId: number, consumed: ConsumedRecoveryCode): Promise<void> {
+  await prisma.mfaRecoveryCode.updateMany({
+    where: { userId, codeHash: consumed.codeHash, usedAt: consumed.usedAt },
+    data: { usedAt: null },
+  });
 }
 
 /** 숫자 6자리면 TOTP, 그 밖에는 복구 코드로 본다. */
-export async function verifySecondFactor(
-  userId: number,
-  code: string,
-  opts: { allowRecovery?: boolean; now?: number } = {},
-): Promise<SecondFactorResult> {
-  const now = opts.now ?? Date.now();
+export async function verifySecondFactor(userId: number, code: string, now = Date.now()): Promise<SecondFactorResult> {
   const trimmed = code.trim();
   if (/^\d{6}$/.test(trimmed)) return verifyEnabledTotp(userId, trimmed, now);
-  if (opts.allowRecovery === false) return { ok: false, reason: 'bad_totp' };
   return consumeRecoveryCode(userId, trimmed, now);
 }
 
 // ---- 로그인한 사용자의 코드 확인 시도 제한(등록 확인, 해제, 토큰 발급 재인증) ----
 // 비밀번호 변경과 같은 규칙: 사용자당 5번 틀리면 15분 막는다. 훔친 세션으로 코드를 맞혀 보는 것을 막는다.
 
-const verifyAttempts = new Map<number, { count: number; lockedUntil: number; lastAttempt: number }>();
-const MAX_VERIFY_ATTEMPTS = 5;
-const VERIFY_LOCKOUT_MS = 15 * 60 * 1000;
+const verifyAttempts = createAttemptLimiter<number>({ max: 5, lockMs: 15 * 60 * 1000, maxEntries: 10_000 });
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [uid, e] of verifyAttempts) {
-    if ((e.lockedUntil > 0 && e.lockedUntil < now) || (e.lockedUntil === 0 && now - e.lastAttempt > VERIFY_LOCKOUT_MS)) {
-      verifyAttempts.delete(uid);
-    }
-  }
-}, 5 * 60 * 1000).unref();
-
-export function isMfaVerifyLocked(userId: number): boolean {
-  const e = verifyAttempts.get(userId);
-  return !!e && e.lockedUntil > Date.now();
-}
-
-export function recordMfaVerifyFailure(userId: number): void {
-  const now = Date.now();
-  const e = verifyAttempts.get(userId) || { count: 0, lockedUntil: 0, lastAttempt: now };
-  e.count++;
-  e.lastAttempt = now;
-  if (e.count >= MAX_VERIFY_ATTEMPTS) {
-    e.lockedUntil = now + VERIFY_LOCKOUT_MS;
-    e.count = 0;
-  }
-  verifyAttempts.set(userId, e);
-}
-
-export function clearMfaVerifyFailures(userId: number): void {
-  verifyAttempts.delete(userId);
-}
+export const isMfaVerifyLocked = (userId: number): boolean => verifyAttempts.isLocked(userId);
+export const recordMfaVerifyFailure = (userId: number): void => { verifyAttempts.recordFailure(userId); };
+export const clearMfaVerifyFailures = (userId: number): void => verifyAttempts.clear(userId);
 
 // ---- 로그인 2단계 대기(mfaToken) ----
 
 const hashChallengeToken = (token: string) => crypto.createHash('sha256').update(token).digest('hex');
 
-/** 비밀번호를 통과한 사용자에게 5분짜리 mfaToken을 준다. 원문은 응답에만 있고 DB에는 해시만 둔다. */
+/** 비밀번호를 통과한 사용자에게 5분짜리 mfaToken을 준다. 원문은 응답에만 있고 DB에는 해시만 둔다. 정리는 스케줄러가 한다. */
 export async function createMfaChallenge(user: { id: number; tokenVersion: number }, now = Date.now()): Promise<{ mfaToken: string; expiresAt: Date }> {
   const mfaToken = crypto.randomBytes(32).toString('base64url');
   const expiresAt = new Date(now + MFA_CHALLENGE_TTL_MS);
-  // 만료된 대기는 만들 때 함께 치운다(별도 스케줄러 없이 표가 커지지 않게)
-  await prisma.mfaChallenge.deleteMany({ where: { OR: [{ expiresAt: { lt: new Date(now) } }, { usedAt: { not: null } }] } });
   await prisma.mfaChallenge.create({
     data: { id: hashChallengeToken(mfaToken), userId: user.id, tokenVersion: user.tokenVersion, expiresAt },
   });
   return { mfaToken, expiresAt };
 }
 
-/** 살아 있는(만료·사용·시도 초과가 아닌) 대기를 찾는다. */
+/** 살아 있는(만료·사용·시도 초과가 아닌) 대기를 찾는다. 읽기만 한다. 시도 확보는 claimMfaChallengeAttempt가 한다. */
 export async function findMfaChallenge(mfaToken: string, now = Date.now()) {
   if (mfaToken.length < 20 || mfaToken.length > 100) return null;
   const row = await prisma.mfaChallenge.findUnique({ where: { id: hashChallengeToken(mfaToken) } });
@@ -279,16 +255,31 @@ export async function findMfaChallenge(mfaToken: string, now = Date.now()) {
   return row;
 }
 
-/** 틀린 코드 한 번. 시도 한도를 넘으면 대기를 닫는다. */
-export async function recordMfaChallengeFailure(id: string): Promise<void> {
-  await prisma.mfaChallenge.updateMany({ where: { id, usedAt: null }, data: { attempts: { increment: 1 } } });
-}
-
-/** 성공한 대기를 닫는다. 동시에 두 요청이 와도 하나만 true를 받는다. */
-export async function consumeMfaChallenge(id: string, now = Date.now()): Promise<boolean> {
+/**
+ * 코드 검증 전에 시도 슬롯 하나를 원자적으로 확보한다. 그 순간 대기가 살아 있어야(미사용, 미만료, 시도 5회 미만) true.
+ * 동시에 50건이 와도 대기 하나당 5건만 검증까지 간다.
+ */
+export async function claimMfaChallengeAttempt(id: string, now = Date.now()): Promise<boolean> {
   const { count } = await prisma.mfaChallenge.updateMany({
     where: { id, usedAt: null, expiresAt: { gt: new Date(now) }, attempts: { lt: MAX_CHALLENGE_ATTEMPTS } },
-    data: { usedAt: new Date(now) },
+    data: { attempts: { increment: 1 } },
   });
   return count === 1;
+}
+
+/**
+ * 대기를 닫는다(성공 또는 무효 처리). 아직 안 닫혔을 때만 true라 같은 대기로 세션이 두 개 생기지 않는다.
+ * 시도 수와 만료는 보지 않는다(슬롯을 확보한 시점에 이미 확인했다).
+ */
+export async function consumeMfaChallenge(id: string, now = Date.now()): Promise<boolean> {
+  const { count } = await prisma.mfaChallenge.updateMany({ where: { id, usedAt: null }, data: { usedAt: new Date(now) } });
+  return count === 1;
+}
+
+/** 스케줄러가 부른다. 만료됐거나 이미 닫힌 대기를 지운다. 지운 행 수를 돌려준다. */
+export async function purgeMfaChallenges(now: Date = new Date()): Promise<number> {
+  const { count } = await prisma.mfaChallenge.deleteMany({
+    where: { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] },
+  });
+  return count;
 }

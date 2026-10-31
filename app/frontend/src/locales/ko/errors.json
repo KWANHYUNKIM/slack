@@ -57,6 +57,7 @@
     "MFA_NOT_ENABLED": "2단계 인증이 켜져 있지 않습니다. 먼저 내 계정의 2단계 인증을 켜세요.",
     "MFA_SETUP_NOT_STARTED": "설정을 처음부터 다시 시작하세요.",
     "MFA_ENROLLMENT_REQUIRED": "조직에서 2단계 인증을 필수로 정했습니다.",
-    "MFA_CODE_REQUIRED": "2단계 인증 코드를 입력하세요."
+    "MFA_CODE_REQUIRED": "2단계 인증 코드를 입력하세요.",
+    "MFA_REQUIRED_BY_POLICY": "조직에서 2단계 인증을 필수로 정해 끌 수 없습니다. 기기를 잃어버렸다면 관리자에게 초기화를 요청하세요."
   }
 }

@@ -13,9 +13,10 @@ import { joinDefaultChannels } from '../services/defaultChannelService.js';
 import { createSessionToken, revokeUserSessions, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 import {
-  createMfaChallenge, findMfaChallenge, recordMfaChallengeFailure, consumeMfaChallenge,
-  verifySecondFactor, isMfaPolicyEnforced, MFA_CHALLENGE_TTL_MS,
+  createMfaChallenge, findMfaChallenge, claimMfaChallengeAttempt, consumeMfaChallenge,
+  verifySecondFactor, restoreRecoveryCode, isMfaPolicyEnforced, MFA_CHALLENGE_TTL_MS,
 } from '../services/mfaService.js';
+import { createAttemptLimiter } from '../utils/attemptLimiter.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -32,49 +33,22 @@ const loginSchema = z.object({
   password: z.string().min(1).max(72),
 });
 
-// Account lockout: track failed login attempts per email
-const loginAttempts = new Map<string, { count: number; lockedUntil: number; lastAttempt: number }>();
-const MAX_FAILED_ATTEMPTS = 10;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_LOCKOUT_ENTRIES = 10_000;
+// Account lockout: 이메일당 10번 실패하면 15분 잠근다. 비밀번호와 2FA 코드 실패가 같은 카운터를 쓴다.
+const loginAttempts = createAttemptLimiter<string>({ max: 10, lockMs: 15 * 60 * 1000, maxEntries: 10_000 });
 
-// Periodic cleanup of stale lockout entries (every 5 minutes)
-setInterval(() => {
-  const now = Date.now();
-  for (const [email, entry] of loginAttempts) {
-    // Remove expired lockouts and stale attempt counters (no activity within lockout window)
-    if (
-      (entry.lockedUntil > 0 && entry.lockedUntil < now) ||
-      (entry.lockedUntil === 0 && (now - entry.lastAttempt) > LOCKOUT_DURATION_MS)
-    ) {
-      loginAttempts.delete(email);
-    }
-  }
-}, 5 * 60 * 1000).unref();
+/** 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다) */
+function auditLoginLocked(email: string, userId: number | null): void {
+  void writeAuditLog({
+    action: 'auth.login_locked', actorId: null, targetType: 'user',
+    ...(userId ? { targetId: userId } : {}), details: `emailHash=${hashEmailForAudit(email)}`,
+  });
+}
 
-/** 실패 한 번을 센다. 한도에 닿으면 잠그고 그 순간 한 번만 감사 로그를 남긴다. 비밀번호와 2FA 코드 실패가 같은 카운터를 쓴다. */
 function recordFailedLogin(email: string, userId: number | null): void {
-  if (loginAttempts.size >= MAX_LOCKOUT_ENTRIES) return;
-  const now = Date.now();
-  const current = loginAttempts.get(email) || { count: 0, lockedUntil: 0, lastAttempt: now };
-  current.count++;
-  current.lastAttempt = now;
-  if (current.count >= MAX_FAILED_ATTEMPTS) {
-    current.lockedUntil = now + LOCKOUT_DURATION_MS;
-    // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
-    void writeAuditLog({
-      action: 'auth.login_locked', actorId: null, targetType: 'user',
-      ...(userId ? { targetId: userId } : {}), details: `emailHash=${hashEmailForAudit(email)}`,
-    });
-    current.count = 0;
-  }
-  loginAttempts.set(email, current);
+  if (loginAttempts.recordFailure(email)) auditLoginLocked(email, userId);
 }
 
-function isLoginLocked(email: string): boolean {
-  const attempts = loginAttempts.get(email);
-  return !!attempts && attempts.lockedUntil > Date.now();
-}
+const isLoginLocked = (email: string) => loginAttempts.isLocked(email);
 
 // POST /auth/register
 router.post('/register', async (req: Request, res: Response) => {
@@ -249,7 +223,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Clear failed attempts on successful login
-    loginAttempts.delete(email);
+    loginAttempts.clear(email);
     void writeAuditLog({ action: 'auth.login', actorId: user.id, targetType: 'user', targetId: user.id });
 
     await sendLoginSuccess(req, res, user);
@@ -319,15 +293,21 @@ router.post('/login/2fa', async (req: Request, res: Response) => {
       res.status(401).json(MFA_TOKEN_EXPIRED);
       return;
     }
-    if (isLoginLocked(user.email)) {
+    // 검증 전에 시도를 먼저 센다. 동시에 수십 건이 와도 이메일 잠금(10회)과 대기당 5회를 넘겨 검증하지 않는다.
+    // 두 카운터 모두 성공하면 비운다(대기는 used로 닫힌다).
+    const acquired = loginAttempts.tryAcquire(user.email);
+    if (!acquired.ok) {
       res.status(429).json({ error: 'Account temporarily locked. Try again later.', code: ERR.AUTH_ACCOUNT_LOCKED });
+      return;
+    }
+    if (acquired.locked) auditLoginLocked(user.email, user.id);
+    if (!(await claimMfaChallengeAttempt(challenge.id))) {
+      res.status(401).json(MFA_TOKEN_EXPIRED);
       return;
     }
 
     const result = await verifySecondFactor(user.id, code);
     if (!result.ok) {
-      await recordMfaChallengeFailure(challenge.id);
-      recordFailedLogin(user.email, user.id);
       // 코드 원문은 남기지 않는다. 키가 없어 TOTP를 확인할 수 없는 경우도 사용자 쪽에서는 같은 실패라 bad_totp로 센다.
       const reason = result.reason === 'bad_recovery_code' ? 'bad_recovery_code' : 'bad_totp';
       void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: `reason=${reason}` });
@@ -337,12 +317,14 @@ router.post('/login/2fa', async (req: Request, res: Response) => {
       });
       return;
     }
+    // 같은 대기로 다른 요청이 먼저 성공했으면 세션을 하나 더 만들지 않는다. 이번에 쓴 복구 코드는 되돌린다.
     if (!(await consumeMfaChallenge(challenge.id))) {
+      if (result.method === 'recovery') await restoreRecoveryCode(user.id, result.consumed);
       res.status(401).json(MFA_TOKEN_EXPIRED);
       return;
     }
 
-    loginAttempts.delete(user.email);
+    loginAttempts.clear(user.email);
     if (result.method === 'recovery') {
       void writeAuditLog({ action: 'mfa.recovery_used', actorId: user.id, targetType: 'user', targetId: user.id, details: `remaining=${result.remaining}` });
     }
@@ -384,21 +366,7 @@ const changePasswordSchema = z.object({
 // Brute-force protection for password change (keyed on userId, not email,
 // since this endpoint is authenticated).  Without this, an attacker with
 // a stolen JWT can dictionary-attack the currentPassword at 120 req/min.
-const passwordChangeAttempts = new Map<number, { count: number; lockedUntil: number; lastAttempt: number }>();
-const MAX_PW_CHANGE_ATTEMPTS = 5;
-const PW_CHANGE_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [uid, entry] of passwordChangeAttempts) {
-    if (
-      (entry.lockedUntil > 0 && entry.lockedUntil < now) ||
-      (entry.lockedUntil === 0 && (now - entry.lastAttempt) > PW_CHANGE_LOCKOUT_MS)
-    ) {
-      passwordChangeAttempts.delete(uid);
-    }
-  }
-}, 5 * 60 * 1000).unref();
+const passwordChangeAttempts = createAttemptLimiter<number>({ max: 5, lockMs: 15 * 60 * 1000, maxEntries: 10_000 });
 
 router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -406,8 +374,7 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
 
     // Check lockout before any DB or bcrypt work
-    const pwAttempts = passwordChangeAttempts.get(userId);
-    if (pwAttempts && pwAttempts.lockedUntil > Date.now()) {
+    if (passwordChangeAttempts.isLocked(userId)) {
       res.status(429).json({ error: 'Too many failed attempts. Try again later.', code: ERR.AUTH_TOO_MANY_ATTEMPTS });
       return;
     }
@@ -423,23 +390,14 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
 
     const validPassword = await bcrypt.compare(currentPassword, user.password);
     if (!validPassword) {
-      // Track failed attempt
-      const now = Date.now();
-      const current = passwordChangeAttempts.get(userId) || { count: 0, lockedUntil: 0, lastAttempt: now };
-      current.count++;
-      current.lastAttempt = now;
-      if (current.count >= MAX_PW_CHANGE_ATTEMPTS) {
-        current.lockedUntil = now + PW_CHANGE_LOCKOUT_MS;
-        current.count = 0;
-      }
-      passwordChangeAttempts.set(userId, current);
+      passwordChangeAttempts.recordFailure(userId);
       // 401은 프런트가 자동 로그아웃하는 신호이므로, 입력이 틀린 것은 400으로 답한다(토큰은 그대로 유효)
       res.status(400).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
       return;
     }
 
     // Clear failed attempts on success
-    passwordChangeAttempts.delete(userId);
+    passwordChangeAttempts.clear(userId);
 
     const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
 import { clearDownloadToken } from '@/lib/api';
-import { disconnectSocket } from '@/lib/socket';
+import { disconnectSocket, reconnectSocket } from '@/lib/socket';
 import { toUserStatus, type User } from '@/lib/types';
 import { useNotificationStore } from './useNotificationStore';
 import { useSwitcherStore } from './useSwitcherStore';
@@ -23,6 +23,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<'done' | 'mfa'>;
   completeMfaLogin: (code: string) => Promise<void>;
   cancelMfaLogin: () => void;
+  /** 2FA를 켜거나 끈 뒤 서버가 준 새 토큰으로 바꾼다(이전 토큰은 무효). 로그인 응답과 같은 방식이다. */
+  replaceSessionToken: (token: string) => void;
   /** 필수 등록을 마쳤다. 전체 화면을 새로 띄운다. */
   finishMfaEnrollment: () => void;
   logout: () => void;
@@ -84,6 +86,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   cancelMfaLogin: () => set({ mfaToken: null }),
+
+  replaceSessionToken: (token: string) => {
+    localStorage.setItem('token', token);
+    // 파일 다운로드 토큰은 이전 세션으로 받은 것이라 버리고, 소켓은 새 토큰으로 다시 붙는다
+    clearDownloadToken();
+    reconnectSocket();
+  },
 
   finishMfaEnrollment: () => {
     set({ mfaEnrollmentRequired: false });

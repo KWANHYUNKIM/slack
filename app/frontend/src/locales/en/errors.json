@@ -57,6 +57,7 @@
     "MFA_NOT_ENABLED": "Two-factor authentication is not on. Turn it on for your own account first.",
     "MFA_SETUP_NOT_STARTED": "Start the setup again.",
     "MFA_ENROLLMENT_REQUIRED": "Your organization requires two-factor authentication.",
-    "MFA_CODE_REQUIRED": "Enter your two-factor code."
+    "MFA_CODE_REQUIRED": "Enter your two-factor code.",
+    "MFA_REQUIRED_BY_POLICY": "Your organization requires two-factor authentication, so you cannot turn it off. Ask an administrator to reset it if you lost your device."
   }
 }
