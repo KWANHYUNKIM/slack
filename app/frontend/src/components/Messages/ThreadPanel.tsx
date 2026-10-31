@@ -315,6 +315,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     if (!text && editor.pendingFiles.length === 0) return;
     const content = text || ' ';
 
+    // 이번 전송에 쓴 체크 상태를 잡아 둔다. 응답이 오기 전에 사용자가 다시 체크했을 수 있다
+    const sentAlsoSend = alsoSend;
     setIsSending(true);
     setReplyError(null);
     didSendReply.current = true;
@@ -333,7 +335,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         return [...prev, reply];
       });
       editor.clearEditor();
-      setAlsoSend(false);
+      // 이 전송에 쓴 값일 때만 되돌린다. 응답을 기다리는 사이 사용자가 바꾼 체크는 지킨다
+      setAlsoSend((current) => (current === sentAlsoSend ? false : current));
     } catch (err) {
       didSendReply.current = false;
       console.error('Failed to send reply:', err);

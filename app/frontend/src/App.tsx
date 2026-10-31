@@ -173,14 +173,18 @@ function DefaultRedirect() {
   const channels = useChannelStore((s) => s.channels);
   const isLoading = useChannelStore((s) => s.isLoading);
   const navigate = useNavigate();
+  const location = useLocation();
+  // 이 화면이 열린 경로. 채널 목록을 기다리는 사이 사용자가 관리자 등 다른 경로로 갔다면 그 이동을 덮지 않는다
+  const openedPathRef = useRef(location.pathname);
 
   useEffect(() => {
     if (isLoading) return;
+    if (location.pathname !== openedPathRef.current) return;
     const firstChannel = channels.find((ch) => ch.isMember);
     if (firstChannel) {
       navigate(`/c/${firstChannel.id}`, { replace: true });
     }
-  }, [channels, isLoading, navigate]);
+  }, [channels, isLoading, navigate, location.pathname]);
 
   return null;
 }

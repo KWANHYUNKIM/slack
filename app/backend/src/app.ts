@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import dotenv from 'dotenv';
+import { SPA_ROUTES, createSpaNavigationMiddleware } from './spaRoutes.js';
 
 dotenv.config();
 
@@ -127,21 +128,8 @@ app.use((req, res, next) => {
 // In production, intercept browser navigations (Accept: text/html) for SPA routes
 // that collide with API routes (e.g. /files, /admin) and serve index.html
 if (process.env.NODE_ENV === 'production') {
-  const spaRoutes = ['/files', '/admin', '/dms', '/activity', '/threads'];
   const frontendDist = path.join(process.cwd(), 'public');
-  app.use(spaRoutes, (req, res, next) => {
-    // Skip API calls: they carry Authorization or explicitly request JSON
-    const isApiCall = req.headers.authorization || req.headers.accept === 'application/json';
-    if (!isApiCall && req.method === 'GET' && req.accepts('html') && !req.path.includes('.')) {
-      // Only for top-level navigation (no sub-paths like /files/:id/download)
-      if (req.originalUrl === req.baseUrl || req.originalUrl === req.baseUrl + '/') {
-        res.setHeader('Cache-Control', 'no-cache');
-        res.sendFile(path.join(frontendDist, 'index.html'));
-        return;
-      }
-    }
-    next();
-  });
+  app.use(SPA_ROUTES, createSpaNavigationMiddleware(frontendDist));
 }
 
 // Routes
