@@ -1244,7 +1244,7 @@ export function getHuddleConfig() {
 
 export type AccessTokenScope =
   | 'channels:read' | 'channels:history' | 'users:read' | 'chat:write' | 'reactions:write'
-  | 'im:read' | 'im:history' | 'im:write';
+  | 'im:read' | 'im:history' | 'im:write' | 'search:read' | 'files:read';
 
 export interface AccessToken {
   id: number;

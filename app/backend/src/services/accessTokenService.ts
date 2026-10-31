@@ -16,8 +16,10 @@ export const READ_SCOPES = ['channels:read', 'channels:history', 'users:read'] a
 export const WRITE_SCOPES = ['chat:write', 'reactions:write'] as const;
 /** DM 범위(mcp-2b). im:read는 DM 목록, im:history는 DM 내용 읽기, im:write는 DM 보내기·수정·삭제. 개인 대화라 기본 범위에는 넣지 않는다. */
 export const DM_SCOPES = ['im:read', 'im:history', 'im:write'] as const;
-export const ALLOWED_SCOPES: readonly string[] = [...READ_SCOPES, ...WRITE_SCOPES, ...DM_SCOPES];
-export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[number] | (typeof DM_SCOPES)[number];
+/** 검색·파일 범위(mcp-3). 기본 범위에는 넣지 않고 명시적으로 고른 토큰에만 준다. DM 결과·DM 파일은 이 범위에 더해 im:history가 있어야 한다. */
+export const SEARCH_FILE_SCOPES = ['search:read', 'files:read'] as const;
+export const ALLOWED_SCOPES: readonly string[] = [...READ_SCOPES, ...WRITE_SCOPES, ...DM_SCOPES, ...SEARCH_FILE_SCOPES];
+export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[number] | (typeof DM_SCOPES)[number] | (typeof SEARCH_FILE_SCOPES)[number];
 
 export const MAX_ACTIVE_TOKENS = 20;
 
