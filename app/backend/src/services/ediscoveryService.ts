@@ -2,13 +2,20 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../db.js';
 import { auditFilterSchema } from './auditLogService.js';
+import { groupDmVisibleSql } from './dmGroupService.js';
+import { utcTimestamp } from '../db/sqlTime.js';
 
 // eDiscovery(E6). 보존 건의 대상자(custodian)를 기준으로 채널 메시지·DM·파일 메타데이터를 찾고 내보낸다.
 //
 // 범위
 // - 채널 메시지: 대상자가 쓴 것(공개·비공개 채널 모두, 스레드 답글 포함)
-// - DM: 대상자가 보냈거나 받은 1:1 DM, 대상자가 지금 구성원인 그룹 DM의 모든 메시지
-// - 파일: 대상자가 올린 파일과, 위 DM에 붙은 파일의 메타데이터(본문은 담지 않는다)
+// - DM: 대상자가 보냈거나 받은 1:1 DM, 대상자가 보낸 그룹 DM, 대상자가 볼 수 있었던 그룹 DM 메시지
+//   (구성원 이력 DMGroupMembership에 행이 있는 그룹에서 마지막 구간의 leftAt 이전(경계 포함)에 쓴 것 전체, 지금 구성원이면 제한 없음).
+//   새 구성원도 가입 전 기록을 보므로 가입 전 메시지와 나갔다가 재가입한 사이의 메시지도 들어가고, 마지막으로 나간 뒤의 메시지는 빠진다.
+//   메시지 시각을 이력 시각과 견줘야 해서 DM과 파일은 raw SQL(상관 서브쿼리)로 id를 고른 뒤 그 id로 읽는다. 조건 크기는 대상자 수와 무관하다.
+// - 파일: 대상자가 올린 파일과, 위 DM에 붙은 파일, 위 DM·채널 메시지에서 소프트 삭제로 분리된 파일의 메타데이터(본문은 담지 않는다)
+// 한계: 구성원 이력(20261101090000)을 배포하기 전에 이미 그룹을 나간 사람의 과거 구간은 복원할 수 없어,
+//   그런 대상자는 그 그룹 DM에서 본인이 보낸 메시지만 잡힌다.
 // 소프트 삭제된 메시지도 넣고 deletedAt으로 표시한다. 수정 이력 테이블은 없으므로 editedAt(마지막 수정 시각)만 담는다.
 // 일반 API의 멤버십 검사를 건너뛰므로 관리자 라우트(/admin/ediscovery)에서만 부른다.
 
@@ -85,30 +92,58 @@ export function resetSearchMemo(): void {
   lastSearch.clear();
 }
 
-function dmScope(ids: number[]): Prisma.DirectMessageWhereInput {
-  return {
-    OR: [{ fromUserId: { in: ids } }, { toUserId: { in: ids } }, { group: { members: { some: { userId: { in: ids } } } } }],
-  };
-}
-
 function channelWhere(ids: number[], f: DiscoveryFilter): Prisma.MessageWhereInput {
   const createdAt = createdAtRange(f);
   return { userId: { in: ids }, ...(createdAt ? { createdAt } : {}), ...(f.q ? { content: contains(f.q) } : {}) };
 }
 
-function dmWhere(ids: number[], f: DiscoveryFilter): Prisma.DirectMessageWhereInput {
-  const createdAt = createdAtRange(f);
-  return { AND: [dmScope(ids), { ...(createdAt ? { createdAt } : {}), ...(f.q ? { content: contains(f.q) } : {}) }] };
+// ---- DM·파일 조건(raw SQL). 메시지 별칭은 dm, 파일 별칭은 fl ----
+const anyOf = (col: Prisma.Sql, ids: number[]) => Prisma.sql`${col} = ANY(${ids}::int[])`;
+
+/** 대상자가 보냈거나 받은 DM, 또는 대상자가 볼 수 있었던 그룹 DM */
+const dmScopeSql = (ids: number[]) =>
+  Prisma.sql`(${anyOf(Prisma.sql`dm."fromUserId"`, ids)} OR ${anyOf(Prisma.sql`dm."toUserId"`, ids)} OR ${groupDmVisibleSql((col) => anyOf(col, ids))})`;
+
+function rangeSql(col: Prisma.Sql, f: DiscoveryFilter): Prisma.Sql {
+  const r = createdAtRange(f);
+  const parts = [
+    ...(r?.gte ? [Prisma.sql`${col} >= ${utcTimestamp(r.gte)}`] : []),
+    ...(r?.lt ? [Prisma.sql`${col} < ${utcTimestamp(r.lt)}`] : []),
+    ...(r?.lte ? [Prisma.sql`${col} <= ${utcTimestamp(r.lte)}`] : []),
+  ];
+  return parts.length > 0 ? Prisma.join(parts, ' AND ') : Prisma.sql`TRUE`;
 }
 
-function fileWhere(ids: number[], f: DiscoveryFilter): Prisma.FileWhereInput {
-  const createdAt = createdAtRange(f);
-  return {
-    AND: [
-      { OR: [{ userId: { in: ids } }, { dm: dmScope(ids) }] },
-      { ...(createdAt ? { createdAt } : {}), ...(f.q ? { originalName: contains(f.q) } : {}) },
-    ],
-  };
+/** 대소문자 무시 부분 일치. 검색어의 %, _, \는 글자 그대로 찾는다. */
+const likeSql = (col: Prisma.Sql, q: string | undefined) =>
+  q ? Prisma.sql`${col} ILIKE ${`%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`}` : Prisma.sql`TRUE`;
+
+const dmWhereSql = (ids: number[], f: DiscoveryFilter) =>
+  Prisma.sql`${dmScopeSql(ids)} AND ${rangeSql(Prisma.sql`dm."createdAt"`, f)} AND ${likeSql(Prisma.sql`dm.content`, f.q)}`;
+
+/** 대상자가 올린 파일, 범위 안 DM에 붙은 파일, 범위 안 DM·채널 메시지에서 소프트 삭제로 분리된 파일 */
+const fileWhereSql = (ids: number[], f: DiscoveryFilter) => Prisma.sql`(${anyOf(Prisma.sql`fl."userId"`, ids)}
+  OR EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."dmId" AND ${dmScopeSql(ids)})
+  OR EXISTS (SELECT 1 FROM "DirectMessage" dm WHERE dm.id = fl."detachedFromDmId" AND ${dmScopeSql(ids)})
+  OR EXISTS (SELECT 1 FROM "Message" om WHERE om.id = fl."detachedFromMessageId" AND ${anyOf(Prisma.sql`om."userId"`, ids)}))
+  AND ${rangeSql(Prisma.sql`fl."createdAt"`, f)} AND ${likeSql(Prisma.sql`fl."originalName"`, f.q)}`;
+
+type PageOpts = { cursor?: number; take: number; order: 'asc' | 'desc' };
+
+/** 조건에 맞는 id 한 쪽. table과 alias는 이 파일의 상수만 넘긴다. */
+async function pageIds(table: 'DirectMessage' | 'File', where: Prisma.Sql, opts: PageOpts): Promise<number[]> {
+  const t = table === 'DirectMessage' ? Prisma.sql`"DirectMessage" dm` : Prisma.sql`"File" fl`;
+  const id = table === 'DirectMessage' ? Prisma.sql`dm.id` : Prisma.sql`fl.id`;
+  const cursor = opts.cursor ? (opts.order === 'desc' ? Prisma.sql`AND ${id} < ${opts.cursor}` : Prisma.sql`AND ${id} > ${opts.cursor}`) : Prisma.empty;
+  const dir = opts.order === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`;
+  const rows = await prisma.$queryRaw<Array<{ id: number }>>`SELECT ${id} AS id FROM ${t} WHERE ${where} ${cursor} ORDER BY ${id} ${dir} LIMIT ${opts.take}`;
+  return rows.map((r) => r.id);
+}
+
+async function countWhere(table: 'DirectMessage' | 'File', where: Prisma.Sql): Promise<number> {
+  const t = table === 'DirectMessage' ? Prisma.sql`"DirectMessage" dm` : Prisma.sql`"File" fl`;
+  const [row] = await prisma.$queryRaw<Array<{ n: number }>>`SELECT COUNT(*)::int AS n FROM ${t} WHERE ${where}`;
+  return Number(row.n);
 }
 
 const PERSON = { select: { id: true, name: true, email: true } } as const;
@@ -225,7 +260,7 @@ const stripDetached = ({ detachedFromMessageId: _m, detachedFromDmId: _d, ...met
 export type DiscoveryRecord = ReturnType<typeof channelRecord> | ReturnType<typeof dmRecord> | ReturnType<typeof fileRecord>;
 
 /** 한 종류의 배치를 읽는다. order가 desc면 cursor보다 작은 id, asc면 큰 id부터. */
-async function fetchBatch(kind: SearchKind, ids: number[], f: DiscoveryFilter, opts: { cursor?: number; take: number; order: 'asc' | 'desc' }): Promise<DiscoveryRecord[]> {
+async function fetchBatch(kind: SearchKind, ids: number[], f: DiscoveryFilter, opts: PageOpts): Promise<DiscoveryRecord[]> {
   const idCond = opts.cursor ? { id: opts.order === 'desc' ? { lt: opts.cursor } : { gt: opts.cursor } } : {};
   const base = { orderBy: { id: opts.order }, take: opts.take };
   if (kind === 'channel') {
@@ -237,14 +272,16 @@ async function fetchBatch(kind: SearchKind, ids: number[], f: DiscoveryFilter, o
     return rows.map((m) => channelRecord(m, (detached.get(m.id) ?? []).map(stripDetached)));
   }
   if (kind === 'dm') {
-    const rows = await prisma.directMessage.findMany({ ...base, where: { AND: [dmWhere(ids, f), idCond] }, select: DM_SELECT });
+    const dmIds = await pageIds('DirectMessage', dmWhereSql(ids, f), opts);
+    const rows = dmIds.length ? await prisma.directMessage.findMany({ where: { id: { in: dmIds } }, orderBy: base.orderBy, select: DM_SELECT }) : [];
     const deletedIds = rows.filter((m) => m.deletedAt).map((m) => m.id);
     const detached = deletedIds.length
       ? groupBy(await prisma.file.findMany({ where: { detachedFromDmId: { in: deletedIds } }, select: DETACHED_META, orderBy: { id: 'asc' } }), (x) => x.detachedFromDmId)
       : new Map();
     return rows.map((m) => dmRecord(m, (detached.get(m.id) ?? []).map(stripDetached)));
   }
-  const rows = await prisma.file.findMany({ ...base, where: { AND: [fileWhere(ids, f), idCond] }, select: FILE_SELECT });
+  const fileIds = await pageIds('File', fileWhereSql(ids, f), opts);
+  const rows = fileIds.length ? await prisma.file.findMany({ where: { id: { in: fileIds } }, orderBy: base.orderBy, select: FILE_SELECT }) : [];
   // 분리된 첨부는 원래 메시지의 채널을 따로 읽는다(보존 정리로 메시지가 하드 삭제됐으면 null)
   const sourceIds = [...new Set(rows.flatMap((r) => (r.detachedFromMessageId !== null ? [r.detachedFromMessageId] : [])))];
   const sources = sourceIds.length
@@ -257,8 +294,8 @@ export async function countAll(ids: number[], f: DiscoveryFilter): Promise<Recor
   if (ids.length === 0) return { channel: 0, dm: 0, file: 0 };
   const [channel, dm, file] = await Promise.all([
     prisma.message.count({ where: channelWhere(ids, f) }),
-    prisma.directMessage.count({ where: dmWhere(ids, f) }),
-    prisma.file.count({ where: fileWhere(ids, f) }),
+    countWhere('DirectMessage', dmWhereSql(ids, f)),
+    countWhere('File', fileWhereSql(ids, f)),
   ]);
   return { channel, dm, file };
 }

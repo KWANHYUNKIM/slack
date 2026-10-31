@@ -329,6 +329,50 @@ describe('Group DMs', () => {
       expect((await send(bob, groupId, 'still here')).status).toBe(201);
     });
 
+    it('records membership history on create, add, leave and rejoin (two spans for a rejoin)', async () => {
+      const spansOf = (groupId: number, userId: number) =>
+        prisma.dMGroupMembership.findMany({ where: { groupId, userId }, orderBy: { id: 'asc' } });
+
+      // 생성: 구성원마다 그룹 생성 시각부터 열린 구간
+      const groupId = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
+      const group = await prisma.dMGroup.findUniqueOrThrow({ where: { id: groupId } });
+      const created = await prisma.dMGroupMembership.findMany({ where: { groupId } });
+      expect(created.map((s) => s.userId).sort()).toEqual([alice.id, bob.id, carol.id].sort());
+      expect(created.every((s) => s.leftAt === null && s.joinedAt.getTime() === group.createdAt.getTime())).toBe(true);
+      // 같은 집합으로 다시 만들면(재사용) 이력이 늘지 않는다
+      await createGroup(bob, [alice.id, carol.id]);
+      expect(await prisma.dMGroupMembership.count({ where: { groupId } })).toBe(3);
+
+      // 추가: 가입 시각이 DMGroupMember와 같고, 이미 구성원인 사람은 구간이 늘지 않는다
+      await request(app).post(`/dms/groups/${groupId}/members`).set(auth(alice)).send({ userIds: [dave.id, bob.id] }).expect(200);
+      const daveMember = await prisma.dMGroupMember.findUniqueOrThrow({ where: { groupId_userId: { groupId, userId: dave.id } } });
+      const [daveFirst] = await spansOf(groupId, dave.id);
+      expect(daveFirst).toMatchObject({ leftAt: null, joinedAt: daveMember.joinedAt });
+      expect(await spansOf(groupId, bob.id)).toHaveLength(1);
+
+      // 나가기: 구간이 닫힌다. 나간 사람이 다시 나가기를 불러도(404) 구간은 그대로
+      await request(app).delete(`/dms/groups/${groupId}/members/me`).set(auth(dave)).expect(200);
+      await request(app).delete(`/dms/groups/${groupId}/members/me`).set(auth(dave)).expect(404);
+      const [closed] = await spansOf(groupId, dave.id);
+      expect(closed.leftAt).not.toBeNull();
+      expect(closed.leftAt!.getTime()).toBeGreaterThanOrEqual(closed.joinedAt.getTime());
+
+      // 재가입: 새 구간이 열리고 이전 구간은 닫힌 채 남는다
+      await request(app).post(`/dms/groups/${groupId}/members`).set(auth(bob)).send({ userIds: [dave.id] }).expect(200);
+      const spans = await spansOf(groupId, dave.id);
+      expect(spans).toHaveLength(2);
+      expect(spans[0]).toMatchObject({ id: closed.id, leftAt: closed.leftAt });
+      expect(spans[1].leftAt).toBeNull();
+      expect(spans[1].joinedAt.getTime()).toBeGreaterThanOrEqual(closed.leftAt!.getTime());
+      // 같은 사람의 열린 구간은 하나뿐이다(부분 유니크 인덱스)
+      await expect(prisma.dMGroupMembership.create({ data: { groupId, userId: dave.id } })).rejects.toThrow();
+
+      // 현재 구성원과 열린 구간은 언제나 1:1
+      const members = await prisma.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });
+      const open = await prisma.dMGroupMembership.findMany({ where: { groupId, leftAt: null }, select: { userId: true } });
+      expect(open.map((o) => o.userId).sort()).toEqual(members.map((m) => m.userId).sort());
+    });
+
     it('renames a group and clears the name', async () => {
       const groupId = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
       let res = await request(app).patch(`/dms/groups/${groupId}`).set(auth(bob)).send({ name: '  project  ' });
