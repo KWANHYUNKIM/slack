@@ -281,14 +281,13 @@ export async function sendGroupMessage(input: GroupMessageInput) {
     pushTargets = memberIds.filter((id) => participantIds.has(id));
   }
 
-  const senderName = dm.fromUser?.name || 'Someone';
+  const senderName = dm.fromUser?.name;
   for (const userId of pushTargets) {
     if (userId === fromUserId || isUserOnline(userId)) continue;
     sendPushToUser(
       userId,
       {
-        title: threadId ? `${senderName} (thread)` : senderName,
-        body: dm.content.slice(0, 100) || 'Sent an attachment',
+        titleKey: threadId ? 'dmThread' : 'dmTitle', sender: senderName, content: dm.content, plainBody: true,
         url: `/g/${groupId}`,
       },
       { kind: 'dm' },

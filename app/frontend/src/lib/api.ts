@@ -50,12 +50,15 @@ export class ApiError extends Error {
   /** Machine-readable error code from the server (e.g. CHANNEL_NAME_TAKEN) */
   code?: string;
   reason?: string;
+  /** VALIDATION_FAILED일 때 어떤 필드가 왜 틀렸는지(path, zod 사유 코드) */
+  fields?: Array<{ path: string; reason: string }>;
 
-  constructor(message: string, status: number, code?: string, reason?: string) {
+  constructor(message: string, status: number, code?: string, reason?: string, fields?: Array<{ path: string; reason: string }>) {
     super(message);
     this.status = status;
     this.code = code;
     this.reason = reason;
+    this.fields = fields;
     this.name = 'ApiError';
   }
 }
@@ -84,7 +87,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const errorMsg = Array.isArray(body.error)
       ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
       : body.error || t('errors:client.requestFailed');
-    throw new ApiError(errorMsg, res.status, body.code, body.reason);
+    throw new ApiError(errorMsg, res.status, body.code, body.reason, Array.isArray(body.fields) ? body.fields : undefined);
   }
 
   return res.json();
@@ -98,6 +101,8 @@ export interface AuthUser {
   name: string;
   avatar?: string | null;
   role?: 'ADMIN' | 'MEMBER' | 'GUEST';
+  locale?: string | null;
+  timeZone?: string | null;
   createdAt: string;
 }
 
@@ -661,6 +666,8 @@ export interface UserProfile {
   name: string;
   avatar?: string | null;
   role?: 'ADMIN' | 'MEMBER' | 'GUEST';
+  locale?: string | null;
+  timeZone?: string | null;
   status?: string;
   bio?: string | null;
   createdAt: string;
@@ -673,7 +680,7 @@ export function getMyProfile() {
   return request<UserProfile>('/users/me');
 }
 
-export function updateMyProfile(data: { name?: string; avatar?: string | null; status?: string; bio?: string | null }) {
+export function updateMyProfile(data: { name?: string; avatar?: string | null; status?: string; bio?: string | null; locale?: string | null; timeZone?: string | null }) {
   return request<UserProfile>('/users/me', {
     method: 'PATCH',
     body: JSON.stringify(data),

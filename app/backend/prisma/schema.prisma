@@ -43,6 +43,10 @@ model User {
   dndUntil              DateTime?
   dndWithStatus         Boolean   @default(false)
 
+  // 다국어(i18n-3). locale은 BCP-47, timeZone은 IANA 이름. 비어 있으면 요청/서버 기본값을 쓴다.
+  locale   String? @db.VarChar(35)
+  timeZone String? @db.VarChar(64)
+
   messages           Message[]
   channels           ChannelMember[]
   reactions          Reaction[]

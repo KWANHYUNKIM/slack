@@ -6,6 +6,7 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { ERR } from '../utils/errorCodes.js';
 import {
   ALLOWED_SCOPES,
   MAX_ACTIVE_TOKENS,
@@ -77,7 +78,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       });
     });
     if (!row) {
-      res.status(409).json({ error: 'Too many tokens', code: 'TOKEN_LIMIT_REACHED' });
+      res.status(409).json({ error: 'Too many tokens', code: ERR.TOKEN_LIMIT_REACHED });
       return;
     }
 

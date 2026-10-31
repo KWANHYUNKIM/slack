@@ -12,6 +12,7 @@ import { logError } from '../utils/logger.js';
 import { blankIfDeleted, setReplyBroadcast } from '../services/threadService.js';
 import { markThreadMentionsRead } from '../services/mentionService.js';
 import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
+import { ERR } from '../utils/errorCodes.js';
 
 const router = Router();
 
@@ -216,7 +217,7 @@ router.delete('/:id/pin', authMiddleware, requireMessageAccess, async (req: Auth
 // 메시지가 없거나 삭제됐거나 볼 권한이 없으면 모두 같은 404로 답해 존재 여부를 숨긴다.
 // channel(기본)은 Message, dm은 DirectMessage 테이블이다(두 테이블의 id는 서로 독립이다).
 router.get('/:id/locate', authMiddleware, async (req: AuthRequest, res: Response) => {
-  const notFound = () => res.status(404).json({ error: 'Message not found', code: 'MESSAGE_NOT_FOUND' });
+  const notFound = () => res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
   try {
     const messageId = parseIntParam(req.params.id);
     const kind = req.query.kind === 'dm' ? 'dm' : req.query.kind === undefined || req.query.kind === 'channel' ? 'channel' : null;

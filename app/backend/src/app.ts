@@ -32,6 +32,8 @@ import reminderRoutes from './routes/reminders.js';
 import tokenRoutes from './routes/tokens.js';
 import mcpRoutes from './routes/mcp.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { errorCodeDefaults } from './middleware/errorCode.js';
+import { ERR } from './utils/errorCodes.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitKey } from './middleware/rateLimitKey.js';
 import { accessTokenAuth } from './middleware/accessTokenAuth.js';
@@ -65,6 +67,8 @@ const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'product
 app.use(cors({ origin: corsOrigin as string | boolean }));
 app.use(compression());
 app.use(express.json({ limit: '100kb' }));
+// 오류 응답에 code가 없으면 상태 코드별 기본 code를 붙인다(i18n-3)
+app.use(errorCodeDefaults);
 
 // Rate limiting (skip in test environment)
 const isTest = process.env.NODE_ENV === 'test';
@@ -76,7 +80,7 @@ const authLimiter = isTest
       max: 20,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { error: 'Too many attempts, please try again later' },
+      message: { error: 'Too many attempts, please try again later', code: ERR.RATE_LIMITED },
     });
 
 const apiLimiter = isTest
@@ -86,7 +90,7 @@ const apiLimiter = isTest
       max: 120,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { error: 'Too many requests, please try again later' },
+      message: { error: 'Too many requests, please try again later', code: ERR.RATE_LIMITED },
       keyGenerator: rateLimitKey,
     });
 

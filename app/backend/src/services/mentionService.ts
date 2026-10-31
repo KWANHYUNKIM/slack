@@ -314,7 +314,7 @@ async function notifyChannelActivities(
   });
 
   const channelName = channel?.name ?? 'channel';
-  const senderName = actor?.name ?? 'Someone';
+  const senderName = actor?.name;
   const url = `/c/${msg.channelId}`;
   const notified = new Set<number>();
   for (const a of created) {
@@ -323,9 +323,7 @@ async function notifyChannelActivities(
     const isMention = MENTION_TYPES.includes(a.type);
     sendPushToUser(
       a.userId,
-      isMention
-        ? { title: `#${channelName} mention`, body: `${senderName}: ${msg.content.slice(0, 100)}`, url }
-        : { title: `#${channelName} thread`, body: `${senderName}: ${msg.content.slice(0, 100)}`, url },
+      { titleKey: isMention ? 'channelMention' : 'channelThread', channel: channelName, sender: senderName, content: msg.content, url },
       { kind: isMention ? 'mention' : 'thread', channelId: msg.channelId },
     ).catch((err) => logError('Activity push dispatch failed', err));
   }
@@ -337,7 +335,7 @@ async function notifyChannelActivities(
       if (m.userId === msg.userId || notified.has(m.userId) || isUserOnline(m.userId)) continue;
       sendPushToUser(
         m.userId,
-        { title: `#${channelName}`, body: `${senderName}: ${msg.content.slice(0, 100) || 'Sent an attachment'}`, url },
+        { titleKey: 'channelMessage', channel: channelName, sender: senderName, content: msg.content, url },
         { kind: 'message', channelId: msg.channelId },
       ).catch((err) => logError('Push notification dispatch failed', err));
     }

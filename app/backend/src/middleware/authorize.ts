@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../db.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam, MAX_MESSAGE_LENGTH } from '../utils/params.js';
+import { ERR } from '../utils/errorCodes.js';
 
 // ── Express Middleware ──────────────────────────────────────────────
 
@@ -17,7 +18,7 @@ export async function requireChannelMembership(
 ): Promise<void> {
   const channelId = parseIntParam(req.params.id);
   if (!channelId) {
-    res.status(400).json({ error: 'Invalid channel ID' });
+    res.status(400).json({ error: 'Invalid channel ID', code: ERR.INVALID_CHANNEL_ID });
     return;
   }
 
@@ -27,7 +28,7 @@ export async function requireChannelMembership(
   });
 
   if (!membership) {
-    res.status(403).json({ error: 'You must be a member of this channel' });
+    res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
 
@@ -48,7 +49,7 @@ export async function requireMessageAccess(
 ): Promise<void> {
   const messageId = parseIntParam(req.params.id);
   if (!messageId) {
-    res.status(400).json({ error: 'Invalid message ID' });
+    res.status(400).json({ error: 'Invalid message ID', code: ERR.INVALID_MESSAGE_ID });
     return;
   }
 
@@ -57,7 +58,7 @@ export async function requireMessageAccess(
   });
 
   if (!message || message.deletedAt) {
-    res.status(404).json({ error: 'Message not found' });
+    res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
     return;
   }
 
@@ -67,7 +68,7 @@ export async function requireMessageAccess(
   });
 
   if (!membership) {
-    res.status(403).json({ error: 'You must be a member of this channel' });
+    res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
 
@@ -203,13 +204,13 @@ export async function requireFileAccess(
 ): Promise<void> {
   const fileId = parseIntParam(req.params.id);
   if (!fileId) {
-    res.status(400).json({ error: 'Invalid file ID' });
+    res.status(400).json({ error: 'Invalid file ID', code: ERR.INVALID_FILE_ID });
     return;
   }
 
   const file = await verifyFileAccess(req.user!.userId, fileId);
   if (!file) {
-    res.status(404).json({ error: 'File not found' });
+    res.status(404).json({ error: 'File not found', code: ERR.FILE_NOT_FOUND });
     return;
   }
 
@@ -242,7 +243,7 @@ export async function requireDmAccess(
 ): Promise<void> {
   const dmId = parseIntParam(req.params.id);
   if (!dmId) {
-    res.status(400).json({ error: 'Invalid message ID' });
+    res.status(400).json({ error: 'Invalid message ID', code: ERR.INVALID_MESSAGE_ID });
     return;
   }
 
@@ -251,13 +252,13 @@ export async function requireDmAccess(
   });
 
   if (!dm || dm.deletedAt !== null) {
-    res.status(404).json({ error: 'Message not found' });
+    res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
     return;
   }
 
   const userId = req.user!.userId;
   if (!(await canAccessDm(dm, userId))) {
-    res.status(403).json({ error: 'Access denied' });
+    res.status(403).json({ error: 'Access denied', code: ERR.ACCESS_DENIED });
     return;
   }
 
@@ -277,7 +278,7 @@ export async function requireDmOwnership(
 ): Promise<void> {
   const dmId = parseIntParam(req.params.id);
   if (!dmId) {
-    res.status(400).json({ error: 'Invalid message ID' });
+    res.status(400).json({ error: 'Invalid message ID', code: ERR.INVALID_MESSAGE_ID });
     return;
   }
 
@@ -286,18 +287,18 @@ export async function requireDmOwnership(
   });
 
   if (!dm || dm.deletedAt !== null) {
-    res.status(404).json({ error: 'Message not found' });
+    res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
     return;
   }
 
   const userId = req.user!.userId;
   if (dm.fromUserId !== userId) {
-    res.status(403).json({ error: 'You can only modify your own messages' });
+    res.status(403).json({ error: 'You can only modify your own messages', code: ERR.NOT_MESSAGE_OWNER });
     return;
   }
   // 그룹을 나간 뒤에는 자기 메시지도 고치거나 지울 수 없다
   if (dm.groupId !== null && !(await checkDmGroupMembership(userId, dm.groupId))) {
-    res.status(403).json({ error: 'Access denied' });
+    res.status(403).json({ error: 'Access denied', code: ERR.ACCESS_DENIED });
     return;
   }
 
@@ -317,12 +318,12 @@ export async function requireDmGroupMember(
 ): Promise<void> {
   const groupId = parseIntParam(req.params.id);
   if (!groupId) {
-    res.status(400).json({ error: 'Invalid group ID' });
+    res.status(400).json({ error: 'Invalid group ID', code: ERR.INVALID_GROUP_ID });
     return;
   }
 
   if (!(await checkDmGroupMembership(req.user!.userId, groupId))) {
-    res.status(404).json({ error: 'Conversation not found' });
+    res.status(404).json({ error: 'Conversation not found', code: ERR.CONVERSATION_NOT_FOUND });
     return;
   }
 
@@ -360,17 +361,17 @@ export async function requirePublicChannelReadAccess(
 ): Promise<void> {
   const channelId = parseIntParam(req.params.id);
   if (!channelId) {
-    res.status(400).json({ error: 'Invalid channel ID' });
+    res.status(400).json({ error: 'Invalid channel ID', code: ERR.INVALID_CHANNEL_ID });
     return;
   }
 
   const access = await canReadChannel(req.user!.userId, req.user!.role, channelId);
   if (!access.exists) {
-    res.status(404).json({ error: 'Channel not found' });
+    res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
     return;
   }
   if (!access.allowed) {
-    res.status(403).json({ error: 'You must be a member of this channel' });
+    res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
 
@@ -403,7 +404,7 @@ async function messageReadAccess(
 ): Promise<void> {
   const messageId = parseIntParam(req.params.id);
   if (!messageId) {
-    res.status(400).json({ error: 'Invalid message ID' });
+    res.status(400).json({ error: 'Invalid message ID', code: ERR.INVALID_MESSAGE_ID });
     return;
   }
 
@@ -414,17 +415,17 @@ async function messageReadAccess(
   const hasLiveReplies = !!message && !!message.deletedAt && allowDeletedParent && message.threadId === null
     && (await prisma.message.count({ where: { threadId: message.id, deletedAt: null } })) > 0;
   if (!message || (message.deletedAt && !hasLiveReplies)) {
-    res.status(404).json({ error: 'Message not found' });
+    res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
     return;
   }
 
   const access = await canReadChannel(req.user!.userId, req.user!.role, message.channelId);
   if (!access.exists) {
-    res.status(404).json({ error: 'Channel not found' });
+    res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
     return;
   }
   if (!access.allowed) {
-    res.status(403).json({ error: 'You must be a member of this channel' });
+    res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
 

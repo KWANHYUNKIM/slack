@@ -5,6 +5,9 @@ import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ApiError } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrors';
+import { loginFieldErrorKey } from '@/lib/authErrors';
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
@@ -21,13 +24,10 @@ export function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      const raw = err instanceof Error ? err.message : '';
-      const errorMap: Record<string, string> = {
-        'Invalid credentials': t('login.errors.invalidCredentials'),
-        'User not found': t('login.errors.invalidCredentials'),
-        'Invalid email address': t('login.errors.invalidEmail'),
-      };
-      setError(errorMap[raw] || raw || t('login.errors.generic'));
+      // 서버 code로 문구를 고른다(영어 원문 비교 금지). 검증 실패는 이메일 필드일 때만 이메일 안내를 보인다.
+      setError(err instanceof ApiError && err.code === 'VALIDATION_FAILED'
+        ? t(loginFieldErrorKey(err.fields))
+        : apiErrorMessage(err, 'auth:login.errors.generic'));
     }
   };
 
