@@ -46,5 +46,5 @@ prisma/schema.prisma, prisma/migrations/
 ## 5. 테스트
 - 라우트마다 `tests/<자원>.test.ts`에 supertest로 **CRUD 전체 흐름**(생성, 조회, 수정, 삭제, 그리고 삭제 후 조회 실패)과 권한 실패 케이스를 넣는다.
 - 소켓 이벤트는 `socket.io-client`로 수신까지 확인한다.
-- 테스트 DB는 5434 포트의 `slackclone-db`만 쓴다(CLAUDE.md 4장).
+- 테스트 DB는 개발자별 전용 DB(`slackclone_test_devN`, 5434)를 쓴다. 동시에 같은 DB로 테스트하면 서로 데이터를 지운다(CLAUDE.md 4장).
 - 실행: `cd app/backend && npm test -- --forceExit` (특정 파일: `npm test -- src/tests/x.test.ts`)
