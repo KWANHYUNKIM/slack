@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createSettingsStore, parseSettings } from './settings';
 
 function tempFile(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'slackclone-desktop-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'team-messenger-desktop-'));
   return path.join(dir, 'nested', 'settings.json');
 }
 

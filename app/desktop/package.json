@@ -1,5 +1,5 @@
 {
-  "name": "slackclone-desktop",
+  "name": "team-messenger-desktop",
   "private": true,
   "version": "0.1.0",
   "description": "Desktop shell that opens a self-hosted workspace server",

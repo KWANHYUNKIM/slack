@@ -11,8 +11,10 @@ export interface SetupState {
   locale: 'en' | 'ko';
   messages: Messages;
   currentServerUrl: string | null;
+  /** 연결 중인 서버. 값이 있으면 입력 화면이 "연결 중"을 보여 준다 */
+  connectingTo: string | null;
   /** 직전 연결 실패 이유 (입력 화면 위에 보여 준다) */
-  error: { code: ServerUrlError | 'unreachable' | 'redirected'; server: string | null } | null;
+  error: { code: ServerUrlError | 'unreachable' | 'redirected' | 'timeout'; server: string | null } | null;
   canCancel: boolean;
 }
 
