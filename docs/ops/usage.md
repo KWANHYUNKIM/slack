@@ -181,3 +181,6 @@
 | 2026-11-01 04:03 | planner-1 | opus | spec/E1-multi-workspace | 148,365 |
 | 2026-11-01 04:07 | code-review | (리뷰) | PR #107 medium 재리뷰 | 117,658 |
 | 2026-11-01 03:57 | dev-1 | opus | PR #106 재리뷰 반영 | 52,937 |
+| 2026-11-01 04:01 | dev-3 | sonnet | fix/channel-purge-order | 82,550 |
+| 2026-11-01 04:02 | dev-4 | opus | PR #107 재리뷰 반영 | 48,151 |
+| 2026-11-01 04:04 | code-review | (리뷰) | PR #112 medium | 75,426 |
