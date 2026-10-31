@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Activité",
+    "markAllRead": "Tout marquer comme lu",
+    "loading": "Chargement...",
+    "loadingMore": "Chargement d'autres éléments...",
+    "loadFailed": "Impossible de charger l'activité.",
+    "empty": "Aucune activité pour le moment.",
+    "unread": "Non lu",
+    "menu": "Menu",
+    "someone": "Quelqu'un",
+    "directMessage": "un message privé",
+    "messageDeleted": "Message supprimé"
+  },
+  "tabs": {
+    "all": "Tout",
+    "mentions": "Mentions",
+    "threads": "Fils",
+    "reactions": "Réactions"
+  },
+  "describe": {
+    "mention": "{actor} vous a mentionné dans {where}",
+    "channelMention": "{actor} a mentionné @channel dans {where}",
+    "hereMention": "{actor} a mentionné @here dans {where}",
+    "threadReply": "{actor} a répondu dans un fil dans {where}",
+    "reaction": "{actor} a réagi {emoji} à votre message dans {where}",
+    "reminder": "Rappel"
+  }
+}

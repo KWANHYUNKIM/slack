@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Admin-Bereich",
+    "openSidebar": "Seitenleiste öffnen",
+    "tabs": {
+      "members": "Mitglieder",
+      "invites": "Einladungen",
+      "channels": "Kanäle",
+      "webhooks": "Webhooks",
+      "audit": "Audit-Protokoll",
+      "retention": "Datenaufbewahrung",
+      "security": "Sicherheit",
+      "dlp": "DLP",
+      "legalHolds": "Aufbewahrungspflichten"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanal",
+      "members": "Mitglieder",
+      "messages": "Nachrichten",
+      "created": "Erstellt"
+    },
+    "actions": {
+      "rename": "Kanal umbenennen",
+      "archive": "Kanal archivieren",
+      "delete": "Kanal löschen",
+      "unarchive": "Kanal wiederherstellen",
+      "deletePermanently": "Endgültig löschen"
+    },
+    "emptyActive": "Keine aktiven Kanäle",
+    "archivedHeading": "Archivierte Kanäle ({count})",
+    "archivedOn": "archiviert am {date}",
+    "messageCount": "{count, plural, one {# Nachricht} other {# Nachrichten}}",
+    "deleteDialog": {
+      "title": "Kanal löschen",
+      "message": "Möchtest du #{name} wirklich endgültig löschen? Alle Nachrichten gehen verloren. Das kann nicht rückgängig gemacht werden."
+    },
+    "archiveDialog": {
+      "title": "Kanal archivieren",
+      "confirm": "Archivieren",
+      "message": "#{name} archivieren? Der Kanal wird aus der Seitenleiste ausgeblendet, die Nachrichten bleiben jedoch erhalten. Du kannst ihn später wiederherstellen."
+    },
+    "unarchiveDialog": {
+      "title": "Kanal wiederherstellen",
+      "confirm": "Wiederherstellen",
+      "message": "#{name} wiederherstellen? Er erscheint für alle Mitglieder wieder in der Seitenleiste."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Mitglieder suchen ...",
+    "columns": {
+      "user": "Benutzer",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "you": "(du)",
+    "roles": {
+      "owner": "Eigentümer",
+      "admin": "Administrator",
+      "member": "Mitglied",
+      "guest": "Gast"
+    },
+    "status": {
+      "active": "Aktiv",
+      "deactivated": "Deaktiviert"
+    },
+    "actions": {
+      "transfer": "Eigentümerschaft übertragen",
+      "reactivate": "Reaktivieren",
+      "deactivate": "Deaktivieren",
+      "forceLogout": "Abmeldung erzwingen",
+      "resetMfa": "2FA zurücksetzen"
+    },
+    "empty": "Keine Benutzer gefunden",
+    "dialogs": {
+      "transfer": {
+        "title": "Arbeitsbereich-Eigentümerschaft übertragen",
+        "confirm": "Übertragen",
+        "message": "Möchtest du die Eigentümerschaft des Arbeitsbereichs wirklich an {name} übertragen? Du wirst auf Administrator zurückgestuft."
+      },
+      "deactivate": {
+        "title": "Benutzer deaktivieren",
+        "confirm": "Deaktivieren",
+        "message": "Möchtest du {name} wirklich deaktivieren? Die Person wird sofort abgemeldet und kann sich nicht mehr anmelden."
+      },
+      "reactivate": {
+        "title": "Benutzer reaktivieren",
+        "confirm": "Reaktivieren",
+        "message": "Möchtest du {name} wirklich reaktivieren? Die Person kann sich dann wieder anmelden."
+      },
+      "forceLogout": {
+        "title": "Abmeldung erzwingen",
+        "confirm": "Abmelden",
+        "message": "{name} jetzt auf allen Geräten abmelden? Das Konto bleibt aktiv und die Person kann sich wieder anmelden."
+      },
+      "resetMfa": {
+        "title": "Zwei-Faktor-Authentifizierung zurücksetzen",
+        "confirm": "Zurücksetzen",
+        "message": "Zwei-Faktor-Authentifizierung für {name} entfernen? Die Person wird auf allen Geräten abgemeldet und kann sich dann nur noch mit ihrem Passwort anmelden."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Zwei-Faktor-Authentifizierung ist eingeschaltet"
+    }
+  },
+  "invites": {
+    "createHeading": "Einladungslink erstellen",
+    "fields": {
+      "role": "Rolle",
+      "maxUses": "Max. Nutzungen",
+      "expiresIn": "Läuft ab in"
+    },
+    "unlimited": "Unbegrenzt",
+    "expiry": {
+      "1d": "1 Tag",
+      "7d": "7 Tage",
+      "30d": "30 Tage",
+      "never": "Nie"
+    },
+    "expired": "Abgelaufen",
+    "columns": {
+      "url": "Einladungs-URL",
+      "uses": "Nutzungen",
+      "expires": "Läuft ab",
+      "createdBy": "Erstellt von"
+    },
+    "copyUrl": "Einladungs-URL kopieren",
+    "full": "(voll)",
+    "delete": "Einladung löschen",
+    "empty": "Noch keine Einladungslinks"
+  },
+  "webhooks": {
+    "createHeading": "Webhook erstellen",
+    "fields": {
+      "name": "Name des Webhooks",
+      "channel": "Kanal"
+    },
+    "namePlaceholder": "Meine Integration",
+    "selectChannel": "Kanal auswählen ...",
+    "columns": {
+      "name": "Name",
+      "url": "Webhook-URL",
+      "lastUsed": "Zuletzt verwendet"
+    },
+    "never": "Nie",
+    "justNow": "Gerade eben",
+    "inactive": "Inaktiv",
+    "copyUrl": "Webhook-URL kopieren",
+    "delete": "Webhook löschen",
+    "empty": "Noch keine Webhooks eingerichtet"
+  },
+  "audit": {
+    "empty": "Keine Einträge im Audit-Protokoll gefunden. Erfasste Aktionen werden hier angezeigt.",
+    "loadMore": "Mehr laden",
+    "targets": {
+      "user": "Benutzer",
+      "channel": "Kanal",
+      "invite": "Einladung",
+      "webhook": "Webhook",
+      "message": "Nachricht",
+      "directMessage": "Direktnachricht",
+      "token": "Zugriffstoken",
+      "auditLog": "Audit-Protokoll",
+      "mcpTool": "MCP-Werkzeug",
+      "workspace": "Arbeitsbereich",
+      "file": "Datei",
+      "dlpRule": "DLP-Regel",
+      "legalHold": "Aufbewahrungspflicht"
+    },
+    "action": {
+      "authLogin": "Angemeldet",
+      "authLoginFailed": "Anmeldung fehlgeschlagen",
+      "authLogout": "Abgemeldet",
+      "authPasswordChanged": "Passwort geändert",
+      "userRoleChanged": "Rolle geändert",
+      "userDeactivated": "Deaktiviert",
+      "userForceLogout": "Abmeldung erzwungen",
+      "userReactivated": "Reaktiviert",
+      "ownershipTransferred": "Eigentümerschaft übertragen",
+      "ownerBootstrapped": "Eigentümer angelegt",
+      "channelCreated": "Kanal erstellt",
+      "channelEdited": "Kanal bearbeitet",
+      "channelArchived": "Kanal archiviert",
+      "channelUnarchived": "Kanal wiederhergestellt",
+      "channelDeleted": "Kanal gelöscht",
+      "channelMemberAdded": "Mitglied hinzugefügt",
+      "channelMemberRemoved": "Mitglied entfernt",
+      "inviteCreated": "Einladung erstellt",
+      "inviteDeleted": "Einladung gelöscht",
+      "webhookCreated": "Webhook erstellt",
+      "webhookDeleted": "Webhook gelöscht",
+      "tokenCreate": "Token erstellt",
+      "tokenRevoke": "Token widerrufen",
+      "mcpToolCall": "MCP-Werkzeugaufruf",
+      "auditExported": "Audit-Protokoll exportiert",
+      "authLoginLocked": "Konto gesperrt",
+      "sessionRevoked": "Gerät abgemeldet",
+      "sessionRevokedAll": "Alle Geräte abgemeldet",
+      "retentionPurged": "Abgelaufene Daten gelöscht",
+      "retentionWorkspaceUpdated": "Aufbewahrungsrichtlinie geändert",
+      "retentionChannelUpdated": "Kanal-Aufbewahrung geändert",
+      "retentionChannelCleared": "Kanal-Aufbewahrung zurückgesetzt",
+      "mfaEnabled": "Zwei-Faktor-Authentifizierung eingeschaltet",
+      "mfaDisabled": "Zwei-Faktor-Authentifizierung ausgeschaltet",
+      "mfaRecoveryUsed": "Wiederherstellungscode verwendet",
+      "mfaRecoveryRegenerated": "Wiederherstellungscodes neu erstellt",
+      "mfaResetByAdmin": "Zwei-Faktor-Authentifizierung durch Admin zurückgesetzt",
+      "mfaPolicyChanged": "Zwei-Faktor-Pflicht geändert",
+      "dlpBlocked": "Nachricht durch DLP blockiert",
+      "dlpWarned": "DLP-Warnung",
+      "dlpRuleCreated": "DLP-Regel erstellt",
+      "dlpRuleUpdated": "DLP-Regel geändert",
+      "dlpRuleDeleted": "DLP-Regel gelöscht",
+      "dlpRuleTimeout": "DLP-Regel abgebrochen (Zeitlimit)",
+      "dlpRuleAutoDisabled": "DLP-Regel automatisch deaktiviert",
+      "legalHoldCreated": "Aufbewahrungspflicht erstellt",
+      "legalHoldUpdated": "Aufbewahrungspflicht bearbeitet",
+      "legalHoldCustodianAdded": "Person zur Aufbewahrungspflicht hinzugefügt",
+      "legalHoldCustodianRemoved": "Person aus der Aufbewahrungspflicht entfernt",
+      "legalHoldReleased": "Aufbewahrungspflicht aufgehoben",
+      "ediscoverySearched": "eDiscovery-Suche",
+      "ediscoveryExportRequested": "eDiscovery-Export angefordert",
+      "ediscoveryExported": "eDiscovery-Export abgeschlossen"
+    },
+    "filters": {
+      "allActions": "Alle Aktionen",
+      "actionsSelected": "{count, plural, one {# Aktion} other {# Aktionen}}",
+      "actor": "Ausführende Person",
+      "allActors": "Alle Ausführenden",
+      "targetType": "Zieltyp",
+      "allTargets": "Alle Ziele",
+      "from": "Von",
+      "to": "Bis",
+      "apply": "Anwenden",
+      "reset": "Zurücksetzen"
+    },
+    "export": {
+      "csv": "CSV exportieren",
+      "json": "JSON exportieren"
+    },
+    "unknownActor": "Unbekannt"
+  },
+  "errors": {
+    "archiveChannel": "Kanal konnte nicht archiviert werden",
+    "createInvite": "Einladung konnte nicht erstellt werden",
+    "createWebhook": "Webhook konnte nicht erstellt werden",
+    "deactivateUser": "Benutzer konnte nicht deaktiviert werden",
+    "deleteChannel": "Kanal konnte nicht gelöscht werden",
+    "deleteInvite": "Einladung konnte nicht gelöscht werden",
+    "deleteWebhook": "Webhook konnte nicht gelöscht werden",
+    "editChannel": "Kanal konnte nicht bearbeitet werden",
+    "exportAuditLog": "Audit-Protokoll konnte nicht exportiert werden",
+    "fetchAuditLog": "Audit-Protokoll konnte nicht abgerufen werden",
+    "fetchChannels": "Kanäle konnten nicht abgerufen werden",
+    "fetchInvites": "Einladungen konnten nicht abgerufen werden",
+    "fetchUsers": "Benutzer konnten nicht abgerufen werden",
+    "fetchWebhooks": "Webhooks konnten nicht abgerufen werden",
+    "forceLogout": "Benutzer konnte nicht abgemeldet werden",
+    "reactivateUser": "Benutzer konnte nicht reaktiviert werden",
+    "removeChannelMember": "Kanalmitglied konnte nicht entfernt werden",
+    "transferOwnership": "Eigentümerschaft konnte nicht übertragen werden",
+    "unarchiveChannel": "Kanal konnte nicht wiederhergestellt werden",
+    "updateRole": "Rolle konnte nicht aktualisiert werden",
+    "resetMfa": "Zwei-Faktor-Authentifizierung konnte nicht zurückgesetzt werden"
+  },
+  "retention": {
+    "title": "Datenaufbewahrung",
+    "description": "Nachrichten nach einer festgelegten Anzahl von Tagen automatisch löschen. Dateien werden zusammen mit ihren Nachrichten gelöscht. Die Bereinigung läuft einmal täglich. Erinnerungen bleiben erhalten und zeigen „gelöschte Nachricht“.",
+    "loadError": "Die Aufbewahrungsrichtlinie konnte nicht geladen werden",
+    "saveError": "Die Aufbewahrungsrichtlinie konnte nicht gespeichert werden",
+    "resetError": "Die Kanalrichtlinie konnte nicht zurückgesetzt werden",
+    "workspace": {
+      "heading": "Standard des Arbeitsbereichs",
+      "hint": "Gilt für jeden Kanal ohne eigene Einstellung sowie für Direktnachrichten und Gruppen-Direktnachrichten."
+    },
+    "mode": {
+      "forever": "Dauerhaft behalten",
+      "days": "Nach einer Anzahl von Tagen löschen",
+      "inherit": "Standard des Arbeitsbereichs verwenden"
+    },
+    "daysLabel": "Tage",
+    "daysHint": "{min} bis {max} Tage",
+    "effective": {
+      "forever": "Dauerhaft behalten",
+      "days": "{count, plural, one {# Tag} other {# Tage}}"
+    },
+    "channels": {
+      "heading": "Kanäle",
+      "columns": {
+        "channel": "Kanal",
+        "policy": "Richtlinie",
+        "effective": "Gilt"
+      },
+      "legalHold": "Aufbewahrungspflicht",
+      "reset": "Auf Standard zurücksetzen",
+      "empty": "Keine Kanäle"
+    },
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "confirm": {
+      "title": "Alte Nachrichten endgültig löschen?",
+      "message": "Bei der nächsten Bereinigung werden Nachrichten, die älter als {count, plural, one {# Tag} other {# Tage}} sind, zusammen mit ihren Dateien endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
+      "confirm": "Richtlinie anwenden"
+    }
+  },
+  "security": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "requireMfa": "Zwei-Faktor-Authentifizierung für alle verlangen",
+    "requireMfaHint": "Mitglieder ohne Zwei-Faktor-Authentifizierung können nur die Einrichtungsseite aufrufen, bis sie sie einschalten.",
+    "unavailable": "Die Zwei-Faktor-Authentifizierung ist auf diesem Server ausgeschaltet, weil kein Verschlüsselungsschlüssel gesetzt ist (TOTP_ENCRYPTION_KEY). Die Pflicht wird nicht durchgesetzt.",
+    "saved": "Sicherheitseinstellungen gespeichert",
+    "loading": "Wird geladen ...",
+    "errors": {
+      "loadFailed": "Sicherheitseinstellungen konnten nicht geladen werden.",
+      "saveFailed": "Sicherheitseinstellungen konnten nicht gespeichert werden."
+    },
+    "allowOAuthApps": "Mitgliedern erlauben, OAuth-Apps zu verbinden",
+    "allowOAuthAppsHint": "Erlaubt Mitgliedern, Apps wie Claude über die OAuth-Anmeldung zu verbinden. Wenn du dies ausschaltest, werden sofort alle Apps getrennt."
+  },
+  "dlp": {
+    "title": "Verhinderung von Datenverlust",
+    "description": "Erkennt sensible Muster in Nachrichten, etwa Kartennummern. Eine blockierende Regel verhindert, dass die Nachricht gespeichert wird. Eine Warnregel speichert sie und erfasst sie im Audit-Protokoll. Der Nachrichtentext wird nie im Protokoll gespeichert.",
+    "loadError": "DLP-Regeln konnten nicht geladen werden",
+    "saveError": "Die Regel konnte nicht gespeichert werden",
+    "toggleError": "Die Regel konnte nicht geändert werden",
+    "deleteError": "Die Regel konnte nicht gelöscht werden",
+    "testError": "Das Muster konnte nicht getestet werden",
+    "builtinBadge": "Integriert",
+    "builtinPattern": "Integrierter Detektor",
+    "builtin": {
+      "credit_card": "Kreditkartennummer",
+      "kr_rrn": "Koreanische Personenkennzahl",
+      "aws_access_key": "AWS-Zugriffsschlüssel",
+      "private_key": "Privater Schlüssel"
+    },
+    "action": {
+      "BLOCK": "Blockieren",
+      "WARN": "Warnen"
+    },
+    "columns": {
+      "name": "Regel",
+      "pattern": "Muster",
+      "action": "Aktion",
+      "enabled": "Status"
+    },
+    "on": "An",
+    "off": "Aus",
+    "toggleLabel": "{name} ein- oder ausschalten",
+    "edit": "Bearbeiten",
+    "editLabel": "{name} bearbeiten",
+    "delete": "Löschen",
+    "deleteLabel": "{name} löschen",
+    "form": {
+      "createHeading": "Regel hinzufügen",
+      "editHeading": "Regel bearbeiten",
+      "name": "Name",
+      "pattern": "Muster (regulärer Ausdruck)",
+      "patternPlaceholder": "PROJEKT-\\d{4}",
+      "action": "Aktion",
+      "add": "Regel hinzufügen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "hint": "Bis zu {max} Zeichen. Verschachtelte Wiederholungen wie (a+)+, Rückverweise und sehr große Wiederholungszahlen werden abgelehnt."
+    },
+    "patternProblem": {
+      "empty": "Gib ein Muster ein.",
+      "tooLong": "Das Muster ist zu lang.",
+      "invalid": "Dies ist kein gültiger regulärer Ausdruck.",
+      "backreference": "Rückverweise sind nicht erlaubt.",
+      "nestedQuantifier": "Verschachtelte Wiederholungen können die Prüfung sehr verlangsamen und sind nicht erlaubt.",
+      "repeatTooLarge": "Die Wiederholungszahl ist zu groß (maximal 200)."
+    },
+    "test": {
+      "heading": "Muster testen",
+      "hint": "Nichts wird gespeichert. Gib oben ein Muster ein oder wähle eine gespeicherte Regel, und gib dann einen Beispieltext ein.",
+      "source": "Zu testendes Muster",
+      "sourceDraft": "Muster im Formular oben",
+      "sample": "Beispieltext",
+      "run": "Testen",
+      "matched": "Treffer. Dieser Text würde erkannt.",
+      "notMatched": "Kein Treffer.",
+      "timedOut": "Die Prüfung hat zu lange gedauert und wurde gestoppt. Vereinfache das Muster."
+    },
+    "confirmDelete": {
+      "title": "Diese Regel löschen?",
+      "message": "Die Regel „{name}“ wird entfernt und nicht mehr geprüft."
+    }
+  },
+  "legalHolds": {
+    "description": "Bewahre alles auf, was eine Person geschrieben oder erhalten hat, auch wenn die Datenaufbewahrung es löschen würde. Administratoren können die aufbewahrten Daten für die rechtliche Prüfung durchsuchen und exportieren.",
+    "statusFilter": "Anzeigen",
+    "status": {
+      "active": "Aktiv",
+      "released": "Aufgehoben",
+      "all": "Alle"
+    },
+    "empty": "Keine Aufbewahrungspflichten",
+    "selectHint": "Wähle eine Aufbewahrungspflicht aus, um ihre Personen zu verwalten und ihre Daten zu durchsuchen.",
+    "loadMore": "Mehr laden",
+    "custodianCount": "{count, plural, one {# Person} other {# Personen}}",
+    "createdOn": "Erstellt am {date}",
+    "releasedOn": "Aufgehoben am {date}",
+    "createdBy": "Erstellt von {name} am {date}",
+    "releasedBy": "Aufgehoben von {name} am {date}",
+    "unknownUser": "Unbekannter Benutzer",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "fields": {
+      "name": "Name",
+      "description": "Beschreibung (optional)"
+    },
+    "create": {
+      "open": "Neue Aufbewahrungspflicht",
+      "submit": "Aufbewahrungspflicht erstellen",
+      "hint": "Du kannst nach dem Erstellen Personen hinzufügen."
+    },
+    "custodians": {
+      "heading": "Betroffene Personen",
+      "pick": "Person auswählen",
+      "add": "Hinzufügen",
+      "remove": "{name} aus dieser Aufbewahrungspflicht entfernen",
+      "empty": "Noch niemand ist in dieser Aufbewahrungspflicht enthalten.",
+      "deactivated": "Deaktiviert"
+    },
+    "release": {
+      "open": "Aufbewahrungspflicht aufheben",
+      "title": "Diese Aufbewahrungspflicht aufheben?",
+      "message": "„{name}“ bewahrt keine Daten mehr auf. Personen, die in keiner anderen aktiven Aufbewahrungspflicht stehen, unterliegen wieder der normalen Aufbewahrungsrichtlinie, und ihre alten Nachrichten können bei der nächsten Bereinigung gelöscht werden. Die Aufbewahrungspflicht und ihre Personenliste bleiben protokolliert. Das kann nicht rückgängig gemacht werden.",
+      "confirm": "Aufheben"
+    },
+    "discovery": {
+      "heading": "Suche und Export",
+      "hint": "Umfasst Nachrichten, die die betroffenen Personen in beliebigen Kanälen (auch privaten) geschrieben haben, Direkt- und Gruppennachrichten, an denen sie beteiligt waren, sowie Dateidetails. Gelöschte Nachrichten sind enthalten und entsprechend markiert.",
+      "query": "Stichwort",
+      "from": "Von",
+      "to": "An",
+      "search": "Suchen",
+      "export": "Exportieren (JSONL)",
+      "exportHint": "Exportiert die Ergebnisse der letzten Suche. Jede Suche und jeder Export wird im Audit-Protokoll erfasst.",
+      "searchFirst": "Suche zuerst mit diesen Filtern. Der Export verwendet die Filter der unten angezeigten Suche.",
+      "kinds": {
+        "channel": "Kanalnachrichten",
+        "dm": "Direktnachrichten",
+        "file": "Dateien"
+      },
+      "empty": "Keine Ergebnisse",
+      "deleted": "Gelöscht",
+      "edited": "Bearbeitet",
+      "reply": "Thread-Antwort",
+      "groupDm": "Gruppen-Direktnachricht #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Aufbewahrungspflichten konnten nicht geladen werden",
+      "create": "Aufbewahrungspflicht konnte nicht erstellt werden",
+      "update": "Aufbewahrungspflicht konnte nicht aktualisiert werden",
+      "custodians": "Die betroffenen Personen konnten nicht geändert werden",
+      "release": "Aufbewahrungspflicht konnte nicht aufgehoben werden",
+      "search": "Suche fehlgeschlagen",
+      "export": "Export fehlgeschlagen"
+    }
+  }
+}

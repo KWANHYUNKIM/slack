@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "send": "Envoyer",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "remove": "Retirer",
+    "add": "Ajouter",
+    "create": "Créer",
+    "retry": "Réessayer",
+    "search": "Rechercher",
+    "copy": "Copier",
+    "done": "Terminé",
+    "next": "Suivant",
+    "more": "Plus"
+  },
+  "emojiPicker": {
+    "loadFailed": "Impossible de charger les emoji. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer"
+  },
+  "status": {
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression..."
+  },
+  "dates": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
+  },
+  "quickSwitcher": {
+    "title": "Sélecteur rapide",
+    "inputLabel": "Accéder à une conversation",
+    "placeholder": "Accéder à un canal ou à une conversation",
+    "recent": "Récent",
+    "results": "Résultats",
+    "clearRecent": "Effacer les éléments récents",
+    "listLabel": "Conversations",
+    "noResults": "Aucune conversation correspondante",
+    "starred": "Favoris",
+    "unread": "Non lus",
+    "dnd": "Ne pas déranger",
+    "footer": "{keys} pour ouvrir. Flèches haut et bas pour naviguer, Entrée pour ouvrir, Échap pour fermer.",
+    "open": "Accéder à…",
+    "kind": {
+      "channel": "Canal",
+      "dm": "Message privé",
+      "group": "Message de groupe"
+    }
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "groups": {
+      "navigation": "Navigation",
+      "general": "Général"
+    },
+    "items": {
+      "switcher": "Ouvrir le sélecteur rapide",
+      "prevChannel": "Conversation précédente",
+      "nextChannel": "Conversation suivante",
+      "prevUnread": "Conversation non lue précédente",
+      "nextUnread": "Conversation non lue suivante",
+      "help": "Afficher les raccourcis clavier",
+      "closeTop": "Fermer le sélecteur rapide ou cette boîte de dialogue"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Maj",
+      "esc": "Échap",
+      "enter": "Entrée"
+    }
+  }
+}

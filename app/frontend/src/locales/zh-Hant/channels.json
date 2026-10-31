@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "建立頻道",
+    "tabBrowse": "瀏覽頻道",
+    "nameLabel": "頻道名稱",
+    "namePlaceholder": "例如 plan-budget",
+    "visibility": "可見範圍",
+    "public": "公開",
+    "private": "私人",
+    "publicHint": "工作區中的所有人都能找到並加入此頻道。",
+    "privateHint": "只有受邀的成員能找到並加入此頻道。",
+    "cancel": "取消",
+    "create": "建立",
+    "noChannels": "沒有可加入的頻道",
+    "memberCount": "{count, plural, other {# 位成員}}",
+    "joined": "已加入",
+    "join": "加入",
+    "close": "關閉",
+    "errors": {
+      "createFailed": "無法建立頻道"
+    }
+  },
+  "errors": {
+    "loadConversations": "無法載入對話。",
+    "loadChannels": "無法載入頻道。"
+  },
+  "membersPanel": {
+    "title": "成員",
+    "addPeople": "新增成員",
+    "loadError": "無法載入成員。",
+    "removeError": "無法移除成員",
+    "online": "線上 — {count}",
+    "offline": "離線 — {count}",
+    "removeDialog": {
+      "title": "要移除成員嗎？",
+      "message": "要將 <bold>{name}</bold> 從此頻道移除嗎？"
+    },
+    "removing": "移除中...",
+    "searchByName": "依名稱搜尋...",
+    "noUsers": "找不到使用者",
+    "roles": {
+      "owner": "擁有者",
+      "moderator": "管理員"
+    },
+    "removeMember": "移除成員"
+  },
+  "dm": {
+    "messagePlaceholder": "傳訊給 {name}",
+    "you": "（您）",
+    "star": "加入已加星號",
+    "unstar": "從已加星號移除",
+    "loadingMessages": "正在載入訊息...",
+    "selfSpace": "這是您的專屬空間。您可以草擬訊息、列出待辦事項，或保存連結與檔案。",
+    "conversationStart": "您與 {name} 對話的開頭",
+    "sendToBegin": "傳送訊息以開始對話。",
+    "edited": "（已編輯）",
+    "pinnedMessages": "釘選的訊息",
+    "noPins": "目前沒有釘選的訊息",
+    "files": "檔案",
+    "noFiles": "尚未分享任何檔案",
+    "loadError": "無法載入訊息。",
+    "sendError": "無法傳送訊息，請再試一次。"
+  },
+  "nameRules": {
+    "required": "請輸入頻道名稱。",
+    "tooLong": "頻道名稱必須在 {max} 個字元以內。",
+    "invalidChars": "頻道名稱只能包含字母、數字、連字號和底線，且必須以字母或數字開頭。",
+    "tooManyMarks": "頻道名稱中不能連續出現超過 4 個組合附加符號。",
+    "mixedScripts": "頻道名稱不能混用外形相似的字母系統（例如拉丁文與西里爾字母或希臘字母），也不能混用其他數字系統的數字。",
+    "taken": "已有相同名稱的頻道。"
+  },
+  "groupDM": {
+    "members": "{count, plural, other {# 位成員}}",
+    "nameLabel": "對話名稱",
+    "namePlaceholder": "新增名稱",
+    "noName": "沒有名稱（顯示成員名稱）",
+    "rename": "重新命名對話",
+    "addPeople": "新增成員",
+    "add": "新增",
+    "createWith": "開始群組對話",
+    "leave": "離開對話",
+    "leaveConfirm": "要離開此對話嗎？離開後將無法再看到其中的訊息。",
+    "conversationStart": "這是您與 {names} 對話的開頭",
+    "addError": "無法新增成員，請再試一次。",
+    "renameError": "無法重新命名對話，請再試一次。",
+    "leaveError": "無法離開對話，請再試一次。"
+  }
+}

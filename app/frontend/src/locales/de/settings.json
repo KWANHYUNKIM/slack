@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Sprache",
+    "pending": "{name} (Übersetzung folgt bald)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Profilbild",
+    "dnd": "Benachrichtigungen pausiert"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Schließen",
+    "loading": "Wird geladen ...",
+    "notFound": "Profil nicht gefunden",
+    "uploadPhoto": "Foto hochladen",
+    "uploading": "Wird hochgeladen ...",
+    "name": "Name",
+    "bio": "Info",
+    "bioPlaceholder": "Erzähl anderen etwas über dich",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "status": "Status",
+    "joined": "Beigetreten",
+    "message": "Nachricht",
+    "edit": "Profil bearbeiten",
+    "statusValue": {
+      "online": "online",
+      "away": "abwesend",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profil konnte nicht geladen werden.",
+      "saveFailed": "Profil konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "notImage": "Bitte wähle eine Bilddatei aus.",
+      "tooLarge": "Das Bild muss kleiner als 5 MB sein.",
+      "uploadFailed": "Foto konnte nicht hochgeladen werden. Bitte versuche es erneut."
+    },
+    "statusUntil": "Bis {time}"
+  },
+  "crop": {
+    "title": "Foto zuschneiden",
+    "close": "Schließen",
+    "zoom": "Zoom",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert ...",
+    "failed": "Zuschneiden fehlgeschlagen"
+  },
+  "accessTokens": {
+    "title": "Persönliche Zugriffstoken",
+    "description": "Mit Token können Claude und andere MCP-Clients in deinem Arbeitsbereich mit deinen Berechtigungen lesen und, wenn du es erlaubst, auch schreiben. Behandle sie wie ein Passwort.",
+    "nameLabel": "Name des Tokens",
+    "namePlaceholder": "z. B. Claude Code auf meinem Laptop",
+    "scopesLabel": "Berechtigungen",
+    "scope": {
+      "channelsRead": "Kanäle auflisten",
+      "channelsHistory": "Nachrichten, Threads und Aktivitäten lesen",
+      "usersRead": "Personen ansehen",
+      "chatWrite": "Deine Nachrichten veröffentlichen, bearbeiten und löschen",
+      "reactionsWrite": "Deine Reaktionen hinzufügen und entfernen",
+      "imRead": "Deine Direktnachrichten und Gruppen-Direktnachrichten auflisten",
+      "imHistory": "Deinen Direktnachrichtenverlauf lesen",
+      "imWrite": "Deine Direktnachrichten senden, bearbeiten und löschen",
+      "searchRead": "Nachrichten, Dateien, Personen und Kanäle durchsuchen (Ergebnisse aus Direktnachrichten benötigen den Direktnachrichtenverlauf)",
+      "filesRead": "Dateien auflisten und den Inhalt von Textdateien lesen"
+    },
+    "expiryLabel": "Läuft ab",
+    "expiryDays": "{count, plural, one {# Tag} other {# Tage}}",
+    "expiryNever": "Kein Ablaufdatum",
+    "neverWarning": "Token ohne Ablaufdatum bleiben gültig, bis du sie widerrufst.",
+    "create": "Token erzeugen",
+    "createdNotice": "Kopiere dein neues Token jetzt. Du kannst es danach nicht mehr sehen.",
+    "copy": "Token kopieren",
+    "copyCommand": "Befehl kopieren",
+    "copied": "In die Zwischenablage kopiert",
+    "connectHint": "Verbinde dich aus Claude Code:",
+    "dismiss": "Fertig, Token ausblenden",
+    "loading": "Wird geladen ...",
+    "empty": "Du hast keine persönlichen Zugriffstoken.",
+    "expires": "Läuft ab am {date}",
+    "expired": "Abgelaufen",
+    "noExpiry": "Kein Ablaufdatum",
+    "lastUsed": "Zuletzt verwendet am {date}",
+    "neverUsed": "Nie verwendet",
+    "rename": "Umbenennen",
+    "renameLabel": "Token {name} umbenennen",
+    "revoke": "Widerrufen",
+    "revokeLabel": "Token {name} widerrufen",
+    "revokeConfirm": "Jetzt widerrufen",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "errors": {
+      "loadFailed": "Token konnten nicht geladen werden.",
+      "createFailed": "Token konnte nicht erstellt werden. Bitte versuche es erneut.",
+      "renameFailed": "Token konnte nicht umbenannt werden.",
+      "revokeFailed": "Token konnte nicht widerrufen werden.",
+      "copyFailed": "Kopieren nicht möglich. Markiere den Text und kopiere ihn manuell.",
+      "limitReached": "Du kannst bis zu {max} aktive Token haben. Widerrufe eines, das du nicht mehr brauchst, und versuche es erneut.",
+      "codeRequired": "Gib deinen Zwei-Faktor-Code ein, um ein Token zu erstellen.",
+      "invalidCode": "Der Zwei-Faktor-Code ist falsch."
+    },
+    "codeLabel": "Zwei-Faktor-Code",
+    "codeHint": "Gib einen Code aus deiner Authenticator-App ein, um ein Token zu erstellen."
+  },
+  "sessions": {
+    "title": "Angemeldete Geräte",
+    "description": "Diese Geräte sind mit deinem Konto angemeldet. Melde alle ab, die du nicht erkennst oder nicht mehr verwendest.",
+    "loading": "Wird geladen ...",
+    "empty": "Keine angemeldeten Geräte.",
+    "thisDevice": "Dieses Gerät",
+    "unknownDevice": "Unbekanntes Gerät",
+    "signedInAt": "Angemeldet am {date}",
+    "lastActive": "Zuletzt aktiv am {date}",
+    "signOut": "Abmelden",
+    "signOutLabel": "{device} abmelden",
+    "signOutThisLabel": "Dieses Gerät abmelden ({device})",
+    "signOutOthers": "Von allen anderen Geräten abmelden",
+    "signOutOthersConfirm": "{count, plural, one {# anderes Gerät abmelden} other {# andere Geräte abmelden}}",
+    "revoked": "Gerät abgemeldet",
+    "revokedOthers": "Von allen anderen Geräten abgemeldet",
+    "errors": {
+      "loadFailed": "Geräte konnten nicht geladen werden.",
+      "revokeFailed": "Abmelden fehlgeschlagen. Bitte versuche es erneut."
+    },
+    "device": {
+      "desktop": "Desktop-App",
+      "desktopOn": "Desktop-App auf {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} auf {os}",
+      "unknownOn": "Unbekanntes Gerät auf {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Passwort ändern",
+    "description": "Gib dein aktuelles Passwort ein und wähle ein neues.",
+    "currentLabel": "Aktuelles Passwort",
+    "newLabel": "Neues Passwort",
+    "confirmLabel": "Neues Passwort bestätigen",
+    "sessionsNote": "Wenn du dein Passwort änderst, werden deine anderen angemeldeten Geräte abgemeldet.",
+    "submit": "Passwort ändern",
+    "submitting": "Wird geändert ...",
+    "cancel": "Abbrechen",
+    "successToast": "Dein Passwort wurde geändert",
+    "errors": {
+      "currentRequired": "Gib dein aktuelles Passwort ein.",
+      "failed": "Dein Passwort konnte nicht geändert werden. Versuche es erneut."
+    }
+  },
+  "twoFactor": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "description": "Verlange bei der Anmeldung zusätzlich zu deinem Passwort einen Code aus deiner Authenticator-App.",
+    "loading": "Wird geladen ...",
+    "statusOn": "Ein",
+    "statusOff": "Aus",
+    "enabledSince": "Eingeschaltet am {date}",
+    "recoveryRemaining": "{count, plural, one {# Wiederherstellungscode übrig} other {# Wiederherstellungscodes übrig}}",
+    "unavailable": "Die Zwei-Faktor-Authentifizierung ist auf diesem Server nicht verfügbar. Frag deinen Administrator.",
+    "requiredNotice": "Deine Organisation verlangt die Zwei-Faktor-Authentifizierung.",
+    "close": "Schließen",
+    "setup": {
+      "start": "Zwei-Faktor-Authentifizierung einrichten",
+      "starting": "Wird vorbereitet ...",
+      "step1": "1. Füge dieses Konto zu deiner Authenticator-App hinzu. Öffne den Link auf deinem Telefon oder gib den Einrichtungsschlüssel manuell ein.",
+      "uriLabel": "Einrichtungslink",
+      "openInApp": "In der Authenticator-App öffnen",
+      "qrLabel": "QR-Code für die Authenticator-App",
+      "qrHint": "Scanne diesen QR-Code mit deiner Authenticator-App oder verwende unten den Link oder den Schlüssel.",
+      "keyLabel": "Einrichtungsschlüssel",
+      "copyKey": "Einrichtungsschlüssel kopieren",
+      "copyUri": "Einrichtungslink kopieren",
+      "copied": "Kopiert",
+      "step2": "2. Gib den 6-stelligen Code ein, den deine App anzeigt.",
+      "codeLabel": "Authentifizierungscode",
+      "codePlaceholder": "123456",
+      "verify": "Einschalten",
+      "verifying": "Wird geprüft ...",
+      "cancel": "Abbrechen",
+      "passwordLabel": "3. Gib dein aktuelles Passwort ein.",
+      "sessionsNote": "Wenn du dies einschaltest, werden deine anderen angemeldeten Geräte abgemeldet."
+    },
+    "recovery": {
+      "title": "Speichere deine Wiederherstellungscodes",
+      "description": "Verwende einen Wiederherstellungscode, um dich anzumelden, falls du dein Gerät verlierst. Jeder Code funktioniert nur einmal. Sie werden nicht erneut angezeigt.",
+      "download": "Herunterladen",
+      "copy": "Alle kopieren",
+      "fileHeader": "Wiederherstellungscodes. Jeder Code funktioniert nur einmal. Bewahre sie sicher auf.",
+      "confirmSaved": "Ich habe meine Wiederherstellungscodes gespeichert",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Passwort",
+      "codeLabel": "Authentifizierungs- oder Wiederherstellungscode",
+      "cancel": "Abbrechen",
+      "passwordInvalid": "Gib ein gültiges Passwort ein.",
+      "codeInvalid": "Gib einen gültigen Authentifizierungs- oder Wiederherstellungscode ein."
+    },
+    "regenerate": {
+      "start": "Neue Wiederherstellungscodes erstellen",
+      "title": "Neue Wiederherstellungscodes erstellen",
+      "description": "Deine alten Wiederherstellungscodes funktionieren nicht mehr, sobald du neue erstellst. Gib dein Passwort und einen Code aus deiner Authenticator-App (oder einen Wiederherstellungscode) ein.",
+      "submit": "Neue Codes erstellen",
+      "submitting": "Wird erstellt ...",
+      "lowNotice": "{count, plural, one {Es ist nur noch # Wiederherstellungscode übrig} other {Es sind nur noch # Wiederherstellungscodes übrig}}. Erstelle neue, bevor sie aufgebraucht sind.",
+      "toast": "Neue Wiederherstellungscodes sind bereit"
+    },
+    "disable": {
+      "title": "Zwei-Faktor-Authentifizierung ausschalten",
+      "description": "Gib dein Passwort und einen Code aus deiner Authenticator-App (oder einen Wiederherstellungscode) ein.",
+      "start": "Ausschalten",
+      "submit": "Zwei-Faktor-Authentifizierung ausschalten",
+      "submitting": "Wird ausgeschaltet ...",
+      "blockedByPolicy": "Deine Organisation verlangt die Zwei-Faktor-Authentifizierung, daher kannst du sie nicht ausschalten. Wenn du dein Gerät verloren hast, bitte einen Administrator, sie zurückzusetzen."
+    },
+    "enabledToast": "Zwei-Faktor-Authentifizierung ist eingeschaltet",
+    "disabledToast": "Zwei-Faktor-Authentifizierung ist ausgeschaltet",
+    "errors": {
+      "loadFailed": "Die Einstellungen für die Zwei-Faktor-Authentifizierung konnten nicht geladen werden.",
+      "setupFailed": "Die Einrichtung konnte nicht gestartet werden. Versuche es erneut.",
+      "enableFailed": "Die Zwei-Faktor-Authentifizierung konnte nicht eingeschaltet werden.",
+      "regenerateFailed": "Neue Wiederherstellungscodes konnten nicht erstellt werden.",
+      "disableFailed": "Die Zwei-Faktor-Authentifizierung konnte nicht ausgeschaltet werden.",
+      "copyFailed": "Konnte nicht in die Zwischenablage kopiert werden."
+    }
+  },
+  "connectedApps": {
+    "title": "Verbundene Apps",
+    "description": "Apps, denen du erlaubt hast, über die OAuth-Anmeldung auf dein Konto zuzugreifen. Sie handeln mit deinen Berechtigungen. Trenne jede App, die du nicht mehr verwendest.",
+    "loading": "Wird geladen ...",
+    "empty": "Mit deinem Konto ist keine App verbunden.",
+    "redirectsTo": "Leitet weiter zu {hosts}",
+    "connectedAt": "Verbunden am {date}",
+    "lastUsed": "Zuletzt verwendet am {date}",
+    "neverUsed": "Nie verwendet",
+    "disconnect": "Trennen",
+    "disconnectLabel": "{name} trennen",
+    "disconnectConfirm": "Jetzt trennen",
+    "cancel": "Abbrechen",
+    "disconnected": "App getrennt",
+    "close": "Schließen",
+    "errors": {
+      "loadFailed": "Verbundene Apps konnten nicht geladen werden.",
+      "disconnectFailed": "Die App konnte nicht getrennt werden."
+    },
+    "unnamedApp": "Unbenannte App"
+  }
+}

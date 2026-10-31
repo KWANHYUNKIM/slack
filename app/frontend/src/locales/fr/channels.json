@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Créer un canal",
+    "tabBrowse": "Parcourir les canaux",
+    "nameLabel": "Nom du canal",
+    "namePlaceholder": "ex. budget-projet",
+    "visibility": "Visibilité",
+    "public": "Public",
+    "private": "Privé",
+    "publicHint": "Toute personne de l'espace de travail peut trouver ce canal et le rejoindre.",
+    "privateHint": "Seuls les membres invités peuvent trouver ce canal et le rejoindre.",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "noChannels": "Aucun canal disponible à rejoindre",
+    "memberCount": "{count, plural, one {# membre} other {# membres}}",
+    "joined": "Rejoint",
+    "join": "Rejoindre",
+    "close": "Fermer",
+    "errors": {
+      "createFailed": "Impossible de créer le canal"
+    }
+  },
+  "errors": {
+    "loadConversations": "Impossible de charger les conversations.",
+    "loadChannels": "Impossible de charger les canaux."
+  },
+  "membersPanel": {
+    "title": "Membres",
+    "addPeople": "Ajouter des personnes",
+    "loadError": "Impossible de charger les membres.",
+    "removeError": "Impossible de retirer le membre",
+    "online": "En ligne — {count}",
+    "offline": "Hors ligne — {count}",
+    "removeDialog": {
+      "title": "Retirer le membre ?",
+      "message": "Retirer <bold>{name}</bold> de ce canal ?"
+    },
+    "removing": "Suppression...",
+    "searchByName": "Rechercher par nom...",
+    "noUsers": "Aucun utilisateur trouvé",
+    "roles": {
+      "owner": "Propriétaire",
+      "moderator": "Modérateur"
+    },
+    "removeMember": "Retirer le membre"
+  },
+  "dm": {
+    "messagePlaceholder": "Message à {name}",
+    "you": "(vous)",
+    "star": "Ajouter aux favoris",
+    "unstar": "Retirer des favoris",
+    "loadingMessages": "Chargement des messages...",
+    "selfSpace": "Ceci est votre espace personnel. Rédigez des brouillons, listez vos tâches ou gardez vos liens et fichiers à portée de main.",
+    "conversationStart": "Début de votre conversation avec {name}",
+    "sendToBegin": "Envoyez un message pour commencer.",
+    "edited": "(modifié)",
+    "pinnedMessages": "Messages épinglés",
+    "noPins": "Aucun message épinglé pour le moment",
+    "files": "Fichiers",
+    "noFiles": "Aucun fichier partagé pour le moment",
+    "loadError": "Impossible de charger les messages.",
+    "sendError": "Échec de l'envoi du message. Veuillez réessayer."
+  },
+  "nameRules": {
+    "required": "Saisissez un nom de canal.",
+    "tooLong": "Le nom du canal doit comporter {max} caractères maximum.",
+    "invalidChars": "Les noms de canal ne peuvent contenir que des lettres, des chiffres, des tirets et des tirets bas, et doivent commencer par une lettre ou un chiffre.",
+    "tooManyMarks": "Les noms de canal ne peuvent pas contenir plus de 4 marques diacritiques combinées à la suite.",
+    "mixedScripts": "Les noms de canal ne peuvent pas mélanger des alphabets qui se ressemblent (par exemple latin et cyrillique ou grec) ni des chiffres d'un autre système de numération.",
+    "taken": "Un canal portant ce nom existe déjà."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# membre} other {# membres}}",
+    "nameLabel": "Nom de la conversation",
+    "namePlaceholder": "Ajouter un nom",
+    "noName": "Sans nom (affiche les noms des membres)",
+    "rename": "Renommer la conversation",
+    "addPeople": "Ajouter des personnes",
+    "add": "Ajouter",
+    "createWith": "Démarrer une conversation de groupe",
+    "leave": "Quitter la conversation",
+    "leaveConfirm": "Quitter cette conversation ? Vous ne verrez plus ses messages.",
+    "conversationStart": "Début de votre conversation avec {names}",
+    "addError": "Impossible d'ajouter des personnes. Veuillez réessayer.",
+    "renameError": "Impossible de renommer la conversation. Veuillez réessayer.",
+    "leaveError": "Impossible de quitter la conversation. Veuillez réessayer."
+  }
+}

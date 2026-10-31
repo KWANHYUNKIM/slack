@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(micro coupé)",
+    "mute": "Couper le micro",
+    "unmute": "Activer le micro",
+    "leave": "Quitter la réunion rapide"
+  },
+  "button": {
+    "leaveFirstError": "Quittez d'abord votre réunion rapide en cours",
+    "cancelInviteFirstError": "Annulez d'abord votre invitation en cours",
+    "cancelInvite": "Annuler l'invitation",
+    "calling": "Appel en cours...",
+    "inHuddle": "En réunion rapide",
+    "leaveCurrentFirst": "Quittez d'abord la réunion rapide en cours",
+    "start": "Démarrer une réunion rapide"
+  },
+  "incoming": {
+    "invite": "Invitation à une réunion rapide",
+    "secondsLeft": "{count} s",
+    "decline": "Refuser",
+    "accept": "Accepter"
+  },
+  "system": {
+    "youStarted": "Vous avez démarré une réunion rapide.",
+    "started": "A démarré une réunion rapide.",
+    "ended": "Terminée",
+    "youSentInvite": "Vous avez envoyé une invitation à une réunion rapide.",
+    "sentInvite": "Vous a envoyé une invitation à une réunion rapide.",
+    "huddleStarted": "Réunion rapide démarrée",
+    "huddleEnded": "Réunion rapide terminée ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Quittez d'abord votre réunion rapide en cours",
+    "cancelInviteFirst": "Annulez d'abord votre invitation en cours",
+    "micDenied": "Accès au micro refusé",
+    "busy": "La personne est déjà dans une autre réunion rapide",
+    "declined": "L'invitation a été refusée",
+    "expired": "L'invitation a expiré",
+    "rateLimited": "Trop de requêtes. Réessayez dans un instant",
+    "invalidInvite": "La demande d'invitation n'est pas valide",
+    "cannotInviteSelf": "Vous ne pouvez pas vous inviter vous-même",
+    "userNotFound": "Utilisateur introuvable",
+    "invalidAccept": "La demande d'acceptation n'est pas valide",
+    "inviteNotFound": "Invitation introuvable ou expirée",
+    "peerOffline": "La personne est hors ligne",
+    "generic": "Impossible de démarrer la réunion rapide. Veuillez réessayer"
+  }
+}

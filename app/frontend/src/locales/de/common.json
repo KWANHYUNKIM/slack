@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "send": "Senden",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "remove": "Entfernen",
+    "add": "Hinzufügen",
+    "create": "Erstellen",
+    "retry": "Erneut versuchen",
+    "search": "Suchen",
+    "copy": "Kopieren",
+    "done": "Fertig",
+    "next": "Weiter",
+    "more": "Mehr"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emojis konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
+  },
+  "status": {
+    "loading": "Wird geladen ...",
+    "saving": "Wird gespeichert ...",
+    "deleting": "Wird gelöscht ..."
+  },
+  "dates": {
+    "today": "Heute",
+    "yesterday": "Gestern"
+  },
+  "quickSwitcher": {
+    "title": "Schnellwechsel",
+    "inputLabel": "Zu einer Unterhaltung springen",
+    "placeholder": "Zu einem Kanal oder einer Unterhaltung springen",
+    "recent": "Zuletzt verwendet",
+    "results": "Ergebnisse",
+    "clearRecent": "Zuletzt verwendete löschen",
+    "listLabel": "Unterhaltungen",
+    "noResults": "Keine passenden Unterhaltungen",
+    "starred": "Markiert",
+    "unread": "Ungelesen",
+    "dnd": "Nicht stören",
+    "footer": "{keys} zum Öffnen. Mit den Pfeiltasten nach oben und unten bewegen, Eingabe zum Wechseln, Esc zum Schließen.",
+    "open": "Springen zu …",
+    "kind": {
+      "channel": "Kanal",
+      "dm": "Direktnachricht",
+      "group": "Gruppennachricht"
+    }
+  },
+  "shortcuts": {
+    "title": "Tastenkombinationen",
+    "groups": {
+      "navigation": "Navigation",
+      "general": "Allgemein"
+    },
+    "items": {
+      "switcher": "Schnellwechsel öffnen",
+      "prevChannel": "Vorherige Unterhaltung",
+      "nextChannel": "Nächste Unterhaltung",
+      "prevUnread": "Vorherige ungelesene Unterhaltung",
+      "nextUnread": "Nächste ungelesene Unterhaltung",
+      "help": "Tastenkombinationen anzeigen",
+      "closeTop": "Schnellwechsel oder diesen Dialog schließen"
+    },
+    "keys": {
+      "ctrl": "Strg",
+      "alt": "Alt",
+      "shift": "Umschalt",
+      "esc": "Esc",
+      "enter": "Eingabe"
+    }
+  }
+}

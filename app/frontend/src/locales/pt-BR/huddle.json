@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(silenciado)",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "leave": "Sair da reunião rápida"
+  },
+  "button": {
+    "leaveFirstError": "Saia primeiro da sua reunião rápida atual",
+    "cancelInviteFirstError": "Cancele primeiro o convite atual",
+    "cancelInvite": "Cancelar convite",
+    "calling": "Chamando...",
+    "inHuddle": "Em reunião rápida",
+    "leaveCurrentFirst": "Saia primeiro da reunião rápida atual",
+    "start": "Iniciar reunião rápida"
+  },
+  "incoming": {
+    "invite": "Convite para reunião rápida",
+    "secondsLeft": "{count} s",
+    "decline": "Recusar",
+    "accept": "Aceitar"
+  },
+  "system": {
+    "youStarted": "Você iniciou uma reunião rápida.",
+    "started": "Iniciou uma reunião rápida.",
+    "ended": "Encerrada",
+    "youSentInvite": "Você enviou um convite para uma reunião rápida.",
+    "sentInvite": "Enviou um convite para uma reunião rápida para você.",
+    "huddleStarted": "Reunião rápida iniciada",
+    "huddleEnded": "Reunião rápida encerrada ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Saia primeiro da sua reunião rápida atual",
+    "cancelInviteFirst": "Cancele primeiro o convite atual",
+    "micDenied": "Acesso ao microfone negado",
+    "busy": "A pessoa está em outra reunião rápida",
+    "declined": "O convite foi recusado",
+    "expired": "O convite expirou",
+    "rateLimited": "Muitas solicitações. Aguarde um momento e tente novamente",
+    "invalidInvite": "A solicitação de convite é inválida",
+    "cannotInviteSelf": "Você não pode convidar a si mesmo",
+    "userNotFound": "Usuário não encontrado",
+    "invalidAccept": "A solicitação de aceitação é inválida",
+    "inviteNotFound": "Convite não encontrado ou expirado",
+    "peerOffline": "A pessoa está offline",
+    "generic": "Não foi possível iniciar a reunião rápida. Tente novamente"
+  }
+}

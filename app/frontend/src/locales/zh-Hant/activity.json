@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "動態",
+    "markAllRead": "全部標示為已讀",
+    "loading": "載入中...",
+    "loadingMore": "正在載入更多...",
+    "loadFailed": "無法載入動態。",
+    "empty": "目前沒有動態。",
+    "unread": "未讀",
+    "menu": "選單",
+    "someone": "某人",
+    "directMessage": "一則私訊",
+    "messageDeleted": "已刪除的訊息"
+  },
+  "tabs": {
+    "all": "全部",
+    "mentions": "提及",
+    "threads": "討論串",
+    "reactions": "反應"
+  },
+  "describe": {
+    "mention": "{actor} 在 {where} 中提及您",
+    "channelMention": "{actor} 在 {where} 中提及 @channel",
+    "hereMention": "{actor} 在 {where} 中提及 @here",
+    "threadReply": "{actor} 在 {where} 的討論串中回覆",
+    "reaction": "{actor} 在 {where} 中對您的訊息回應 {emoji}",
+    "reminder": "提醒"
+  }
+}

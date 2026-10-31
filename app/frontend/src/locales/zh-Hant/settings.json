@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "語言",
+    "pending": "{name}（翻譯即將推出）",
+    "beta": "測試版",
+    "betaOption": "{name}（測試版）"
+  },
+  "avatar": {
+    "alt": "大頭貼",
+    "dnd": "已暫停通知"
+  },
+  "profile": {
+    "title": "個人資料",
+    "close": "關閉",
+    "loading": "載入中...",
+    "notFound": "找不到個人資料",
+    "uploadPhoto": "上傳照片",
+    "uploading": "上傳中...",
+    "name": "名稱",
+    "bio": "簡介",
+    "bioPlaceholder": "向大家介紹您自己",
+    "cancel": "取消",
+    "save": "儲存",
+    "status": "狀態",
+    "joined": "加入時間",
+    "message": "傳訊",
+    "edit": "編輯個人資料",
+    "statusValue": {
+      "online": "線上",
+      "away": "離開",
+      "offline": "離線"
+    },
+    "errors": {
+      "loadFailed": "無法載入個人資料。",
+      "saveFailed": "無法儲存個人資料，請再試一次。",
+      "notImage": "請選擇圖片檔案。",
+      "tooLarge": "圖片必須小於 5MB。",
+      "uploadFailed": "無法上傳照片，請再試一次。"
+    },
+    "statusUntil": "至 {time}"
+  },
+  "crop": {
+    "title": "裁切您的照片",
+    "close": "關閉",
+    "zoom": "縮放",
+    "cancel": "取消",
+    "save": "儲存",
+    "saving": "儲存中...",
+    "failed": "裁切失敗"
+  },
+  "accessTokens": {
+    "title": "個人存取權杖",
+    "description": "權杖讓 Claude 和其他 MCP 用戶端以您的權限讀取工作區，若您允許，也能寫入。請像對待密碼一樣保管。",
+    "nameLabel": "權杖名稱",
+    "namePlaceholder": "例如：我筆電上的 Claude Code",
+    "scopesLabel": "權限",
+    "scope": {
+      "channelsRead": "列出頻道",
+      "channelsHistory": "讀取訊息、討論串和動態",
+      "usersRead": "檢視成員",
+      "chatWrite": "張貼、編輯和刪除您的訊息",
+      "reactionsWrite": "新增和移除您的反應",
+      "imRead": "列出您的私訊和群組私訊",
+      "imHistory": "讀取您的私訊紀錄",
+      "imWrite": "傳送、編輯和刪除您的私訊",
+      "searchRead": "搜尋訊息、檔案、成員和頻道（私訊結果需要私訊紀錄權限）",
+      "filesRead": "列出檔案並讀取文字檔內容"
+    },
+    "expiryLabel": "到期時間",
+    "expiryDays": "{count, plural, other {# 天}}",
+    "expiryNever": "永不過期",
+    "neverWarning": "沒有到期時間的權杖會一直有效，直到您將其撤銷為止。",
+    "create": "產生權杖",
+    "createdNotice": "請立即複製您的新權杖。之後將無法再次看到它。",
+    "copy": "複製權杖",
+    "copyCommand": "複製指令",
+    "copied": "已複製到剪貼簿",
+    "connectHint": "從 Claude Code 連接：",
+    "dismiss": "完成，隱藏權杖",
+    "loading": "載入中...",
+    "empty": "您沒有任何個人存取權杖。",
+    "expires": "{date} 到期",
+    "expired": "已過期",
+    "noExpiry": "永不過期",
+    "lastUsed": "上次使用：{date}",
+    "neverUsed": "從未使用",
+    "rename": "重新命名",
+    "renameLabel": "重新命名權杖 {name}",
+    "revoke": "撤銷",
+    "revokeLabel": "撤銷權杖 {name}",
+    "revokeConfirm": "立即撤銷",
+    "cancel": "取消",
+    "close": "關閉",
+    "errors": {
+      "loadFailed": "無法載入權杖。",
+      "createFailed": "無法建立權杖，請再試一次。",
+      "renameFailed": "無法重新命名權杖。",
+      "revokeFailed": "無法撤銷權杖。",
+      "copyFailed": "無法複製。請選取文字後手動複製。",
+      "limitReached": "最多只能有 {max} 個有效權杖。請撤銷不再使用的權杖後再試一次。",
+      "codeRequired": "請輸入雙重驗證碼以建立權杖。",
+      "invalidCode": "雙重驗證碼不正確。"
+    },
+    "codeLabel": "雙重驗證碼",
+    "codeHint": "請輸入驗證器應用程式中的代碼以建立權杖。"
+  },
+  "sessions": {
+    "title": "已登入的裝置",
+    "description": "以下裝置已登入您的帳號。請登出您不認得或不再使用的裝置。",
+    "loading": "載入中...",
+    "empty": "沒有已登入的裝置。",
+    "thisDevice": "此裝置",
+    "unknownDevice": "未知的裝置",
+    "signedInAt": "登入時間 {date}",
+    "lastActive": "上次活動 {date}",
+    "signOut": "登出",
+    "signOutLabel": "登出 {device}",
+    "signOutThisLabel": "登出此裝置（{device}）",
+    "signOutOthers": "登出所有其他裝置",
+    "signOutOthersConfirm": "{count, plural, other {登出 # 部其他裝置}}",
+    "revoked": "已登出裝置",
+    "revokedOthers": "已登出所有其他裝置",
+    "errors": {
+      "loadFailed": "無法載入裝置。",
+      "revokeFailed": "無法登出，請再試一次。"
+    },
+    "device": {
+      "desktop": "桌面應用程式",
+      "desktopOn": "{os} 上的桌面應用程式",
+      "browser": "{browser}",
+      "browserOn": "{os} 上的 {browser}",
+      "unknownOn": "{os} 上的未知裝置"
+    }
+  },
+  "changePassword": {
+    "title": "變更密碼",
+    "description": "請輸入目前的密碼，並設定新密碼。",
+    "currentLabel": "目前的密碼",
+    "newLabel": "新密碼",
+    "confirmLabel": "確認新密碼",
+    "sessionsNote": "變更密碼後，您的其他已登入裝置將會登出。",
+    "submit": "變更密碼",
+    "submitting": "變更中...",
+    "cancel": "取消",
+    "successToast": "密碼已變更",
+    "errors": {
+      "currentRequired": "請輸入目前的密碼。",
+      "failed": "無法變更密碼，請再試一次。"
+    }
+  },
+  "twoFactor": {
+    "title": "雙重驗證",
+    "description": "登入時，除了密碼之外，還要求輸入驗證器應用程式中的代碼。",
+    "loading": "載入中...",
+    "statusOn": "開啟",
+    "statusOff": "關閉",
+    "enabledSince": "開啟於 {date}",
+    "recoveryRemaining": "{count, plural, other {剩餘 # 組還原碼}}",
+    "unavailable": "此伺服器無法使用雙重驗證。請詢問您的管理員。",
+    "requiredNotice": "您的組織要求使用雙重驗證。",
+    "close": "關閉",
+    "setup": {
+      "start": "設定雙重驗證",
+      "starting": "準備中...",
+      "step1": "1. 將此帳號加入您的驗證器應用程式。請在手機上開啟連結，或手動輸入設定金鑰。",
+      "uriLabel": "設定連結",
+      "openInApp": "在驗證器應用程式中開啟",
+      "qrLabel": "驗證器應用程式的 QR 碼",
+      "qrHint": "請使用驗證器應用程式掃描此 QR 碼，或使用下方的連結或金鑰。",
+      "keyLabel": "設定金鑰",
+      "copyKey": "複製設定金鑰",
+      "copyUri": "複製設定連結",
+      "copied": "已複製",
+      "step2": "2. 輸入驗證器應用程式顯示的 6 位數代碼。",
+      "codeLabel": "驗證碼",
+      "codePlaceholder": "123456",
+      "verify": "開啟",
+      "verifying": "確認中...",
+      "cancel": "取消",
+      "passwordLabel": "3. 輸入目前的密碼。",
+      "sessionsNote": "開啟後，您的其他已登入裝置將會登出。"
+    },
+    "recovery": {
+      "title": "請儲存您的還原碼",
+      "description": "若您遺失裝置，可使用還原碼登入。每組還原碼只能使用一次，且之後不會再次顯示。",
+      "download": "下載",
+      "copy": "全部複製",
+      "fileHeader": "還原碼。每組只能使用一次。請妥善保管。",
+      "confirmSaved": "我已儲存還原碼",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "密碼",
+      "codeLabel": "驗證碼或還原碼",
+      "cancel": "取消",
+      "passwordInvalid": "請輸入有效的密碼。",
+      "codeInvalid": "請輸入有效的驗證碼或還原碼。"
+    },
+    "regenerate": {
+      "start": "產生新的還原碼",
+      "title": "產生新的還原碼",
+      "description": "產生新的還原碼後，舊的還原碼會立即失效。請輸入您的密碼，以及驗證器應用程式中的代碼（或一組還原碼）。",
+      "submit": "產生新代碼",
+      "submitting": "產生中...",
+      "lowNotice": "僅剩 {count, plural, other {# 組還原碼}}。請在用完前產生新的還原碼。",
+      "toast": "新的還原碼已準備好"
+    },
+    "disable": {
+      "title": "關閉雙重驗證",
+      "description": "請輸入您的密碼，以及驗證器應用程式中的代碼（或一組還原碼）。",
+      "start": "關閉",
+      "submit": "關閉雙重驗證",
+      "submitting": "關閉中...",
+      "blockedByPolicy": "您的組織要求使用雙重驗證，因此您無法將其關閉。如果您遺失了裝置，請管理員重設。"
+    },
+    "enabledToast": "雙重驗證已開啟",
+    "disabledToast": "雙重驗證已關閉",
+    "errors": {
+      "loadFailed": "無法載入雙重驗證設定。",
+      "setupFailed": "無法開始設定，請再試一次。",
+      "enableFailed": "無法開啟雙重驗證。",
+      "regenerateFailed": "無法產生新的還原碼。",
+      "disableFailed": "無法關閉雙重驗證。",
+      "copyFailed": "無法複製到剪貼簿。"
+    }
+  },
+  "connectedApps": {
+    "title": "已連接的應用程式",
+    "description": "您已允許透過 OAuth 登入流程使用您帳號的應用程式。它們會以您的權限運作。請中斷您不再使用的應用程式連接。",
+    "loading": "載入中...",
+    "empty": "沒有應用程式連接到您的帳號。",
+    "redirectsTo": "返回至 {hosts}",
+    "connectedAt": "連接於 {date}",
+    "lastUsed": "上次使用：{date}",
+    "neverUsed": "從未使用",
+    "disconnect": "中斷連接",
+    "disconnectLabel": "中斷 {name} 的連接",
+    "disconnectConfirm": "立即中斷連接",
+    "cancel": "取消",
+    "disconnected": "已中斷應用程式連接",
+    "close": "關閉",
+    "errors": {
+      "loadFailed": "無法載入已連接的應用程式。",
+      "disconnectFailed": "無法中斷應用程式連接。"
+    },
+    "unnamedApp": "未命名的應用程式"
+  }
+}

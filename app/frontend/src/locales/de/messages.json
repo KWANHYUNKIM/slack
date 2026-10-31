@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Alle benachrichtigen, die gerade online sind",
+    "channelLabel": "@channel",
+    "channelHint": "Alle in diesem Kanal benachrichtigen"
+  },
+  "deleteDialog": {
+    "title": "Nachricht löschen",
+    "body": "Möchtest du diese Nachricht wirklich löschen? Das kann nicht rückgängig gemacht werden."
+  },
+  "editorToolbar": {
+    "attachFile": "Datei anhängen",
+    "emoji": "Emoji",
+    "mention": "Jemanden erwähnen",
+    "stopRecording": "Aufnahme beenden",
+    "recordVoice": "Sprachnachricht aufnehmen"
+  },
+  "emojiAutocomplete": {
+    "navigate": "zum Navigieren",
+    "select": "zum Auswählen",
+    "dismiss": "zum Schließen",
+    "escKey": "Esc"
+  },
+  "filePreview": {
+    "remove": "{name} entfernen"
+  },
+  "fileModal": {
+    "download": "Herunterladen",
+    "loadFailed": "Dateiinhalt konnte nicht geladen werden",
+    "truncated": "... (gekürzt)",
+    "noPreview": "Keine Vorschau verfügbar",
+    "downloadToView": "Lade die Datei herunter, um sie anzusehen"
+  },
+  "files": {
+    "allFiles": "Alle Dateien",
+    "channelFiles": "Kanaldateien",
+    "loadFailed": "Dateien konnten nicht geladen werden.",
+    "empty": "Noch keine Dateien hochgeladen",
+    "download": "Herunterladen",
+    "menu": "Menü",
+    "unavailable": "Datei nicht verfügbar",
+    "preparing": "Datei wird vorbereitet"
+  },
+  "format": {
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "strike": "Durchgestrichen",
+    "link": "Link",
+    "orderedList": "Nummerierte Liste",
+    "bulletList": "Aufzählungsliste",
+    "code": "Code",
+    "codeBlock": "Codeblock",
+    "quote": "Zitat"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine neuen Benachrichtigungen",
+    "unreadCount": "{count, plural, one {# ungelesene Nachricht} other {# ungelesene Nachrichten}}"
+  },
+  "search": {
+    "placeholder": "Suchen",
+    "searching": "Suche läuft ...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "previewHint": "{count, plural, one {Oberstes # Ergebnis} other {Oberste # Ergebnisse}} · Alle anzeigen (Eingabe)",
+    "truncatedNotice": "Es gibt viele Ergebnisse. Füge Filter hinzu, um sie einzugrenzen.",
+    "retry": "Erneut versuchen",
+    "ignoredChip": "{token} (ignoriert)",
+    "ignoredLimitChip": "{token} (ignoriert: zu viele)",
+    "inChannel": "in #{channel}",
+    "title": "Suchergebnisse",
+    "resultsFor": "Ergebnisse für „{query}“",
+    "emptyQuery": "Gib einen Suchbegriff ein oder verwende Filter wie from:, in:, has:, before: oder after:.",
+    "noResultsHint": "Versuche andere Stichwörter oder entferne einige Filter.",
+    "clearFilters": "Alle Filter löschen",
+    "removeFilter": "Filter {filter} entfernen",
+    "loadFailed": "Suche fehlgeschlagen. Bitte versuche es erneut.",
+    "loadMore": "Mehr laden",
+    "threadReply": "Thread-Antwort",
+    "directMessage": "Direktnachricht",
+    "groupMessage": "Gruppenunterhaltung",
+    "joined": "Beigetreten",
+    "privateChannel": "Privat",
+    "archivedChannel": "Archiviert",
+    "back": "Zurück",
+    "tabs": {
+      "label": "Arten von Suchergebnissen",
+      "messages": "Nachrichten",
+      "files": "Dateien",
+      "people": "Personen",
+      "channels": "Kanäle"
+    },
+    "sort": {
+      "label": "Sortieren nach",
+      "relevance": "Relevanz",
+      "recent": "Neueste"
+    }
+  },
+  "headerTabs": {
+    "files": "Dateien",
+    "pins": "Angeheftet"
+  },
+  "lightbox": {
+    "close": "Schließen"
+  },
+  "later": {
+    "title": "Später",
+    "saved": "Gespeichert",
+    "scheduled": "Geplant",
+    "loadFailed": "Gespeicherte Nachrichten konnten nicht geladen werden.",
+    "empty": "Noch keine gespeicherten Nachrichten. Klicke bei einer Nachricht auf das Lesezeichen-Symbol, um sie zu speichern.",
+    "removeSaved": "Aus Gespeichert entfernen",
+    "menu": "Menü",
+    "reminders": "Erinnerungen"
+  },
+  "linkModal": {
+    "title": "Link hinzufügen",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Anzeigetext",
+    "optional": "(optional)",
+    "textPlaceholder": "Linktext",
+    "close": "Schließen"
+  },
+  "actionsMenu": {
+    "noActions": "Keine Aktionen verfügbar",
+    "markUnread": "Als ungelesen markieren",
+    "pin": "Nachricht anheften",
+    "unpin": "Nachricht lösen",
+    "edit": "Nachricht bearbeiten",
+    "delete": "Nachricht löschen",
+    "copyLink": "Link kopieren",
+    "remind": "Mich an diese Nachricht erinnern"
+  },
+  "area": {
+    "selectChannel": "Wähle einen Kanal aus, um zu schreiben",
+    "openMenu": "Menü öffnen",
+    "placeholder": "Nachricht an #{channel}",
+    "viewing": "Du siehst dir <bold>#{channel}</bold> an",
+    "joinChannel": "Kanal beitreten"
+  },
+  "header": {
+    "menu": "Menü",
+    "unstar": "Aus Markiert entfernen",
+    "star": "Zu Markiert hinzufügen",
+    "members": "Mitglieder: {count}",
+    "search": "Suchen",
+    "channelMenu": "Kanaloptionen",
+    "leaveChannel": "Kanal verlassen",
+    "leaveLastMember": "Der Kanal kann nicht verlassen werden – du bist das letzte Mitglied.",
+    "dismiss": "Schließen",
+    "addTopic": "Thema hinzufügen",
+    "editDetails": "Kanaldetails bearbeiten"
+  },
+  "message": {
+    "edited": "(bearbeitet)",
+    "pinned": "Angeheftet",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
+    "repliedToThread": "Hat in einem Thread geantwortet: {excerpt}",
+    "deletedPlaceholder": "Diese Nachricht wurde gelöscht.",
+    "sendToChannel": "Auch an den Kanal senden",
+    "removeFromChannel": "Aus dem Kanal entfernen"
+  },
+  "input": {
+    "uploading": "Wird hochgeladen ...",
+    "scheduleMessage": "Nachricht planen",
+    "send": "Nachricht senden",
+    "hint": "Drücke <kbd>Eingabe</kbd> zum Senden, <kbd>Umschalt + Eingabe</kbd> für einen Zeilenumbruch",
+    "scheduledFor": "Geplant für {time}",
+    "scheduleFailed": "Die Nachricht konnte nicht geplant werden. Bitte versuche es erneut."
+  },
+  "list": {
+    "loading": "Nachrichten werden geladen ...",
+    "empty": "Noch keine Nachrichten",
+    "emptyReadOnly": "Dieser Kanal hat keine Nachrichten.",
+    "emptyFirst": "Sei die oder der Erste, die oder der eine Nachricht sendet!"
+  },
+  "reactions": {
+    "tooltip": "{names} hat mit {emoji} reagiert",
+    "add": "Reaktion hinzufügen",
+    "you": "Du"
+  },
+  "toolbar": {
+    "addReaction": "Reaktion hinzufügen",
+    "replyInThread": "Im Thread antworten",
+    "removeBookmark": "Lesezeichen entfernen",
+    "bookmark": "Diese Nachricht mit einem Lesezeichen versehen",
+    "moreActions": "Weitere Aktionen"
+  },
+  "mobileSearch": {
+    "placeholder": "Nachrichten durchsuchen ...",
+    "hint": "Nachrichten in allen Kanälen und Unterhaltungen durchsuchen",
+    "close": "Suche schließen"
+  },
+  "pins": {
+    "title": "Angeheftete Nachrichten",
+    "loadFailed": "Angeheftete Nachrichten konnten nicht geladen werden.",
+    "empty": "Noch keine angehefteten Nachrichten"
+  },
+  "schedule": {
+    "menuTitle": "Nachricht planen",
+    "in20": "In 20 Minuten",
+    "in1h": "In 1 Stunde",
+    "in3h": "In 3 Stunden",
+    "tomorrow9": "Morgen um 9:00 Uhr",
+    "custom": "Benutzerdefinierte Zeit ...",
+    "modalTitle": "Nachricht planen",
+    "dateTime": "Datum und Uhrzeit",
+    "pickFuture": "Wähle einen Zeitpunkt in der Zukunft.",
+    "submit": "Planen",
+    "submitting": "Wird geplant ...",
+    "close": "Schließen"
+  },
+  "scheduled": {
+    "loadFailed": "Geplante Nachrichten konnten nicht geladen werden.",
+    "cancelFailed": "Nachricht konnte nicht abgebrochen werden.",
+    "sendFailed": "Nachricht konnte nicht gesendet werden.",
+    "saveFailed": "Änderungen konnten nicht gespeichert werden.",
+    "empty": "Keine geplanten Nachrichten. Verwende das Uhr-Symbol im Nachrichteneingabefeld, um eine zu planen.",
+    "sendAt": "Senden um:",
+    "edit": "Bearbeiten",
+    "sendNow": "Jetzt senden",
+    "cancel": "Abbrechen",
+    "failedDlp": "Diese Nachricht wurde nicht gesendet, weil sie einer Datenschutzregel entspricht ({rule}). Lösche sie und schreibe eine neue."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# Antwort} other {# Antworten}}"
+  },
+  "unreads": {
+    "title": "Ungelesen",
+    "loadFailed": "Ungelesene Nachrichten konnten nicht geladen werden.",
+    "empty": "Keine ungelesenen Nachrichten. Du bist auf dem neuesten Stand! 🎉",
+    "menu": "Menü"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Antworten ...",
+    "loadFailed": "Thread konnte nicht geladen werden. Bitte versuche es erneut.",
+    "loading": "Thread wird geladen ...",
+    "replyFailed": "Antwort konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "joinToReply": "Tritt dem Kanal bei, um in Threads zu antworten",
+    "alsoSendToChannel": "Auch an den Kanal senden"
+  },
+  "errors": {
+    "messageEmpty": "Die Nachricht darf nicht leer sein.",
+    "pasteUploadFailed": "Das eingefügte Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+    "dropUploadFailed": "Die abgelegte Datei konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+    "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+    "voiceUploadFailed": "Die Sprachnachricht konnte nicht hochgeladen werden.",
+    "micDenied": "Zugriff auf das Mikrofon verweigert. Bitte erlaube den Zugriff auf das Mikrofon.",
+    "loadFailed": "Nachrichten konnten nicht geladen werden.",
+    "sendTimeout": "Das Senden der Nachricht hat zu lange gedauert. Bitte versuche es erneut.",
+    "sendFailed": "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "pushNotConfigured": "Push-Benachrichtigungen sind auf dem Server nicht eingerichtet",
+    "serviceWorkerUnavailable": "Service Worker nicht verfügbar",
+    "subscribeFailed": "Abonnement konnte nicht registriert werden",
+    "editFailed": "Die Änderung konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "details": {
+    "title": "Kanaldetails",
+    "name": "Name",
+    "topic": "Thema",
+    "topicPlaceholder": "Worum geht es in diesem Kanal?",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibung hinzufügen",
+    "createdBy": "Erstellt von {name}",
+    "readOnly": "Nur Kanalinhaber, Moderatoren und Arbeitsbereichsadministratoren können diese Details bearbeiten.",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "saveFailed": "Kanaldetails konnten nicht gespeichert werden."
+  },
+  "intro": {
+    "title": "Willkommen in #{name}",
+    "noDescription": "Noch keine Beschreibung.",
+    "editDescription": "Beschreibung bearbeiten"
+  },
+  "threads": {
+    "title": "Threads",
+    "menu": "Menü",
+    "loadFailed": "Threads konnten nicht geladen werden.",
+    "empty": "Noch keine Threads",
+    "emptyHint": "Threads, die du startest oder auf die du antwortest, werden hier angezeigt.",
+    "newReplies": "{count, plural, one {# neue Antwort} other {# neue Antworten}}",
+    "replyCount": "{count, plural, one {# Antwort} other {# Antworten}}",
+    "olderReplies": "Öffne den Thread, um frühere Antworten zu sehen",
+    "replyPlaceholder": "Antworten ...",
+    "send": "Senden",
+    "replyFailed": "Antwort konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "alsoSendToChannel": "Auch an den Kanal senden",
+    "openThread": "Thread öffnen",
+    "loadMore": "Mehr laden",
+    "loading": "Wird geladen ..."
+  },
+  "permalink": {
+    "copied": "Link kopiert",
+    "notFound": "Diese Nachricht wurde nicht gefunden oder du hast keine Berechtigung, sie anzusehen",
+    "goHome": "Zur Startseite",
+    "copyManually": "Automatisches Kopieren nicht möglich. Kopiere diesen Link: {url}"
+  },
+  "unread": {
+    "divider": "Neu",
+    "newMessagesBar": "{count, plural, one {# neue Nachricht} other {# neue Nachrichten}}",
+    "newMessagesBarAtLeast": "{count, plural, one {Mindestens # neue Nachricht} other {Mindestens # neue Nachrichten}}",
+    "markRead": "Als gelesen markieren",
+    "jumpFailed": "Die Position der ungelesenen Nachrichten konnte nicht geladen werden"
+  },
+  "reminder": {
+    "set": "Erinnerung festlegen",
+    "customLabel": "Datum und Uhrzeit der Erinnerung",
+    "preset": {
+      "in20": "In 20 Minuten",
+      "in1h": "In 1 Stunde",
+      "in3h": "In 3 Stunden",
+      "tomorrow": "Morgen",
+      "nextWeek": "Nächste Woche",
+      "custom": "Benutzerdefiniert ..."
+    },
+    "status": {
+      "pending": "Bevorstehend",
+      "done": "Erledigt"
+    },
+    "snooze": {
+      "m10": "10 Min.",
+      "h1": "1 Stunde",
+      "tomorrow": "Morgen"
+    },
+    "loadFailed": "Erinnerungen konnten nicht geladen werden.",
+    "empty": "Keine Erinnerungen. Öffne das Aktionsmenü einer Nachricht oder tippe /remind, um eine hinzuzufügen.",
+    "emptyDone": "Keine erledigten Erinnerungen.",
+    "dueAt": "Fällig {time}",
+    "firedAt": "War fällig {time}",
+    "completedAt": "Erledigt {time}",
+    "messageDeleted": "Gelöschte Nachricht",
+    "complete": "Als erledigt markieren",
+    "reopen": "Als nicht erledigt markieren",
+    "delete": "Erinnerung löschen",
+    "toast": {
+      "created": "Erinnerung festgelegt",
+      "due": "Erinnerung: {text}",
+      "createFailed": "Erinnerung konnte nicht festgelegt werden. Bitte versuche es erneut."
+    },
+    "command": {
+      "syntax": "Verwendung: /remind me [Text] in [Zahl] [minutes|hours|days]",
+      "tooShort": "Die Erinnerung muss mindestens 1 Minute in der Zukunft liegen.",
+      "tooLong": "Die Erinnerung muss innerhalb eines Jahres liegen.",
+      "created": "Erinnerung festgelegt für {time}"
+    },
+    "pastTime": "Wähle einen Zeitpunkt in der Zukunft.",
+    "loadMore": "Mehr laden"
+  }
+}

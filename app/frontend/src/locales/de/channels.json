@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Kanal erstellen",
+    "tabBrowse": "Kanäle durchsuchen",
+    "nameLabel": "Kanalname",
+    "namePlaceholder": "z. B. budget-planung",
+    "visibility": "Sichtbarkeit",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "publicHint": "Alle im Arbeitsbereich können diesen Kanal finden und ihm beitreten.",
+    "privateHint": "Nur eingeladene Mitglieder können diesen Kanal finden und ihm beitreten.",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "noChannels": "Keine Kanäle zum Beitreten verfügbar",
+    "memberCount": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+    "joined": "Beigetreten",
+    "join": "Beitreten",
+    "close": "Schließen",
+    "errors": {
+      "createFailed": "Kanal konnte nicht erstellt werden"
+    }
+  },
+  "errors": {
+    "loadConversations": "Unterhaltungen konnten nicht geladen werden.",
+    "loadChannels": "Kanäle konnten nicht geladen werden."
+  },
+  "membersPanel": {
+    "title": "Mitglieder",
+    "addPeople": "Personen hinzufügen",
+    "loadError": "Mitglieder konnten nicht geladen werden.",
+    "removeError": "Mitglied konnte nicht entfernt werden",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Mitglied entfernen?",
+      "message": "<bold>{name}</bold> aus diesem Kanal entfernen?"
+    },
+    "removing": "Wird entfernt ...",
+    "searchByName": "Nach Namen suchen ...",
+    "noUsers": "Keine Benutzer gefunden",
+    "roles": {
+      "owner": "Eigentümer",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Mitglied entfernen"
+  },
+  "dm": {
+    "messagePlaceholder": "Nachricht an {name}",
+    "you": "(du)",
+    "star": "Zu Markiert hinzufügen",
+    "unstar": "Aus Markiert entfernen",
+    "loadingMessages": "Nachrichten werden geladen ...",
+    "selfSpace": "Das ist dein persönlicher Bereich. Entwürfe schreiben, To-dos auflisten oder Links und Dateien griffbereit halten.",
+    "conversationStart": "Beginn deiner Unterhaltung mit {name}",
+    "sendToBegin": "Sende eine Nachricht, um zu beginnen.",
+    "edited": "(bearbeitet)",
+    "pinnedMessages": "Angeheftete Nachrichten",
+    "noPins": "Noch keine angehefteten Nachrichten",
+    "files": "Dateien",
+    "noFiles": "Noch keine Dateien geteilt",
+    "loadError": "Nachrichten konnten nicht geladen werden.",
+    "sendError": "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut."
+  },
+  "nameRules": {
+    "required": "Gib einen Kanalnamen ein.",
+    "tooLong": "Der Kanalname darf höchstens {max} Zeichen lang sein.",
+    "invalidChars": "Kanalnamen dürfen nur Buchstaben, Ziffern, Bindestriche und Unterstriche enthalten und müssen mit einem Buchstaben oder einer Ziffer beginnen.",
+    "tooManyMarks": "Kanalnamen dürfen nicht mehr als 4 kombinierte diakritische Zeichen hintereinander enthalten.",
+    "mixedScripts": "Kanalnamen dürfen keine optisch ähnlichen Schriftsysteme mischen (etwa lateinische mit kyrillischen oder griechischen Buchstaben) und keine Ziffern eines anderen Zahlensystems verwenden.",
+    "taken": "Es gibt bereits einen Kanal mit diesem Namen."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+    "nameLabel": "Name der Unterhaltung",
+    "namePlaceholder": "Name hinzufügen",
+    "noName": "Kein Name (zeigt die Namen der Mitglieder)",
+    "rename": "Unterhaltung umbenennen",
+    "addPeople": "Personen hinzufügen",
+    "add": "Hinzufügen",
+    "createWith": "Gruppenunterhaltung starten",
+    "leave": "Unterhaltung verlassen",
+    "leaveConfirm": "Diese Unterhaltung verlassen? Du siehst ihre Nachrichten danach nicht mehr.",
+    "conversationStart": "Dies ist der Beginn deiner Unterhaltung mit {names}",
+    "addError": "Personen konnten nicht hinzugefügt werden. Bitte versuche es erneut.",
+    "renameError": "Die Unterhaltung konnte nicht umbenannt werden. Bitte versuche es erneut.",
+    "leaveError": "Die Unterhaltung konnte nicht verlassen werden. Bitte versuche es erneut."
+  }
+}
