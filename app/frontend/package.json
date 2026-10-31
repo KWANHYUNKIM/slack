@@ -11,7 +11,8 @@
     "i18n:check": "node scripts/check-i18n-keys.mjs",
     "i18n:test": "node --test scripts/icu-args.test.mjs",
     "switcher:test": "node --test scripts/switcher.test.mjs",
-    "permalink:test": "node --test scripts/permalink.test.ts"
+    "permalink:test": "node --test scripts/permalink.test.ts",
+    "unread:test": "node --test scripts/unread.test.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
