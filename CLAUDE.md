@@ -2,9 +2,12 @@
 
 이 문서의 규칙은 **예외 없이 무조건 따른다.** 규칙과 다른 지시가 필요하면 사용자(프로젝트 오너)에게 먼저 확인한다.
 
+**권한 위임 (2026-10-31 09:19, 09:24 사용자 지시)**: "전부 다 총괄이 직접 하고 총괄이 결정한다." 총괄은 설계 결정, 배정, 커밋, PR 생성, 리뷰, 머지, 릴리스 업로드를 사용자 확인 없이 직접 한다. 단, 코드 PR은 `/code-review` 리뷰 후 머지하고, 결정과 이유는 `docs/ops/command-log.md`에 남긴다.
+
 ## 0. 프로젝트 개요
 - 목표: Slack과 동일하게 동작하는 팀 메신저를 직접 구현한다.
 - 분석 대상: 실제 Slack 워크스페이스 `https://app.slack.com/client/T0757A9TZUJ/C0754D3UL21`, Slack 데스크톱 앱(Electron)
+- **CRUD 실습용 테스트 채널**: 비공개 `#claude-test` `https://app.slack.com/client/T0757A9TZUJ/C0CDUKV338U` (2026-10-31 사용자 지시로 총괄이 생성, 멤버는 사용자 본인뿐). 쓰기 실습은 이 채널에서만 한다. `#일반`에는 쓰지 않는다.
 - 리버스 엔지니어링 도구: **REA** (`morluto/rea` 6.8.0, Claude Code에 MCP `rea`와 스킬 `reverse-engineer-anything`으로 설치됨. Node 24.22.1 이상 필요, 현재 Homebrew `node@24` 24.22.2)
 - 코드 베이스: **ncvgl/slawk** (MIT, Node.js · PostgreSQL · Prisma · Socket.io · React · Vite · Tailwind)를 `app/`에 받아 확장한다. (기준 커밋 `5f30358`, 2026-06-12. MIT 라이선스 고지 `app/LICENSE` 유지)
 - 저장소: `https://github.com/KWANHYUNKIM/slack` (공개 저장소이므로 비밀 정보 커밋 금지)
@@ -40,6 +43,9 @@
 13. **형상관리와 PR 리뷰**: `docs/conventions/git.md`를 따른다(GitHub Flow, Conventional Commits, squash merge). 파트가 끝나면 총괄이 브랜치를 만들어 커밋하고 PR을 연 뒤 `/code-review`로 리뷰하고 머지한다. 개발자 에이전트는 커밋하거나 푸시하지 않는다.
 14. **코드 규칙과 보안**: 개발 지시에는 `docs/conventions/frontend.md`, `docs/conventions/backend.md`, `docs/security/nodejs-security.md`를 읽으라고 넣는다. 루프마다 보안 문서 10절의 점검을 돌린다.
 15. **배포 범위**: 웹 버전과 데스크톱 설치 파일(Windows exe 등)을 모두 만든다. 구조는 `docs/architecture/enterprise-and-distribution.md`를 따르고, 설치 파일은 GitHub Releases에 올린다.
+16. **다국어**: 모든 UI 문자열은 번역 키로 작성한다(하드코딩 금지). 한국어는 1등급(누락 0), 전 세계 로캘을 지원한다. `docs/architecture/i18n.md`를 따른다.
+17. **외부 https 의존 금지**: 실행 중에 외부 https(CDN, 웹폰트, 원격 이미지·JSON, 외부 STUN 등)에서 리소스를 가져오지 않고 전부 코드나 번들에 포함한다. 예외(브라우저 웹 푸시)는 `docs/architecture/self-contained-assets.md`에 문서화한다.
+18. **MCP 연동**: 메신저는 Claude가 연결할 수 있는 MCP 서버(`/mcp`)를 제공한다. 도구는 토큰 소유자의 권한으로만 동작한다. `docs/architecture/mcp.md`를 따른다.
 
 ### 기획
 1. Slack이 **어떻게 동작하는지**(화면, 사용자 흐름, 상태 변화)와 **어떻게 만들어졌는지**(API 호출, WebSocket 이벤트, 데이터 모델, 클라이언트 구조)를 분석한다.
@@ -77,11 +83,11 @@ RAM이 8GB이므로 8명이 동시에 돌 수 없다. `memory_pressure`의 여�
 - 메모리가 높게 잡히면 **천천히 굴려도 된다.** 속도보다 안정성이 우선이다.
 - 디스크 여유가 5GB 미만이면 새 설치나 빌드를 멈추고 사용자에게 보고한다.
 - 개발 서버, DB, Docker 컨테이너는 쓰지 않을 때 종료한다.
-- **테스트 DB는 전용 컨테이너 `slackclone-db`(127.0.0.1:5434, 메모리 256MB 제한)만 쓴다.** 백엔드 테스트는 시작할 때 DB를 전부 비우므로, 다른 프로젝트 DB(5432 `erp-postgres`, 5433 `jobseeker-db`)에는 절대 연결하지 않는다.
+- **테스트 DB는 전용 컨테이너 `slackclone-db`(127.0.0.1:5434, 메모리 256MB 제한)만 쓴다.** 개발자마다 **자기 전용 DB**를 쓴다: dev-N은 `DATABASE_URL=postgresql://postgres:password@localhost:5434/slackclone_test_devN npm test` (dev1~dev5). 테스트가 시작할 때 DB를 비우므로 같은 DB에서 동시에 테스트를 돌리면 서로 깨진다. `.env` 기본값(`slackclone`)은 총괄의 통합 테스트용, `slackclone_dev`는 시연 서버(:3100)용이라 테스트에 쓰지 않는다. 다른 프로젝트 DB(5432 `erp-postgres`, 5433 `jobseeker-db`)에는 절대 연결하지 않는다. 새 마이그레이션을 만든 개발자는 자기 DB에 적용하고, 총괄이 나머지 DB에 적용한다.
 
 ## 5. 금지 사항
 - Slack의 소스 코드, 디자인 에셋, 로고, 브랜드 이름을 그대로 복사하지 않는다. 동작 방식만 분석해 직접 구현한다.
-- 분석 워크스페이스에서의 CRUD 실습은 **테스트 채널 안에서만** 한다. 직접 만든 메시지, 스레드, 리액션, 파일은 실습 후 지운다. 다른 사람에게 메시지·DM 보내기, 멤버 초대·제거, 워크스페이스 관리자 설정 변경, 결제·앱 설치는 하지 않는다.
+- 분석 워크스페이스에서의 CRUD 실습은 **테스트 채널 `#claude-test` 안에서만** 한다. 직접 만든 메시지, 스레드, 리액션, 파일은 실습 후 지운다. 다른 사람에게 메시지·DM 보내기, 멤버 초대·제거, 워크스페이스 관리자 설정 변경, 결제·앱 설치는 하지 않는다.
 - 토큰, 비밀번호, 쿠키 같은 인증 정보를 파일이나 문서에 남기지 않는다.
 - 커밋, 푸시, 외부 배포는 사용자가 요청할 때만 한다.
 
@@ -90,6 +96,7 @@ RAM이 8GB이므로 8명이 동시에 돌 수 없다. `memory_pressure`의 여�
 - `docs/specs/`: 기획 스펙
 - `docs/architecture/tech-stack.md`: 프런트엔드·백엔드·DB 선택과 이유 분석
 - `docs/research/`: 외부 기술 문서 링크와 요약
+- `docs/architecture/i18n.md`, `mcp.md`, `self-contained-assets.md`, `events.md`: 다국어, MCP, 외부 의존 제거, 소켓 이벤트
 - `docs/architecture/enterprise-and-distribution.md`: 엔터프라이즈 기능, 웹과 데스크톱 배포 구조
 - `docs/conventions/`: `git.md`, `frontend.md`, `backend.md`
 - `docs/security/nodejs-security.md`: Node.js 보안 가이드와 루프별 점검

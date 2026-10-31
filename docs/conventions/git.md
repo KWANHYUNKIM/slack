@@ -62,5 +62,6 @@
 - `v*` 태그가 붙으면 CI가 웹 Docker 이미지와 데스크톱 설치 파일(Windows `.exe`, macOS `.dmg`, Linux `.AppImage`)을 빌드해 GitHub Releases에 올린다(`docs/architecture/enterprise-and-distribution.md` 참고).
 
 ## 6. 금지
+- 공유 작업 폴더에서 `git commit -a`나 `git add -A`를 쓰지 않는다. 다른 에이전트가 작업 중인 파일이 섞여 들어간다. 커밋할 파일은 경로를 지정해서 add하고, 파트 PR은 `git worktree add <경로> origin/main`으로 만든 별도 작업 공간에서 만든다.
 - `main`에 force push 금지. 비밀 정보(.env, 키, 토큰) 커밋 금지. 공개 저장소라 한 번 올라가면 회수할 수 없다.
 - 생성물(`node_modules`, `dist`, 설치 파일)은 커밋하지 않는다. 설치 파일은 Releases에만 올린다.
