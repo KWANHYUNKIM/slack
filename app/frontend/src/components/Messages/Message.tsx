@@ -1,7 +1,7 @@
 import { mentionsUser } from '@/lib/mentions';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatTime, formatDateTime, DATE_TIME_FULL, formatFileSize } from '@/lib/i18n/format';
+import { formatTime, formatTimeShort, formatDateTime, DATE_TIME_FULL, formatFileSize } from '@/lib/i18n/format';
 import { FileIcon, Download, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -127,7 +127,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
           </button>
         ) : (
           <span className="text-[12px] text-slack-secondary opacity-0 group-hover:opacity-100 leading-[22px] select-none" title={formatDateTime(message.createdAt, DATE_TIME_FULL)}>
-            {formatTime(message.createdAt)}
+            {formatTimeShort(message.createdAt)}
           </span>
         )}
       </div>

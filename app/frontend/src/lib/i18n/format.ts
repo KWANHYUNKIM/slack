@@ -25,6 +25,19 @@ export function formatTime(
   return new Intl.DateTimeFormat(currentLocale(), options).format(toDate(value));
 }
 
+/** 짧은 시간("3:05"): 오전/오후 표시 없이 시:분만. 연속 메시지 거터(36px)용 */
+export function formatTimeShort(value: Date | string | number): string {
+  const parts = new Intl.DateTimeFormat(currentLocale(), {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).formatToParts(toDate(value));
+  return parts
+    .filter((p) => p.type !== 'dayPeriod')
+    .map((p) => p.value)
+    .join('')
+    .trim();
+}
+
 /** 날짜와 시간을 함께 */
 export function formatDateTime(
   value: Date | string | number,
@@ -54,7 +67,8 @@ export function formatRelative(value: Date | string | number, now: Date = new Da
   const formatter = new Intl.RelativeTimeFormat(currentLocale(), { numeric: 'auto' });
   for (const [unit, seconds] of RELATIVE_UNITS) {
     if (Math.abs(diffSeconds) >= seconds || unit === 'second') {
-      return formatter.format(Math.round(diffSeconds / seconds), unit);
+      // 0 방향으로 버린다: 90초 전은 "1분 전" (기존 date-fns식 경과 시간 동작)
+      return formatter.format(Math.trunc(diffSeconds / seconds), unit);
     }
   }
   return formatter.format(0, 'second');
@@ -71,6 +85,18 @@ export function formatList(
   options: Intl.ListFormatOptions = { style: 'long', type: 'conjunction' },
 ): string {
   return new Intl.ListFormat(currentLocale(), options).format(items);
+}
+
+const collators = new Map<string, Intl.Collator>();
+
+/** 언어별로 캐시한 Collator (정렬할 때마다 새로 만들지 않는다) */
+export function getCollator(locale: string = currentLocale()): Intl.Collator {
+  let collator = collators.get(locale);
+  if (!collator) {
+    collator = new Intl.Collator(locale);
+    collators.set(locale, collator);
+  }
+  return collator;
 }
 
 /** 같은 날인지 (로컬 시간대 기준) */

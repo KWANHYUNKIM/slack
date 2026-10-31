@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { UserPlus, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { getChannelMembers, getUsers, addChannelMember, getChannel, type ChannelMember, type AuthUser } from '@/lib/api';
@@ -245,12 +245,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-slack-primary mb-2">{t('membersPanel.removeDialog.title')}</h3>
             <p className="text-sm text-slack-secondary mb-4">
-              <Trans
-                t={t}
-                i18nKey="membersPanel.removeDialog.message"
-                values={{ name: confirmRemove.userName }}
-                components={{ strong: <strong /> }}
-              />
+              {t('membersPanel.removeDialog.message', { name: confirmRemove.userName })}
             </p>
             <div className="flex gap-2 justify-end">
               <button

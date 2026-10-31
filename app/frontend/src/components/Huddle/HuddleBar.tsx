@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { translateIfKey } from '@/lib/i18n';
 import { Mic, MicOff, PhoneOff, Headphones } from 'lucide-react';
 import { useHuddleStore } from '@/stores/useHuddleStore';
 import { Avatar } from '@/components/ui/avatar';
@@ -27,7 +28,7 @@ export function HuddleBar() {
   return (
     <div className="fixed bottom-0 start-0 end-0 z-50 border-t border-green-300 bg-green-50 px-4 py-2 sm:start-auto sm:end-4 sm:bottom-4 sm:rounded-xl sm:border sm:shadow-lg sm:w-72">
       {error && (
-        <div className="text-xs text-red-600 mb-1">{error}</div>
+        <div className="text-xs text-red-600 mb-1">{translateIfKey(error)}</div>
       )}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">

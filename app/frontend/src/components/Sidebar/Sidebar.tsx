@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getCollator } from '@/lib/i18n/format';
 import { useTranslation } from 'react-i18next';
 import {
   FileText,
@@ -159,7 +160,7 @@ export function Sidebar() {
     closeSidebar();
   };
 
-  const collator = new Intl.Collator(i18n.language);
+  const collator = getCollator(i18n.language);
   const sortByName = (a: Channel, b: Channel) => collator.compare(a.name, b.name);
   const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember).sort(sortByName);
   const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember).sort(sortByName);

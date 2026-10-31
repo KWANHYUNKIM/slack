@@ -1,8 +1,9 @@
 // en(원문)과 ko(1등급)의 번역 키 집합이 같은지 검사한다.
 // 2등급 이하 로캘은 누락이 있어도 경고만 한다. (docs/conventions/i18n.md 6절)
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { icuArgs } from './icu-args.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales');
 const TIER1 = ['en', 'ko'];
@@ -17,13 +18,13 @@ function flatten(obj, prefix = '') {
   return out;
 }
 
-// ICU 인자 이름만 뽑아 en과 비교한다 ({name}, {count, plural, ...})
+// ICU 인자 이름 비교는 파서로 한다 (plural 분기가 en은 여러 개, ko는 other 하나여도 통과)
 function placeholders(text) {
-  const names = new Set();
-  const re = /\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*[,}]/g;
-  let m;
-  while ((m = re.exec(String(text)))) names.add(m[1]);
-  return [...names].sort().join(',');
+  try {
+    return icuArgs(text);
+  } catch (err) {
+    return `파싱 오류: ${err.message}`;
+  }
 }
 
 function load(locale) {
@@ -42,13 +43,19 @@ const base = load('en');
 let errors = 0;
 let warnings = 0;
 
-for (const locale of readdirSync(root).filter((l) => l !== 'en')) {
+// .DS_Store 같은 파일은 무시하고 디렉터리만 로캘로 본다
+const localeDirs = readdirSync(root).filter((l) => statSync(join(root, l)).isDirectory());
+
+for (const locale of localeDirs.filter((l) => l !== 'en')) {
   const strict = TIER1.includes(locale);
   const data = load(locale);
   const problems = [];
+  // en에도 '{{'가 있으면 ko가 없어도 잡는다
+  for (const key of Object.keys(base)) if (/\{\{/.test(String(base[key]))) problems.push(`'{{' 사용 금지(ICU는 {name}): ${key} (en)`);
   for (const key of Object.keys(base)) {
     if (!(key in data)) problems.push(`누락: ${key}`);
     else if (String(data[key]).trim() === '') problems.push(`빈 값: ${key}`);
+    else if (/\{\{/.test(String(data[key])) || /\{\{/.test(String(base[key]))) problems.push(`'{{' 사용 금지(ICU는 {name}): ${key}`);
     else if (placeholders(base[key]) !== placeholders(data[key]))
       problems.push(`인자 불일치: ${key} (en={${placeholders(base[key])}} ${locale}={${placeholders(data[key])}})`);
   }

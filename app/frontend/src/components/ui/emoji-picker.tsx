@@ -30,7 +30,14 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
     // Delay picker creation to avoid the opening click triggering onClickOutside
     const timer = setTimeout(async () => {
       // 번들에 포함된 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
-      const { locale, i18n: pickerI18n } = await loadEmojiMartI18n(i18n.language);
+      // 실패하면 i18n 없이 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      let locale = 'en';
+      let pickerI18n: Record<string, unknown> | undefined;
+      try {
+        ({ locale, i18n: pickerI18n } = await loadEmojiMartI18n(i18n.language));
+      } catch (err) {
+        console.warn('emoji-mart i18n load failed, falling back to en', err);
+      }
       if (cancelled) return;
       const picker = new Picker({
         data,

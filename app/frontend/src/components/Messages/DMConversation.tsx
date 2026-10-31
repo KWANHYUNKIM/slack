@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { isToday, isYesterday } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { formatDate, formatTime, formatDateTime } from '@/lib/i18n/format';
+import { formatDate, formatTime, formatTimeShort, formatDateTime } from '@/lib/i18n/format';
 import { t as translate } from '@/lib/i18n';
 import {
   Pin,
@@ -422,7 +422,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             </button>
                           ) : (
                             <span className="hidden text-[12px] leading-[22px] text-slack-secondary group-hover:inline">
-                              {formatTime(msg.createdAt)}
+                              {formatTimeShort(msg.createdAt)}
                             </span>
                           )}
                         </div>

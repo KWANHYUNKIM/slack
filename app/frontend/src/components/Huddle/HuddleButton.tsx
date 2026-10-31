@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { translateIfKey } from '@/lib/i18n';
 import { Headphones, PhoneOff } from 'lucide-react';
 import { useHuddleStore } from '@/stores/useHuddleStore';
 
@@ -22,7 +23,7 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
       return;
     }
     if (isInAnyHuddle || hasOutgoingInvite) {
-      useHuddleStore.setState({ error: isInAnyHuddle ? t('button.leaveFirstError') : t('button.cancelInviteFirstError') });
+      useHuddleStore.setState({ error: isInAnyHuddle ? 'huddle:errors.leaveFirst' : 'huddle:errors.cancelInviteFirst' });
       return;
     }
     sendInvite(userId);
@@ -60,7 +61,7 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
         <Headphones className="h-4 w-4" />
       </button>
       {error && !huddleId && (
-        <span data-testid="huddle-error" className="text-xs text-red-600">{error}</span>
+        <span data-testid="huddle-error" className="text-xs text-red-600">{translateIfKey(error)}</span>
       )}
     </div>
   );

@@ -35,7 +35,7 @@
     "offline": "Offline — {count}",
     "removeDialog": {
       "title": "Remove member?",
-      "message": "Remove <strong>{{name}}</strong> from this channel?"
+      "message": "Remove {name} from this channel?"
     },
     "removing": "Removing...",
     "searchByName": "Search by name...",

@@ -1,3 +1,4 @@
+import { t as translate } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatFileSize } from '@/lib/i18n/format';
@@ -58,19 +59,19 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
     if (!isText) return;
     fetch(fileUrl)
       .then((res) => {
-        if (!res.ok) throw new Error(t('messages:fileModal.loadFailed'));
+        if (!res.ok) throw new Error('load failed');
         return res.text();
       })
       .then((text) => {
         // Cap preview at 100KB to avoid UI freeze
-        setTextContent(text.length > 100_000 ? text.slice(0, 100_000) + `\n\n${t('messages:fileModal.truncated')}` : text);
+        setTextContent(text.length > 100_000 ? text.slice(0, 100_000) + `\n\n${translate('messages:fileModal.truncated')}` : text);
         setLoading(false);
       })
       .catch(() => {
-        setError(t('messages:fileModal.loadFailed'));
+        setError('messages:fileModal.loadFailed');
         setLoading(false);
       });
-  }, [fileUrl, isText, t]);
+  }, [fileUrl, isText]);
 
   return (
     <div
@@ -121,7 +122,7 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
           {isText && (
             <div className="p-4">
               {loading && <p className="text-[13px] text-slack-secondary">{t('common:status.loading')}</p>}
-              {error && <p className="text-[13px] text-red-600">{error}</p>}
+              {error && <p className="text-[13px] text-red-600">{t(error)}</p>}
               {textContent !== null && (
                 <pre className="text-[13px] font-mono leading-relaxed text-slack-primary whitespace-pre-wrap break-words">
                   {textContent}

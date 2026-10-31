@@ -35,7 +35,7 @@
     "offline": "오프라인 — {count}",
     "removeDialog": {
       "title": "멤버를 내보낼까요?",
-      "message": "이 채널에서 <strong>{{name}}</strong>님을 내보낼까요?"
+      "message": "이 채널에서 {name}님을 내보낼까요?"
     },
     "removing": "내보내는 중...",
     "searchByName": "이름으로 검색...",

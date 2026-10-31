@@ -1,3 +1,4 @@
+import { t as translate } from '@/lib/i18n';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SendHorizontal } from 'lucide-react';
@@ -111,14 +112,14 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         setReplies(data.replies.map((r) => normalizeToMessage(r)));
       })
       .catch(() => {
-        if (!cancelled) setLoadError(t('threadPanel.loadFailed'));
+        if (!cancelled) setLoadError('threadPanel.loadFailed');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
 
     return () => { cancelled = true; };
-  }, [messageId, isDM, t]);
+  }, [messageId, isDM]);
 
   // Listen for real-time thread replies via WebSocket
   useEffect(() => {
@@ -226,14 +227,14 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
           ...msg,
           reactions: msg.reactions.map((r) =>
             r.emoji === emoji
-              ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, t('reactions.you')] }
+              ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, translate('messages:reactions.you')] }
               : r
           ),
         };
       }
       return {
         ...msg,
-        reactions: [...msg.reactions, { emoji, count: 1, userIds: [userId], userNames: [t('reactions.you')] }],
+        reactions: [...msg.reactions, { emoji, count: 1, userIds: [userId], userNames: [translate('messages:reactions.you')] }],
       };
     };
 
@@ -244,7 +245,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     }
 
     (isDM ? addDMReaction(msgId, emoji) : apiAddReaction(msgId, emoji)).catch(() => {});
-  }, [isDM, parentMessage, t]);
+  }, [isDM, parentMessage]);
 
   const handleRemoveReaction = useCallback((msgId: number, emoji: string) => {
     const userId = useAuthStore.getState().user?.id;
@@ -302,11 +303,11 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     } catch (err) {
       didSendReply.current = false;
       console.error('Failed to send reply:', err);
-      setReplyError(t('threadPanel.replyFailed'));
+      setReplyError('threadPanel.replyFailed');
     } finally {
       setIsSending(false);
     }
-  }, [messageId, editor, isDM, t]);
+  }, [messageId, editor, isDM]);
 
   handleSendRef.current = handleSendReply;
 
@@ -324,7 +325,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         {isLoading ? (
           <div className="text-center text-sm text-slack-hint py-4">{t('threadPanel.loading')}</div>
         ) : loadError ? (
-          <div data-testid={`${testPrefix}-load-error`} className="text-center text-sm text-slack-error py-4">{loadError}</div>
+          <div data-testid={`${testPrefix}-load-error`} className="text-center text-sm text-slack-error py-4">{t(loadError)}</div>
         ) : (
           <>
             {parentMessage && (
@@ -373,7 +374,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
           </div>
         ) : (<>
         {replyError && (
-          <p data-testid={`${testPrefix}-reply-error`} className="mb-2 text-xs text-slack-error">{replyError}</p>
+          <p data-testid={`${testPrefix}-reply-error`} className="mb-2 text-xs text-slack-error">{t(replyError)}</p>
         )}
         {editor.uploadError && (
           <p className="mb-2 text-xs text-slack-error">{editor.uploadError}</p>

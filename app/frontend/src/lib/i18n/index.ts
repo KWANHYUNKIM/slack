@@ -85,8 +85,13 @@ async function loadNamespaces(locale: string) {
       if (i18n.hasResourceBundle(locale, ns)) return;
       const loader = localeFiles[`../../locales/${locale}/${ns}.json`];
       if (!loader) return;
-      const mod = await loader();
-      i18n.addResourceBundle(locale, ns, mod.default, true, true);
+      try {
+        const mod = await loader();
+        i18n.addResourceBundle(locale, ns, mod.default, true, true);
+      } catch (err) {
+        // 청크를 못 받으면 해당 네임스페이스는 en으로 대체된다
+        console.warn(`i18n: failed to load ${locale}/${ns}`, err);
+      }
     }),
   );
 }
@@ -97,10 +102,21 @@ function applyDocumentLocale(locale: string) {
 }
 
 /** 로캘을 바꾼다. 번역 파일을 읽은 뒤 적용하고, 선택을 localStorage에 저장한다. */
+let changeSeq = 0;
+
 export async function changeLocale(locale: string) {
+  const seq = ++changeSeq;
   const target = matchLocale(locale) ?? FALLBACK_LOCALE;
-  await loadNamespaces(target);
-  await i18n.changeLanguage(target);
+  try {
+    await loadNamespaces(target);
+    // 더 늦게 요청된 변경이 있으면 이 요청은 버린다
+    if (seq !== changeSeq) return;
+    await i18n.changeLanguage(target);
+    if (seq !== changeSeq) return;
+  } catch (err) {
+    console.warn('i18n: changeLocale failed', err);
+    return;
+  }
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, target);
   } catch {
@@ -114,6 +130,24 @@ let initPromise: Promise<void> | null = null;
 export function initI18n(): Promise<void> {
   if (initPromise) return initPromise;
   initPromise = (async () => {
+    try {
+      await initInner();
+    } catch (err) {
+      // 초기화가 실패해도 en으로 대체해 앱은 뜨게 한다
+      console.warn('i18n: init failed, falling back to en', err);
+      try {
+        await i18n.changeLanguage(FALLBACK_LOCALE);
+      } catch {
+        // 무시: 키가 그대로 보일 뿐 앱은 동작한다
+      }
+      applyDocumentLocale(FALLBACK_LOCALE);
+    }
+  })();
+  return initPromise;
+}
+
+async function initInner() {
+  {
     const locale = detectLocale();
     await i18n
       .use(ICU)
@@ -134,9 +168,13 @@ export function initI18n(): Promise<void> {
     await i18n.changeLanguage(locale);
     applyDocumentLocale(locale);
     i18n.on('languageChanged', applyDocumentLocale);
-  })();
-  return initPromise;
+  }
 }
 
 export const t = i18n.t.bind(i18n);
+
+/** 번역 키(예: 'huddle:errors.micDenied')면 번역하고, 키가 아닌 문자열은 그대로 돌려준다. */
+export function translateIfKey(value: string): string {
+  return i18n.exists(value) ? i18n.t(value) : value;
+}
 export default i18n;
