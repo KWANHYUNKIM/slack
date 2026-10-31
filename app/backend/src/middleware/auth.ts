@@ -4,6 +4,7 @@ import { AuthRequest, JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
+import { ERR } from '../utils/errorCodes.js';
 
 // Short-lived cache for tokenVersion checks to avoid a DB round-trip on every request.
 // TTL is 5 seconds — revoked tokens may work for up to 5s after revocation.
@@ -80,7 +81,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'No token provided' });
+    res.status(401).json({ error: 'No token provided', code: ERR.AUTH_NO_TOKEN });
     return;
   }
 
@@ -92,14 +93,14 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     result = await validateAccessToken(token);
   } catch (error) {
     logError('Auth middleware error', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', code: ERR.INTERNAL_ERROR });
     return;
   }
 
   if (!result.ok) {
     // All failures return the same generic message to prevent
     // authentication state enumeration (OWASP).
-    res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
     return;
   }
 

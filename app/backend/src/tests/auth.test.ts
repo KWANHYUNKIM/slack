@@ -429,7 +429,7 @@ describe('Authentication', () => {
 
       expect(dbSpy).toHaveBeenCalled();
       expect(res.status).toBe(500);
-      expect(res.body).toEqual({ error: 'Internal server error' });
+      expect(res.body).toEqual({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
       expect(JSON.stringify(res.body)).not.toContain('secret host');
       expect(logSpy).toHaveBeenCalledWith('Auth middleware error', expect.anything());
     });

@@ -388,8 +388,7 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       if (!isUserOnline(toUserId)) {
         const senderName = reply.fromUser?.name || 'Someone';
         sendPushToUser(toUserId, {
-          title: `${senderName} (thread)`,
-          body: content.slice(0, 100) || 'Sent an attachment',
+          titleKey: 'dmThread', sender: senderName, content, plainBody: true,
           url: `/d/${fromUserId}`,
         }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
       }

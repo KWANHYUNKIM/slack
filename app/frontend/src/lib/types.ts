@@ -29,6 +29,9 @@ export interface User {
   role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
   status?: UserStatus;
   displayName?: string;
+  /** 서버에 저장된 언어(BCP-47)와 시간대(IANA). lib/userPrefsSync.ts가 맞춘다 */
+  locale?: string | null;
+  timeZone?: string | null;
 }
 
 export interface Channel {

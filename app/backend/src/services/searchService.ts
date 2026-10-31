@@ -168,9 +168,13 @@ export async function runSearch(actor: SearchActor, params: SearchParams, option
   const { q: rawQuery, type, channelId, sort, limit } = params;
   const cursor = decodeCursor(params.cursor);
   const { offset } = cursor;
-  const scope: Scope = { tz: resolveTimeZone(params.tz), snapshot: new Date(cursor.snapshot ?? Date.now()) };
-  const end = Math.min(offset + limit, MAX_RESULTS);
   const { userId, isGuest } = actor;
+  // tz 파라미터가 없으면 사용자가 저장한 시간대(User.timeZone)를 쓰고, 그것도 없으면 UTC
+  const tzParam = params.tz
+    ?? (await prisma.user.findUnique({ where: { id: userId }, select: { timeZone: true } }))?.timeZone
+    ?? undefined;
+  const scope: Scope = { tz: resolveTimeZone(tzParam), snapshot: new Date(cursor.snapshot ?? Date.now()) };
+  const end = Math.min(offset + limit, MAX_RESULTS);
 
   const parsed = parseSearchQuery(rawQuery);
   const { filters } = parsed;

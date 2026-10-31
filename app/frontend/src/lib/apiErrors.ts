@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import i18n, { t } from '@/lib/i18n';
 import { ApiError } from '@/lib/api';
 import { CHANNEL_NAME_MAX } from '@/lib/channelName';
 
@@ -14,6 +14,11 @@ export function apiErrorMessage(err: unknown, fallbackKey: string, nameMax: numb
     if (err.code === 'CHANNEL_NAME_INVALID') {
       const reason = err.reason && NAME_REASONS.has(err.reason) ? err.reason : 'invalidChars';
       return t(`channels:nameRules.${reason}`, { max: nameMax });
+    }
+    // 서버 code가 곧 번역 키(errors:api.<CODE>)다. 번역이 없는 code는 일반 오류 문구로 대체한다.
+    if (err.code && /^[A-Z][A-Z0-9_]*$/.test(err.code)) {
+      const key = `errors:api.${err.code}`;
+      if (i18n.exists(key)) return t(key);
     }
   }
   return t(fallbackKey);

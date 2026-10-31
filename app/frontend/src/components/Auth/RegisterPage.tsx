@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateInvite } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrors';
 
 export function RegisterPage() {
   const { t } = useTranslation('auth');
@@ -20,6 +21,7 @@ export function RegisterPage() {
   const inviteCode = searchParams.get('invite') || undefined;
   const [inviteValid, setInviteValid] = useState<boolean | null>(null);
   const [inviteRole, setInviteRole] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState('');
 
   useEffect(() => {
     if (inviteCode) {
@@ -28,7 +30,10 @@ export function RegisterPage() {
           setInviteValid(data.valid);
           setInviteRole(data.role);
         })
-        .catch(() => setInviteValid(false));
+        .catch((err) => {
+          setInviteValid(false);
+          setInviteError(apiErrorMessage(err, 'auth:register.inviteInvalid'));
+        });
     }
   }, [inviteCode]);
 
@@ -43,12 +48,8 @@ export function RegisterPage() {
       await register(name, email, password, inviteCode);
       navigate('/');
     } catch (err) {
-      const raw = err instanceof Error ? err.message : '';
-      const errorMap: Record<string, string> = {
-        'Email already exists': t('register.errors.emailExists'),
-        'Email already in use': t('register.errors.emailExists'),
-      };
-      setError(errorMap[raw] || raw || t('login.errors.generic'));
+      // 서버 code로 문구를 고른다(영어 원문 비교 금지)
+      setError(apiErrorMessage(err, 'auth:login.errors.generic'));
     }
   };
 
@@ -76,7 +77,7 @@ export function RegisterPage() {
         )}
         {inviteCode && inviteValid === false && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-            {t('register.inviteInvalid')}
+            {inviteError || t('register.inviteInvalid')}
           </div>
         )}
 

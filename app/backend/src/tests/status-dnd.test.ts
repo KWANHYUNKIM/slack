@@ -439,7 +439,7 @@ describe('Custom status and Do Not Disturb', () => {
       expect(titles.some((t: string) => t === '#sd-pub')).toBe(true); // 채널 메시지
       expect(titles.some((t: string) => t === 'Alice')).toBe(true); // 1:1 DM
       expect(bodies().some((b) => b.url === `/g/${groupId}`)).toBe(true); // 그룹 DM
-      expect(titles.some((t: string) => t === '#sd-pub thread')).toBe(true); // 스레드 답글
+      expect(titles.some((t: string) => t === '#sd-pub 스레드')).toBe(true); // 스레드 답글(User.locale이 없으면 ko)
       expect(pushSpy.mock.calls.length).toBeGreaterThanOrEqual(4);
     });
 

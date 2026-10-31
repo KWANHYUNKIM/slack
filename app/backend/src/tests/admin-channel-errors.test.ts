@@ -56,7 +56,7 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
       jest.spyOn(prisma.inviteLink, 'delete').mockRejectedValueOnce(new Error('lock timeout: internal'));
       const delB = await request(app).delete(`/admin/invites/${inviteB}`).set('Authorization', `Bearer ${adminToken}`);
       expect(delB.status).toBe(500);
-      expect(delB.body).toEqual({ error: 'Failed to delete invite' });
+      expect(delB.body).toEqual({ error: 'Failed to delete invite', code: 'INTERNAL_ERROR' });
       expect(JSON.stringify(delB.body)).not.toContain('lock timeout');
 
       // 실패한 초대만 남는다
@@ -78,7 +78,7 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
         .delete(`/admin/channels/${channelId}`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(failRes.status).toBe(500);
-      expect(failRes.body).toEqual({ error: 'Failed to delete channel' });
+      expect(failRes.body).toEqual({ error: 'Failed to delete channel', code: 'INTERNAL_ERROR' });
       expect(JSON.stringify(failRes.body)).not.toContain('secret-host');
       expect(await prisma.channel.findUnique({ where: { id: channelId } })).not.toBeNull();
 
@@ -112,7 +112,7 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
         .post(`/admin/channels/${channelId}/archive`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(failRes.status).toBe(500);
-      expect(failRes.body).toEqual({ error: 'Failed to archive channel' });
+      expect(failRes.body).toEqual({ error: 'Failed to archive channel', code: 'INTERNAL_ERROR' });
       expect(JSON.stringify(failRes.body)).not.toContain('deadlock');
       expect((await prisma.channel.findUnique({ where: { id: channelId } }))?.archivedAt).toBeNull();
 
@@ -140,7 +140,7 @@ describe('관리자 채널 삭제·보관 실패 경로', () => {
         .post(`/admin/channels/${channelId}/unarchive`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(failRes.status).toBe(500);
-      expect(failRes.body).toEqual({ error: 'Failed to unarchive channel' });
+      expect(failRes.body).toEqual({ error: 'Failed to unarchive channel', code: 'INTERNAL_ERROR' });
       expect((await prisma.channel.findUnique({ where: { id: channelId } }))?.archivedAt).not.toBeNull();
 
       jest.restoreAllMocks();
