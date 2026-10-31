@@ -42,6 +42,10 @@ const ACTION_KEYS: Record<string, string> = {
   'token.revoke': 'tokenRevoke',
   'mcp.tool_call': 'mcpToolCall',
   'audit.exported': 'auditExported',
+  'retention.purged': 'retentionPurged',
+  'retention.workspace_updated': 'retentionWorkspaceUpdated',
+  'retention.channel_updated': 'retentionChannelUpdated',
+  'retention.channel_cleared': 'retentionChannelCleared',
 };
 
 const TARGET_KEYS: Record<string, string> = {
@@ -54,6 +58,7 @@ const TARGET_KEYS: Record<string, string> = {
   personal_access_token: 'token',
   audit_log: 'auditLog',
   mcp_tool: 'mcpTool',
+  workspace: 'workspace',
 };
 
 function actionColor(action: string): string {
