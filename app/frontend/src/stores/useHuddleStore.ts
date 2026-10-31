@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getSocket } from '@/lib/socket';
+import { getHuddleConfig } from '@/lib/api';
 
 export interface IncomingInvite {
   inviteId: string;
@@ -17,23 +18,44 @@ interface PeerInfo {
 }
 
 // ICE servers come from our own backend (/huddles/config: built-in STUN + optional TURN),
-// never from external hosts. Cached after the first success; on failure we fall back to
-// an empty list so peers on the same LAN still connect through host candidates.
-let iceServersCache: RTCIceServer[] | null = null;
+// never from external hosts. Cached with a TTL; on failure we return an empty list (same-LAN
+// peers still connect through host candidates) and back off briefly before retrying.
+const ICE_CACHE_TTL_MS = 10 * 60 * 1000;
+const ICE_FAILURE_BACKOFF_MS = 30 * 1000;
+let iceServersCache: { servers: RTCIceServer[]; expiresAt: number } | null = null;
+let iceRetryAfter = 0;
+let iceInflight: Promise<RTCIceServer[]> | null = null;
 
 async function loadIceServers(): Promise<RTCIceServer[]> {
-  if (iceServersCache) return iceServersCache;
-  const token = localStorage.getItem('token');
-  if (!token) return [];
-  try {
-    const res = await fetch('/huddles/config', { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!Array.isArray(data.iceServers)) return [];
-    iceServersCache = data.iceServers as RTCIceServer[];
-    return iceServersCache;
-  } catch {
-    return [];
+  const now = Date.now();
+  if (iceServersCache && now < iceServersCache.expiresAt) return iceServersCache.servers;
+  if (now < iceRetryAfter) return [];
+  if (!localStorage.getItem('token')) return [];
+  if (!iceInflight) {
+    iceInflight = getHuddleConfig()
+      .then((data) => {
+        if (!Array.isArray(data.iceServers)) throw new Error('invalid huddle config');
+        iceServersCache = { servers: data.iceServers, expiresAt: Date.now() + ICE_CACHE_TTL_MS };
+        return data.iceServers;
+      })
+      .catch(() => {
+        iceRetryAfter = Date.now() + ICE_FAILURE_BACKOFF_MS;
+        return [] as RTCIceServer[];
+      })
+      .finally(() => { iceInflight = null; });
+  }
+  return iceInflight;
+}
+
+// ICE candidates that arrive before the peer connection has its remote description are
+// queued and applied right after it is set.
+let pendingCandidates: RTCIceCandidateInit[] = [];
+
+function flushPendingCandidates(pc: RTCPeerConnection): void {
+  const queued = pendingCandidates;
+  pendingCandidates = [];
+  for (const c of queued) {
+    pc.addIceCandidate(new RTCIceCandidate(c)).catch((err) => console.error('Huddle ICE error:', err));
   }
 }
 
@@ -246,6 +268,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
   },
 
   onHuddleConnected: (data) => {
+    pendingCandidates = [];
     // If we had an outgoing invite, clear it (we're now connected)
     set({
       huddleId: data.huddleId,
@@ -293,19 +316,21 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
       // We're the non-initiator, set up peer connection and answer
       const sdpDesc = new RTCSessionDescription({ type: 'offer', sdp: signal.sdp! });
       setupPeerConnection(data.huddleId, false)
-        .then((pc) => {
+        .then(async (pc) => {
           if (!pc) return;
-          return pc.setRemoteDescription(sdpDesc).then(() => pc.createAnswer())
-            .then((answer) => pc.setLocalDescription(answer))
-            .then(() => {
-              const socket = getSocket();
-              if (socket && pc.localDescription) {
-                socket.emit('huddle:signal', {
-                  huddleId: data.huddleId,
-                  signal: { type: 'answer', sdp: pc.localDescription.sdp },
-                });
-              }
+          await pc.setRemoteDescription(sdpDesc);
+          flushPendingCandidates(pc);
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          // The huddle may have ended while we were negotiating
+          if (useHuddleStore.getState().peerConnection !== pc) return;
+          const socket = getSocket();
+          if (socket && pc.localDescription) {
+            socket.emit('huddle:signal', {
+              huddleId: data.huddleId,
+              signal: { type: 'answer', sdp: pc.localDescription.sdp },
             });
+          }
         })
         .catch((err) => console.error('Huddle answer error:', err));
     } else if (signal.type === 'answer') {
@@ -313,13 +338,17 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
       if (peerConnection) {
         const sdpDesc = new RTCSessionDescription({ type: 'answer', sdp: signal.sdp! });
         peerConnection.setRemoteDescription(sdpDesc)
+          .then(() => flushPendingCandidates(peerConnection))
           .catch((err) => console.error('Huddle set answer error:', err));
       }
     } else if (signal.type === 'ice-candidate') {
       const { peerConnection } = get();
-      if (peerConnection && signal.candidate) {
+      if (!signal.candidate) return;
+      if (peerConnection && peerConnection.remoteDescription) {
         peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate as RTCIceCandidateInit))
           .catch((err) => console.error('Huddle ICE error:', err));
+      } else if (pendingCandidates.length < 100) {
+        pendingCandidates.push(signal.candidate as RTCIceCandidateInit);
       }
     }
   },
@@ -346,6 +375,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
   },
 
   cleanup: () => {
+    pendingCandidates = [];
     const { peerConnection, audioElement, localStream } = get();
 
     if (peerConnection) {
@@ -377,7 +407,9 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
 
 async function setupPeerConnection(huddleId: string, isInitiator: boolean): Promise<RTCPeerConnection | null> {
   const iceServers = await loadIceServers();
+  // The huddle may have ended or changed while we waited for the ICE config: discard in that case
   const state = useHuddleStore.getState();
+  if (state.huddleId !== huddleId) return null;
   const { localStream } = state;
   if (!localStream) return null;
 
@@ -426,6 +458,7 @@ async function setupPeerConnection(huddleId: string, isInitiator: boolean): Prom
     pc.createOffer()
       .then((offer) => pc.setLocalDescription(offer))
       .then(() => {
+        if (useHuddleStore.getState().peerConnection !== pc) return;
         const socket = getSocket();
         if (socket && pc.localDescription) {
           socket.emit('huddle:signal', {

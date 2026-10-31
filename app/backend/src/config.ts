@@ -29,8 +29,11 @@ export function getStunConfig() {
   return {
     // 테스트 환경에서는 기본 꺼짐(UDP 포트 충돌 방지)
     enabled: explicit !== undefined ? explicit.toLowerCase() !== 'false' : process.env.NODE_ENV !== 'test',
+    // 0은 임의 포트(테스트용). 광고는 설정값이 아니라 실제로 바인드된 포트로 한다.
     port: Number.isInteger(port) && port >= 0 && port <= 65535 ? port : 3478,
     host: process.env.STUN_HOST || '0.0.0.0',
+    // 클라이언트에 광고할 공인 호스트. production에서는 Host 헤더를 믿지 않고 이 값만 쓴다.
+    publicHost: (process.env.STUN_PUBLIC_HOST || '').trim(),
   };
 }
 

@@ -4,7 +4,7 @@ import {
   STUN_MAGIC_COOKIE, STUN_MAX_PACKET_SIZE,
   decodeBindingRequest, decodeBindingSuccess, encodeBindingRequest, encodeBindingSuccess,
 } from '../stun/stunMessage.js';
-import { RateLimiter, rateLimitKey, startStunServer } from '../stun/stunServer.js';
+import { RateLimiter, handleStunPacket, rateLimitKey, startStunServer, getStunListeningPort } from '../stun/stunServer.js';
 
 describe('STUN message encode/decode', () => {
   const txid = crypto.randomBytes(12);
@@ -93,18 +93,49 @@ describe('STUN rate limit', () => {
     expect(rl.allow('a', t + 1000)).toBe(true);
   });
 
-  it('caps tracked keys', () => {
+  it('evicts the oldest key (LRU) instead of rejecting new IPs when full', () => {
     const rl = new RateLimiter(1, 2);
     expect(rl.allow('a', 0)).toBe(true);
     expect(rl.allow('b', 0)).toBe(true);
-    expect(rl.allow('c', 0)).toBe(false);
+    expect(rl.allow('c', 0)).toBe(true); // 새 IP도 거부하지 않는다
     expect(rl.size).toBe(2);
+    expect(rl.allow('a', 0)).toBe(true); // a는 밀려났으므로 새 항목
   });
 
   it('groups IPv6 by /64', () => {
     expect(rateLimitKey('2001:db8:0:1::5')).toBe(rateLimitKey('2001:db8:0:1:ffff::9'));
     expect(rateLimitKey('2001:db8:0:2::5')).not.toBe(rateLimitKey('2001:db8:0:1::5'));
     expect(rateLimitKey('10.0.0.1')).toBe('10.0.0.1');
+  });
+
+  it('normalizes IPv4-mapped IPv6 to the IPv4 key', () => {
+    expect(rateLimitKey('::ffff:10.0.0.1')).toBe('10.0.0.1');
+    expect(rateLimitKey('::ffff:10.0.0.1')).toBe(rateLimitKey('10.0.0.1'));
+  });
+});
+
+describe('STUN rate limit table under spoofing', () => {
+  it('does not track unvalidated packets (garbage from many spoofed IPs)', () => {
+    const rl = new RateLimiter(5, 100);
+    for (let i = 0; i < 5000; i++) {
+      const garbage = crypto.randomBytes(40);
+      expect(handleStunPacket(garbage, `10.${i >> 8}.${i & 255}.1`, 1000, rl)).toBeNull();
+    }
+    const badCookie = encodeBindingRequest(crypto.randomBytes(12));
+    badCookie.writeUInt32BE(1, 4);
+    for (let i = 0; i < 5000; i++) handleStunPacket(badCookie, `10.9.${i >> 8}.${i & 255}`, 1000, rl);
+    expect(rl.size).toBe(0);
+  });
+
+  it('keeps the table bounded and still serves new IPs when spoofed valid packets flood it', () => {
+    const rl = new RateLimiter(5, 100);
+    for (let i = 0; i < 5000; i++) {
+      handleStunPacket(encodeBindingRequest(crypto.randomBytes(12)), `10.${i >> 8}.${i & 255}.1`, 1000, rl);
+    }
+    expect(rl.size).toBeLessThanOrEqual(100);
+    const res = handleStunPacket(encodeBindingRequest(crypto.randomBytes(12)), '203.0.113.7', 4000, rl);
+    expect(res).not.toBeNull();
+    expect(decodeBindingSuccess(res!)!.address).toBe('203.0.113.7');
   });
 });
 
@@ -121,6 +152,7 @@ describe('STUN server over local UDP', () => {
   it('answers a Binding Request with our own address, ignores garbage and rate-limits', async () => {
     const server = await startStunServer({ port: 0, host: '127.0.0.1', maxRequestsPerSecond: 3 });
     try {
+      expect(getStunListeningPort()).toBe(server.port);
       const txid = crypto.randomBytes(12);
       const res = await query(server.port, encodeBindingRequest(txid));
       const decoded = decodeBindingSuccess(res!)!;
@@ -140,6 +172,17 @@ describe('STUN server over local UDP', () => {
       expect(answered).toBeLessThan(6);
     } finally {
       await server.close();
+    }
+    expect(getStunListeningPort()).toBeNull();
+  });
+
+  it('fails to bind when the port is taken and does not report listening', async () => {
+    const first = await startStunServer({ port: 0, host: '127.0.0.1' });
+    try {
+      await expect(startStunServer({ port: first.port, host: '127.0.0.1' })).rejects.toThrow();
+      expect(getStunListeningPort()).toBe(first.port);
+    } finally {
+      await first.close();
     }
   });
 });

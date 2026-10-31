@@ -35,7 +35,7 @@ if (stunConfig.enabled) {
       stunServer = s;
       console.log(`STUN server listening on udp://${stunConfig.host}:${s.port}`);
     })
-    .catch((err) => console.error('STUN server failed to start:', err.message));
+    .catch((err) => console.error('STUN server failed to start; STUN is not advertised:', err.message));
 }
 
 // Graceful shutdown

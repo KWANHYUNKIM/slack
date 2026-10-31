@@ -895,3 +895,9 @@ export function adminCreateWebhook(data: { name: string; channelId: number }) {
 export function adminDeleteWebhook(webhookId: number) {
   return request<{ message: string }>(`/webhooks/${webhookId}`, { method: 'DELETE' });
 }
+
+// ---- Huddles ----
+
+export function getHuddleConfig() {
+  return request<{ iceServers: RTCIceServer[] }>('/huddles/config');
+}

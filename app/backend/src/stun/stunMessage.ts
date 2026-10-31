@@ -73,7 +73,7 @@ export function ipv4ToBytes(address: string): Buffer | null {
   return Buffer.from(address.split('.').map(Number));
 }
 
-function isV4Mapped(b: Buffer): boolean {
+export function isV4Mapped(b: Buffer): boolean {
   for (let i = 0; i < 10; i++) if (b[i] !== 0) return false;
   return b[10] === 0xff && b[11] === 0xff;
 }
