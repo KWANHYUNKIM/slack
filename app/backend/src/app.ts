@@ -42,7 +42,8 @@ app.use(helmet({
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       // 규칙 17: 외부 출처를 허용하지 않는다. 파일(GCS 포함)은 서버가 스트리밍하므로 'self'로 충분하다.
       'img-src': ["'self'", 'blob:', 'data:'],
-      'connect-src': ["'self'", 'wss:', 'ws:'],
+      // CSP3: 'self'는 같은 호스트·포트의 ws/wss도 허용한다. 소켓은 io()로 같은 출처에 붙는다.
+      'connect-src': ["'self'"],
       'media-src': ["'self'", 'blob:'],
     },
   },

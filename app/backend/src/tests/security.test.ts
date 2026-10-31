@@ -1098,17 +1098,29 @@ describe('Security - Input Validation', () => {
 
       const csp = res.headers['content-security-policy'] as string;
       expect(csp).toBeDefined();
-      for (const name of ['img-src', 'media-src', 'script-src', 'style-src', 'font-src']) {
+      for (const name of ['img-src', 'media-src', 'connect-src', 'script-src', 'style-src', 'font-src']) {
         const value = csp.match(new RegExp(`${name}\\s+([^;]+)`))?.[1] || '';
         expect(value).not.toMatch(/https?:\/\//);
       }
       expect(csp).not.toMatch(/randomuser|googleapis/);
+      // 맨 ws:/wss:(임의 호스트 소켓)도 허용하지 않는다
+      expect(csp.match(/connect-src\s+([^;]+)/)?.[1]).toBe("'self'");
     });
 
     it('should not add a GCS origin even when GCS_BUCKET_NAME is set', async () => {
-      // CSP는 앱 생성 시 한 번 계산되므로 환경변수와 무관하게 동일해야 한다
-      const res = await request(app).get('/channels').set('Authorization', `Bearer ${authToken}`);
-      expect(res.headers['content-security-policy']).not.toContain('storage.googleapis.com');
+      // CSP는 app 생성 시 한 번 계산되므로 환경변수를 켠 채 app을 새로 import해서 확인한다
+      process.env.GCS_BUCKET_NAME = 'test-bucket';
+      try {
+        const specifier = '../app.js?gcs-csp'; // 쿼리로 모듈 캐시를 우회한다
+        const fresh = (await import(specifier)) as { default: typeof app };
+        const res = await request(fresh.default).get('/health');
+        const csp = res.headers['content-security-policy'] as string;
+        expect(csp).toBeDefined();
+        expect(csp).not.toContain('storage.googleapis.com');
+        expect(csp).not.toContain('test-bucket');
+      } finally {
+        delete process.env.GCS_BUCKET_NAME;
+      }
     });
   });
 

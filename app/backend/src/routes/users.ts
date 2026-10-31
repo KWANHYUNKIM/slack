@@ -52,8 +52,9 @@ const updateProfileSchema = z.object({
     .transform(stripHtml)
     .optional(),
   avatar: z.string().max(500).refine(
-    (url) => url.startsWith('https://') || url.startsWith('/users/me/avatar/'),
-    { message: 'Avatar URL must use HTTPS or be a local avatar path' }
+    // 규칙 17: 외부 URL(http, https, //host)은 받지 않는다. 업로드 API가 돌려주는 자기 출처 경로만 허용한다.
+    (url) => /^\/users\/me\/avatar\/[A-Za-z0-9._-]+$/.test(url),
+    { message: 'Avatar must be a local avatar path' }
   ).optional().nullable(),
   status: z.enum(['online', 'away', 'busy', 'offline']).optional(),
   bio: z.string().max(500)

@@ -24,7 +24,6 @@ export default defineConfig([
   // 규칙 16: JSX에 하드코딩된 UI 문자열 금지 (tests/ 제외)
   {
     files: ['src/**/*.tsx'],
-    ignores: ['src/mocks/**'],
     extends: [i18next.configs['flat/recommended']],
     rules: {
       'i18next/no-literal-string': [
