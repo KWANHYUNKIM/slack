@@ -35,3 +35,9 @@
 | 2026-10-31 12:31 | dev-5 | sonnet | feat/channel-name-unicode | 80,497 |
 | 2026-10-31 14:27 | code-review | (리뷰) | PR #12 medium | 58,926 |
 | 2026-10-31 14:39 | dev-1 | sonnet | test/suite-flaky-rest (재투입분) | 127,904 |
+| 2026-10-31 14:45 | code-review | (리뷰) | PR #14 medium | 72,544 |
+| 2026-10-31 14:44 | dev-1 | sonnet | PR #12 리뷰 반영 | 62,936 |
+| 2026-10-31 14:47 | code-review | (리뷰) | PR #15 medium | (인라인 실행) |
+| 2026-10-31 14:48 | code-review | (리뷰) | PR #13 medium | 80,758 |
+| 2026-10-31 15:07 | dev-3 | opus | PR #13 리뷰 반영 | 153,482 |
+| 2026-10-31 17:44 | dev-5 | opus | PR #14 리뷰 반영 | 135,379 |
