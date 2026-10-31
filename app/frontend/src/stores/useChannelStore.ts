@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
 import type { Channel, DirectMessage } from '@/lib/types';
 
@@ -90,7 +91,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       }));
       set({ directMessages: dms });
     } catch {
-      set({ loadError: 'Failed to load conversations.' });
+      set({ loadError: t('channels:errors.loadConversations') });
     }
   },
 
@@ -114,7 +115,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         isLoading: false,
       });
     } catch {
-      set({ isLoading: false, loadError: 'Failed to load channels.' });
+      set({ isLoading: false, loadError: t('channels:errors.loadChannels') });
     }
   },
 

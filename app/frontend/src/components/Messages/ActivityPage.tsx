@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Menu } from 'lucide-react';
-import { format } from 'date-fns';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -9,48 +11,23 @@ import { useMobileStore } from '@/stores/useMobileStore';
 import { useActivityStore } from '@/stores/useActivityStore';
 import type { ActivityFilter, ApiActivity } from '@/lib/api';
 
-// UI strings (to be moved to translation keys)
-const TEXT = {
-  title: 'Activity',
-  markAllRead: 'Mark all as read',
-  loading: 'Loading...',
-  loadingMore: 'Loading more...',
-  loadFailed: 'Failed to load activity.',
-  empty: 'No activity yet.',
-  unread: 'Unread',
-  tabs: {
-    all: 'All',
-    mentions: 'Mentions',
-    threads: 'Threads',
-    reactions: 'Reactions',
-  } satisfies Record<ActivityFilter, string>,
-  someone: 'Someone',
-  directMessage: 'a direct message',
-  describe: {
-    mention: (actor: string, where: string) => `${actor} mentioned you in ${where}`,
-    channelMention: (actor: string, where: string) => `${actor} mentioned @channel in ${where}`,
-    hereMention: (actor: string, where: string) => `${actor} mentioned @here in ${where}`,
-    threadReply: (actor: string, where: string) => `${actor} replied to a thread in ${where}`,
-    reaction: (actor: string, emoji: string, where: string) => `${actor} reacted ${emoji} to your message in ${where}`,
-  },
-} as const;
-
 const TAB_ORDER: ActivityFilter[] = ['all', 'mentions', 'threads', 'reactions'];
 const LOAD_MORE_THRESHOLD_PX = 200;
 
-function describeActivity(item: ApiActivity): string {
-  const actor = item.actor.name || TEXT.someone;
-  const where = item.channel ? `#${item.channel.name}` : TEXT.directMessage;
+function describeActivity(item: ApiActivity, t: TFunction<'activity'>): string {
+  const actor = item.actor.name || t('page.someone');
+  const where = item.channel ? `#${item.channel.name}` : t('page.directMessage');
   switch (item.type) {
-    case 'MENTION': return TEXT.describe.mention(actor, where);
-    case 'CHANNEL_MENTION': return TEXT.describe.channelMention(actor, where);
-    case 'HERE_MENTION': return TEXT.describe.hereMention(actor, where);
-    case 'THREAD_REPLY': return TEXT.describe.threadReply(actor, where);
-    case 'REACTION': return TEXT.describe.reaction(actor, item.emoji ?? '', where);
+    case 'MENTION': return t('describe.mention', { actor, where });
+    case 'CHANNEL_MENTION': return t('describe.channelMention', { actor, where });
+    case 'HERE_MENTION': return t('describe.hereMention', { actor, where });
+    case 'THREAD_REPLY': return t('describe.threadReply', { actor, where });
+    case 'REACTION': return t('describe.reaction', { actor, emoji: item.emoji ?? '', where });
   }
 }
 
 export function ActivityPage() {
+  const { t } = useTranslation('activity');
   const navigate = useNavigate();
   const filter = useActivityStore((s) => s.filter);
   const items = useActivityStore((s) => s.items);
@@ -91,21 +68,21 @@ export function ActivityPage() {
       <div className="flex flex-col flex-shrink-0 border-b border-slack-border pt-[env(safe-area-inset-top)]">
         <div className="flex h-[49px] items-center px-5">
           <button
-            aria-label="Menu"
+            aria-label={t('page.menu')}
             onClick={useMobileStore.getState().openSidebar}
-            className="mr-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+            className="me-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
           >
             <Menu className="h-5 w-5 text-slack-secondary" />
           </button>
-          <Bell className="h-5 w-5 text-slack-secondary mr-2" />
-          <span className="text-[18px] font-bold text-slack-primary">{TEXT.title}</span>
+          <Bell className="h-5 w-5 text-slack-secondary me-2" />
+          <span className="text-[18px] font-bold text-slack-primary">{t('page.title')}</span>
           <button
             data-testid="activity-mark-all-read"
             onClick={() => void useActivityStore.getState().markAllRead()}
             disabled={unreadTotal === 0}
-            className="ml-auto rounded px-3 py-1 text-[13px] font-medium text-slack-link hover:bg-slack-hover disabled:cursor-not-allowed disabled:opacity-40"
+            className="ms-auto rounded px-3 py-1 text-[13px] font-medium text-slack-link hover:bg-slack-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {TEXT.markAllRead}
+            {t('page.markAllRead')}
           </button>
         </div>
         <div role="tablist" className="flex gap-1 px-4">
@@ -123,7 +100,7 @@ export function ActivityPage() {
                   : 'border-transparent text-slack-secondary hover:text-slack-primary',
               )}
             >
-              {TEXT.tabs[tab]}
+              {t(`tabs.${tab}`)}
             </button>
           ))}
         </div>
@@ -131,11 +108,11 @@ export function ActivityPage() {
 
       <div ref={listRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto p-4">
         {isLoading && items.length === 0 ? (
-          <div className="text-center text-sm text-slack-hint">{TEXT.loading}</div>
+          <div className="text-center text-sm text-slack-hint">{t('page.loading')}</div>
         ) : loadError ? (
-          <div className="text-center text-sm text-slack-error">{TEXT.loadFailed}</div>
+          <div className="text-center text-sm text-slack-error">{t('page.loadFailed')}</div>
         ) : items.length === 0 ? (
-          <div data-testid="activity-empty" className="py-8 text-center text-sm text-slack-hint">{TEXT.empty}</div>
+          <div data-testid="activity-empty" className="py-8 text-center text-sm text-slack-hint">{t('page.empty')}</div>
         ) : (
           <ul className="space-y-1">
             {items.map((item) => (
@@ -145,29 +122,29 @@ export function ActivityPage() {
                   data-unread={item.readAt === null}
                   onClick={() => handleOpen(item)}
                   className={cn(
-                    'group flex w-full items-start gap-3 rounded-lg p-3 text-left hover:bg-slack-hover',
+                    'group flex w-full items-start gap-3 rounded-lg p-3 text-start hover:bg-slack-hover',
                     item.readAt === null && 'bg-slack-mention',
                   )}
                 >
                   <Avatar src={item.actor.avatar} alt={item.actor.name} fallback={item.actor.name} size="md" className="mt-0.5" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[14px] font-bold text-slack-primary">{describeActivity(item)}</span>
+                      <span className="text-[14px] font-bold text-slack-primary">{describeActivity(item, t)}</span>
                       <span className="text-[12px] text-slack-secondary">
-                        {format(new Date(item.createdAt), 'MMM d, h:mm a')}
+                        {formatDateTime(item.createdAt)}
                       </span>
                     </div>
                     <div className="line-clamp-2 break-words text-[14px] text-slack-primary">{renderMessageContent(item.message.excerpt)}</div>
                   </div>
                   {item.readAt === null && (
-                    <span aria-label={TEXT.unread} className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-red-500" />
+                    <span aria-label={t('page.unread')} className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-red-500" />
                   )}
                 </button>
               </li>
             ))}
           </ul>
         )}
-        {isLoadingMore && <div className="py-2 text-center text-sm text-slack-hint">{TEXT.loadingMore}</div>}
+        {isLoadingMore && <div className="py-2 text-center text-sm text-slack-hint">{t('page.loadingMore')}</div>}
       </div>
     </div>
   );

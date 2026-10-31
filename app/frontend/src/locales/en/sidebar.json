@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "activity": "Activity",
+    "unreads": "Unreads",
+    "later": "Later",
+    "files": "Files",
+    "admin": "Admin"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "New message"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "notificationsBlocked": "Notifications blocked",
+    "disableNotifications": "Disable notifications",
+    "enableNotifications": "Enable notifications",
+    "signOut": "Sign out"
+  },
+  "sections": {
+    "starred": "Starred",
+    "channels": "Channels",
+    "addChannels": "Add channels",
+    "directMessages": "Direct messages",
+    "addTeammates": "Add teammates"
+  },
+  "teammates": {
+    "title": "Direct message",
+    "subtitle": "Find or start a conversation",
+    "searchPlaceholder": "Search by name...",
+    "noUsers": "No users found",
+    "close": "Close"
+  },
+  "you": "(you)",
+  "notifications": {
+    "someone": "Someone",
+    "sentAttachment": "Sent an attachment",
+    "threadTitle": "{name} (thread)"
+  }
+}

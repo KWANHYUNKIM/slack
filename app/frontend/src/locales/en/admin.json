@@ -1,0 +1,176 @@
+{
+  "page": {
+    "title": "Admin Panel",
+    "openSidebar": "Open sidebar",
+    "tabs": {
+      "members": "Members",
+      "invites": "Invites",
+      "channels": "Channels",
+      "webhooks": "Webhooks",
+      "audit": "Audit Log"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Channel",
+      "members": "Members",
+      "messages": "Messages",
+      "created": "Created"
+    },
+    "actions": {
+      "rename": "Rename channel",
+      "archive": "Archive channel",
+      "delete": "Delete channel",
+      "unarchive": "Unarchive channel",
+      "deletePermanently": "Delete permanently"
+    },
+    "emptyActive": "No active channels",
+    "archivedHeading": "Archived channels ({count})",
+    "archivedOn": "archived {date}",
+    "messageCount": "{count, plural, one {# message} other {# messages}}",
+    "deleteDialog": {
+      "title": "Delete channel",
+      "message": "Are you sure you want to permanently delete #{name}? All messages will be lost. This can't be undone."
+    },
+    "archiveDialog": {
+      "title": "Archive channel",
+      "confirm": "Archive",
+      "message": "Archive #{name}? It will be hidden from the sidebar but messages will be preserved. You can unarchive it later."
+    },
+    "unarchiveDialog": {
+      "title": "Unarchive channel",
+      "confirm": "Unarchive",
+      "message": "Unarchive #{name}? It will reappear in the sidebar for all members."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Search members...",
+    "columns": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "you": "(you)",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "guest": "Guest"
+    },
+    "status": {
+      "active": "Active",
+      "deactivated": "Deactivated"
+    },
+    "actions": {
+      "transfer": "Transfer ownership",
+      "reactivate": "Reactivate",
+      "deactivate": "Deactivate"
+    },
+    "empty": "No users found",
+    "dialogs": {
+      "transfer": {
+        "title": "Transfer workspace ownership",
+        "confirm": "Transfer",
+        "message": "Are you sure you want to transfer workspace ownership to {name}? You will be demoted to Admin."
+      },
+      "deactivate": {
+        "title": "Deactivate user",
+        "confirm": "Deactivate",
+        "message": "Are you sure you want to deactivate {name}? They will be logged out immediately and unable to sign in."
+      },
+      "reactivate": {
+        "title": "Reactivate user",
+        "confirm": "Reactivate",
+        "message": "Are you sure you want to reactivate {name}? They will be able to sign in again."
+      }
+    }
+  },
+  "invites": {
+    "createHeading": "Create invite link",
+    "fields": {
+      "role": "Role",
+      "maxUses": "Max uses",
+      "expiresIn": "Expires in"
+    },
+    "unlimited": "Unlimited",
+    "expiry": {
+      "1d": "1 day",
+      "7d": "7 days",
+      "30d": "30 days",
+      "never": "Never"
+    },
+    "expired": "Expired",
+    "columns": {
+      "url": "Invite URL",
+      "uses": "Uses",
+      "expires": "Expires",
+      "createdBy": "Created by"
+    },
+    "copyUrl": "Copy invite URL",
+    "full": "(full)",
+    "delete": "Delete invite",
+    "empty": "No invite links yet"
+  },
+  "webhooks": {
+    "createHeading": "Create webhook",
+    "fields": {
+      "name": "Webhook name",
+      "channel": "Channel"
+    },
+    "namePlaceholder": "My Integration",
+    "selectChannel": "Select channel...",
+    "columns": {
+      "name": "Name",
+      "url": "Webhook URL",
+      "lastUsed": "Last used"
+    },
+    "never": "Never",
+    "justNow": "Just now",
+    "inactive": "Inactive",
+    "copyUrl": "Copy webhook URL",
+    "delete": "Delete webhook",
+    "empty": "No webhooks configured yet"
+  },
+  "audit": {
+    "empty": "No audit log entries yet. Admin actions will be recorded here.",
+    "showing": "Showing {shown} of {total} entries",
+    "loadMore": "Load more",
+    "actions": {
+      "roleChanged": "Role Changed",
+      "deactivated": "Deactivated",
+      "reactivated": "Reactivated",
+      "archived": "Archived",
+      "unarchived": "Unarchived",
+      "deleted": "Deleted",
+      "edited": "Edited",
+      "created": "Created"
+    },
+    "targets": {
+      "user": "User",
+      "channel": "Channel",
+      "invite": "Invite"
+    }
+  },
+  "errors": {
+    "archiveChannel": "Failed to archive channel",
+    "createInvite": "Failed to create invite",
+    "createWebhook": "Failed to create webhook",
+    "deactivateUser": "Failed to deactivate user",
+    "deleteChannel": "Failed to delete channel",
+    "deleteInvite": "Failed to delete invite",
+    "deleteWebhook": "Failed to delete webhook",
+    "editChannel": "Failed to edit channel",
+    "fetchAuditLog": "Failed to fetch audit log",
+    "fetchChannels": "Failed to fetch channels",
+    "fetchInvites": "Failed to fetch invites",
+    "fetchUsers": "Failed to fetch users",
+    "fetchWebhooks": "Failed to fetch webhooks",
+    "reactivateUser": "Failed to reactivate user",
+    "removeChannelMember": "Failed to remove channel member",
+    "transferOwnership": "Failed to transfer ownership",
+    "unarchiveChannel": "Failed to unarchive channel",
+    "updateRole": "Failed to update role"
+  }
+}

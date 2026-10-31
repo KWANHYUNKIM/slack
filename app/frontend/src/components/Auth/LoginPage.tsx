@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
+import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export function LoginPage() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,11 +23,11 @@ export function LoginPage() {
     } catch (err) {
       const raw = err instanceof Error ? err.message : '';
       const errorMap: Record<string, string> = {
-        'Invalid credentials': 'Invalid email or password',
-        'User not found': 'Invalid email or password',
-        'Invalid email address': 'Please enter a valid email address',
+        'Invalid credentials': t('login.errors.invalidCredentials'),
+        'User not found': t('login.errors.invalidCredentials'),
+        'Invalid email address': t('login.errors.invalidEmail'),
       };
-      setError(errorMap[raw] || raw || 'Something went wrong. Please try again.');
+      setError(errorMap[raw] || raw || t('login.errors.generic'));
     }
   };
 
@@ -33,12 +36,12 @@ export function LoginPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <img src="/favicon-192.png" alt="Slawk" className="h-12 w-12 rounded-lg" />
-          <span className="text-3xl font-bold text-slack-primary">slawk</span>
+          <img src="/favicon-192.png" alt={t('brand.logoAlt')} className="h-12 w-12 rounded-lg" />
+          <span className="text-3xl font-bold text-slack-primary">{t('brand.name')}</span>
         </div>
-        <h1 className="text-4xl font-bold text-slack-primary">Sign in to Slawk</h1>
+        <h1 className="text-4xl font-bold text-slack-primary">{t('login.title')}</h1>
         <p className="mt-2 text-gray-600">
-          We suggest using the <strong>email address you use at work.</strong>
+          <Trans t={t} i18nKey="login.subtitle" components={{ strong: <strong /> }} />
         </p>
       </div>
 
@@ -56,7 +59,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@work-email.com"
+              placeholder={t('fields.emailPlaceholder')}
               required
               className="h-11"
             />
@@ -66,7 +69,7 @@ export function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={t('fields.password')}
               required
               className="h-11"
             />
@@ -76,16 +79,17 @@ export function LoginPage() {
             disabled={isLoading}
             className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
           >
-            {isLoading ? 'Signing in...' : 'Sign in with Email'}
+            {isLoading ? t('login.submitting') : t('login.submit')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          New to Slawk?{' '}
+          {t('login.newToApp')}{' '}
           <Link to="/register" className="text-slack-link hover:underline">
-            Create an account
+            {t('login.createAccount')}
           </Link>
         </p>
+        <LanguageSelect className="mt-6 block" />
       </div>
     </div>
   );

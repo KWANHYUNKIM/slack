@@ -1,4 +1,6 @@
+import { t as translate } from '@/lib/i18n';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SendHorizontal } from 'lucide-react';
 import {
   getThread, replyToMessage, getDMThread, replyToDM,
@@ -77,6 +79,7 @@ function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
 }
 
 export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly }: ThreadPanelProps) {
+  const { t } = useTranslation('messages');
   const isDM = variant === 'dm';
   const testPrefix = isDM ? 'dm-thread' : 'thread';
 
@@ -91,7 +94,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   const handleSendRef = useRef<() => void>(() => {});
 
   const editor = useQuillEditor({
-    placeholder: 'Reply...',
+    placeholder: t('threadPanel.replyPlaceholder'),
     onSendRef: handleSendRef,
     onTextChange: () => setReplyError(null),
   });
@@ -109,7 +112,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         setReplies(data.replies.map((r) => normalizeToMessage(r)));
       })
       .catch(() => {
-        if (!cancelled) setLoadError('Failed to load thread. Please try again.');
+        if (!cancelled) setLoadError('threadPanel.loadFailed');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -224,14 +227,14 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
           ...msg,
           reactions: msg.reactions.map((r) =>
             r.emoji === emoji
-              ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, 'You'] }
+              ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, translate('messages:reactions.you')] }
               : r
           ),
         };
       }
       return {
         ...msg,
-        reactions: [...msg.reactions, { emoji, count: 1, userIds: [userId], userNames: ['You'] }],
+        reactions: [...msg.reactions, { emoji, count: 1, userIds: [userId], userNames: [translate('messages:reactions.you')] }],
       };
     };
 
@@ -300,7 +303,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     } catch (err) {
       didSendReply.current = false;
       console.error('Failed to send reply:', err);
-      setReplyError('Failed to send reply. Please try again.');
+      setReplyError('threadPanel.replyFailed');
     } finally {
       setIsSending(false);
     }
@@ -313,16 +316,16 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   return (
     <div
       data-testid={`${testPrefix}-panel`}
-      className="flex w-full md:w-[380px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
+      className="flex w-full md:w-[380px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
     >
-      <PanelHeader title="Thread" onClose={onClose} />
+      <PanelHeader title={t('threadPanel.title')} onClose={onClose} />
 
       {/* Thread messages */}
       <div className="flex-1 overflow-y-auto py-3">
         {isLoading ? (
-          <div className="text-center text-sm text-slack-hint py-4">Loading thread...</div>
+          <div className="text-center text-sm text-slack-hint py-4">{t('threadPanel.loading')}</div>
         ) : loadError ? (
-          <div data-testid={`${testPrefix}-load-error`} className="text-center text-sm text-slack-error py-4">{loadError}</div>
+          <div data-testid={`${testPrefix}-load-error`} className="text-center text-sm text-slack-error py-4">{t(loadError)}</div>
         ) : (
           <>
             {parentMessage && (
@@ -339,7 +342,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 />
                 {replies.length > 0 && (
                   <div className="mt-2 px-5 text-[12px] text-slack-secondary">
-                    {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+                    {t('thread.replyCount', { count: replies.length })}
                   </div>
                 )}
               </div>
@@ -367,11 +370,11 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       <div className="relative border-t border-slack-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {readOnly ? (
           <div className="flex items-center justify-center py-3 text-[13px] text-slack-secondary">
-            Join the channel to reply in threads
+            {t('threadPanel.joinToReply')}
           </div>
         ) : (<>
         {replyError && (
-          <p data-testid={`${testPrefix}-reply-error`} className="mb-2 text-xs text-slack-error">{replyError}</p>
+          <p data-testid={`${testPrefix}-reply-error`} className="mb-2 text-xs text-slack-error">{t(replyError)}</p>
         )}
         {editor.uploadError && (
           <p className="mb-2 text-xs text-slack-error">{editor.uploadError}</p>
@@ -381,7 +384,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
           <FilePreview files={editor.pendingFiles} onRemove={editor.removePendingFile} />
 
           {editor.isUploading && (
-            <div className="px-3 py-1 text-xs text-slack-hint">Uploading...</div>
+            <div className="px-3 py-1 text-xs text-slack-hint">{t('input.uploading')}</div>
           )}
 
           <div ref={editor.editorRef} />
@@ -406,7 +409,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
           )}
 
           {editor.showEmojiPicker && (
-            <div className="absolute bottom-full left-0 mb-2 z-50">
+            <div className="absolute bottom-full start-0 mb-2 z-50">
               <EmojiPicker
                 onEmojiSelect={editor.handleEmojiSelect}
                 onClickOutside={() => editor.setShowEmojiPicker(false)}
@@ -436,6 +439,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
             <button
               data-testid={`${testPrefix}-send-button`}
               onClick={() => handleSendRef.current()}
+              aria-label={t('input.send')}
               disabled={!hasContent || isSending}
               className={cn(
                 'flex h-7 w-7 items-center justify-center rounded transition-colors',

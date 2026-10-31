@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 export interface EmojiOption {
@@ -16,6 +17,7 @@ interface EmojiAutocompleteProps {
 
 export const EmojiAutocomplete = forwardRef<HTMLDivElement, EmojiAutocompleteProps>(
   function EmojiAutocomplete({ emojis, selectedIndex, query, onSelect }, ref) {
+    const { t } = useTranslation('messages');
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => {
@@ -28,7 +30,7 @@ export const EmojiAutocomplete = forwardRef<HTMLDivElement, EmojiAutocompletePro
       <div
         data-testid="emoji-autocomplete"
         ref={ref}
-        className="absolute bottom-full left-0 mb-1 w-[320px] max-h-[260px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg z-50"
+        className="absolute bottom-full start-0 mb-1 w-[320px] max-h-[260px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg z-50"
       >
         {emojis.map((emoji, index) => {
           // Bold the matched portion of the id
@@ -54,7 +56,7 @@ export const EmojiAutocomplete = forwardRef<HTMLDivElement, EmojiAutocompletePro
               ref={(el) => { itemRefs.current[index] = el; }}
               onClick={() => onSelect(emoji)}
               className={cn(
-                'flex w-full items-center gap-3 px-3 py-1.5 text-left text-sm hover:bg-slack-link hover:text-white',
+                'flex w-full items-center gap-3 px-3 py-1.5 text-start text-sm hover:bg-slack-link hover:text-white',
                 index === selectedIndex ? 'bg-slack-link text-white' : 'text-slack-secondary',
               )}
             >
@@ -64,9 +66,9 @@ export const EmojiAutocomplete = forwardRef<HTMLDivElement, EmojiAutocompletePro
           );
         })}
         <div className="flex items-center gap-4 border-t border-slack-border px-3 py-1.5 text-[11px] text-slack-hint">
-          <span><kbd className="font-semibold">↑↓</kbd> to navigate</span>
-          <span><kbd className="font-semibold">↵</kbd> to select</span>
-          <span><kbd className="font-semibold">esc</kbd> to dismiss</span>
+          <span><kbd className="font-semibold">↑↓</kbd> {t('emojiAutocomplete.navigate')}</span>
+          <span><kbd className="font-semibold">↵</kbd> {t('emojiAutocomplete.select')}</span>
+          <span><kbd className="font-semibold">{t('emojiAutocomplete.escKey')}</kbd> {t('emojiAutocomplete.dismiss')}</span>
         </div>
       </div>
     );

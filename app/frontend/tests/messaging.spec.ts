@@ -31,7 +31,7 @@ test.describe('Messaging', () => {
     await messageEl.hover();
 
     // Click the "more" button (MoreHorizontal icon) in the hover toolbar
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').last().click();
 
     // Click "Edit message" from the dropdown/menu
@@ -58,7 +58,7 @@ test.describe('Messaging', () => {
     await messageEl.hover();
 
     // Click the "more" button in the hover toolbar
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').last().click();
 
     // Click "Delete message" from the dropdown

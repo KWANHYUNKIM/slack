@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Pin } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import { getPinnedMessages, type ApiMessage } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { Avatar } from '@/components/ui/avatar';
@@ -13,6 +14,7 @@ interface PinsPanelProps {
 }
 
 export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
+  const { t } = useTranslation(['messages', 'common']);
   const [pins, setPins] = useState<ApiMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
         if (!cancelled) setPins(data);
       })
       .catch(() => {
-        if (!cancelled) setLoadError('Failed to load pinned messages.');
+        if (!cancelled) setLoadError(t('messages:pins.loadFailed'));
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -32,7 +34,7 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [channelId]);
+  }, [channelId, t]);
 
   // Listen for message:updated events — refresh pins when a message in this
   // channel is pinned or unpinned so the panel stays current without a reload.
@@ -55,15 +57,15 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
   }, [channelId]);
 
   return (
-    <div data-testid="pins-panel" className="flex w-full md:w-[300px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto">
-      <PanelHeader icon={Pin} title="Pinned messages" onClose={onClose} />
+    <div data-testid="pins-panel" className="flex w-full md:w-[300px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto">
+      <PanelHeader icon={Pin} title={t('messages:pins.title')} onClose={onClose} />
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {isLoading ? (
-          <div className="p-4 text-center text-sm text-slack-hint">Loading...</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (
           <div className="p-4 text-center text-sm text-slack-error">{loadError}</div>
         ) : pins.length === 0 ? (
-          <div className="p-4 text-center text-sm text-slack-hint">No pinned messages yet</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('messages:pins.empty')}</div>
         ) : (
           pins.map((pin) => (
             <div key={pin.id} className="border-b border-slack-border-light px-4 py-3">
@@ -76,7 +78,7 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
                 />
                 <span className="text-[13px] font-bold text-slack-primary">{pin.user.name}</span>
                 <span className="text-[11px] text-slack-secondary">
-                  {format(new Date(pin.createdAt), 'MMM d, h:mm a')}
+                  {formatDateTime(pin.createdAt)}
                 </span>
               </div>
               <div className="mt-1 text-[14px] text-slack-primary leading-[20px]">{renderMessageContent(pin.content)}</div>

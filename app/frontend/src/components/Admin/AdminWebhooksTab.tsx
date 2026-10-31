@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Trash2, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
+import { formatDate, formatRelative } from '@/lib/i18n/format';
 
 export function AdminWebhooksTab() {
+  const { t } = useTranslation('admin');
   const { webhooks, channels, createWebhook, deleteWebhook } = useAdminStore();
   const [name, setName] = useState('');
   const [channelId, setChannelId] = useState('');
@@ -26,19 +29,16 @@ export function AdminWebhooksTab() {
   };
 
   const formatLastUsed = (lastUsedAt: string | null) => {
-    if (!lastUsedAt) return 'Never';
+    if (!lastUsedAt) return t('webhooks.never');
     const date = new Date(lastUsedAt);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 30) return `${days}d ago`;
-    return date.toLocaleDateString();
+    if (minutes < 1) return t('webhooks.justNow');
+    if (days < 30) return formatRelative(date, now);
+    return formatDate(date);
   };
 
   const activeChannels = channels.filter((c) => !c.archivedAt);
@@ -47,27 +47,27 @@ export function AdminWebhooksTab() {
     <div>
       {/* Create Form */}
       <div className="mb-6 rounded-lg border border-slack-border p-4">
-        <h3 className="text-sm font-semibold text-slack-primary mb-3">Create webhook</h3>
+        <h3 className="text-sm font-semibold text-slack-primary mb-3">{t('webhooks.createHeading')}</h3>
         <div className="flex items-end gap-3 flex-wrap">
           <div>
-            <label className="block text-xs text-slack-secondary mb-1">Webhook name</label>
+            <label className="block text-xs text-slack-secondary mb-1">{t('webhooks.fields.name')}</label>
             <input
               type="text"
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Integration"
+              placeholder={t('webhooks.namePlaceholder')}
               className="w-48 rounded border border-slack-border px-3 py-1.5 text-sm focus:border-slack-focus focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-xs text-slack-secondary mb-1">Channel</label>
+            <label className="block text-xs text-slack-secondary mb-1">{t('webhooks.fields.channel')}</label>
             <select
               value={channelId}
               onChange={(e) => setChannelId(e.target.value)}
               className="w-48 rounded border border-slack-border px-3 py-1.5 text-sm focus:border-slack-focus focus:outline-none"
             >
-              <option value="">Select channel...</option>
+              <option value="">{t('webhooks.selectChannel')}</option>
               {activeChannels.map((channel) => (
                 <option key={channel.id} value={channel.id}>
                   # {channel.name}
@@ -80,7 +80,7 @@ export function AdminWebhooksTab() {
             disabled={!name || !channelId}
             className="rounded-lg bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create
+            {t('common:actions.create')}
           </button>
         </div>
       </div>
@@ -90,13 +90,13 @@ export function AdminWebhooksTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-slack-border">
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Name</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Channel</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Webhook URL</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Last used</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Status</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Created by</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slack-secondary"></th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('webhooks.columns.name')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('webhooks.fields.channel')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('webhooks.columns.url')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('webhooks.columns.lastUsed')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.status')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.columns.createdBy')}</th>
+              <th className="text-end px-4 py-2.5 font-medium text-slack-secondary"></th>
             </tr>
           </thead>
           <tbody>
@@ -117,7 +117,7 @@ export function AdminWebhooksTab() {
                     <button
                       onClick={() => copyUrl(webhook.token, webhook.id)}
                       className="text-slack-hint hover:text-slack-primary"
-                      title="Copy webhook URL"
+                      title={t('webhooks.copyUrl')} aria-label={t('webhooks.copyUrl')}
                     >
                       {copiedId === webhook.id ? (
                         <Check className="h-3.5 w-3.5 text-green-600" />
@@ -138,15 +138,15 @@ export function AdminWebhooksTab() {
                         : 'bg-gray-100 text-gray-600'
                     }`}
                   >
-                    {webhook.isActive ? 'Active' : 'Inactive'}
+                    {webhook.isActive ? t('members.status.active') : t('webhooks.inactive')}
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-slack-secondary">{webhook.creator.name}</td>
-                <td className="px-4 py-2.5 text-right">
+                <td className="px-4 py-2.5 text-end">
                   <button
                     onClick={() => deleteWebhook(webhook.id)}
                     className="text-slack-hint hover:text-red-600"
-                    title="Delete webhook"
+                    title={t('webhooks.delete')} aria-label={t('webhooks.delete')}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -156,7 +156,7 @@ export function AdminWebhooksTab() {
           </tbody>
         </table>
         {webhooks.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-slack-hint">No webhooks configured yet</div>
+          <div className="px-4 py-8 text-center text-sm text-slack-hint">{t('webhooks.empty')}</div>
         )}
       </div>
     </div>

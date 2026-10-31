@@ -1,9 +1,10 @@
 import { FileText, Pin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 const headerTabs = [
-  { id: 'files' as const, label: 'Files', icon: FileText },
-  { id: 'pins' as const, label: 'Pins', icon: Pin },
+  { id: 'files' as const, labelKey: 'files', icon: FileText },
+  { id: 'pins' as const, labelKey: 'pins', icon: Pin },
 ];
 
 interface HeaderTabsProps {
@@ -15,6 +16,7 @@ interface HeaderTabsProps {
 }
 
 export function HeaderTabs({ showPins, showFiles, onTogglePins, onToggleFiles, testIdPrefix = '' }: HeaderTabsProps) {
+  const { t } = useTranslation('messages');
   const prefix = testIdPrefix ? `${testIdPrefix}-` : '';
 
   return (
@@ -35,7 +37,7 @@ export function HeaderTabs({ showPins, showFiles, onTogglePins, onToggleFiles, t
           )}
         >
           <tab.icon className="h-[14px] w-[14px]" />
-          <span>{tab.label}</span>
+          <span>{t(`headerTabs.${tab.labelKey}`)}</span>
         </button>
       ))}
     </div>

@@ -1,15 +1,8 @@
 import { forwardRef, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { MENTION_CHANNEL_ID, MENTION_HERE_ID, type MentionUser } from '@/lib/types';
-
-// UI strings (to be moved to translation keys)
-const TEXT = {
-  hereLabel: '@here',
-  hereHint: 'Notify everyone who is online',
-  channelLabel: '@channel',
-  channelHint: 'Notify everyone in this channel',
-};
 
 interface MentionDropdownProps {
   users: MentionUser[];
@@ -19,6 +12,7 @@ interface MentionDropdownProps {
 
 export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
   function MentionDropdown({ users, selectedIndex, onSelect }, ref) {
+    const { t } = useTranslation('messages');
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => {
@@ -31,7 +25,7 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
       <div
         data-testid="mention-dropdown"
         ref={ref}
-        className="absolute bottom-full left-0 mb-1 w-[280px] max-h-[200px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg z-50"
+        className="absolute bottom-full start-0 mb-1 w-[280px] max-h-[200px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg z-50"
       >
         {users.map((user, index) => {
           const isHere = user.id === MENTION_HERE_ID && user.name === 'here';
@@ -44,7 +38,7 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => onSelect(user)}
               className={cn(
-                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slack-link hover:text-white',
+                'flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-slack-link hover:text-white',
                 index === selectedIndex ? 'bg-slack-link text-white' : 'text-slack-primary',
               )}
             >
@@ -60,8 +54,8 @@ export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
                 />
               )}
               <div className="flex flex-col truncate">
-                <span className="truncate font-medium">{isHere ? TEXT.hereLabel : isChannel ? TEXT.channelLabel : user.name}</span>
-                {isBroadcast && <span className="text-xs text-slack-hint truncate">{isHere ? TEXT.hereHint : TEXT.channelHint}</span>}
+                <span className="truncate font-medium">{isHere ? t('mention.hereLabel') : isChannel ? t('mention.channelLabel') : user.name}</span>
+                {isBroadcast && <span className="text-xs text-slack-hint truncate">{isHere ? t('mention.hereHint') : t('mention.channelHint')}</span>}
               </div>
             </button>
           );

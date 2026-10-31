@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ function getLocalDatetimeOneMinuteAhead(): string {
 }
 
 export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleModalProps) {
+  const { t } = useTranslation(['messages', 'common']);
   // Earliest allowed time, refreshed while the modal stays open
   const [minScheduleAt, setMinScheduleAt] = useState(getLocalDatetimeOneMinuteAhead);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
@@ -39,14 +41,14 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
         <div className="flex items-center justify-between border-b border-slack-border-light px-5 py-4">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-slack-link" />
-            <h2 className="text-[17px] font-bold text-slack-primary">Schedule message</h2>
+            <h2 className="text-[17px] font-bold text-slack-primary">{t('messages:schedule.modalTitle')}</h2>
           </div>
-          <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <Button variant="toolbar" size="icon-sm" onClick={onClose} aria-label={t('messages:schedule.close')}>
             <X className="h-4 w-4" />
           </Button>
         </div>
         <div className="px-5 py-4 flex flex-col gap-3">
-          <label className="text-[13px] font-semibold text-slack-primary">Date and time</label>
+          <label className="text-[13px] font-semibold text-slack-primary">{t('messages:schedule.dateTime')}</label>
           <input
             data-testid="custom-schedule-input"
             type="datetime-local"
@@ -68,7 +70,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
             onClick={onClose}
             className="border-slack-border-dark px-4 py-1.5 text-[14px] font-medium text-slack-primary hover:bg-slack-hover"
           >
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button
             disabled={!customScheduleAt || isScheduling}
@@ -80,7 +82,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
               const [hour, minute] = timePart.split(':').map(Number);
               const scheduled = new Date(year, month - 1, day, hour, minute);
               if (scheduled <= new Date()) {
-                setScheduleError('Pick a time in the future.');
+                setScheduleError(t('messages:schedule.pickFuture'));
                 return;
               }
               setScheduleError(null);
@@ -92,7 +94,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
                 'bg-slack-border cursor-not-allowed hover:bg-slack-border',
             )}
           >
-            {isScheduling ? 'Scheduling...' : 'Schedule'}
+            {isScheduling ? t('messages:schedule.submitting') : t('messages:schedule.submit')}
           </Button>
         </div>
       </div>

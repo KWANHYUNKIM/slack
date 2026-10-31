@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
+import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateInvite } from '@/lib/api';
 
 export function RegisterPage() {
+  const { t } = useTranslation('auth');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +36,7 @@ export function RegisterPage() {
     e.preventDefault();
     setError('');
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('register.errors.passwordMismatch'));
       return;
     }
     try {
@@ -42,10 +45,10 @@ export function RegisterPage() {
     } catch (err) {
       const raw = err instanceof Error ? err.message : '';
       const errorMap: Record<string, string> = {
-        'Email already exists': 'An account with this email already exists',
-        'Email already in use': 'An account with this email already exists',
+        'Email already exists': t('register.errors.emailExists'),
+        'Email already in use': t('register.errors.emailExists'),
       };
-      setError(errorMap[raw] || raw || 'Something went wrong. Please try again.');
+      setError(errorMap[raw] || raw || t('login.errors.generic'));
     }
   };
 
@@ -54,12 +57,12 @@ export function RegisterPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mb-6 flex items-center justify-center gap-2">
-          <img src="/favicon-192.png" alt="Slawk" className="h-12 w-12 rounded-lg" />
-          <span className="text-3xl font-bold text-slack-primary">slawk</span>
+          <img src="/favicon-192.png" alt={t('brand.logoAlt')} className="h-12 w-12 rounded-lg" />
+          <span className="text-3xl font-bold text-slack-primary">{t('brand.name')}</span>
         </div>
-        <h1 className="text-4xl font-bold text-slack-primary">Create your account</h1>
+        <h1 className="text-4xl font-bold text-slack-primary">{t('register.title')}</h1>
         <p className="mt-2 text-gray-600">
-          We suggest using the <strong>email address you use at work.</strong>
+          <Trans t={t} i18nKey="login.subtitle" components={{ strong: <strong /> }} />
         </p>
       </div>
 
@@ -68,12 +71,12 @@ export function RegisterPage() {
         {/* Invite Banner */}
         {inviteCode && inviteValid === true && (
           <div className="mb-4 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
-            You've been invited to join as a <strong>{inviteRole}</strong>
+            <Trans t={t} i18nKey="register.invited" values={{ role: inviteRole }} components={{ strong: <strong /> }} />
           </div>
         )}
         {inviteCode && inviteValid === false && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-            This invite link is invalid or has expired
+            {t('register.inviteInvalid')}
           </div>
         )}
 
@@ -89,7 +92,7 @@ export function RegisterPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
+              placeholder={t('fields.fullName')}
               required
               className="h-11"
             />
@@ -99,7 +102,7 @@ export function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@work-email.com"
+              placeholder={t('fields.emailPlaceholder')}
               required
               className="h-11"
             />
@@ -109,7 +112,7 @@ export function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={t('fields.password')}
               required
               minLength={8}
               className="h-11"
@@ -120,7 +123,7 @@ export function RegisterPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm password"
+              placeholder={t('fields.confirmPassword')}
               required
               className="h-11"
             />
@@ -130,16 +133,17 @@ export function RegisterPage() {
             disabled={isLoading}
             className="h-11 w-full bg-slack-purple hover:bg-slack-sidebar text-white font-medium"
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? t('register.submitting') : t('register.submit')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('register.haveAccount')}{' '}
           <Link to="/login" className="text-slack-link hover:underline">
-            Sign in
+            {t('register.signIn')}
           </Link>
         </p>
+        <LanguageSelect className="mt-6 block" />
       </div>
     </div>
   );

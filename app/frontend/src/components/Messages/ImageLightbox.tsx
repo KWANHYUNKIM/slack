@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 interface ImageLightboxProps {
@@ -8,6 +9,8 @@ interface ImageLightboxProps {
 }
 
 export function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
+  const { t } = useTranslation('messages');
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -25,8 +28,8 @@ export function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
       <button
         data-testid="lightbox-close"
         onClick={onClose}
-        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors"
-        aria-label="Close"
+        className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors"
+        aria-label={t('lightbox.close')}
       >
         <X className="h-5 w-5" />
       </button>

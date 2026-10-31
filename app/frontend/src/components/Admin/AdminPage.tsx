@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Shield, Users, Link2, Hash, Menu, ScrollText, Webhook } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminStore } from '@/stores/useAdminStore';
@@ -11,15 +12,16 @@ import { AdminAuditLogTab } from './AdminAuditLogTab';
 
 type Tab = 'members' | 'invites' | 'channels' | 'webhooks' | 'audit';
 
-const TABS: { id: Tab; label: string; icon: typeof Users }[] = [
-  { id: 'members', label: 'Members', icon: Users },
-  { id: 'invites', label: 'Invites', icon: Link2 },
-  { id: 'channels', label: 'Channels', icon: Hash },
-  { id: 'webhooks', label: 'Webhooks', icon: Webhook },
-  { id: 'audit', label: 'Audit Log', icon: ScrollText },
+const TABS: { id: Tab; labelKey: string; icon: typeof Users }[] = [
+  { id: 'members', labelKey: 'page.tabs.members', icon: Users },
+  { id: 'invites', labelKey: 'page.tabs.invites', icon: Link2 },
+  { id: 'channels', labelKey: 'page.tabs.channels', icon: Hash },
+  { id: 'webhooks', labelKey: 'page.tabs.webhooks', icon: Webhook },
+  { id: 'audit', labelKey: 'page.tabs.audit', icon: ScrollText },
 ];
 
 export function AdminPage() {
+  const { t } = useTranslation('admin');
   const [activeTab, setActiveTab] = useState<Tab>('members');
   const { fetchUsers, fetchChannels, fetchInvites, fetchWebhooks } = useAdminStore();
 
@@ -36,12 +38,13 @@ export function AdminPage() {
       <div className="flex items-center gap-2 border-b border-slack-border px-6 py-3">
         <button
           onClick={useMobileStore.getState().openSidebar}
-          className="mr-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+          aria-label={t('page.openSidebar')}
+          className="me-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
         >
           <Menu className="h-5 w-5 text-slack-secondary" />
         </button>
         <Shield className="h-5 w-5 text-slack-primary" />
-        <h1 className="text-lg font-bold text-slack-primary">Admin Panel</h1>
+        <h1 className="text-lg font-bold text-slack-primary">{t('page.title')}</h1>
       </div>
 
       {/* Tabs */}
@@ -58,7 +61,7 @@ export function AdminPage() {
             )}
           >
             <tab.icon className="h-4 w-4" />
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>

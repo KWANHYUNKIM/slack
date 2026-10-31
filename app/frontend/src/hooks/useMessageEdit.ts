@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { t } from '@/lib/i18n';
 
 interface UseMessageEditOptions {
   onSave: (messageId: number, content: string) => Promise<void>;
@@ -38,7 +39,7 @@ export function useMessageEdit({ onSave }: UseMessageEditOptions) {
     if (editingId === null) return;
     const trimmed = editContent.trim();
     if (!trimmed) {
-      setEditError('Message cannot be empty.');
+      setEditError(t('messages:errors.messageEmpty'));
       return;
     }
     if (trimmed !== originalContent) {

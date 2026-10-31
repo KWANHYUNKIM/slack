@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Clock, Hash, Pencil, Send, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import {
   getScheduledMessages,
   cancelScheduledMessage,
@@ -12,6 +14,7 @@ import { renderMessageContent } from '@/lib/renderMessageContent';
 import { Button } from '@/components/ui/button';
 
 export function ScheduledMessagesTab() {
+  const { t } = useTranslation(['messages', 'common']);
   const [messages, setMessages] = useState<ApiScheduledMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -26,9 +29,9 @@ export function ScheduledMessagesTab() {
         setMessages(data);
         setLoadError(null);
       })
-      .catch(() => setLoadError('Failed to load scheduled messages.'))
+      .catch(() => setLoadError(t('messages:scheduled.loadFailed')))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadMessages();
@@ -41,7 +44,7 @@ export function ScheduledMessagesTab() {
       await cancelScheduledMessage(id);
     } catch {
       loadMessages();
-      setActionError('Failed to cancel message.');
+      setActionError(t('messages:scheduled.cancelFailed'));
     }
   };
 
@@ -52,7 +55,7 @@ export function ScheduledMessagesTab() {
       await sendScheduledMessageNow(id);
     } catch {
       loadMessages();
-      setActionError('Failed to send message.');
+      setActionError(t('messages:scheduled.sendFailed'));
     }
   };
 
@@ -84,12 +87,12 @@ export function ScheduledMessagesTab() {
       setMessages((prev) => prev.map((m) => (m.id === editingId ? updated : m)));
       setEditingId(null);
     } catch {
-      setActionError('Failed to save changes.');
+      setActionError(t('messages:scheduled.saveFailed'));
     }
   };
 
   if (isLoading) {
-    return <div className="text-center text-sm text-slack-hint p-8">Loading...</div>;
+    return <div className="text-center text-sm text-slack-hint p-8">{t('common:status.loading')}</div>;
   }
 
   if (loadError) {
@@ -99,7 +102,7 @@ export function ScheduledMessagesTab() {
   if (messages.length === 0) {
     return (
       <div className="text-center text-sm text-slack-hint py-8">
-        No scheduled messages. Use the clock icon in the message composer to schedule one.
+        {t('messages:scheduled.empty')}
       </div>
     );
   }
@@ -126,7 +129,7 @@ export function ScheduledMessagesTab() {
                 className="w-full rounded border border-slack-border p-2 text-[15px] text-slack-primary min-h-[80px] resize-y"
               />
               <div className="flex items-center gap-2">
-                <label className="text-[13px] text-slack-secondary">Send at:</label>
+                <label className="text-[13px] text-slack-secondary">{t('messages:scheduled.sendAt')}</label>
                 <input
                   type="datetime-local"
                   value={editTime}
@@ -140,14 +143,14 @@ export function ScheduledMessagesTab() {
                   onClick={handleSaveEdit}
                   className="bg-slack-btn text-white hover:bg-slack-btn-hover text-sm px-3 py-1"
                 >
-                  Save
+                  {t('common:actions.save')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setEditingId(null)}
                   className="text-sm px-3 py-1"
                 >
-                  Cancel
+                  {t('common:actions.cancel')}
                 </Button>
               </div>
             </div>
@@ -166,7 +169,7 @@ export function ScheduledMessagesTab() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(msg.scheduledAt), 'MMM d, h:mm a')}
+                      {formatDateTime(msg.scheduledAt)}
                     </span>
                   </div>
                 </div>
@@ -176,21 +179,21 @@ export function ScheduledMessagesTab() {
                   <button
                     onClick={() => openEdit(msg)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"
-                    title="Edit"
+                    title={t('messages:scheduled.edit')}
                   >
                     <Pencil className="h-3.5 w-3.5 text-slack-secondary" />
                   </button>
                   <button
                     onClick={() => handleSendNow(msg.id)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"
-                    title="Send now"
+                    title={t('messages:scheduled.sendNow')}
                   >
                     <Send className="h-3.5 w-3.5 text-slack-secondary" />
                   </button>
                   <button
                     onClick={() => handleCancel(msg.id)}
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"
-                    title="Cancel"
+                    title={t('messages:scheduled.cancel')}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-slack-error" />
                   </button>

@@ -1,4 +1,5 @@
 import { X, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ErrorBannerProps {
   message: string;
@@ -6,10 +7,11 @@ interface ErrorBannerProps {
 }
 
 export function ErrorBanner({ message, onDismiss }: ErrorBannerProps) {
+  const { t } = useTranslation('errors');
   return (
     <div className="mt-2 flex items-center justify-between rounded-md bg-slack-error-bg border border-slack-error-border px-3 py-2 text-[13px] text-slack-error">
       <span>{message}</span>
-      <button onClick={onDismiss} className="ml-2 text-slack-error hover:text-slack-error">
+      <button onClick={onDismiss} aria-label={t('client.dismiss')} className="ms-2 text-slack-error hover:text-slack-error">
         <X className="h-3.5 w-3.5" />
       </button>
     </div>

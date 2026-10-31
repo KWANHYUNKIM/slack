@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { formatList } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
@@ -71,7 +73,7 @@ function ReactionPill({
           style={{ top: pos.top, left: pos.left }}
         >
           {tooltip}
-          <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+          <div className="absolute start-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
         </div>,
         document.body
       )}
@@ -87,6 +89,7 @@ interface MessageReactionsProps {
 }
 
 export function MessageReactions({ reactions, messageId, onAddReaction, onRemoveReaction }: MessageReactionsProps) {
+  const { t } = useTranslation('messages');
   const user = useAuthStore((s) => s.user);
   const [showPicker, setShowPicker] = useState(false);
   const currentUserId = user?.id ?? -1;
@@ -110,7 +113,7 @@ export function MessageReactions({ reactions, messageId, onAddReaction, onRemove
         const hasReacted = reaction.userIds.includes(currentUserId);
         const names = reaction.userNames.filter(Boolean);
         const tooltip = names.length > 0
-          ? `${names.join(', ')} reacted with ${shortcodeToNative(reaction.emoji)}`
+          ? t('reactions.tooltip', { names: formatList(names), emoji: shortcodeToNative(reaction.emoji) })
           : undefined;
         return (
           <ReactionPill
@@ -124,13 +127,14 @@ export function MessageReactions({ reactions, messageId, onAddReaction, onRemove
       })}
       <button
         onClick={() => setShowPicker(!showPicker)}
+        aria-label={t('reactions.add')}
         className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-[12px] border border-slack-border bg-white text-slack-secondary hover:bg-slack-hover"
       >
         <Plus className="h-[12px] w-[12px]" />
       </button>
       {showPicker && (
         <PortalEmojiPicker
-          anchorClassName="absolute bottom-full left-0 mb-2"
+          anchorClassName="absolute bottom-full start-0 mb-2"
           onEmojiSelect={handleEmojiSelect}
           onClickOutside={() => setShowPicker(false)}
         />

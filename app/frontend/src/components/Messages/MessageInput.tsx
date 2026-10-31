@@ -4,6 +4,8 @@ import {
   SendHorizontal,
   ChevronDown,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { scheduleMessage } from '@/lib/api';
@@ -40,6 +42,7 @@ interface MessageInputProps {
 }
 
 export const MessageInput = React.memo(function MessageInput({ placeholder, onSend, sendError, clearSendError, channelId, dmParticipantIds, testIdPrefix }: MessageInputProps) {
+  const { t } = useTranslation('messages');
   const prefix = testIdPrefix ? `${testIdPrefix}-` : '';
 
   // Schedule message state
@@ -95,22 +98,16 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
         setShowScheduleMenu(false);
         setShowScheduleModal(false);
 
-        const formatted = scheduledAt.toLocaleString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-        });
-        setScheduleConfirm(`Scheduled for ${formatted}`);
+        setScheduleConfirm(t('input.scheduledFor', { time: formatDateTime(scheduledAt) }));
         setTimeout(() => setScheduleConfirm(null), 4000);
       } catch {
-        setScheduleError('Failed to schedule message. Please try again.');
+        setScheduleError(t('input.scheduleFailed'));
         setTimeout(() => setScheduleError(null), 4000);
       } finally {
         setIsScheduling(false);
       }
     },
-    [channelId, editor],
+    [channelId, editor, t],
   );
 
   // Close schedule menu on outside click
@@ -161,7 +158,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
         <FilePreview files={editor.pendingFiles} onRemove={editor.removePendingFile} />
 
         {editor.isUploading && (
-          <div className="px-3 py-1 text-xs text-slack-hint">Uploading...</div>
+          <div className="px-3 py-1 text-xs text-slack-hint">{t('input.uploading')}</div>
         )}
 
         <div ref={editor.editorRef} />
@@ -187,7 +184,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
 
         {editor.showEmojiPicker && (
           <PortalEmojiPicker
-            anchorClassName="absolute bottom-full left-0 mb-2"
+            anchorClassName="absolute bottom-full start-0 mb-2"
             onEmojiSelect={editor.handleEmojiSelect}
             onClickOutside={() => editor.setShowEmojiPicker(false)}
           />
@@ -217,9 +214,10 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
             <button
               data-testid={`${prefix}send-button`}
               onClick={handleSend}
+              aria-label={t('input.send')}
               disabled={!hasContent}
               className={cn(
-                'flex h-7 items-center justify-center rounded-l px-2 transition-colors',
+                'flex h-7 items-center justify-center rounded-s px-2 transition-colors',
                 hasContent
                   ? 'bg-slack-btn text-white hover:bg-slack-btn-hover'
                   : 'text-slack-disabled',
@@ -232,12 +230,13 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
               onClick={() => hasContent && setShowScheduleMenu((v) => !v)}
               disabled={!hasContent}
               className={cn(
-                'flex h-7 w-5 items-center justify-center rounded-r border-l transition-colors',
+                'flex h-7 w-5 items-center justify-center rounded-e border-s transition-colors',
                 hasContent
                   ? 'bg-slack-btn text-white hover:bg-slack-btn-hover border-slack-btn-hover'
                   : 'text-slack-disabled border-slack-border',
               )}
-              title="Schedule message"
+              title={t('input.scheduleMessage')}
+              aria-label={t('input.scheduleMessage')}
             >
               <ChevronDown className="h-3 w-3" />
             </button>
@@ -254,12 +253,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
       </div>
 
       <p className="mt-1 text-xs text-slack-hint">
-        <kbd className="rounded bg-slack-active-tab px-1 py-0.5 text-[10px] font-medium">Enter</kbd>{' '}
-        to send,{' '}
-        <kbd className="rounded bg-slack-active-tab px-1 py-0.5 text-[10px] font-medium">
-          Shift + Enter
-        </kbd>{' '}
-        for new line
+        {t('input.hint')}
       </p>
 
       {sendError && <ErrorBanner message={sendError} onDismiss={clearSendError} />}

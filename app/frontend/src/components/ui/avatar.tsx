@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { UserStatus } from '@/lib/types';
 
@@ -25,6 +26,7 @@ const statusColors = {
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt, fallback, size = 'md', status, ...props }, ref) => {
+    const { t } = useTranslation('settings');
     const [imageError, setImageError] = React.useState(false);
     const imgRef = React.useRef<HTMLImageElement>(null);
 
@@ -64,7 +66,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             <img
               ref={imgRef}
               src={src}
-              alt={alt || 'Avatar'}
+              alt={alt || t('avatar.alt')}
               className="aspect-square h-full w-full object-cover"
               onError={() => setImageError(true)}
               onLoad={(e) => {

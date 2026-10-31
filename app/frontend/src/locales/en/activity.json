@@ -1,0 +1,27 @@
+{
+  "page": {
+    "title": "Activity",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "loadFailed": "Failed to load activity.",
+    "empty": "No activity yet.",
+    "unread": "Unread",
+    "menu": "Menu",
+    "someone": "Someone",
+    "directMessage": "a direct message"
+  },
+  "tabs": {
+    "all": "All",
+    "mentions": "Mentions",
+    "threads": "Threads",
+    "reactions": "Reactions"
+  },
+  "describe": {
+    "mention": "{actor} mentioned you in {where}",
+    "channelMention": "{actor} mentioned @channel in {where}",
+    "hereMention": "{actor} mentioned @here in {where}",
+    "threadReply": "{actor} replied to a thread in {where}",
+    "reaction": "{actor} reacted {emoji} to your message in {where}"
+  }
+}

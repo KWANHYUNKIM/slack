@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface ConfirmDialogProps {
   title: string;
   message: string;
@@ -6,7 +8,8 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-export function ConfirmDialog({ title, message, confirmLabel = 'Confirm', onConfirm, onCancel }: ConfirmDialogProps) {
+export function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50" onClick={onCancel}>
       <div
@@ -20,13 +23,13 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirm', onConf
             onClick={onCancel}
             className="px-4 py-2 text-[14px] font-medium text-slack-primary rounded-md border border-slack-border hover:bg-slack-hover"
           >
-            Cancel
+            {t('actions.cancel')}
           </button>
           <button
             onClick={onConfirm}
             className="px-4 py-2 text-[14px] font-medium text-white rounded-md bg-red-600 hover:bg-red-700"
           >
-            {confirmLabel}
+            {confirmLabel ?? t('actions.confirm')}
           </button>
         </div>
       </div>

@@ -1,0 +1,30 @@
+{
+  "actions": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "close": "닫기",
+    "send": "보내기",
+    "confirm": "확인",
+    "back": "뒤로",
+    "remove": "제거",
+    "add": "추가",
+    "create": "만들기",
+    "retry": "다시 시도",
+    "search": "검색",
+    "copy": "복사",
+    "done": "완료",
+    "next": "다음",
+    "more": "더 보기"
+  },
+  "status": {
+    "loading": "불러오는 중...",
+    "saving": "저장하는 중...",
+    "deleting": "삭제하는 중..."
+  },
+  "dates": {
+    "today": "오늘",
+    "yesterday": "어제"
+  }
+}

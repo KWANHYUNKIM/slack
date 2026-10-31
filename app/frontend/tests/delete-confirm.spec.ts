@@ -18,7 +18,7 @@ test.describe('Delete confirmation dialog', () => {
     await messageRow.hover();
 
     // Click "..." more button
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5').first();
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5').first();
     await hoverToolbar.locator('[title="More actions"]').click();
 
     // Click "Delete message"
@@ -40,7 +40,7 @@ test.describe('Delete confirmation dialog', () => {
     await page.waitForTimeout(500);
     await messageRow.hover();
     await page.waitForTimeout(300);
-    const moreBtn2 = page.locator('.absolute.-top-4.right-5').first().locator('[title="More actions"]');
+    const moreBtn2 = page.locator('.absolute.-top-4.end-5').first().locator('[title="More actions"]');
     await expect(moreBtn2).toBeVisible({ timeout: 3000 });
     await moreBtn2.click();
     await page.getByText('Delete message').click();

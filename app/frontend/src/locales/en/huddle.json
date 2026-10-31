@@ -1,0 +1,42 @@
+{
+  "bar": {
+    "muted": "(muted)",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "leave": "Leave huddle"
+  },
+  "button": {
+    "leaveFirstError": "Leave your current huddle first",
+    "cancelInviteFirstError": "Cancel your current invite first",
+    "cancelInvite": "Cancel invite",
+    "calling": "Calling...",
+    "inHuddle": "In huddle",
+    "leaveCurrentFirst": "Leave current huddle first",
+    "start": "Start huddle"
+  },
+  "incoming": {
+    "invite": "Huddle invite",
+    "secondsLeft": "{count}s",
+    "decline": "Decline",
+    "accept": "Accept"
+  },
+  "system": {
+    "youStarted": "You started a huddle.",
+    "started": "Started a huddle.",
+    "ended": "Ended",
+    "youSentInvite": "You sent a huddle invite.",
+    "sentInvite": "Sent you a huddle invite.",
+    "huddleStarted": "Huddle started",
+    "huddleEnded": "Huddle ended ({duration})",
+    "durationSeconds": "{seconds}s",
+    "durationMinutesSeconds": "{minutes}m {seconds}s"
+  },
+  "errors": {
+    "leaveFirst": "Leave your current huddle first",
+    "cancelInviteFirst": "Cancel your current invite first",
+    "micDenied": "Microphone access denied",
+    "busy": "They are in another huddle",
+    "declined": "Invite was declined",
+    "expired": "Invite expired"
+  }
+}

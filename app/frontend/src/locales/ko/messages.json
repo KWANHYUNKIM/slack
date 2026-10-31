@@ -1,0 +1,215 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "접속 중인 모든 사람에게 알림",
+    "channelLabel": "@channel",
+    "channelHint": "이 채널의 모든 사람에게 알림"
+  },
+  "deleteDialog": {
+    "title": "메시지 삭제",
+    "body": "이 메시지를 삭제할까요? 삭제하면 되돌릴 수 없습니다."
+  },
+  "editorToolbar": {
+    "attachFile": "파일 첨부",
+    "emoji": "이모지",
+    "mention": "멘션하기",
+    "stopRecording": "녹음 중지",
+    "recordVoice": "음성 클립 녹음"
+  },
+  "emojiAutocomplete": {
+    "navigate": "이동",
+    "select": "선택",
+    "dismiss": "닫기",
+    "escKey": "Esc"
+  },
+  "filePreview": {
+    "remove": "{name} 제거"
+  },
+  "fileModal": {
+    "download": "다운로드",
+    "loadFailed": "파일 내용을 불러오지 못했습니다",
+    "truncated": "... (이하 생략)",
+    "noPreview": "미리 볼 수 없는 파일입니다",
+    "downloadToView": "파일을 다운로드해서 확인하세요"
+  },
+  "files": {
+    "allFiles": "모든 파일",
+    "channelFiles": "채널 파일",
+    "loadFailed": "파일을 불러오지 못했습니다.",
+    "empty": "업로드된 파일이 없습니다",
+    "download": "다운로드",
+    "menu": "메뉴"
+  },
+  "format": {
+    "bold": "굵게",
+    "italic": "기울임",
+    "strike": "취소선",
+    "link": "링크",
+    "orderedList": "번호 목록",
+    "bulletList": "글머리 기호 목록",
+    "code": "코드",
+    "codeBlock": "코드 블록",
+    "quote": "인용"
+  },
+  "notifications": {
+    "title": "알림",
+    "empty": "새 알림이 없습니다",
+    "unreadCount": "읽지 않은 메시지 {count}개"
+  },
+  "search": {
+    "placeholder": "검색",
+    "searching": "검색하는 중...",
+    "noResults": "검색 결과가 없습니다",
+    "resultCount": "검색 결과 {count}개",
+    "inChannel": "#{channel} 채널"
+  },
+  "headerTabs": {
+    "files": "파일",
+    "pins": "고정"
+  },
+  "lightbox": {
+    "close": "닫기"
+  },
+  "later": {
+    "title": "나중에",
+    "saved": "저장됨",
+    "scheduled": "예약됨",
+    "loadFailed": "저장한 메시지를 불러오지 못했습니다.",
+    "empty": "저장한 메시지가 아직 없습니다. 메시지의 북마크 아이콘을 눌러 저장해 보세요.",
+    "removeSaved": "저장 목록에서 제거",
+    "menu": "메뉴"
+  },
+  "linkModal": {
+    "title": "링크 추가",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "표시할 텍스트",
+    "optional": "(선택)",
+    "textPlaceholder": "링크 텍스트",
+    "close": "닫기"
+  },
+  "actionsMenu": {
+    "noActions": "사용할 수 있는 작업이 없습니다",
+    "markUnread": "읽지 않음으로 표시",
+    "pin": "메시지 고정",
+    "unpin": "메시지 고정 해제",
+    "edit": "메시지 수정",
+    "delete": "메시지 삭제"
+  },
+  "area": {
+    "selectChannel": "채널을 선택해 대화를 시작하세요",
+    "openMenu": "메뉴 열기",
+    "placeholder": "#{channel}에 메시지 보내기",
+    "viewing": "#{channel} 채널을 둘러보는 중입니다",
+    "joinChannel": "채널 참여"
+  },
+  "header": {
+    "menu": "메뉴",
+    "unstar": "즐겨찾기에서 제거",
+    "star": "즐겨찾기에 추가",
+    "members": "멤버 {count}명",
+    "search": "검색",
+    "channelMenu": "채널 옵션",
+    "leaveChannel": "채널 나가기",
+    "leaveLastMember": "채널을 나갈 수 없습니다. 마지막 멤버입니다.",
+    "dismiss": "닫기"
+  },
+  "message": {
+    "edited": "(수정됨)",
+    "pinned": "고정됨",
+    "showMore": "더 보기",
+    "showLess": "접기"
+  },
+  "input": {
+    "uploading": "업로드하는 중...",
+    "scheduleMessage": "메시지 예약",
+    "send": "메시지 보내기",
+    "hint": "Enter로 보내기, Shift + Enter로 줄바꿈",
+    "scheduledFor": "{time}에 보내도록 예약했습니다",
+    "scheduleFailed": "메시지를 예약하지 못했습니다. 다시 시도해 주세요."
+  },
+  "list": {
+    "loading": "메시지를 불러오는 중...",
+    "empty": "아직 메시지가 없습니다",
+    "emptyReadOnly": "이 채널에는 메시지가 없습니다.",
+    "emptyFirst": "첫 메시지를 보내 보세요!"
+  },
+  "reactions": {
+    "tooltip": "{names}님이 {emoji}로 반응했습니다",
+    "add": "반응 추가",
+    "you": "나"
+  },
+  "toolbar": {
+    "addReaction": "반응 추가",
+    "replyInThread": "스레드로 답글 달기",
+    "removeBookmark": "북마크 해제",
+    "bookmark": "이 메시지 북마크",
+    "moreActions": "더 보기"
+  },
+  "mobileSearch": {
+    "placeholder": "메시지 검색...",
+    "hint": "모든 채널과 대화에서 메시지를 검색하세요",
+    "close": "검색 닫기"
+  },
+  "pins": {
+    "title": "고정된 메시지",
+    "loadFailed": "고정된 메시지를 불러오지 못했습니다.",
+    "empty": "고정된 메시지가 아직 없습니다"
+  },
+  "schedule": {
+    "menuTitle": "메시지 예약",
+    "in20": "20분 후",
+    "in1h": "1시간 후",
+    "in3h": "3시간 후",
+    "tomorrow9": "내일 오전 9:00",
+    "custom": "직접 지정...",
+    "modalTitle": "메시지 예약",
+    "dateTime": "날짜 및 시간",
+    "pickFuture": "미래의 시간을 선택해 주세요.",
+    "submit": "예약",
+    "submitting": "예약하는 중...",
+    "close": "닫기"
+  },
+  "scheduled": {
+    "loadFailed": "예약된 메시지를 불러오지 못했습니다.",
+    "cancelFailed": "메시지 예약을 취소하지 못했습니다.",
+    "sendFailed": "메시지를 보내지 못했습니다.",
+    "saveFailed": "변경 사항을 저장하지 못했습니다.",
+    "empty": "예약된 메시지가 없습니다. 메시지 입력창의 시계 아이콘으로 예약해 보세요.",
+    "sendAt": "보낼 시간:",
+    "edit": "수정",
+    "sendNow": "지금 보내기",
+    "cancel": "예약 취소"
+  },
+  "thread": {
+    "replyCount": "답글 {count}개"
+  },
+  "unreads": {
+    "title": "읽지 않음",
+    "loadFailed": "읽지 않은 메시지를 불러오지 못했습니다.",
+    "empty": "읽지 않은 메시지가 없습니다. 모두 확인했어요! 🎉",
+    "menu": "메뉴"
+  },
+  "threadPanel": {
+    "title": "스레드",
+    "replyPlaceholder": "답글 입력...",
+    "loadFailed": "스레드를 불러오지 못했습니다. 다시 시도해 주세요.",
+    "loading": "스레드를 불러오는 중...",
+    "replyFailed": "답글을 보내지 못했습니다. 다시 시도해 주세요.",
+    "joinToReply": "스레드에 답글을 달려면 채널에 참여하세요"
+  },
+  "errors": {
+    "messageEmpty": "메시지를 입력해 주세요.",
+    "pasteUploadFailed": "붙여넣은 이미지를 업로드하지 못했습니다. 다시 시도해 주세요.",
+    "dropUploadFailed": "끌어다 놓은 파일을 업로드하지 못했습니다. 다시 시도해 주세요.",
+    "uploadFailed": "파일을 업로드하지 못했습니다. 다시 시도해 주세요.",
+    "voiceUploadFailed": "음성 메시지를 업로드하지 못했습니다.",
+    "micDenied": "마이크 접근이 거부되었습니다. 마이크 사용을 허용해 주세요.",
+    "loadFailed": "메시지를 불러오지 못했습니다.",
+    "sendTimeout": "메시지 전송 시간이 초과되었습니다. 다시 시도해 주세요.",
+    "sendFailed": "메시지를 보내지 못했습니다. 다시 시도해 주세요.",
+    "pushNotConfigured": "서버에 푸시 알림이 설정되어 있지 않습니다",
+    "serviceWorkerUnavailable": "서비스 워커를 사용할 수 없습니다",
+    "subscribeFailed": "알림 구독을 등록하지 못했습니다"
+  }
+}

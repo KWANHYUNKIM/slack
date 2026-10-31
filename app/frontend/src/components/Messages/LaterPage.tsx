@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bookmark, Hash, Menu, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import { getBookmarks } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -25,6 +26,7 @@ interface BookmarkedMessage {
 type Tab = 'saved' | 'scheduled';
 
 export function LaterPage() {
+  const { t } = useTranslation('messages');
   const [activeTab, setActiveTab] = useState<Tab>('saved');
   const [bookmarks, setBookmarks] = useState<BookmarkedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,9 +41,9 @@ export function LaterPage() {
         setBookmarks(data as BookmarkedMessage[]);
         setLoadError(null);
       })
-      .catch(() => setLoadError('Failed to load saved messages.'))
+      .catch(() => setLoadError(t('later.loadFailed')))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchBookmarks();
@@ -64,12 +66,13 @@ export function LaterPage() {
         <div className="flex h-[49px] items-center px-5">
           <button
             onClick={useMobileStore.getState().openSidebar}
-            className="mr-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+          aria-label={t('later.menu')}
+            className="me-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
           >
             <Menu className="h-5 w-5 text-slack-secondary" />
           </button>
-          <Bookmark className="h-5 w-5 text-slack-secondary mr-2" />
-          <span className="text-[18px] font-bold text-slack-primary">Later</span>
+          <Bookmark className="h-5 w-5 text-slack-secondary me-2" />
+          <span className="text-[18px] font-bold text-slack-primary">{t('later.title')}</span>
         </div>
         {/* Tabs */}
         <div className="flex gap-1 px-5 pb-1">
@@ -84,7 +87,7 @@ export function LaterPage() {
             )}
           >
             <Bookmark className="h-3.5 w-3.5" />
-            Saved
+            {t('later.saved')}
           </button>
           <button
             data-testid="later-tab-scheduled"
@@ -97,7 +100,7 @@ export function LaterPage() {
             )}
           >
             <Clock className="h-3.5 w-3.5" />
-            Scheduled
+            {t('later.scheduled')}
           </button>
         </div>
       </div>
@@ -106,12 +109,12 @@ export function LaterPage() {
         {activeTab === 'scheduled' ? (
           <ScheduledMessagesTab />
         ) : isLoading ? (
-          <div className="text-center text-sm text-slack-hint">Loading...</div>
+          <div className="text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (
           <div className="text-center text-sm text-slack-error">{loadError}</div>
         ) : bookmarks.length === 0 ? (
           <div className="text-center text-sm text-slack-hint py-8">
-            No saved messages yet. Click the bookmark icon on any message to save it.
+            {t('later.empty')}
           </div>
         ) : (
           <div className="space-y-1">
@@ -134,7 +137,7 @@ export function LaterPage() {
                       {bm.message.user.name}
                     </span>
                     <span className="text-[12px] text-slack-secondary">
-                      {format(new Date(bm.message.createdAt), 'MMM d, h:mm a')}
+                      {formatDateTime(bm.message.createdAt)}
                     </span>
                   </div>
                   <div className="text-[15px] text-slack-primary leading-[22px] whitespace-pre-wrap break-words line-clamp-3">
@@ -151,7 +154,7 @@ export function LaterPage() {
                     handleRemove(bm.messageId);
                   }}
                   className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-border-light transition-opacity"
-                  title="Remove from Saved"
+                  title={t('later.removeSaved')}
                 >
                   <Bookmark className="h-4 w-4 text-slack-warning fill-slack-warning" />
                 </button>

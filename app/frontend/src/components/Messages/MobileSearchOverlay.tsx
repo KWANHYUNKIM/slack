@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatTime } from '@/lib/i18n/format';
 import { searchMessages, type SearchResult } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -12,6 +13,7 @@ interface MobileSearchOverlayProps {
 }
 
 export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearchOverlayProps) {
+  const { t } = useTranslation('messages');
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -95,7 +97,8 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search messages..."
+          placeholder={t('mobileSearch.placeholder')}
+          aria-label={t('mobileSearch.placeholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           onKeyDown={handleSearchKeyDown}
@@ -103,6 +106,7 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
         />
         <button
           onClick={onClose}
+          aria-label={t('mobileSearch.close')}
           className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded hover:bg-slack-hover"
           data-testid={`${prefix}mobile-search-close`}
         >
@@ -113,20 +117,20 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
         {isSearching ? (
-          <div className="p-4 text-center text-sm text-slack-hint">Searching...</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('search.searching')}</div>
         ) : hasSearched && searchResults.length === 0 ? (
-          <div className="p-4 text-center text-sm text-slack-hint">No results found</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('search.noResults')}</div>
         ) : searchResults.length > 0 ? (
           <div>
             <div className="px-3 py-2 text-xs font-medium text-slack-hint border-b border-slack-border">
-              {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+              {t('search.resultCount', { count: searchResults.length })}
             </div>
             {searchResults.map((result) => (
               <button
                 key={`${result.type}-${result.id}`}
                 data-testid="search-result-item"
                 onClick={() => handleResultClick(result)}
-                className="w-full text-left px-3 py-2.5 hover:bg-slack-hover active:bg-slack-hover border-b border-slack-border-light last:border-b-0"
+                className="w-full text-start px-3 py-2.5 hover:bg-slack-hover active:bg-slack-hover border-b border-slack-border-light last:border-b-0"
               >
                 <div className="flex items-start gap-2">
                   <Avatar
@@ -140,13 +144,10 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
                     <div className="flex items-center gap-1 text-xs text-slack-hint">
                       <span className="font-medium text-slack-primary">{result.user.name}</span>
                       <span className="text-slack-disabled">
-                        {format(new Date(result.createdAt), 'h:mm a')}
+                        {formatTime(result.createdAt)}
                       </span>
                       {result.channel && (
-                        <>
-                          <span>in</span>
-                          <span className="font-medium">#{result.channel.name}</span>
-                        </>
+                        <span>{t('search.inChannel', { channel: result.channel.name })}</span>
                       )}
                     </div>
                     <div className="mt-0.5 text-sm text-slack-primary line-clamp-2">{renderMessageContent(result.content)}</div>
@@ -157,7 +158,7 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
           </div>
         ) : (
           <div className="p-6 text-center text-sm text-slack-hint">
-            Search for messages across all channels and conversations
+            {t('mobileSearch.hint')}
           </div>
         )}
       </div>

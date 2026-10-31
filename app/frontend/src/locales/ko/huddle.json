@@ -1,0 +1,42 @@
+{
+  "bar": {
+    "muted": "(음소거)",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "leave": "허들 나가기"
+  },
+  "button": {
+    "leaveFirstError": "현재 허들에서 먼저 나가 주세요",
+    "cancelInviteFirstError": "진행 중인 초대를 먼저 취소해 주세요",
+    "cancelInvite": "초대 취소",
+    "calling": "호출 중...",
+    "inHuddle": "허들 참여 중",
+    "leaveCurrentFirst": "현재 허들에서 먼저 나가 주세요",
+    "start": "허들 시작"
+  },
+  "incoming": {
+    "invite": "허들 초대",
+    "secondsLeft": "{count}초",
+    "decline": "거절",
+    "accept": "수락"
+  },
+  "system": {
+    "youStarted": "허들을 시작했습니다.",
+    "started": "허들을 시작했습니다.",
+    "ended": "종료됨",
+    "youSentInvite": "허들 초대를 보냈습니다.",
+    "sentInvite": "허들 초대를 보냈습니다.",
+    "huddleStarted": "허들이 시작되었습니다",
+    "huddleEnded": "허들이 종료되었습니다 ({duration})",
+    "durationSeconds": "{seconds}초",
+    "durationMinutesSeconds": "{minutes}분 {seconds}초"
+  },
+  "errors": {
+    "leaveFirst": "현재 허들에서 먼저 나가 주세요",
+    "cancelInviteFirst": "진행 중인 초대를 먼저 취소해 주세요",
+    "micDenied": "마이크 사용 권한이 거부되었습니다",
+    "busy": "상대방이 다른 허들에 참여 중입니다",
+    "declined": "초대가 거절되었습니다",
+    "expired": "초대가 만료되었습니다"
+  }
+}

@@ -8,7 +8,9 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { AvatarCropModal } from './AvatarCropModal';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/lib/i18n/format';
+import { LanguageSelect } from '@/components/ui/LanguageSelect';
 import { toUserStatus } from '@/lib/types';
 
 interface ProfileModalProps {
@@ -17,6 +19,7 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ userId, onClose }: ProfileModalProps) {
+  const { t } = useTranslation('settings');
   const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -42,9 +45,9 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
         setEditName(data.name);
         setEditBio(data.bio || '');
       })
-      .catch(() => setLoadError('Failed to load profile.'))
+      .catch(() => setLoadError(t('profile.errors.loadFailed')))
       .finally(() => setIsLoading(false));
-  }, [userId, isOwnProfile]);
+  }, [userId, isOwnProfile, t]);
 
   const handleSave = async () => {
     if (!profile) return;
@@ -62,7 +65,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
       useMessageStore.getState().updateUserInMessages(updated.id, { name: updated.name });
       useChannelStore.getState().updateDMUser(updated.id, { userName: updated.name });
     } catch {
-      setSaveError('Failed to save profile. Please try again.');
+      setSaveError(t('profile.errors.saveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -73,11 +76,11 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
     if (!file) return;
     // Validate client-side
     if (!file.type.startsWith('image/')) {
-      setSaveError('Please select an image file.');
+      setSaveError(t('profile.errors.notImage'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setSaveError('Image must be under 5MB.');
+      setSaveError(t('profile.errors.tooLarge'));
       return;
     }
     setCropImageSrc(URL.createObjectURL(file));
@@ -97,7 +100,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
       useMessageStore.getState().updateUserInMessages(updated.id, { avatar: updated.avatar ?? undefined });
       useChannelStore.getState().updateDMUser(updated.id, { userAvatar: updated.avatar || '' });
     } catch {
-      setSaveError('Failed to upload photo. Please try again.');
+      setSaveError(t('profile.errors.uploadFailed'));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -112,14 +115,14 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slack-border-light px-5 py-4">
-          <h2 className="text-[17px] font-bold text-slack-primary">Profile</h2>
-          <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <h2 className="text-[17px] font-bold text-slack-primary">{t('profile.title')}</h2>
+          <Button variant="toolbar" size="icon-sm" onClick={onClose} aria-label={t('profile.close')}>
             <X className="h-4 w-4 text-slack-hint" />
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-sm text-slack-hint">Loading...</div>
+          <div className="p-8 text-center text-sm text-slack-hint">{t('profile.loading')}</div>
         ) : loadError ? (
           <div className="p-8 text-center text-sm text-slack-error">{loadError}</div>
         ) : profile ? (
@@ -138,6 +141,7 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingAvatar}
+                    aria-label={t('profile.uploadPhoto')}
                     className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <Camera className="h-5 w-5 text-white" />
@@ -165,11 +169,11 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   disabled={isUploadingAvatar}
                   className="text-[13px] text-slack-link hover:underline cursor-pointer"
                 >
-                  {isUploadingAvatar ? 'Uploading...' : 'Upload photo'}
+                  {isUploadingAvatar ? t('profile.uploading') : t('profile.uploadPhoto')}
                 </button>
 
                 <div>
-                  <label className="text-[13px] font-medium text-slack-muted">Name</label>
+                  <label className="text-[13px] font-medium text-slack-muted">{t('profile.name')}</label>
                   <input
                     type="text"
                     name="name"
@@ -179,12 +183,12 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-slack-muted">Bio</label>
+                  <label className="text-[13px] font-medium text-slack-muted">{t('profile.bio')}</label>
                   <textarea
                     name="bio"
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
-                    placeholder="Tell people about yourself"
+                    placeholder={t('profile.bioPlaceholder')}
                     rows={3}
                     className="mt-1 w-full rounded border border-slack-input-border px-3 py-2 text-[14px] outline-none focus:border-slack-link resize-none"
                   />
@@ -199,10 +203,10 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                       setEditName(profile.name);
                       setEditBio(profile.bio || '');
                     }}>
-                    Cancel
+                    {t('profile.cancel')}
                   </Button>
                   <Button size="sm" disabled={isSaving} onClick={handleSave}>
-                    Save
+                    {t('profile.save')}
                   </Button>
                 </div>
               </div>
@@ -211,22 +215,22 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                 {/* Bio */}
                 {profile.bio && (
                   <div className="mb-4">
-                    <p className="text-[13px] font-medium text-slack-hint mb-1">Bio</p>
+                    <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.bio')}</p>
                     <p className="text-[14px] text-slack-primary">{profile.bio}</p>
                   </div>
                 )}
 
                 {/* Status */}
                 <div className="mb-4">
-                  <p className="text-[13px] font-medium text-slack-hint mb-1">Status</p>
-                  <p className="text-[14px] text-slack-primary capitalize">{profile.status || 'offline'}</p>
+                  <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.status')}</p>
+                  <p className="text-[14px] text-slack-primary ">{t(`profile.statusValue.${profile.status || 'offline'}`, { defaultValue: profile.status })}</p>
                 </div>
 
                 {/* Joined date */}
                 <div className="mb-4">
-                  <p className="text-[13px] font-medium text-slack-hint mb-1">Joined</p>
+                  <p className="text-[13px] font-medium text-slack-hint mb-1">{t('profile.joined')}</p>
                   <p className="text-[14px] text-slack-primary">
-                    {format(new Date(profile.createdAt), 'MMMM d, yyyy')}
+                    {formatDate(profile.createdAt)}
                   </p>
                 </div>
 
@@ -242,22 +246,25 @@ export function ProfileModal({ userId, onClose }: ProfileModalProps) {
                       onClose();
                     }}
                   >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Message
+                    <MessageSquare className="h-4 w-4 me-2" />
+                    {t('profile.message')}
                   </Button>
                 )}
 
                 {/* Edit button for own profile */}
                 {isOwnProfile && (
                   <Button variant="outline" className="w-full" onClick={() => setIsEditing(true)}>
-                    Edit Profile
+                    {t('profile.edit')}
                   </Button>
                 )}
+
+                {/* Language */}
+                {isOwnProfile && <LanguageSelect className="mt-4 block" />}
               </>
             )}
           </div>
         ) : (
-          <div className="p-8 text-center text-sm text-slack-hint">Profile not found</div>
+          <div className="p-8 text-center text-sm text-slack-hint">{t('profile.notFound')}</div>
         )}
       </div>
 

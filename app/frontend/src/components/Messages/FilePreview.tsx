@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FileIcon, X } from 'lucide-react';
 import { getFileUrl } from '@/lib/api';
 import type { ApiFile } from '@/lib/api';
@@ -8,6 +9,8 @@ interface FilePreviewProps {
 }
 
 export function FilePreview({ files, onRemove }: FilePreviewProps) {
+  const { t } = useTranslation('messages');
+
   if (files.length === 0) return null;
 
   return (
@@ -34,7 +37,8 @@ export function FilePreview({ files, onRemove }: FilePreviewProps) {
           </span>
           <button
             onClick={() => onRemove(file.id)}
-            className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-slack-active-tab hover:bg-slack-border"
+            aria-label={t('filePreview.remove', { name: file.originalName })}
+            className="ms-1 flex h-5 w-5 items-center justify-center rounded-full bg-slack-active-tab hover:bg-slack-border"
           >
             <X className="h-3 w-3" />
           </button>

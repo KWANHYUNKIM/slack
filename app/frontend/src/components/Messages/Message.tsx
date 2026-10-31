@@ -1,6 +1,7 @@
 import { mentionsUser } from '@/lib/mentions';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatTime, formatTimeShort, formatDateTime, DATE_TIME_FULL, formatFileSize } from '@/lib/i18n/format';
 import { FileIcon, Download, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -37,6 +38,7 @@ interface MessageProps {
 }
 
 export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction }: MessageProps) {
+  const { t } = useTranslation(['messages', 'common']);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -80,7 +82,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
     measureContent();
   }, [message.content, measureContent]);
 
-  const formattedTime = format(message.createdAt, 'h:mm a');
+  const formattedTime = formatTime(message.createdAt);
 
   const handleEdit = () => {
     startEdit(message.id, message.content);
@@ -112,7 +114,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       onTouchStart={onTouchStart}
     >
       {/* Fixed 36px left gutter column with 8px gap to content */}
-      <div className="w-9 flex-shrink-0 mr-2">
+      <div className="w-9 flex-shrink-0 me-2">
         {showAvatar ? (
           <button onClick={() => openProfile(message.userId)}>
             <Avatar
@@ -124,8 +126,8 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
             />
           </button>
         ) : (
-          <span className="text-[12px] text-slack-secondary opacity-0 group-hover:opacity-100 leading-[22px] select-none" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>
-            {format(message.createdAt, 'h:mm')}
+          <span className="text-[12px] text-slack-secondary opacity-0 group-hover:opacity-100 leading-[22px] select-none" title={formatDateTime(message.createdAt, DATE_TIME_FULL)}>
+            {formatTimeShort(message.createdAt)}
           </span>
         )}
       </div>
@@ -141,14 +143,14 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
             >
               {message.user.displayName || message.user.name}
             </button>
-            <span className="text-[12px] font-normal text-slack-secondary ml-1" title={format(message.createdAt, 'EEEE, MMMM d, yyyy h:mm:ss a')}>{formattedTime}</span>
+            <span className="text-[12px] font-normal text-slack-secondary ms-1" title={formatDateTime(message.createdAt, DATE_TIME_FULL)}>{formattedTime}</span>
             {message.isEdited && (
-              <span className="text-[12px] text-slack-secondary">(edited)</span>
+              <span className="text-[12px] text-slack-secondary">{t('messages:message.edited')}</span>
             )}
             {message.isPinned && (
-              <span data-testid="pin-indicator" className="inline-flex items-center gap-0.5 text-[12px] text-slack-pin-indicator ml-1">
+              <span data-testid="pin-indicator" className="inline-flex items-center gap-0.5 text-[12px] text-slack-pin-indicator ms-1">
                 <Pin className="h-3 w-3" />
-                Pinned
+                {t('messages:message.pinned')}
               </span>
             )}
           </div>
@@ -175,13 +177,13 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                 onClick={cancelEdit}
                 className="text-slack-secondary hover:underline"
               >
-                Cancel
+                {t('common:actions.cancel')}
               </button>
               <button
                 onClick={() => saveEdit(message.content)}
                 className="rounded bg-slack-btn px-3 py-1 text-white hover:bg-slack-btn-hover"
               >
-                Save
+                {t('common:actions.save')}
               </button>
             </div>
           </div>
@@ -204,12 +206,12 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
             >
               {renderMessageContent(message.content)}
               {!showAvatar && message.isEdited && (
-                <span className="text-[12px] text-slack-secondary ml-1">(edited)</span>
+                <span className="text-[12px] text-slack-secondary ms-1">{t('messages:message.edited')}</span>
               )}
             </div>
             {needsCollapse && isCollapsed && (
               <div
-                className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
+                className="absolute bottom-0 inset-x-0 h-12 pointer-events-none"
                 style={{
                   background: `linear-gradient(to top, ${message.isPinned ? '#FEF9ED' : '#ffffff'}, transparent)`,
                 }}
@@ -229,7 +231,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                 }}
                 className="relative z-10 text-[13px] font-medium text-slack-link hover:underline mt-0.5"
               >
-                {isCollapsed ? 'Show more' : 'Show less'}
+                {isCollapsed ? t('messages:message.showMore') : t('messages:message.showLess')}
               </button>
             )}
           </div>
@@ -274,7 +276,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                       <a
                         href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
                         download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
-                        className="ml-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
+                        className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Download className="h-4 w-4" />
@@ -305,7 +307,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                         data-testid="image-download"
                         href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
                         download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
-                        className="ml-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
+                        className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Download className="h-4 w-4" />
@@ -313,12 +315,12 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 px-3 py-2.5 border-l-4 border-slack-link">
+                  <div className="flex items-center gap-3 px-3 py-2.5 border-s-4 border-slack-link">
                     <FileIcon className="h-8 w-8 text-slack-link flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <button
                         onClick={() => setPreviewFile({ id: file.id, name: file.originalName, size: file.size, mimetype: file.mimetype })}
-                        className="block text-[13px] font-medium text-slack-link hover:underline truncate text-left"
+                        className="block text-[13px] font-medium text-slack-link hover:underline truncate text-start"
                       >
                         {file.originalName}
                       </button>
@@ -365,7 +367,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       {/* Hover Actions */}
       {!readOnly && (isHovered || keepOpen) && (
         <MessageToolbar
-          className="absolute -top-4 right-5"
+          className="absolute -top-4 end-5"
           onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
           onThreadClick={!isThread ? () => onOpenThread?.(message.id) : undefined}
           onBookmarkClick={!isThread ? () => toggleBookmark(message.id) : undefined}
@@ -377,7 +379,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       {/* More actions dropdown */}
       {showMoreMenu && (
         <MessageActionsMenu
-          anchorClassName="absolute -top-4 right-5 mt-9"
+          anchorClassName="absolute -top-4 end-5 mt-9"
           onClose={() => setShowMoreMenu(false)}
           onMarkUnread={!isThread ? () => {
             setShowMoreMenu(false);
@@ -402,7 +404,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       {/* Emoji Picker from hover toolbar */}
       {showEmojiPicker && (
         <PortalEmojiPicker
-          anchorClassName="absolute -top-4 right-5 mt-9"
+          anchorClassName="absolute -top-4 end-5 mt-9"
           onEmojiSelect={(emoji) => {
             effectiveAddReaction(message.id, emoji.native);
             setShowEmojiPicker(false);
@@ -440,10 +442,4 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       )}
     </div>
   );
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

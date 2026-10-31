@@ -1,34 +1,33 @@
 import { useEffect } from 'react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime, DATE_TIME_MEDIUM } from '@/lib/i18n/format';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { Avatar } from '@/components/ui/avatar';
 
-const ACTION_LABELS: Record<string, { label: string; color: string }> = {
-  'user.role_changed': { label: 'Role Changed', color: 'bg-blue-100 text-blue-700' },
-  'user.deactivated': { label: 'Deactivated', color: 'bg-red-100 text-red-700' },
-  'user.reactivated': { label: 'Reactivated', color: 'bg-green-100 text-green-700' },
-  'channel.archived': { label: 'Archived', color: 'bg-amber-100 text-amber-700' },
-  'channel.unarchived': { label: 'Unarchived', color: 'bg-green-100 text-green-700' },
-  'channel.deleted': { label: 'Deleted', color: 'bg-red-100 text-red-700' },
-  'channel.edited': { label: 'Edited', color: 'bg-blue-100 text-blue-700' },
-  'invite.created': { label: 'Created', color: 'bg-green-100 text-green-700' },
-  'invite.deleted': { label: 'Deleted', color: 'bg-red-100 text-red-700' },
+const ACTION_LABELS: Record<string, { labelKey: string; color: string }> = {
+  'user.role_changed': { labelKey: 'audit.actions.roleChanged', color: 'bg-blue-100 text-blue-700' },
+  'user.deactivated': { labelKey: 'audit.actions.deactivated', color: 'bg-red-100 text-red-700' },
+  'user.reactivated': { labelKey: 'audit.actions.reactivated', color: 'bg-green-100 text-green-700' },
+  'channel.archived': { labelKey: 'audit.actions.archived', color: 'bg-amber-100 text-amber-700' },
+  'channel.unarchived': { labelKey: 'audit.actions.unarchived', color: 'bg-green-100 text-green-700' },
+  'channel.deleted': { labelKey: 'audit.actions.deleted', color: 'bg-red-100 text-red-700' },
+  'channel.edited': { labelKey: 'audit.actions.edited', color: 'bg-blue-100 text-blue-700' },
+  'invite.created': { labelKey: 'audit.actions.created', color: 'bg-green-100 text-green-700' },
+  'invite.deleted': { labelKey: 'audit.actions.deleted', color: 'bg-red-100 text-red-700' },
 };
 
 function getActionInfo(action: string) {
-  return ACTION_LABELS[action] || { label: action, color: 'bg-gray-100 text-gray-600' };
+  return ACTION_LABELS[action] || { labelKey: null, color: 'bg-gray-100 text-gray-600' };
 }
 
-function getTargetIcon(targetType: string) {
-  switch (targetType) {
-    case 'user': return 'User';
-    case 'channel': return 'Channel';
-    case 'invite': return 'Invite';
-    default: return targetType;
-  }
-}
+const TARGET_LABEL_KEYS: Record<string, string> = {
+  user: 'audit.targets.user',
+  channel: 'audit.targets.channel',
+  invite: 'audit.targets.invite',
+};
 
 export function AdminAuditLogTab() {
+  const { t } = useTranslation('admin');
   const { auditLog, auditLogTotal, fetchAuditLog } = useAdminStore();
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export function AdminAuditLogTab() {
   if (auditLog.length === 0) {
     return (
       <div className="text-center text-sm text-slack-hint py-8">
-        No audit log entries yet. Admin actions will be recorded here.
+        {t('audit.empty')}
       </div>
     );
   }
@@ -46,7 +45,7 @@ export function AdminAuditLogTab() {
   return (
     <div>
       <div className="text-xs text-slack-hint mb-3">
-        Showing {auditLog.length} of {auditLogTotal} entries
+        {t('audit.showing', { shown: auditLog.length, total: auditLogTotal })}
       </div>
 
       <div className="space-y-1">
@@ -70,12 +69,12 @@ export function AdminAuditLogTab() {
                     {entry.actor.name}
                   </span>
                   <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${actionInfo.color}`}>
-                    {actionInfo.label}
+                    {actionInfo.labelKey ? t(actionInfo.labelKey) : entry.action}
                   </span>
                   <span className="text-[12px] text-slack-hint">
-                    {getTargetIcon(entry.targetType)}
+                    {TARGET_LABEL_KEYS[entry.targetType] ? t(TARGET_LABEL_KEYS[entry.targetType]) : entry.targetType}
                     {entry.targetName && (
-                      <span className="ml-1 font-medium text-slack-secondary">
+                      <span className="ms-1 font-medium text-slack-secondary">
                         {entry.targetType === 'channel' ? '#' : ''}{entry.targetName}
                       </span>
                     )}
@@ -85,7 +84,7 @@ export function AdminAuditLogTab() {
                   <p className="text-[12px] text-slack-secondary mt-0.5">{entry.details}</p>
                 )}
                 <span className="text-[11px] text-slack-hint">
-                  {format(new Date(entry.createdAt), 'MMM d, yyyy h:mm a')}
+                  {formatDateTime(entry.createdAt, DATE_TIME_MEDIUM)}
                 </span>
               </div>
             </div>
@@ -98,7 +97,7 @@ export function AdminAuditLogTab() {
           onClick={() => fetchAuditLog(50, auditLog.length)}
           className="mt-4 w-full rounded-lg border border-slack-border py-2 text-sm text-slack-secondary hover:bg-gray-50"
         >
-          Load more
+          {t('audit.loadMore')}
         </button>
       )}
     </div>
