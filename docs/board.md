@@ -20,8 +20,8 @@
 | security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | 완료(PR #6 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
 | REA run2: Claude Code 재시작 후 MCP 경로로 재평가 | - | sonnet | 대기(재시작 필요) | 30분 | | | run1과 같은 질문 Q1~Q3 |
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
-| 04-threads-view | dev-5 | sonnet | 진행 | 2.5h | 2026-10-31 21:42 | | 스키마 변경(ThreadRead) |
-| 05-user-status-dnd | - | sonnet | 대기 | 1.5h | | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
+| 04-threads-view | dev-5 | sonnet | 완료(PR #26 머지) | 2.5h | 2026-10-31 21:42 | 2026-10-31 21:48 | 스키마 변경(ThreadRead) |
+| 05-user-status-dnd | dev-1 | sonnet | 진행 | 1.5h | 2026-10-31 21:58 | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 완료(PR #7 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | dev-5 | sonnet | 완료(PR #14 머지) | 1h | 12:23 | 12:33 | 총괄 결정: Slack과 같게 |
 | security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |

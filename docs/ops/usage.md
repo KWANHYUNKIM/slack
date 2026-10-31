@@ -51,3 +51,6 @@
 | 2026-10-31 21:30 | code-review | (리뷰) | PR #23 medium | 145,788 |
 | 2026-10-31 21:36 | dev-4 | opus | PR #23 리뷰 반영 | 44,668 |
 | 2026-10-31 21:45 | planner-1 | sonnet | 00b-gap-analysis-v2 | 108,362 |
+| 2026-10-31 21:48 | dev-5 | sonnet | 04-threads-view | 201,158 |
+| 2026-10-31 21:52 | code-review | (리뷰) | PR #26 medium | 116,998 |
+| 2026-10-31 21:55 | dev-5 | sonnet | PR #26 리뷰 반영 | 21,153 |
