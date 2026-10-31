@@ -225,8 +225,8 @@ describe('MCP search, files, resources and prompts (mcp-3)', () => {
         const rest = await request(app).get('/search').set(auth(alice)).query(q);
         expect(rest.status).toBe(200);
         const mcp = await call(client, 'search', q);
-        const { dmsIncluded, ...mcpBody } = mcp.data;
-        expect(dmsIncluded).toBe(true);
+        const { included, ...mcpBody } = mcp.data;
+        expect(included.dms).toBe(q.type === undefined || q.type === 'dms');
         // snapshot 시각이 커서에 들어 있어 nextCursor는 요청마다 다를 수 있다
         const { nextCursor: _a, ...a } = strip(rest.body);
         const { nextCursor: _b, ...b } = mcpBody;
@@ -287,7 +287,7 @@ describe('MCP search, files, resources and prompts (mcp-3)', () => {
 
       let r = await call(noDm, 'search', { q: 'dmsecret mango' });
       expect(r.data.results).toHaveLength(0);
-      expect(r.data.dmsIncluded).toBe(false);
+      expect(r.data.included.dms).toBe(false);
       expect((await call(noDm, 'search', { q: 'dmsecret mango', type: 'dms' })).text).toMatch(/im:history/);
       expect((await call(noDm, 'search', { q: 'dmsecret', type: 'files' })).data.results).toHaveLength(0);
       expect((await call(noDm, 'list_files', { userId: bob.id })).text).toMatch(/im:history/);
@@ -364,6 +364,82 @@ describe('MCP search, files, resources and prompts (mcp-3)', () => {
     });
   });
 
+  describe('search scopes', () => {
+    it('limits results and tabs to what the token scopes allow', async () => {
+      await postMessage(alice, pubId, 'scopedpapaya note');
+      const only = await clientFor(alice, ['search:read']);
+      for (const type of ['all', 'messages', 'people', 'channels', 'files', 'dms']) {
+        const r = await call(only, 'search', { q: 'scopedpapaya', type });
+        expect(r.isError).toBe(true);
+        expect(r.text).toMatch(/requires/);
+      }
+      expect((await call(only, 'search', { q: 'scopedpapaya' })).text).toContain('channels:history');
+      expect((await call(only, 'search', { q: 'Asf', type: 'people' })).text).toContain('users:read');
+      expect((await call(only, 'search', { q: 'mcpsf', type: 'channels' })).text).toContain('channels:read');
+      expect((await call(only, 'search', { q: 'scopedpapaya', type: 'files' })).text).toContain('files:read');
+
+      // 사람 탭만 열린 토큰: 메시지는 제외, 사람은 포함
+      const people = await clientFor(alice, ['search:read', 'users:read']);
+      const p = await call(people, 'search', { q: 'Bsf', type: 'people' });
+      expect(p.data.results.map((x: any) => x.name)).toContain('Bsf');
+      expect(p.data.included).toMatchObject({ people: true, messages: false });
+      expect((await call(people, 'search', { q: 'scopedpapaya', type: 'messages' })).isError).toBe(true);
+
+      // 메시지 범위만 있는 토큰: 메시지는 나오고 사람 탭은 막힌다
+      const msgs = await clientFor(alice, ['search:read', 'channels:history']);
+      const m = await call(msgs, 'search', { q: 'scopedpapaya' });
+      expect(m.data.results).toHaveLength(1);
+      expect(m.data.included).toMatchObject({ messages: true, dms: false, people: false });
+      expect((await call(msgs, 'search', { q: 'Bsf', type: 'people' })).isError).toBe(true);
+    });
+  });
+
+  describe('file storage and readability', () => {
+    it('reads zero-byte files as empty content', async () => {
+      const client = await clientFor(alice);
+      const mid = await postMessage(alice, pubId, 'empty file holder');
+      const empty = await upload(alice, 'empty.txt', Buffer.alloc(0), 'text/plain', mid);
+      const r = await call(client, 'read_file', { fileId: empty });
+      expect(r.data).toMatchObject({ size: 0, content: '', reason: null });
+    });
+
+    it('returns the same bytes as the REST download for a locally stored file', async () => {
+      const client = await clientFor(alice);
+      const body = 'bytes check: 한글 ✓ \n{"a":1}';
+      const fileId = await upload(alice, 'same-bytes.txt', Buffer.from(body, 'utf8'), 'text/plain');
+      const rest = await request(app).get(`/files/${fileId}/download`).set(auth(alice)).buffer(true).parse((res, cb) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => cb(null, Buffer.concat(chunks)));
+      });
+      expect(rest.status).toBe(200);
+      const mcp = await call(client, 'read_file', { fileId });
+      expect(Buffer.from(mcp.data.content, 'utf8').equals(rest.body as Buffer)).toBe(true);
+    });
+
+    it('marks files readable in read_channel only for channel members with files:read', async () => {
+      const otherPub = (await request(app).post('/channels').set(auth(bob)).send({ name: 'mcpsf-bob-pub' })).body.id;
+      const mid = await postMessage(bob, otherPub, 'public but not joined');
+      const fileId = await upload(bob, 'pubfile.txt', Buffer.from('pub body'), 'text/plain', mid);
+      const big = await upload(bob, 'pubbig.txt', Buffer.alloc(MAX_READ_FILE_BYTES + 1, 'z'), 'text/plain', mid);
+      const filesOf = async (u: TestUser, scopes: string[]) => {
+        const r = await call(await clientFor(u, scopes), 'read_channel', { channelId: otherPub });
+        return new Map<number, any>(r.data.messages.flatMap((m: any) => m.files).map((f: any) => [f.id, f]));
+      };
+
+      // 멤버: 읽을 수 있는 텍스트만 true
+      const asBob = await filesOf(bob, ALL);
+      expect(asBob.get(fileId).readable).toBe(true);
+      expect(asBob.get(big).readable).toBe(false);
+      // 공개 채널의 비멤버: 메시지는 읽혀도 파일은 읽을 수 없다
+      const asAlice = await filesOf(alice, ALL);
+      expect(asAlice.get(fileId).readable).toBe(false);
+      expect((await call(await clientFor(alice), 'read_file', { fileId })).isError).toBe(true);
+      // files:read 범위가 없으면 멤버도 false
+      expect((await filesOf(bob, BASE)).get(fileId).readable).toBe(false);
+    });
+  });
+
   describe('resources and prompts', () => {
     it('serves channel and thread resources with the same permission rules', async () => {
       const mid = await postMessage(alice, pubId, 'resource kumquat');
@@ -381,7 +457,16 @@ describe('MCP search, files, resources and prompts (mcp-3)', () => {
       expect(JSON.parse((th.contents[0] as { text: string }).text).replies).toHaveLength(1);
 
       await expect(asAlice.readResource({ uri: `channel://${privId}` })).rejects.toThrow(/not found or not accessible/);
-      await expect(asAlice.readResource({ uri: 'channel://abc' })).rejects.toThrow();
+      await expect(asAlice.readResource({ uri: 'channel://abc' })).rejects.toThrow(/Channel not found or not accessible/);
+      // Int 범위를 넘는 id는 DB까지 가지 않고 없는 대상과 같은 오류로 답한다
+      await expect(asAlice.readResource({ uri: 'channel://2147483648' })).rejects.toThrow(/Channel not found or not accessible/);
+      await expect(asAlice.readResource({ uri: 'channel://99999999999999999999' })).rejects.toThrow(/Channel not found or not accessible/);
+      await expect(asAlice.readResource({ uri: 'thread://2147483648' })).rejects.toThrow(/Message not found or not accessible/);
+      await expect(asAlice.readResource({ uri: 'thread://0' })).rejects.toThrow(/Message not found or not accessible/);
+      // 도구 입력의 id에도 같은 상한이 걸린다
+      expect((await call(asAlice, 'read_channel', { channelId: 2147483648 })).isError).toBe(true);
+      expect((await call(asAlice, 'read_file', { fileId: 2147483648 })).isError).toBe(true);
+      await expect(asAlice.getPrompt({ name: 'summarize_channel', arguments: { channelId: '2147483648' } })).rejects.toThrow();
 
       // 읽기 범위가 없는 토큰에는 리소스와 프롬프트가 보이지 않는다
       const noHistory = await clientFor(alice, ['channels:read']);

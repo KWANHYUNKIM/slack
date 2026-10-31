@@ -150,8 +150,11 @@ export type SearchParams = z.infer<typeof searchQuerySchema>;
 /** 검색 요청자. 게스트는 DM·사람 검색 범위가 좁아진다. */
 export interface SearchActor { userId: number; isGuest: boolean }
 
-/** includeDms가 false면 DM 메시지와 DM에 첨부된 파일을 결과에서 뺀다(MCP에서 im:history가 없는 토큰). */
-export interface SearchOptions { includeDms: boolean }
+/**
+ * includeDms가 false면 DM 메시지와 DM에 첨부된 파일을 결과에서 뺀다(MCP에서 im:history가 없는 토큰).
+ * includeMessages가 false면 채널 메시지를 뺀다(MCP에서 channels:history가 없는 토큰). 기본은 둘 다 포함.
+ */
+export interface SearchOptions { includeDms: boolean; includeMessages?: boolean }
 
 /** 쿼리 파라미터(또는 도구 인자)를 검증한다. 실패하면 400 ServiceError. */
 export function parseSearchParams(raw: unknown): SearchParams {
@@ -220,7 +223,7 @@ export async function runSearch(actor: SearchActor, params: SearchParams, option
     ];
   };
 
-  const wantsMessages = type === 'all' || type === 'messages';
+  const wantsMessages = options.includeMessages !== false && (type === 'all' || type === 'messages');
   // 채널 한정(channelId, in:)이나 is:saved면 DM은 대상이 아니다.
   const wantsDMs = options.includeDms && (type === 'all' || type === 'dms') && !channelId && filters.in.length === 0 && !filters.is.includes('saved');
 

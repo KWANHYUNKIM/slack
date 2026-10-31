@@ -1,6 +1,7 @@
 import type { ActivityType, Prisma } from '@prisma/client';
 import prisma from '../db.js';
-import { canReadChannel, guestVisibleUserIds, listableChannelsWhere } from '../middleware/authorize.js';
+import { canReadChannel, guestVisibleUserIds, listableChannelsWhere, verifyFilesAccess } from '../middleware/authorize.js';
+import { MAX_READ_FILE_BYTES, isTextMimetype } from '../utils/fileTypes.js';
 import { MENTION_TYPES, serializeActivities, visibleActivityWhere } from '../services/mentionService.js';
 import { STATUS_SELECT, toPublicUser } from '../services/statusService.js';
 import { isUserOnline } from '../websocket/index.js';
@@ -33,7 +34,18 @@ const MESSAGE_VIEW_INCLUDE = {
 
 type MessageRow = Prisma.MessageGetPayload<{ include: typeof MESSAGE_VIEW_INCLUDE }>;
 
-function toMessageView(m: MessageRow) {
+/**
+ * 메시지에 붙은 파일 중 read_file로 내용을 읽을 수 있는 id. 접근 규칙은 REST 다운로드와 같은 verifyFilesAccess
+ * (채널 멤버만, 그래서 멤버가 아닌 공개 채널의 파일은 읽을 수 없다)이고, files:read 범위와 텍스트·크기 상한도 본다.
+ */
+async function readableFileIds(ctx: ToolContext, rows: MessageRow[]): Promise<Set<number>> {
+  const candidates = rows.flatMap((m) => (m.deletedAt ? [] : m.files)).filter((f) => isTextMimetype(f.mimetype) && f.size <= MAX_READ_FILE_BYTES);
+  if (!ctx.scopes.includes('files:read') || candidates.length === 0) return new Set();
+  const allowed = await verifyFilesAccess(ctx.userId, candidates.map((f) => f.id));
+  return new Set(candidates.filter((f) => allowed.has(f.id)).map((f) => f.id));
+}
+
+function toMessageView(m: MessageRow, readable: Set<number>) {
   const deleted = !!m.deletedAt;
   const reactionCounts = new Map<string, number>();
   if (!deleted) for (const r of m.reactions) reactionCounts.set(r.emoji, (reactionCounts.get(r.emoji) ?? 0) + 1);
@@ -48,7 +60,7 @@ function toMessageView(m: MessageRow) {
     createdAt: m.createdAt,
     editedAt: m.editedAt,
     replyCount: m._count.replies,
-    files: deleted ? [] : m.files.map((f) => ({ id: f.id, name: f.originalName, mimetype: f.mimetype, size: f.size })),
+    files: deleted ? [] : m.files.map((f) => ({ id: f.id, name: f.originalName, mimetype: f.mimetype, size: f.size, readable: readable.has(f.id) })),
     reactions: [...reactionCounts].map(([emoji, count]) => ({ emoji, count })),
   };
 }
@@ -93,7 +105,8 @@ export async function readChannel(ctx: ToolContext, args: { channelId: number; l
   });
   const { results, nextCursor } = paginateResults(rows, args.limit);
   // 사람이 읽기 쉽게 오래된 것부터. nextCursor는 더 오래된 쪽을 가리킨다.
-  return { channelId: args.channelId, messages: results.reverse().map(toMessageView), nextCursor: nextCursor ?? null };
+  const readable = await readableFileIds(ctx, results);
+  return { channelId: args.channelId, messages: results.reverse().map((m) => toMessageView(m, readable)), nextCursor: nextCursor ?? null };
 }
 
 export async function readThread(ctx: ToolContext, args: { messageId: number }) {
@@ -119,9 +132,11 @@ export async function readThread(ctx: ToolContext, args: { messageId: number }) 
   // 지워진 부모는 살아 있는 답글이 있을 때만 자리표시자로 보여 준다(requireThreadReadAccess와 같은 규칙)
   if (parent.deletedAt && replies.length === 0) throw new ToolAccessError('Message not found or not accessible');
 
+  const shownReplies = replies.slice(0, MAX_THREAD_REPLIES);
+  const readable = await readableFileIds(ctx, [parent, ...shownReplies]);
   return {
-    parent: toMessageView(parent),
-    replies: replies.slice(0, MAX_THREAD_REPLIES).map(toMessageView),
+    parent: toMessageView(parent, readable),
+    replies: shownReplies.map((m) => toMessageView(m, readable)),
     truncated: replies.length > MAX_THREAD_REPLIES,
   };
 }
