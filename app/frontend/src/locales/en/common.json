@@ -26,5 +26,41 @@
   "dates": {
     "today": "Today",
     "yesterday": "Yesterday"
+  },
+  "quickSwitcher": {
+    "title": "Quick switcher",
+    "inputLabel": "Jump to a conversation",
+    "placeholder": "Jump to a channel or conversation",
+    "recent": "Recent",
+    "results": "Results",
+    "clearRecent": "Clear recent",
+    "listLabel": "Conversations",
+    "noResults": "No matching conversations",
+    "starred": "Starred",
+    "unread": "Unread",
+    "dnd": "Do not disturb",
+    "footer": "{mod}+K to open. Up and Down to move, Enter to go, Esc to close.",
+    "open": "Jump to…",
+    "kind": {
+      "channel": "Channel",
+      "dm": "Direct message",
+      "group": "Group message"
+    }
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "groups": {
+      "navigation": "Navigation",
+      "general": "General"
+    },
+    "items": {
+      "switcher": "Open the quick switcher",
+      "prevChannel": "Previous conversation",
+      "nextChannel": "Next conversation",
+      "prevUnread": "Previous unread conversation",
+      "nextUnread": "Next unread conversation",
+      "help": "Show keyboard shortcuts",
+      "closeTop": "Close the topmost panel or dialog"
+    }
   }
 }

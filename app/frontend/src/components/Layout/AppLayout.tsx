@@ -13,6 +13,9 @@ import { UnreadsPage } from '@/components/Messages/UnreadsPage';
 import { ActivityPage } from '@/components/Messages/ActivityPage';
 import { ThreadsPage } from '@/components/Messages/ThreadsPage';
 import { LaterPage } from '@/components/Messages/LaterPage';
+import { QuickSwitcher } from '@/components/QuickSwitcher/QuickSwitcher';
+import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
+import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 
 export function AppLayout() {
   const { t } = useTranslation('errors');
@@ -20,6 +23,7 @@ export function AppLayout() {
   const { sidebarOpen, closeSidebar } = useMobileStore();
   const isConnected = useConnectionStore((s) => s.isConnected);
   const location = useLocation();
+  useGlobalShortcuts();
 
   // Prevent background scroll when mobile sidebar is open
   useEffect(() => {
@@ -84,6 +88,10 @@ export function AppLayout() {
 
       {/* Profile Modal */}
       {isOpen && <ProfileModal userId={userId} onClose={closeProfile} />}
+
+      {/* 빠른 전환기와 단축키 도움말(06) */}
+      <QuickSwitcher />
+      <ShortcutsHelpModal />
     </div>
   );
 }

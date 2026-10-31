@@ -17,6 +17,7 @@ import {
   Shield,
   Inbox,
   MessagesSquare,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -40,6 +41,7 @@ import { getChannels, createDMGroup } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
 import type { AuthUser } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
+import { useSwitcherStore } from '@/stores/useSwitcherStore';
 // HuddleBar moved to global render in App.tsx
 
 export function Sidebar() {
@@ -52,6 +54,7 @@ export function Sidebar() {
   const { openProfile } = useProfileStore();
   const { permission, isSubscribed, subscribe, unsubscribe } = useNotificationStore();
   const closeSidebar = useMobileStore((s) => s.closeSidebar);
+  const openSwitcher = useSwitcherStore((s) => s.openSwitcher);
   const sidebarCollapsed = useChannelStore((s) => s.sidebarCollapsed);
   const toggleSection = useChannelStore((s) => s.toggleSection);
   const channelsExpanded = !sidebarCollapsed.channels;
@@ -333,6 +336,21 @@ export function Sidebar() {
             <SquarePen className="h-4 w-4" />
           </button>
         </div>
+
+        {/* 대화 찾기: 빠른 전환기(06)를 연다 */}
+        <button
+          type="button"
+          data-testid="sidebar-find-conversation"
+          onClick={() => {
+            closeSidebar();
+            openSwitcher();
+          }}
+          aria-label={t('findConversation')}
+          className="mx-3 mt-2 flex h-8 items-center gap-2 rounded-md bg-white/10 px-3 text-[14px] text-white/70 hover:bg-white/20"
+        >
+          <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="truncate">{t('findConversation')}</span>
+        </button>
 
         {/* Scrollable Content - 0 0 16px 0 padding */}
         <div className="flex-1 overflow-y-auto pb-4">
