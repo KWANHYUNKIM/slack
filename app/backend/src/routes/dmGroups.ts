@@ -20,6 +20,7 @@ import {
   leaveGroup,
   sendGroupMessage,
   markGroupRead,
+  getGroupUnreadBaseline,
   listGroupConversations,
   emitToGroup,
   InvalidFileIdsError,
@@ -151,6 +152,10 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
     let messages: any[];
     let nextCursor: number | undefined;
     let hasMore = false;
+    // 안 읽음 구분선 기준점(?withUnread=1, 첫 페이지만). 아래 읽음 커서 이동보다 먼저 계산한다.
+    const unreadBaseline = req.query.withUnread === '1' && !cursor && !around
+      ? await getGroupUnreadBaseline(groupId, userId)
+      : undefined;
     if (around) {
       const half = Math.floor(limit / 2);
       const [before, target, after] = await Promise.all([
@@ -181,7 +186,7 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
 
     // 멤버 목록은 첫 페이지(커서 없음)에서만 싣는다. 이전 페이지 로드는 메시지만 필요하다.
     const group = cursor ? undefined : await getGroupView(groupId);
-    res.json({ ...(group && { group }), messages, nextCursor, hasMore });
+    res.json({ ...(group && { group }), messages, nextCursor, hasMore, ...unreadBaseline });
   } catch (error) {
     logError('Get group DM messages error', error);
     res.status(500).json({ error: 'Failed to get messages' });

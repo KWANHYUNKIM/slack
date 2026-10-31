@@ -6,6 +6,8 @@ import {
 } from '@/lib/api';
 import { useAuthStore } from './useAuthStore';
 import { useChannelStore } from './useChannelStore';
+import { useUnreadStore } from './useUnreadStore';
+import { dmUnreadScope } from '@/lib/unread';
 import type { Reaction } from '@/lib/types';
 
 export interface DMFile {
@@ -96,7 +98,8 @@ interface DMState {
   isSending: boolean;
   sendError: string | null;
 
-  fetchConversation: (userId: number, around?: number) => Promise<void>;
+  /** withUnread: 대화를 처음 열 때만. 읽음 처리 이전의 안 읽음 기준점을 같은 응답으로 받아 useUnreadStore에 고정한다 */
+  fetchConversation: (userId: number, around?: number, withUnread?: boolean) => Promise<void>;
   sendMessage: (userId: number, content: string, fileIds?: number[]) => Promise<void>;
   editMessage: (messageId: number, content: string, userId: number) => Promise<void>;
   deleteMessage: (messageId: number, userId: number) => Promise<void>;
@@ -121,20 +124,24 @@ export const useDMStore = create<DMState>((set, get) => ({
   isSending: false,
   sendError: null,
 
-  fetchConversation: async (userId: number, around?: number) => {
+  fetchConversation: async (userId: number, around?: number, withUnread?: boolean) => {
     set({ isLoading: true, loadError: null, loadingUserId: userId });
+    const scope = dmUnreadScope(userId);
     try {
-      let data: { messages: ApiDirectMessage[] };
+      let data: { messages: ApiDirectMessage[]; lastReadId?: number | null; unreadCount?: number };
       if (isGroupKey(userId)) {
-        const groupData = await getDMGroupMessages(-userId, undefined, around);
+        const groupData = await getDMGroupMessages(-userId, undefined, around, withUnread);
         // 응답에 실린 최신 멤버 목록으로 사이드바·헤더를 맞춘다
         if (groupData.group) useChannelStore.getState().upsertGroupDM(groupData.group);
         data = groupData;
       } else {
-        data = await getConversation(userId, undefined, around);
+        data = await getConversation(userId, undefined, around, withUnread);
       }
       // Discard stale response if user already switched to another conversation
       if (get().loadingUserId !== userId) return;
+      if (withUnread) {
+        useUnreadStore.getState().setBaseline(scope, data.lastReadId ?? null, data.unreadCount ?? 0);
+      }
       const msgs = data.messages.map(transformDM);
       if (!around) msgs.reverse(); // API returns DESC, we want ASC (around returns chronological)
       set((state) => ({
@@ -144,6 +151,7 @@ export const useDMStore = create<DMState>((set, get) => ({
       }));
     } catch {
       if (get().loadingUserId !== userId) return;
+      if (withUnread) useUnreadStore.getState().setUnknown(scope);
       set({ isLoading: false, loadError: t('channels:dm.loadError') });
     }
   },

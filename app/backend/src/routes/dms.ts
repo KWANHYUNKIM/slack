@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
@@ -289,6 +290,34 @@ router.delete('/:userId/star', authMiddleware, async (req: AuthRequest, res: Res
   }
 });
 
+/**
+ * 1:1 DM의 읽음 기준점. DM은 메시지별 readAt이라, 내 앞으로 온 첫 안 읽음 메시지 바로 앞 메시지가 기준점이다.
+ * 안 읽음이 없으면 최신 메시지가 기준점이다. unreadCount는 기준점 이후 최상위 메시지 수(내 것 포함, 채널 응답과 같은 규칙).
+ */
+async function getDmUnreadBaseline(
+  currentUserId: number,
+  otherUserId: number,
+  dmWhere: Prisma.DirectMessageWhereInput,
+): Promise<{ lastReadId: number | null; unreadCount: number }> {
+  const firstUnread = currentUserId === otherUserId
+    ? null // 나와의 대화는 안 읽음이 없다
+    : await prisma.directMessage.findFirst({
+        where: { ...dmWhere, fromUserId: otherUserId, toUserId: currentUserId, readAt: null },
+        orderBy: { id: 'asc' },
+        select: { id: true },
+      });
+  const previous = await prisma.directMessage.findFirst({
+    where: { ...dmWhere, ...(firstUnread && { id: { lt: firstUnread.id } }) },
+    orderBy: { id: 'desc' },
+    select: { id: true },
+  });
+  const lastReadId = previous?.id ?? null;
+  const unreadCount = firstUnread
+    ? await prisma.directMessage.count({ where: { ...dmWhere, id: { gte: firstUnread.id } } })
+    : 0;
+  return { lastReadId, unreadCount };
+}
+
 // GET /dms/:userId - Get DM conversation with specific user
 router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -364,6 +393,8 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
     let enrichedMessages: any[];
     let nextCursor: number | undefined;
     let hasMore: boolean;
+    // 안 읽음 구분선 기준점(?withUnread=1, 첫 페이지만). 아래 읽음 처리(readAt)보다 먼저 계산해야 열기 직전 값이 된다.
+    let unreadBaseline: { lastReadId: number | null; unreadCount: number } | undefined;
 
     if (around) {
       const half = Math.floor(limit / 2);
@@ -390,6 +421,9 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
       nextCursor = undefined;
       hasMore = false;
     } else {
+      if (req.query.withUnread === '1' && !cursor) {
+        unreadBaseline = await getDmUnreadBaseline(currentUserId, otherUserId, dmWhere);
+      }
       // Run message fetch and mark-read in parallel — saves one DB round-trip
       const [messages] = await Promise.all([
         prisma.directMessage.findMany({
@@ -427,6 +461,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
       messages: enrichedMessages,
       nextCursor,
       hasMore,
+      ...unreadBaseline,
     });
   } catch (error) {
     logError('Get DM conversation error', error);

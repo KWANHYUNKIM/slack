@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeUnread, countUnreadFrom, hasUnreadOutOfRange, previousTimelineId, type UnreadCandidate } from '../src/lib/unread.ts';
+import { computeUnread, countUnreadFrom, dmUnreadScope, hasUnreadOutOfRange, previousTimelineId, type UnreadCandidate } from '../src/lib/unread.ts';
 
 const ME = 1;
 const msg = (id: number, userId = 2, extra: Partial<UnreadCandidate> = {}): UnreadCandidate => ({ id, userId, ...extra });
@@ -77,4 +77,28 @@ test('mark unread 개수는 서버 규칙(삭제·스레드 답글 제외, 내 �
   const list = [msg(1), msg(2, 2, { threadId: 1 }), msg(3, ME), msg(4, 2, { isDeleted: true }), msg(5)];
   assert.equal(countUnreadFrom(list, 1), 3);
   assert.equal(countUnreadFrom(list, 4), 1);
+});
+
+// DM(1:1, 그룹) 구분선: 기준점은 서버가 읽음 처리 이전 값으로 내려준다
+test('DM: 상대가 3개 보낸 뒤 열면 첫 안 읽음 앞에 선이 서고, 기준점이 최신이 되면(재진입) 선이 없다', () => {
+  const list = [msg(10, ME), msg(11), msg(12), msg(13)];
+  assert.deepEqual(computeUnread(list, 10, ME), { dividerBeforeId: 11, unreadLoaded: 3 });
+  assert.equal(computeUnread(list, 13, ME).dividerBeforeId, null);
+});
+
+test('DM: 안 읽은 메시지를 지우면 선이 다음 안 읽은 메시지로 옮겨 간다', () => {
+  const list = [msg(10, ME), msg(11), msg(12), msg(13)];
+  assert.equal(computeUnread(list, 10, ME).dividerBeforeId, 11);
+  assert.deepEqual(computeUnread(list.filter((m) => m.id !== 11), 10, ME), { dividerBeforeId: 12, unreadLoaded: 2 });
+  assert.equal(computeUnread(list.filter((m) => m.id > 10 && m.id !== 11 && m.id !== 12 && m.id !== 13), 10, ME).dividerBeforeId, null);
+});
+
+test('dmUnreadScope: 채널 id와 겹치지 않고 1:1·그룹 대화끼리도 겹치지 않는다', () => {
+  const scopes = new Set<number>();
+  for (let n = 1; n <= 50; n++) {
+    scopes.add(dmUnreadScope(n)); // 1:1: userId n
+    scopes.add(dmUnreadScope(-n)); // 그룹: groupId n
+  }
+  assert.equal(scopes.size, 100);
+  assert.ok([...scopes].every((v) => v < 0));
 });

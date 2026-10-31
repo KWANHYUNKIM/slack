@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useMessageStore } from '@/stores/useMessageStore';
-import { countUnreadFrom, previousTimelineId } from '@/lib/unread';
+import { countUnreadFrom, previousTimelineId, type UnreadCandidate } from '@/lib/unread';
 
 /**
  * 안 읽음 구분선의 기준점. 채널을 열 때 서버에서 한 번 받아 고정하고, 채널을 떠나면 버린다.
@@ -20,7 +20,8 @@ interface UnreadState {
   setBaseline: (channelId: number, lastReadId: number | null, total: number) => void;
   /** 기준점을 알 수 없어도(실패, 비멤버) 읽음 처리가 막히지 않게 구분선 없이 준비 완료로 만든다 */
   setUnknown: (channelId: number) => void;
-  markUnreadFrom: (channelId: number, messageId: number) => void;
+  /** messages를 주면 그 목록(DM)에서, 없으면 채널 메시지 스토어에서 계산한다 */
+  markUnreadFrom: (channelId: number, messageId: number, messages?: readonly UnreadCandidate[]) => void;
   /** 이 id까지 읽은 것으로 보고 구분선을 지운다 */
   markReadUpTo: (channelId: number, messageId: number) => void;
   reset: () => void;
@@ -39,9 +40,9 @@ export const useUnreadStore = create<UnreadState>((set, get) => ({
     if (get().channelId !== channelId) return;
     set({ ready: true, lastReadId: Number.MAX_SAFE_INTEGER, total: 0, pinnedBeforeId: null });
   },
-  markUnreadFrom: (channelId, messageId) => {
+  markUnreadFrom: (channelId, messageId, given) => {
     if (get().channelId !== channelId) return;
-    const messages = useMessageStore.getState().messages.filter((m) => m.channelId === channelId);
+    const messages = given ?? useMessageStore.getState().messages.filter((m) => m.channelId === channelId);
     const total = countUnreadFrom(messages, messageId);
     set({ ready: true, lastReadId: previousTimelineId(messages, messageId), total, pinnedBeforeId: messageId });
   },
