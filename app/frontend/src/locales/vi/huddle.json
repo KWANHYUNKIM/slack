@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(đã tắt tiếng)",
+    "mute": "Tắt tiếng",
+    "unmute": "Bật tiếng",
+    "leave": "Rời huddle"
+  },
+  "button": {
+    "leaveFirstError": "Hãy rời huddle hiện tại trước",
+    "cancelInviteFirstError": "Hãy hủy lời mời hiện tại trước",
+    "cancelInvite": "Hủy lời mời",
+    "calling": "Đang gọi...",
+    "inHuddle": "Đang trong huddle",
+    "leaveCurrentFirst": "Rời huddle hiện tại trước",
+    "start": "Bắt đầu huddle"
+  },
+  "incoming": {
+    "invite": "Lời mời huddle",
+    "secondsLeft": "{count} giây",
+    "decline": "Từ chối",
+    "accept": "Chấp nhận"
+  },
+  "system": {
+    "youStarted": "Bạn đã bắt đầu một huddle.",
+    "started": "Đã bắt đầu một huddle.",
+    "ended": "Đã kết thúc",
+    "youSentInvite": "Bạn đã gửi lời mời huddle.",
+    "sentInvite": "Đã gửi cho bạn lời mời huddle.",
+    "huddleStarted": "Huddle đã bắt đầu",
+    "huddleEnded": "Huddle đã kết thúc ({duration})",
+    "durationSeconds": "{seconds} giây",
+    "durationMinutesSeconds": "{minutes} phút {seconds} giây"
+  },
+  "errors": {
+    "leaveFirst": "Hãy rời huddle hiện tại trước",
+    "cancelInviteFirst": "Hãy hủy lời mời hiện tại trước",
+    "micDenied": "Không được phép truy cập micrô",
+    "busy": "Họ đang ở trong một huddle khác",
+    "declined": "Lời mời đã bị từ chối",
+    "expired": "Lời mời đã hết hạn",
+    "rateLimited": "Quá nhiều yêu cầu. Hãy thử lại sau ít phút",
+    "invalidInvite": "Yêu cầu mời không hợp lệ",
+    "cannotInviteSelf": "Bạn không thể mời chính mình",
+    "userNotFound": "Không tìm thấy người dùng",
+    "invalidAccept": "Yêu cầu chấp nhận không hợp lệ",
+    "inviteNotFound": "Không tìm thấy lời mời hoặc lời mời đã hết hạn",
+    "peerOffline": "Họ đang ngoại tuyến",
+    "generic": "Không bắt đầu được huddle. Vui lòng thử lại"
+  }
+}

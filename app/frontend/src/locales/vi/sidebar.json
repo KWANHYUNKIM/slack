@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Hoạt động",
+    "unreads": "Chưa đọc",
+    "later": "Xem sau",
+    "files": "Tệp",
+    "admin": "Quản trị",
+    "threads": "Chủ đề"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Tin nhắn mới"
+  },
+  "userMenu": {
+    "profile": "Hồ sơ",
+    "notificationsBlocked": "Thông báo đã bị chặn",
+    "disableNotifications": "Tắt thông báo",
+    "enableNotifications": "Bật thông báo",
+    "signOut": "Đăng xuất",
+    "updateStatus": "Cập nhật trạng thái của bạn",
+    "pauseNotifications": "Tạm dừng thông báo",
+    "pausedUntil": "Tạm dừng đến {time}",
+    "pausedIndefinitely": "Tạm dừng cho đến khi bạn xóa trạng thái",
+    "resumeNotifications": "Tiếp tục thông báo",
+    "pause": {
+      "m30": "30 phút",
+      "h1": "1 giờ",
+      "h2": "2 giờ",
+      "tomorrow": "Đến ngày mai"
+    },
+    "pauseError": "Không đổi được việc tạm dừng thông báo. Vui lòng thử lại.",
+    "accessTokens": "Mã truy cập cá nhân",
+    "sessions": "Thiết bị đã đăng nhập",
+    "twoFactor": "Xác thực hai bước",
+    "changePassword": "Đổi mật khẩu",
+    "connectedApps": "Ứng dụng đã kết nối"
+  },
+  "sections": {
+    "starred": "Đã gắn sao",
+    "channels": "Kênh",
+    "addChannels": "Thêm kênh",
+    "directMessages": "Tin nhắn trực tiếp",
+    "addTeammates": "Thêm đồng nghiệp",
+    "starredEmpty": "Gắn sao một kênh hoặc cuộc trò chuyện để giữ nó ở đây.",
+    "collapse": "Thu gọn {section}",
+    "expand": "Mở rộng {section}"
+  },
+  "teammates": {
+    "title": "Tin nhắn trực tiếp",
+    "subtitle": "Tìm hoặc bắt đầu một cuộc trò chuyện",
+    "searchPlaceholder": "Tìm theo tên...",
+    "noUsers": "Không tìm thấy người dùng",
+    "close": "Đóng",
+    "pickSubtitle": "Chọn tối đa {max, plural, one {# người} other {# người}}",
+    "select": "Chọn {name}",
+    "selectedCount": "Đã chọn {count} trên {max}",
+    "start": "Bắt đầu cuộc trò chuyện",
+    "startGroup": "Bắt đầu cuộc trò chuyện nhóm"
+  },
+  "you": "(bạn)",
+  "notifications": {
+    "someone": "Ai đó",
+    "sentAttachment": "Đã gửi một tệp đính kèm",
+    "threadTitle": "{name} (chủ đề)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# thành viên} other {# thành viên}}",
+    "createError": "Không bắt đầu được cuộc trò chuyện nhóm. Vui lòng thử lại."
+  },
+  "statusDialog": {
+    "title": "Đặt trạng thái",
+    "emojiLabel": "Chọn biểu tượng cảm xúc",
+    "textLabel": "Trạng thái của bạn là gì?",
+    "textPlaceholder": "Trạng thái của bạn là gì?",
+    "durationLabel": "Xóa sau",
+    "duration": {
+      "never": "Không xóa",
+      "m30": "30 phút",
+      "h1": "1 giờ",
+      "h4": "4 giờ",
+      "today": "Hôm nay",
+      "week": "Tuần này"
+    },
+    "pauseCheckbox": "Tạm dừng thông báo cho đến khi trạng thái được xóa",
+    "save": "Lưu",
+    "clear": "Xóa trạng thái",
+    "cancel": "Hủy",
+    "expiresAt": "Sẽ xóa lúc {time}",
+    "saveError": "Không lưu được trạng thái. Vui lòng thử lại."
+  },
+  "findConversation": "Tìm cuộc trò chuyện"
+}

@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Hoạt động",
+    "markAllRead": "Đánh dấu tất cả là đã đọc",
+    "loading": "Đang tải...",
+    "loadingMore": "Đang tải thêm...",
+    "loadFailed": "Không tải được hoạt động.",
+    "empty": "Chưa có hoạt động nào.",
+    "unread": "Chưa đọc",
+    "menu": "Menu",
+    "someone": "Ai đó",
+    "directMessage": "một tin nhắn trực tiếp",
+    "messageDeleted": "Tin nhắn đã bị xóa"
+  },
+  "tabs": {
+    "all": "Tất cả",
+    "mentions": "Lượt nhắc",
+    "threads": "Chủ đề",
+    "reactions": "Cảm xúc"
+  },
+  "describe": {
+    "mention": "{actor} đã nhắc đến bạn trong {where}",
+    "channelMention": "{actor} đã nhắc đến @channel trong {where}",
+    "hereMention": "{actor} đã nhắc đến @here trong {where}",
+    "threadReply": "{actor} đã trả lời trong một chủ đề ở {where}",
+    "reaction": "{actor} đã thả cảm xúc {emoji} vào tin nhắn của bạn trong {where}",
+    "reminder": "Nhắc nhở"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktibidad",
+    "markAllRead": "Markahan lahat bilang nabasa",
+    "loading": "Naglo-load...",
+    "loadingMore": "Naglo-load pa...",
+    "loadFailed": "Hindi ma-load ang aktibidad.",
+    "empty": "Wala pang aktibidad.",
+    "unread": "Hindi pa nababasa",
+    "menu": "Menu",
+    "someone": "May nagpadala",
+    "directMessage": "isang direktang mensahe",
+    "messageDeleted": "Binurang mensahe"
+  },
+  "tabs": {
+    "all": "Lahat",
+    "mentions": "Mga banggit",
+    "threads": "Mga thread",
+    "reactions": "Mga reaksyon"
+  },
+  "describe": {
+    "mention": "Binanggit ka ni {actor} sa {where}",
+    "channelMention": "Binanggit ni {actor} ang @channel sa {where}",
+    "hereMention": "Binanggit ni {actor} ang @here sa {where}",
+    "threadReply": "Sumagot si {actor} sa isang thread sa {where}",
+    "reaction": "Nag-react si {actor} ng {emoji} sa iyong mensahe sa {where}",
+    "reminder": "Paalala"
+  }
+}

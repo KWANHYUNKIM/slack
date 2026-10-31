@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Bahasa",
+    "pending": "{name} (terjemahan segera hadir)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notifikasi dijeda"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Tutup",
+    "loading": "Memuat...",
+    "notFound": "Profil tidak ditemukan",
+    "uploadPhoto": "Unggah foto",
+    "uploading": "Mengunggah...",
+    "name": "Nama",
+    "bio": "Bio",
+    "bioPlaceholder": "Ceritakan tentang diri Anda",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "status": "Status",
+    "joined": "Bergabung",
+    "message": "Pesan",
+    "edit": "Edit Profil",
+    "statusValue": {
+      "online": "daring",
+      "away": "tidak di tempat",
+      "offline": "luring"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat profil.",
+      "saveFailed": "Gagal menyimpan profil. Silakan coba lagi.",
+      "notImage": "Pilih berkas gambar.",
+      "tooLarge": "Gambar harus kurang dari 5MB.",
+      "uploadFailed": "Gagal mengunggah foto. Silakan coba lagi."
+    },
+    "statusUntil": "Sampai {time}"
+  },
+  "crop": {
+    "title": "Potong foto Anda",
+    "close": "Tutup",
+    "zoom": "Perbesar",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Menyimpan...",
+    "failed": "Gagal memotong"
+  },
+  "accessTokens": {
+    "title": "Token akses pribadi",
+    "description": "Token memungkinkan Claude dan klien MCP lain membaca dan, jika Anda mengizinkan, menulis di workspace Anda dengan izin Anda. Perlakukan seperti kata sandi.",
+    "nameLabel": "Nama token",
+    "namePlaceholder": "mis. Claude Code di laptop saya",
+    "scopesLabel": "Izin",
+    "scope": {
+      "channelsRead": "Lihat daftar channel",
+      "channelsHistory": "Baca pesan, thread, dan aktivitas",
+      "usersRead": "Lihat orang",
+      "chatWrite": "Kirim, edit, dan hapus pesan Anda",
+      "reactionsWrite": "Tambah dan hapus reaksi Anda",
+      "imRead": "Lihat daftar pesan langsung dan grup Anda",
+      "imHistory": "Baca riwayat pesan langsung Anda",
+      "imWrite": "Kirim, edit, dan hapus pesan langsung Anda",
+      "searchRead": "Cari pesan, berkas, orang, dan channel (hasil pesan langsung memerlukan riwayat pesan langsung)",
+      "filesRead": "Lihat daftar berkas dan baca isi berkas teks"
+    },
+    "expiryLabel": "Kedaluwarsa",
+    "expiryDays": "{count, plural, other {# hari}}",
+    "expiryNever": "Tidak kedaluwarsa",
+    "neverWarning": "Token tanpa tanggal kedaluwarsa tetap berlaku sampai Anda mencabutnya.",
+    "create": "Buat token",
+    "createdNotice": "Salin token baru Anda sekarang. Anda tidak akan bisa melihatnya lagi.",
+    "copy": "Salin token",
+    "copyCommand": "Salin perintah",
+    "copied": "Disalin ke papan klip",
+    "connectHint": "Hubungkan dari Claude Code:",
+    "dismiss": "Selesai, sembunyikan token",
+    "loading": "Memuat...",
+    "empty": "Anda tidak memiliki token akses pribadi.",
+    "expires": "Kedaluwarsa {date}",
+    "expired": "Kedaluwarsa",
+    "noExpiry": "Tidak kedaluwarsa",
+    "lastUsed": "Terakhir dipakai {date}",
+    "neverUsed": "Belum pernah dipakai",
+    "rename": "Ganti nama",
+    "renameLabel": "Ganti nama token {name}",
+    "revoke": "Cabut",
+    "revokeLabel": "Cabut token {name}",
+    "revokeConfirm": "Cabut sekarang",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "errors": {
+      "loadFailed": "Gagal memuat token.",
+      "createFailed": "Gagal membuat token. Silakan coba lagi.",
+      "renameFailed": "Gagal mengganti nama token.",
+      "revokeFailed": "Gagal mencabut token.",
+      "copyFailed": "Tidak dapat menyalin. Pilih teks lalu salin secara manual.",
+      "limitReached": "Anda dapat memiliki hingga {max} token aktif. Cabut token yang sudah tidak dipakai lalu coba lagi.",
+      "codeRequired": "Masukkan kode dua faktor Anda untuk membuat token.",
+      "invalidCode": "Kode dua faktor salah."
+    },
+    "codeLabel": "Kode dua faktor",
+    "codeHint": "Masukkan kode dari aplikasi autentikator Anda untuk membuat token."
+  },
+  "sessions": {
+    "title": "Perangkat yang masuk",
+    "description": "Perangkat-perangkat ini masuk ke akun Anda. Keluarkan perangkat yang tidak Anda kenali atau sudah tidak dipakai.",
+    "loading": "Memuat...",
+    "empty": "Tidak ada perangkat yang masuk.",
+    "thisDevice": "Perangkat ini",
+    "unknownDevice": "Perangkat tidak dikenal",
+    "signedInAt": "Masuk {date}",
+    "lastActive": "Aktif terakhir {date}",
+    "signOut": "Keluar",
+    "signOutLabel": "Keluarkan {device}",
+    "signOutThisLabel": "Keluarkan perangkat ini ({device})",
+    "signOutOthers": "Keluarkan semua perangkat lain",
+    "signOutOthersConfirm": "{count, plural, other {Keluarkan # perangkat lain}}",
+    "revoked": "Perangkat dikeluarkan",
+    "revokedOthers": "Semua perangkat lain dikeluarkan",
+    "errors": {
+      "loadFailed": "Gagal memuat perangkat.",
+      "revokeFailed": "Gagal keluar. Silakan coba lagi."
+    },
+    "device": {
+      "desktop": "Aplikasi desktop",
+      "desktopOn": "Aplikasi desktop di {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} di {os}",
+      "unknownOn": "Perangkat tidak dikenal di {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Ganti kata sandi",
+    "description": "Masukkan kata sandi saat ini dan pilih yang baru.",
+    "currentLabel": "Kata sandi saat ini",
+    "newLabel": "Kata sandi baru",
+    "confirmLabel": "Konfirmasi kata sandi baru",
+    "sessionsNote": "Saat Anda mengganti kata sandi, perangkat lain yang masuk akan dikeluarkan.",
+    "submit": "Ganti kata sandi",
+    "submitting": "Mengganti...",
+    "cancel": "Batal",
+    "successToast": "Kata sandi Anda telah diganti",
+    "errors": {
+      "currentRequired": "Masukkan kata sandi saat ini.",
+      "failed": "Tidak dapat mengganti kata sandi. Coba lagi."
+    }
+  },
+  "twoFactor": {
+    "title": "Autentikasi dua faktor",
+    "description": "Minta kode dari aplikasi autentikator Anda selain kata sandi saat masuk.",
+    "loading": "Memuat...",
+    "statusOn": "Aktif",
+    "statusOff": "Nonaktif",
+    "enabledSince": "Diaktifkan {date}",
+    "recoveryRemaining": "{count, plural, other {Sisa # kode pemulihan}}",
+    "unavailable": "Autentikasi dua faktor tidak tersedia di server ini. Hubungi admin Anda.",
+    "requiredNotice": "Organisasi Anda mewajibkan autentikasi dua faktor.",
+    "close": "Tutup",
+    "setup": {
+      "start": "Siapkan autentikasi dua faktor",
+      "starting": "Menyiapkan...",
+      "step1": "1. Tambahkan akun ini ke aplikasi autentikator Anda. Buka tautan di ponsel, atau masukkan kunci pengaturan secara manual.",
+      "uriLabel": "Tautan pengaturan",
+      "openInApp": "Buka di aplikasi autentikator",
+      "qrLabel": "Kode QR untuk aplikasi autentikator",
+      "qrHint": "Pindai kode QR ini dengan aplikasi autentikator, atau gunakan tautan atau kunci di bawah.",
+      "keyLabel": "Kunci pengaturan",
+      "copyKey": "Salin kunci pengaturan",
+      "copyUri": "Salin tautan pengaturan",
+      "copied": "Disalin",
+      "step2": "2. Masukkan kode 6 digit yang ditampilkan aplikasi Anda.",
+      "codeLabel": "Kode autentikasi",
+      "codePlaceholder": "123456",
+      "verify": "Aktifkan",
+      "verifying": "Memeriksa...",
+      "cancel": "Batal",
+      "passwordLabel": "3. Masukkan kata sandi saat ini.",
+      "sessionsNote": "Saat Anda mengaktifkan ini, perangkat lain yang masuk akan dikeluarkan."
+    },
+    "recovery": {
+      "title": "Simpan kode pemulihan Anda",
+      "description": "Gunakan kode pemulihan untuk masuk jika Anda kehilangan perangkat. Setiap kode hanya bisa dipakai sekali. Kode tidak akan ditampilkan lagi.",
+      "download": "Unduh",
+      "copy": "Salin semua",
+      "fileHeader": "Kode pemulihan. Setiap kode hanya bisa dipakai sekali. Simpan di tempat yang aman.",
+      "confirmSaved": "Saya sudah menyimpan kode pemulihan",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Kata sandi",
+      "codeLabel": "Kode autentikasi atau pemulihan",
+      "cancel": "Batal",
+      "passwordInvalid": "Masukkan kata sandi yang valid.",
+      "codeInvalid": "Masukkan kode autentikasi atau pemulihan yang valid."
+    },
+    "regenerate": {
+      "start": "Buat kode pemulihan baru",
+      "title": "Buat kode pemulihan baru",
+      "description": "Kode pemulihan lama berhenti berfungsi begitu Anda membuat yang baru. Masukkan kata sandi dan kode dari aplikasi autentikator Anda (atau kode pemulihan).",
+      "submit": "Buat kode baru",
+      "submitting": "Membuat...",
+      "lowNotice": "{count, plural, other {Tersisa # kode pemulihan}}. Buat yang baru sebelum habis.",
+      "toast": "Kode pemulihan baru sudah siap"
+    },
+    "disable": {
+      "title": "Nonaktifkan autentikasi dua faktor",
+      "description": "Masukkan kata sandi dan kode dari aplikasi autentikator Anda (atau kode pemulihan).",
+      "start": "Nonaktifkan",
+      "submit": "Nonaktifkan autentikasi dua faktor",
+      "submitting": "Menonaktifkan...",
+      "blockedByPolicy": "Organisasi Anda mewajibkan autentikasi dua faktor, jadi Anda tidak dapat menonaktifkannya. Jika Anda kehilangan perangkat, minta admin untuk mengatur ulang."
+    },
+    "enabledToast": "Autentikasi dua faktor aktif",
+    "disabledToast": "Autentikasi dua faktor nonaktif",
+    "errors": {
+      "loadFailed": "Tidak dapat memuat pengaturan dua faktor.",
+      "setupFailed": "Tidak dapat memulai pengaturan. Coba lagi.",
+      "enableFailed": "Tidak dapat mengaktifkan autentikasi dua faktor.",
+      "regenerateFailed": "Tidak dapat membuat kode pemulihan baru.",
+      "disableFailed": "Tidak dapat menonaktifkan autentikasi dua faktor.",
+      "copyFailed": "Tidak dapat menyalin ke papan klip."
+    }
+  },
+  "connectedApps": {
+    "title": "Aplikasi terhubung",
+    "description": "Aplikasi yang Anda izinkan menggunakan akun Anda melalui alur masuk OAuth. Aplikasi bertindak dengan izin Anda. Putuskan aplikasi yang sudah tidak Anda pakai.",
+    "loading": "Memuat...",
+    "empty": "Tidak ada aplikasi yang terhubung ke akun Anda.",
+    "redirectsTo": "Kembali ke {hosts}",
+    "connectedAt": "Terhubung {date}",
+    "lastUsed": "Terakhir dipakai {date}",
+    "neverUsed": "Belum pernah dipakai",
+    "disconnect": "Putuskan",
+    "disconnectLabel": "Putuskan {name}",
+    "disconnectConfirm": "Putuskan sekarang",
+    "cancel": "Batal",
+    "disconnected": "Aplikasi diputuskan",
+    "close": "Tutup",
+    "errors": {
+      "loadFailed": "Gagal memuat aplikasi terhubung.",
+      "disconnectFailed": "Gagal memutuskan aplikasi."
+    },
+    "unnamedApp": "Aplikasi tanpa nama"
+  }
+}

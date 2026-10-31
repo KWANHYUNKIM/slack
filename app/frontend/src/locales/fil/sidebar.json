@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktibidad",
+    "unreads": "Hindi pa nababasa",
+    "later": "Mamaya",
+    "files": "Mga file",
+    "admin": "Admin",
+    "threads": "Mga thread"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Bagong mensahe"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "notificationsBlocked": "Naka-block ang notifications",
+    "disableNotifications": "I-disable ang notifications",
+    "enableNotifications": "I-enable ang notifications",
+    "signOut": "Mag-sign out",
+    "updateStatus": "I-update ang iyong status",
+    "pauseNotifications": "I-pause ang notifications",
+    "pausedUntil": "Naka-pause hanggang {time}",
+    "pausedIndefinitely": "Naka-pause hanggang mabura ang iyong status",
+    "resumeNotifications": "Ituloy ang notifications",
+    "pause": {
+      "m30": "30 minuto",
+      "h1": "1 oras",
+      "h2": "2 oras",
+      "tomorrow": "Hanggang bukas"
+    },
+    "pauseError": "Hindi mapalitan ang pause ng notification. Subukan muli.",
+    "accessTokens": "Mga personal access token",
+    "sessions": "Mga device na naka-sign in",
+    "twoFactor": "Two-factor authentication",
+    "changePassword": "Palitan ang password",
+    "connectedApps": "Mga konektadong app"
+  },
+  "sections": {
+    "starred": "Starred",
+    "channels": "Mga channel",
+    "addChannels": "Magdagdag ng channel",
+    "directMessages": "Mga direktang mensahe",
+    "addTeammates": "Magdagdag ng kasamahan",
+    "starredEmpty": "I-star ang isang channel o usapan para manatili ito rito.",
+    "collapse": "I-collapse ang {section}",
+    "expand": "I-expand ang {section}"
+  },
+  "teammates": {
+    "title": "Direktang mensahe",
+    "subtitle": "Maghanap o magsimula ng usapan",
+    "searchPlaceholder": "Maghanap ayon sa pangalan...",
+    "noUsers": "Walang nakitang user",
+    "close": "Isara",
+    "pickSubtitle": "Pumili ng hanggang {max, plural, one {# tao} other {# na tao}}",
+    "select": "Piliin si {name}",
+    "selectedCount": "{count} sa {max} ang napili",
+    "start": "Magsimula ng usapan",
+    "startGroup": "Magsimula ng group na usapan"
+  },
+  "you": "(ikaw)",
+  "notifications": {
+    "someone": "May nagpadala",
+    "sentAttachment": "Nagpadala ng attachment",
+    "threadTitle": "{name} (thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# miyembro} other {# na miyembro}}",
+    "createError": "Hindi masimulan ang group na usapan. Subukan muli."
+  },
+  "statusDialog": {
+    "title": "Magtakda ng status",
+    "emojiLabel": "Pumili ng emoji",
+    "textLabel": "Ano ang iyong status?",
+    "textPlaceholder": "Ano ang iyong status?",
+    "durationLabel": "Burahin pagkatapos ng",
+    "duration": {
+      "never": "Huwag burahin",
+      "m30": "30 minuto",
+      "h1": "1 oras",
+      "h4": "4 na oras",
+      "today": "Ngayong araw",
+      "week": "Ngayong linggo"
+    },
+    "pauseCheckbox": "I-pause ang notifications hanggang mabura ang status",
+    "save": "I-save",
+    "clear": "Burahin ang status",
+    "cancel": "Kanselahin",
+    "expiresAt": "Mabubura sa {time}",
+    "saveError": "Hindi ma-save ang iyong status. Subukan muli."
+  },
+  "findConversation": "Maghanap ng usapan"
+}

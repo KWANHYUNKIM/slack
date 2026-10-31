@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Cipta saluran",
+    "tabBrowse": "Semak imbas saluran",
+    "nameLabel": "Nama saluran",
+    "namePlaceholder": "cth. rancangan-belanjawan",
+    "visibility": "Keterlihatan",
+    "public": "Awam",
+    "private": "Persendirian",
+    "publicHint": "Sesiapa dalam ruang kerja boleh mencari dan menyertai saluran ini.",
+    "privateHint": "Hanya ahli yang dijemput boleh mencari dan menyertai saluran ini.",
+    "cancel": "Batal",
+    "create": "Cipta",
+    "noChannels": "Tiada saluran untuk disertai",
+    "memberCount": "{count, plural, other {# ahli}}",
+    "joined": "Disertai",
+    "join": "Sertai",
+    "close": "Tutup",
+    "errors": {
+      "createFailed": "Gagal mencipta saluran"
+    }
+  },
+  "errors": {
+    "loadConversations": "Gagal memuatkan perbualan.",
+    "loadChannels": "Gagal memuatkan saluran."
+  },
+  "membersPanel": {
+    "title": "Ahli",
+    "addPeople": "Tambah orang",
+    "loadError": "Gagal memuatkan ahli.",
+    "removeError": "Gagal mengeluarkan ahli",
+    "online": "Dalam talian — {count}",
+    "offline": "Luar talian — {count}",
+    "removeDialog": {
+      "title": "Keluarkan ahli?",
+      "message": "Keluarkan <bold>{name}</bold> daripada saluran ini?"
+    },
+    "removing": "Sedang mengeluarkan...",
+    "searchByName": "Cari mengikut nama...",
+    "noUsers": "Tiada pengguna ditemui",
+    "roles": {
+      "owner": "Pemilik",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Keluarkan ahli"
+  },
+  "dm": {
+    "messagePlaceholder": "Mesej {name}",
+    "you": "(anda)",
+    "star": "Tambah ke Berbintang",
+    "unstar": "Alih keluar daripada Berbintang",
+    "loadingMessages": "Memuatkan mesej...",
+    "selfSpace": "Ini ruang anda. Sediakan draf mesej, senaraikan tugasan, atau simpan pautan dan fail di sini.",
+    "conversationStart": "Permulaan perbualan anda dengan {name}",
+    "sendToBegin": "Hantar mesej untuk memulakan.",
+    "edited": "(disunting)",
+    "pinnedMessages": "Mesej yang disemat",
+    "noPins": "Belum ada mesej yang disemat",
+    "files": "Fail",
+    "noFiles": "Belum ada fail yang dikongsi",
+    "loadError": "Gagal memuatkan mesej.",
+    "sendError": "Mesej gagal dihantar. Sila cuba lagi."
+  },
+  "nameRules": {
+    "required": "Masukkan nama saluran.",
+    "tooLong": "Nama saluran mesti {max} aksara atau kurang.",
+    "invalidChars": "Nama saluran hanya boleh mengandungi huruf, nombor, sempang dan garis bawah, dan mesti bermula dengan huruf atau nombor.",
+    "tooManyMarks": "Nama saluran tidak boleh mempunyai lebih daripada 4 tanda gabungan berturut-turut.",
+    "mixedScripts": "Nama saluran tidak boleh mencampurkan abjad yang menyerupai (seperti Latin dengan Cyrillic atau Greek) atau digit daripada sistem nombor lain.",
+    "taken": "Saluran dengan nama itu sudah wujud."
+  },
+  "groupDM": {
+    "members": "{count, plural, other {# ahli}}",
+    "nameLabel": "Nama perbualan",
+    "namePlaceholder": "Tambah nama",
+    "noName": "Tiada nama (memaparkan nama ahli)",
+    "rename": "Namakan semula perbualan",
+    "addPeople": "Tambah orang",
+    "add": "Tambah",
+    "createWith": "Mulakan perbualan kumpulan",
+    "leave": "Tinggalkan perbualan",
+    "leaveConfirm": "Tinggalkan perbualan ini? Anda tidak lagi akan melihat mesejnya.",
+    "conversationStart": "Ini permulaan perbualan anda dengan {names}",
+    "addError": "Tidak dapat menambah orang. Sila cuba lagi.",
+    "renameError": "Tidak dapat menamakan semula perbualan. Sila cuba lagi.",
+    "leaveError": "Tidak dapat meninggalkan perbualan. Sila cuba lagi."
+  }
+}

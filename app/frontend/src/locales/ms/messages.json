@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Beritahu semua yang sedang dalam talian",
+    "channelLabel": "@channel",
+    "channelHint": "Beritahu semua orang dalam saluran ini"
+  },
+  "deleteDialog": {
+    "title": "Padam mesej",
+    "body": "Adakah anda pasti mahu memadam mesej ini? Tindakan ini tidak boleh dibatalkan."
+  },
+  "editorToolbar": {
+    "attachFile": "Lampirkan fail",
+    "emoji": "Emoji",
+    "mention": "Sebut seseorang",
+    "stopRecording": "Berhenti merakam",
+    "recordVoice": "Rakam klip suara"
+  },
+  "emojiAutocomplete": {
+    "navigate": "untuk bergerak",
+    "select": "untuk memilih",
+    "dismiss": "untuk ketepikan",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Alih keluar {name}"
+  },
+  "fileModal": {
+    "download": "Muat turun",
+    "loadFailed": "Tidak dapat memuatkan kandungan fail",
+    "truncated": "... (dipotong)",
+    "noPreview": "Tiada pratonton",
+    "downloadToView": "Muat turun fail untuk melihatnya"
+  },
+  "files": {
+    "allFiles": "Semua fail",
+    "channelFiles": "Fail saluran",
+    "loadFailed": "Gagal memuatkan fail.",
+    "empty": "Belum ada fail dimuat naik",
+    "download": "Muat turun",
+    "menu": "Menu",
+    "unavailable": "Fail tidak tersedia",
+    "preparing": "Sedang menyediakan fail"
+  },
+  "format": {
+    "bold": "Tebal",
+    "italic": "Italik",
+    "strike": "Garis tengah",
+    "link": "Pautan",
+    "orderedList": "Senarai bernombor",
+    "bulletList": "Senarai berbulet",
+    "code": "Kod",
+    "codeBlock": "Blok kod",
+    "quote": "Petikan"
+  },
+  "notifications": {
+    "title": "Pemberitahuan",
+    "empty": "Tiada pemberitahuan baharu",
+    "unreadCount": "{count, plural, other {# mesej belum dibaca}}"
+  },
+  "search": {
+    "placeholder": "Cari",
+    "searching": "Sedang mencari...",
+    "noResults": "Tiada hasil ditemui",
+    "previewHint": "{count, plural, other {# hasil teratas}} · Lihat semua (Enter)",
+    "truncatedNotice": "Terdapat banyak hasil. Tambah penapis untuk mengecilkannya.",
+    "retry": "Cuba lagi",
+    "ignoredChip": "{token} (diabaikan)",
+    "ignoredLimitChip": "{token} (diabaikan: terlalu banyak)",
+    "inChannel": "dalam #{channel}",
+    "title": "Hasil carian",
+    "resultsFor": "Hasil untuk \"{query}\"",
+    "emptyQuery": "Taip istilah carian, atau gunakan penapis seperti from:, in:, has:, before:, after:.",
+    "noResultsHint": "Cuba kata kunci yang berbeza atau alih keluar sebahagian penapis.",
+    "clearFilters": "Kosongkan semua penapis",
+    "removeFilter": "Alih keluar penapis {filter}",
+    "loadFailed": "Carian gagal. Sila cuba lagi.",
+    "loadMore": "Muatkan lagi",
+    "threadReply": "Balasan benang",
+    "directMessage": "Mesej langsung",
+    "groupMessage": "Perbualan kumpulan",
+    "joined": "Disertai",
+    "privateChannel": "Persendirian",
+    "archivedChannel": "Diarkibkan",
+    "back": "Kembali",
+    "tabs": {
+      "label": "Jenis hasil carian",
+      "messages": "Mesej",
+      "files": "Fail",
+      "people": "Orang",
+      "channels": "Saluran"
+    },
+    "sort": {
+      "label": "Isih mengikut",
+      "relevance": "Kaitan",
+      "recent": "Terkini"
+    }
+  },
+  "headerTabs": {
+    "files": "Fail",
+    "pins": "Semat"
+  },
+  "lightbox": {
+    "close": "Tutup"
+  },
+  "later": {
+    "title": "Kemudian",
+    "saved": "Disimpan",
+    "scheduled": "Dijadualkan",
+    "loadFailed": "Gagal memuatkan mesej yang disimpan.",
+    "empty": "Belum ada mesej yang disimpan. Klik ikon penanda pada mana-mana mesej untuk menyimpannya.",
+    "removeSaved": "Alih keluar daripada Disimpan",
+    "menu": "Menu",
+    "reminders": "Peringatan"
+  },
+  "linkModal": {
+    "title": "Tambah pautan",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Teks paparan",
+    "optional": "(pilihan)",
+    "textPlaceholder": "Teks pautan",
+    "close": "Tutup"
+  },
+  "actionsMenu": {
+    "noActions": "Tiada tindakan tersedia",
+    "markUnread": "Tandai sebagai belum dibaca",
+    "pin": "Semat mesej",
+    "unpin": "Nyahsemat mesej",
+    "edit": "Sunting mesej",
+    "delete": "Padam mesej",
+    "copyLink": "Salin pautan",
+    "remind": "Ingatkan saya tentang ini"
+  },
+  "area": {
+    "selectChannel": "Pilih saluran untuk mula menghantar mesej",
+    "openMenu": "Buka menu",
+    "placeholder": "Mesej #{channel}",
+    "viewing": "Anda sedang melihat <bold>#{channel}</bold>",
+    "joinChannel": "Sertai Saluran"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Alih keluar daripada Berbintang",
+    "star": "Tambah ke Berbintang",
+    "members": "Ahli: {count}",
+    "search": "Cari",
+    "channelMenu": "Pilihan saluran",
+    "leaveChannel": "Tinggalkan saluran",
+    "leaveLastMember": "Tidak boleh meninggalkan saluran — anda ialah ahli terakhir.",
+    "dismiss": "Ketepikan",
+    "addTopic": "Tambah topik",
+    "editDetails": "Sunting butiran saluran"
+  },
+  "message": {
+    "edited": "(disunting)",
+    "pinned": "Disemat",
+    "showMore": "Tunjukkan lagi",
+    "showLess": "Tunjukkan kurang",
+    "repliedToThread": "Membalas dalam benang: {excerpt}",
+    "deletedPlaceholder": "Mesej ini telah dipadam.",
+    "sendToChannel": "Hantar juga ke saluran",
+    "removeFromChannel": "Alih keluar daripada saluran"
+  },
+  "input": {
+    "uploading": "Sedang memuat naik...",
+    "scheduleMessage": "Jadualkan mesej",
+    "send": "Hantar mesej",
+    "hint": "Tekan <kbd>Enter</kbd> untuk menghantar, <kbd>Shift + Enter</kbd> untuk baris baharu",
+    "scheduledFor": "Dijadualkan pada {time}",
+    "scheduleFailed": "Gagal menjadualkan mesej. Sila cuba lagi."
+  },
+  "list": {
+    "loading": "Memuatkan mesej...",
+    "empty": "Belum ada mesej",
+    "emptyReadOnly": "Saluran ini tiada mesej.",
+    "emptyFirst": "Jadilah yang pertama menghantar mesej!"
+  },
+  "reactions": {
+    "tooltip": "{names} bereaksi dengan {emoji}",
+    "add": "Tambah reaksi",
+    "you": "Anda"
+  },
+  "toolbar": {
+    "addReaction": "Tambah reaksi",
+    "replyInThread": "Balas dalam benang",
+    "removeBookmark": "Alih keluar penanda",
+    "bookmark": "Tanda mesej ini",
+    "moreActions": "Lagi tindakan"
+  },
+  "mobileSearch": {
+    "placeholder": "Cari mesej...",
+    "hint": "Cari mesej merentas semua saluran dan perbualan",
+    "close": "Tutup carian"
+  },
+  "pins": {
+    "title": "Mesej yang disemat",
+    "loadFailed": "Gagal memuatkan mesej yang disemat.",
+    "empty": "Belum ada mesej yang disemat"
+  },
+  "schedule": {
+    "menuTitle": "Jadualkan mesej",
+    "in20": "Dalam 20 minit",
+    "in1h": "Dalam 1 jam",
+    "in3h": "Dalam 3 jam",
+    "tomorrow9": "Esok pukul 9:00 pagi",
+    "custom": "Masa tersuai...",
+    "modalTitle": "Jadualkan mesej",
+    "dateTime": "Tarikh dan masa",
+    "pickFuture": "Pilih masa pada masa hadapan.",
+    "submit": "Jadualkan",
+    "submitting": "Sedang menjadualkan...",
+    "close": "Tutup"
+  },
+  "scheduled": {
+    "loadFailed": "Gagal memuatkan mesej yang dijadualkan.",
+    "cancelFailed": "Gagal membatalkan mesej.",
+    "sendFailed": "Gagal menghantar mesej.",
+    "saveFailed": "Gagal menyimpan perubahan.",
+    "empty": "Tiada mesej yang dijadualkan. Gunakan ikon jam dalam penulis mesej untuk menjadualkan satu.",
+    "sendAt": "Hantar pada:",
+    "edit": "Sunting",
+    "sendNow": "Hantar sekarang",
+    "cancel": "Batal",
+    "failedDlp": "Mesej ini tidak dihantar kerana sepadan dengan peraturan perlindungan data ({rule}). Padamkannya dan tulis yang baharu."
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {# balasan}}"
+  },
+  "unreads": {
+    "title": "Belum dibaca",
+    "loadFailed": "Gagal memuatkan mesej yang belum dibaca.",
+    "empty": "Tiada mesej belum dibaca. Anda sudah ketinggalan dengan semuanya! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Benang",
+    "replyPlaceholder": "Balas...",
+    "loadFailed": "Gagal memuatkan benang. Sila cuba lagi.",
+    "loading": "Memuatkan benang...",
+    "replyFailed": "Gagal menghantar balasan. Sila cuba lagi.",
+    "joinToReply": "Sertai saluran untuk membalas dalam benang",
+    "alsoSendToChannel": "Hantar juga ke saluran"
+  },
+  "errors": {
+    "messageEmpty": "Mesej tidak boleh kosong.",
+    "pasteUploadFailed": "Gagal memuat naik imej yang ditampal. Sila cuba lagi.",
+    "dropUploadFailed": "Gagal memuat naik fail yang dilepaskan. Sila cuba lagi.",
+    "uploadFailed": "Gagal memuat naik fail. Sila cuba lagi.",
+    "voiceUploadFailed": "Gagal memuat naik mesej suara.",
+    "micDenied": "Akses mikrofon ditolak. Sila benarkan akses mikrofon.",
+    "loadFailed": "Gagal memuatkan mesej.",
+    "sendTimeout": "Penghantaran mesej tamat masa. Sila cuba lagi.",
+    "sendFailed": "Mesej gagal dihantar. Sila cuba lagi.",
+    "pushNotConfigured": "Pemberitahuan tolak belum disediakan pada pelayan",
+    "serviceWorkerUnavailable": "Service worker tidak tersedia",
+    "subscribeFailed": "Gagal mendaftarkan langganan",
+    "editFailed": "Tidak dapat menyimpan suntingan. Sila cuba lagi."
+  },
+  "details": {
+    "title": "Butiran saluran",
+    "name": "Nama",
+    "topic": "Topik",
+    "topicPlaceholder": "Apakah saluran ini tentang?",
+    "description": "Penerangan",
+    "descriptionPlaceholder": "Tambah penerangan",
+    "createdBy": "Dicipta oleh {name}",
+    "readOnly": "Hanya pemilik saluran, moderator dan pentadbir ruang kerja boleh menyunting butiran ini.",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "saveFailed": "Gagal menyimpan butiran saluran."
+  },
+  "intro": {
+    "title": "Selamat datang ke #{name}",
+    "noDescription": "Belum ada penerangan.",
+    "editDescription": "Sunting penerangan"
+  },
+  "threads": {
+    "title": "Benang",
+    "menu": "Menu",
+    "loadFailed": "Gagal memuatkan benang.",
+    "empty": "Belum ada benang",
+    "emptyHint": "Benang yang anda mulakan atau balas akan dipaparkan di sini.",
+    "newReplies": "{count, plural, other {# balasan baharu}}",
+    "replyCount": "{count, plural, other {# balasan}}",
+    "olderReplies": "Buka benang untuk melihat balasan terdahulu",
+    "replyPlaceholder": "Balas...",
+    "send": "Hantar",
+    "replyFailed": "Gagal menghantar balasan. Sila cuba lagi.",
+    "alsoSendToChannel": "Hantar juga ke saluran",
+    "openThread": "Buka benang",
+    "loadMore": "Muatkan lagi",
+    "loading": "Memuatkan..."
+  },
+  "permalink": {
+    "copied": "Pautan disalin",
+    "notFound": "Mesej ini tidak dapat ditemui, atau anda tidak mempunyai kebenaran untuk melihatnya",
+    "goHome": "Pergi ke laman utama",
+    "copyManually": "Tidak dapat menyalin secara automatik. Salin pautan ini: {url}"
+  },
+  "unread": {
+    "divider": "Baharu",
+    "newMessagesBar": "{count, plural, other {# mesej baharu}}",
+    "newMessagesBarAtLeast": "{count, plural, other {# mesej baharu atau lebih}}",
+    "markRead": "Tandai sebagai sudah dibaca",
+    "jumpFailed": "Tidak dapat memuatkan kedudukan belum dibaca"
+  },
+  "reminder": {
+    "set": "Tetapkan peringatan",
+    "customLabel": "Tarikh dan masa peringatan",
+    "preset": {
+      "in20": "Dalam 20 minit",
+      "in1h": "Dalam 1 jam",
+      "in3h": "Dalam 3 jam",
+      "tomorrow": "Esok",
+      "nextWeek": "Minggu depan",
+      "custom": "Tersuai..."
+    },
+    "status": {
+      "pending": "Akan datang",
+      "done": "Selesai"
+    },
+    "snooze": {
+      "m10": "10 minit",
+      "h1": "1 jam",
+      "tomorrow": "Esok"
+    },
+    "loadFailed": "Gagal memuatkan peringatan.",
+    "empty": "Tiada peringatan. Gunakan menu tindakan lain pada mesej atau taip /remind untuk menambah.",
+    "emptyDone": "Tiada peringatan yang selesai.",
+    "dueAt": "Tarikh akhir {time}",
+    "firedAt": "Telah tiba masanya {time}",
+    "completedAt": "Selesai {time}",
+    "messageDeleted": "Mesej dipadam",
+    "complete": "Tandai sebagai selesai",
+    "reopen": "Tandai sebagai belum selesai",
+    "delete": "Padam peringatan",
+    "toast": {
+      "created": "Peringatan ditetapkan",
+      "due": "Peringatan: {text}",
+      "createFailed": "Gagal menetapkan peringatan. Sila cuba lagi."
+    },
+    "command": {
+      "syntax": "Penggunaan: /remind me [teks] in [nombor] [minutes|hours|days]",
+      "tooShort": "Peringatan mesti sekurang-kurangnya 1 minit dari sekarang.",
+      "tooLong": "Peringatan mesti dalam tempoh setahun.",
+      "created": "Peringatan ditetapkan pada {time}"
+    },
+    "pastTime": "Pilih masa pada masa hadapan.",
+    "loadMore": "Muatkan lagi"
+  }
+}

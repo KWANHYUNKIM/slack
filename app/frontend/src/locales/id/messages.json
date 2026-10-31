@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Beri tahu semua orang yang sedang daring",
+    "channelLabel": "@channel",
+    "channelHint": "Beri tahu semua orang di channel ini"
+  },
+  "deleteDialog": {
+    "title": "Hapus pesan",
+    "body": "Yakin ingin menghapus pesan ini? Tindakan ini tidak dapat dibatalkan."
+  },
+  "editorToolbar": {
+    "attachFile": "Lampirkan berkas",
+    "emoji": "Emoji",
+    "mention": "Sebut seseorang",
+    "stopRecording": "Berhenti merekam",
+    "recordVoice": "Rekam klip suara"
+  },
+  "emojiAutocomplete": {
+    "navigate": "untuk berpindah",
+    "select": "untuk memilih",
+    "dismiss": "untuk menutup",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Hapus {name}"
+  },
+  "fileModal": {
+    "download": "Unduh",
+    "loadFailed": "Tidak dapat memuat isi berkas",
+    "truncated": "... (dipotong)",
+    "noPreview": "Pratinjau tidak tersedia",
+    "downloadToView": "Unduh berkas untuk melihatnya"
+  },
+  "files": {
+    "allFiles": "Semua berkas",
+    "channelFiles": "Berkas channel",
+    "loadFailed": "Gagal memuat berkas.",
+    "empty": "Belum ada berkas yang diunggah",
+    "download": "Unduh",
+    "menu": "Menu",
+    "unavailable": "Berkas tidak tersedia",
+    "preparing": "Menyiapkan berkas"
+  },
+  "format": {
+    "bold": "Tebal",
+    "italic": "Miring",
+    "strike": "Coret",
+    "link": "Tautan",
+    "orderedList": "Daftar bernomor",
+    "bulletList": "Daftar berpoin",
+    "code": "Kode",
+    "codeBlock": "Blok kode",
+    "quote": "Kutipan"
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "empty": "Tidak ada notifikasi baru",
+    "unreadCount": "{count, plural, other {# pesan belum dibaca}}"
+  },
+  "search": {
+    "placeholder": "Cari",
+    "searching": "Mencari...",
+    "noResults": "Tidak ada hasil",
+    "previewHint": "{count, plural, other {# hasil teratas}} · Lihat semua (Enter)",
+    "truncatedNotice": "Hasilnya banyak. Tambahkan filter untuk mempersempit.",
+    "retry": "Coba lagi",
+    "ignoredChip": "{token} (diabaikan)",
+    "ignoredLimitChip": "{token} (diabaikan: terlalu banyak)",
+    "inChannel": "di #{channel}",
+    "title": "Hasil pencarian",
+    "resultsFor": "Hasil untuk \"{query}\"",
+    "emptyQuery": "Ketik kata kunci pencarian, atau gunakan filter seperti from:, in:, has:, before:, after:.",
+    "noResultsHint": "Coba kata kunci lain atau hapus beberapa filter.",
+    "clearFilters": "Hapus semua filter",
+    "removeFilter": "Hapus filter {filter}",
+    "loadFailed": "Pencarian gagal. Silakan coba lagi.",
+    "loadMore": "Muat lainnya",
+    "threadReply": "Balasan thread",
+    "directMessage": "Pesan langsung",
+    "groupMessage": "Percakapan grup",
+    "joined": "Sudah bergabung",
+    "privateChannel": "Privat",
+    "archivedChannel": "Diarsipkan",
+    "back": "Kembali",
+    "tabs": {
+      "label": "Jenis hasil pencarian",
+      "messages": "Pesan",
+      "files": "Berkas",
+      "people": "Orang",
+      "channels": "Channel"
+    },
+    "sort": {
+      "label": "Urutkan berdasarkan",
+      "relevance": "Relevansi",
+      "recent": "Terbaru"
+    }
+  },
+  "headerTabs": {
+    "files": "Berkas",
+    "pins": "Sematan"
+  },
+  "lightbox": {
+    "close": "Tutup"
+  },
+  "later": {
+    "title": "Nanti",
+    "saved": "Disimpan",
+    "scheduled": "Dijadwalkan",
+    "loadFailed": "Gagal memuat pesan tersimpan.",
+    "empty": "Belum ada pesan tersimpan. Klik ikon penanda pada pesan mana pun untuk menyimpannya.",
+    "removeSaved": "Hapus dari Disimpan",
+    "menu": "Menu",
+    "reminders": "Pengingat"
+  },
+  "linkModal": {
+    "title": "Tambah tautan",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Teks tampilan",
+    "optional": "(opsional)",
+    "textPlaceholder": "Teks tautan",
+    "close": "Tutup"
+  },
+  "actionsMenu": {
+    "noActions": "Tidak ada tindakan yang tersedia",
+    "markUnread": "Tandai belum dibaca",
+    "pin": "Sematkan pesan",
+    "unpin": "Lepas sematan pesan",
+    "edit": "Edit pesan",
+    "delete": "Hapus pesan",
+    "copyLink": "Salin tautan",
+    "remind": "Ingatkan saya tentang ini"
+  },
+  "area": {
+    "selectChannel": "Pilih channel untuk mulai mengirim pesan",
+    "openMenu": "Buka menu",
+    "placeholder": "Pesan #{channel}",
+    "viewing": "Anda sedang melihat <bold>#{channel}</bold>",
+    "joinChannel": "Gabung ke channel"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Hapus dari Berbintang",
+    "star": "Tambahkan ke Berbintang",
+    "members": "Anggota: {count}",
+    "search": "Cari",
+    "channelMenu": "Opsi channel",
+    "leaveChannel": "Tinggalkan channel",
+    "leaveLastMember": "Tidak dapat meninggalkan channel — Anda adalah anggota terakhir.",
+    "dismiss": "Tutup",
+    "addTopic": "Tambahkan topik",
+    "editDetails": "Edit detail channel"
+  },
+  "message": {
+    "edited": "(diedit)",
+    "pinned": "Disematkan",
+    "showMore": "Tampilkan lainnya",
+    "showLess": "Tampilkan lebih sedikit",
+    "repliedToThread": "Membalas di thread: {excerpt}",
+    "deletedPlaceholder": "Pesan ini telah dihapus.",
+    "sendToChannel": "Kirim juga ke channel",
+    "removeFromChannel": "Hapus dari channel"
+  },
+  "input": {
+    "uploading": "Mengunggah...",
+    "scheduleMessage": "Jadwalkan pesan",
+    "send": "Kirim pesan",
+    "hint": "Tekan <kbd>Enter</kbd> untuk mengirim, <kbd>Shift + Enter</kbd> untuk baris baru",
+    "scheduledFor": "Dijadwalkan pada {time}",
+    "scheduleFailed": "Gagal menjadwalkan pesan. Silakan coba lagi."
+  },
+  "list": {
+    "loading": "Memuat pesan...",
+    "empty": "Belum ada pesan",
+    "emptyReadOnly": "Channel ini belum memiliki pesan.",
+    "emptyFirst": "Jadilah yang pertama mengirim pesan!"
+  },
+  "reactions": {
+    "tooltip": "{names} memberi reaksi {emoji}",
+    "add": "Tambah reaksi",
+    "you": "Anda"
+  },
+  "toolbar": {
+    "addReaction": "Tambah reaksi",
+    "replyInThread": "Balas di thread",
+    "removeBookmark": "Hapus penanda",
+    "bookmark": "Tandai pesan ini",
+    "moreActions": "Tindakan lainnya"
+  },
+  "mobileSearch": {
+    "placeholder": "Cari pesan...",
+    "hint": "Cari pesan di semua channel dan percakapan",
+    "close": "Tutup pencarian"
+  },
+  "pins": {
+    "title": "Pesan yang disematkan",
+    "loadFailed": "Gagal memuat pesan yang disematkan.",
+    "empty": "Belum ada pesan yang disematkan"
+  },
+  "schedule": {
+    "menuTitle": "Jadwalkan pesan",
+    "in20": "Dalam 20 menit",
+    "in1h": "Dalam 1 jam",
+    "in3h": "Dalam 3 jam",
+    "tomorrow9": "Besok pukul 09.00",
+    "custom": "Waktu kustom...",
+    "modalTitle": "Jadwalkan pesan",
+    "dateTime": "Tanggal dan waktu",
+    "pickFuture": "Pilih waktu di masa depan.",
+    "submit": "Jadwalkan",
+    "submitting": "Menjadwalkan...",
+    "close": "Tutup"
+  },
+  "scheduled": {
+    "loadFailed": "Gagal memuat pesan terjadwal.",
+    "cancelFailed": "Gagal membatalkan pesan.",
+    "sendFailed": "Gagal mengirim pesan.",
+    "saveFailed": "Gagal menyimpan perubahan.",
+    "empty": "Tidak ada pesan terjadwal. Gunakan ikon jam di editor pesan untuk menjadwalkan.",
+    "sendAt": "Kirim pada:",
+    "edit": "Edit",
+    "sendNow": "Kirim sekarang",
+    "cancel": "Batal",
+    "failedDlp": "Pesan ini tidak terkirim karena cocok dengan aturan perlindungan data ({rule}). Hapus lalu tulis ulang pesan baru."
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {# balasan}}"
+  },
+  "unreads": {
+    "title": "Belum dibaca",
+    "loadFailed": "Gagal memuat pesan yang belum dibaca.",
+    "empty": "Tidak ada pesan yang belum dibaca. Anda sudah membaca semuanya! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Balas...",
+    "loadFailed": "Gagal memuat thread. Silakan coba lagi.",
+    "loading": "Memuat thread...",
+    "replyFailed": "Gagal mengirim balasan. Silakan coba lagi.",
+    "joinToReply": "Gabung ke channel untuk membalas di thread",
+    "alsoSendToChannel": "Kirim juga ke channel"
+  },
+  "errors": {
+    "messageEmpty": "Pesan tidak boleh kosong.",
+    "pasteUploadFailed": "Gagal mengunggah gambar yang ditempel. Silakan coba lagi.",
+    "dropUploadFailed": "Gagal mengunggah berkas yang dijatuhkan. Silakan coba lagi.",
+    "uploadFailed": "Gagal mengunggah berkas. Silakan coba lagi.",
+    "voiceUploadFailed": "Gagal mengunggah pesan suara.",
+    "micDenied": "Akses mikrofon ditolak. Silakan izinkan akses mikrofon.",
+    "loadFailed": "Gagal memuat pesan.",
+    "sendTimeout": "Pengiriman pesan melewati batas waktu. Silakan coba lagi.",
+    "sendFailed": "Pesan gagal terkirim. Silakan coba lagi.",
+    "pushNotConfigured": "Notifikasi push belum diatur di server",
+    "serviceWorkerUnavailable": "Service worker tidak tersedia",
+    "subscribeFailed": "Gagal mendaftarkan langganan",
+    "editFailed": "Tidak dapat menyimpan edit. Silakan coba lagi."
+  },
+  "details": {
+    "title": "Detail channel",
+    "name": "Nama",
+    "topic": "Topik",
+    "topicPlaceholder": "Channel ini membahas apa?",
+    "description": "Deskripsi",
+    "descriptionPlaceholder": "Tambahkan deskripsi",
+    "createdBy": "Dibuat oleh {name}",
+    "readOnly": "Hanya pemilik channel, moderator, dan admin workspace yang dapat mengedit detail ini.",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "saveFailed": "Gagal menyimpan detail channel."
+  },
+  "intro": {
+    "title": "Selamat datang di #{name}",
+    "noDescription": "Belum ada deskripsi.",
+    "editDescription": "Edit deskripsi"
+  },
+  "threads": {
+    "title": "Thread",
+    "menu": "Menu",
+    "loadFailed": "Gagal memuat thread.",
+    "empty": "Belum ada thread",
+    "emptyHint": "Thread yang Anda mulai atau balas akan muncul di sini.",
+    "newReplies": "{count, plural, other {# balasan baru}}",
+    "replyCount": "{count, plural, other {# balasan}}",
+    "olderReplies": "Buka thread untuk melihat balasan sebelumnya",
+    "replyPlaceholder": "Balas...",
+    "send": "Kirim",
+    "replyFailed": "Gagal mengirim balasan. Silakan coba lagi.",
+    "alsoSendToChannel": "Kirim juga ke channel",
+    "openThread": "Buka thread",
+    "loadMore": "Muat lainnya",
+    "loading": "Memuat..."
+  },
+  "permalink": {
+    "copied": "Tautan disalin",
+    "notFound": "Pesan ini tidak dapat ditemukan, atau Anda tidak memiliki izin untuk melihatnya",
+    "goHome": "Ke beranda",
+    "copyManually": "Tidak dapat menyalin otomatis. Salin tautan ini: {url}"
+  },
+  "unread": {
+    "divider": "Baru",
+    "newMessagesBar": "{count, plural, other {# pesan baru}}",
+    "newMessagesBarAtLeast": "{count, plural, other {# pesan baru atau lebih}}",
+    "markRead": "Tandai sudah dibaca",
+    "jumpFailed": "Tidak dapat memuat posisi belum dibaca"
+  },
+  "reminder": {
+    "set": "Atur pengingat",
+    "customLabel": "Tanggal dan waktu pengingat",
+    "preset": {
+      "in20": "Dalam 20 menit",
+      "in1h": "Dalam 1 jam",
+      "in3h": "Dalam 3 jam",
+      "tomorrow": "Besok",
+      "nextWeek": "Minggu depan",
+      "custom": "Kustom..."
+    },
+    "status": {
+      "pending": "Akan datang",
+      "done": "Selesai"
+    },
+    "snooze": {
+      "m10": "10 menit",
+      "h1": "1 jam",
+      "tomorrow": "Besok"
+    },
+    "loadFailed": "Gagal memuat pengingat.",
+    "empty": "Tidak ada pengingat. Gunakan menu tindakan lainnya pada pesan atau ketik /remind untuk menambahkan.",
+    "emptyDone": "Tidak ada pengingat yang selesai.",
+    "dueAt": "Jatuh tempo {time}",
+    "firedAt": "Sudah jatuh tempo {time}",
+    "completedAt": "Selesai {time}",
+    "messageDeleted": "Pesan dihapus",
+    "complete": "Tandai selesai",
+    "reopen": "Tandai belum selesai",
+    "delete": "Hapus pengingat",
+    "toast": {
+      "created": "Pengingat diatur",
+      "due": "Pengingat: {text}",
+      "createFailed": "Gagal mengatur pengingat. Silakan coba lagi."
+    },
+    "command": {
+      "syntax": "Cara pakai: /remind me [teks] in [angka] [minutes|hours|days]",
+      "tooShort": "Pengingat harus berjarak minimal 1 menit.",
+      "tooLong": "Pengingat harus dalam waktu satu tahun.",
+      "created": "Pengingat diatur pada {time}"
+    },
+    "pastTime": "Pilih waktu di masa depan.",
+    "loadMore": "Muat lainnya"
+  }
+}

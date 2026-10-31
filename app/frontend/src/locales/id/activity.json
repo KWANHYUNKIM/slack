@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktivitas",
+    "markAllRead": "Tandai semua sudah dibaca",
+    "loading": "Memuat...",
+    "loadingMore": "Memuat lainnya...",
+    "loadFailed": "Gagal memuat aktivitas.",
+    "empty": "Belum ada aktivitas.",
+    "unread": "Belum dibaca",
+    "menu": "Menu",
+    "someone": "Seseorang",
+    "directMessage": "pesan langsung",
+    "messageDeleted": "Pesan dihapus"
+  },
+  "tabs": {
+    "all": "Semua",
+    "mentions": "Sebutan",
+    "threads": "Thread",
+    "reactions": "Reaksi"
+  },
+  "describe": {
+    "mention": "{actor} menyebut Anda di {where}",
+    "channelMention": "{actor} menyebut @channel di {where}",
+    "hereMention": "{actor} menyebut @here di {where}",
+    "threadReply": "{actor} membalas thread di {where}",
+    "reaction": "{actor} memberi reaksi {emoji} pada pesan Anda di {where}",
+    "reminder": "Pengingat"
+  }
+}

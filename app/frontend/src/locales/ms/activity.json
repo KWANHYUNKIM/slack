@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktiviti",
+    "markAllRead": "Tandai semua sebagai sudah dibaca",
+    "loading": "Memuatkan...",
+    "loadingMore": "Memuatkan lagi...",
+    "loadFailed": "Gagal memuatkan aktiviti.",
+    "empty": "Belum ada aktiviti.",
+    "unread": "Belum dibaca",
+    "menu": "Menu",
+    "someone": "Seseorang",
+    "directMessage": "mesej langsung",
+    "messageDeleted": "Mesej dipadam"
+  },
+  "tabs": {
+    "all": "Semua",
+    "mentions": "Sebutan",
+    "threads": "Benang",
+    "reactions": "Reaksi"
+  },
+  "describe": {
+    "mention": "{actor} menyebut anda dalam {where}",
+    "channelMention": "{actor} menyebut @channel dalam {where}",
+    "hereMention": "{actor} menyebut @here dalam {where}",
+    "threadReply": "{actor} membalas benang dalam {where}",
+    "reaction": "{actor} bereaksi {emoji} pada mesej anda dalam {where}",
+    "reminder": "Peringatan"
+  }
+}

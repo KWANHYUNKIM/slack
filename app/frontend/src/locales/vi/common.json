@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "close": "Đóng",
+    "send": "Gửi",
+    "confirm": "Xác nhận",
+    "back": "Quay lại",
+    "remove": "Gỡ",
+    "add": "Thêm",
+    "create": "Tạo",
+    "retry": "Thử lại",
+    "search": "Tìm kiếm",
+    "copy": "Sao chép",
+    "done": "Xong",
+    "next": "Tiếp",
+    "more": "Thêm"
+  },
+  "emojiPicker": {
+    "loadFailed": "Không tải được biểu tượng cảm xúc. Kiểm tra kết nối và thử lại.",
+    "retry": "Thử lại"
+  },
+  "status": {
+    "loading": "Đang tải...",
+    "saving": "Đang lưu...",
+    "deleting": "Đang xóa..."
+  },
+  "dates": {
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua"
+  },
+  "quickSwitcher": {
+    "title": "Chuyển nhanh",
+    "inputLabel": "Chuyển đến một cuộc trò chuyện",
+    "placeholder": "Chuyển đến một kênh hoặc cuộc trò chuyện",
+    "recent": "Gần đây",
+    "results": "Kết quả",
+    "clearRecent": "Xóa mục gần đây",
+    "listLabel": "Cuộc trò chuyện",
+    "noResults": "Không có cuộc trò chuyện phù hợp",
+    "starred": "Đã gắn sao",
+    "unread": "Chưa đọc",
+    "dnd": "Không làm phiền",
+    "footer": "{keys} để mở. Phím mũi tên lên và xuống để di chuyển, Enter để đi tới, Esc để đóng.",
+    "open": "Chuyển đến…",
+    "kind": {
+      "channel": "Kênh",
+      "dm": "Tin nhắn trực tiếp",
+      "group": "Tin nhắn nhóm"
+    }
+  },
+  "shortcuts": {
+    "title": "Phím tắt",
+    "groups": {
+      "navigation": "Điều hướng",
+      "general": "Chung"
+    },
+    "items": {
+      "switcher": "Mở chuyển nhanh",
+      "prevChannel": "Cuộc trò chuyện trước",
+      "nextChannel": "Cuộc trò chuyện tiếp theo",
+      "prevUnread": "Cuộc trò chuyện chưa đọc trước",
+      "nextUnread": "Cuộc trò chuyện chưa đọc tiếp theo",
+      "help": "Hiển thị phím tắt",
+      "closeTop": "Đóng chuyển nhanh hoặc hộp thoại này"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Không gian làm việc"
+  },
+  "organization": {
+    "defaultName": "Tổ chức"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "close": "Tutup",
+    "send": "Kirim",
+    "confirm": "Konfirmasi",
+    "back": "Kembali",
+    "remove": "Hapus",
+    "add": "Tambah",
+    "create": "Buat",
+    "retry": "Coba lagi",
+    "search": "Cari",
+    "copy": "Salin",
+    "done": "Selesai",
+    "next": "Berikutnya",
+    "more": "Lainnya"
+  },
+  "emojiPicker": {
+    "loadFailed": "Tidak dapat memuat emoji. Periksa koneksi Anda lalu coba lagi.",
+    "retry": "Coba lagi"
+  },
+  "status": {
+    "loading": "Memuat...",
+    "saving": "Menyimpan...",
+    "deleting": "Menghapus..."
+  },
+  "dates": {
+    "today": "Hari ini",
+    "yesterday": "Kemarin"
+  },
+  "quickSwitcher": {
+    "title": "Pengalih cepat",
+    "inputLabel": "Lompat ke percakapan",
+    "placeholder": "Lompat ke channel atau percakapan",
+    "recent": "Terbaru",
+    "results": "Hasil",
+    "clearRecent": "Hapus yang terbaru",
+    "listLabel": "Percakapan",
+    "noResults": "Tidak ada percakapan yang cocok",
+    "starred": "Berbintang",
+    "unread": "Belum dibaca",
+    "dnd": "Jangan ganggu",
+    "footer": "{keys} untuk membuka. Panah atas dan bawah untuk berpindah, Enter untuk membuka, Esc untuk menutup.",
+    "open": "Lompat ke…",
+    "kind": {
+      "channel": "Channel",
+      "dm": "Pesan langsung",
+      "group": "Pesan grup"
+    }
+  },
+  "shortcuts": {
+    "title": "Pintasan keyboard",
+    "groups": {
+      "navigation": "Navigasi",
+      "general": "Umum"
+    },
+    "items": {
+      "switcher": "Buka pengalih cepat",
+      "prevChannel": "Percakapan sebelumnya",
+      "nextChannel": "Percakapan berikutnya",
+      "prevUnread": "Percakapan belum dibaca sebelumnya",
+      "nextUnread": "Percakapan belum dibaca berikutnya",
+      "help": "Tampilkan pintasan keyboard",
+      "closeTop": "Tutup pengalih cepat atau dialog ini"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Workspace"
+  },
+  "organization": {
+    "defaultName": "Organisasi"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktivitas",
+    "unreads": "Belum dibaca",
+    "later": "Nanti",
+    "files": "Berkas",
+    "admin": "Admin",
+    "threads": "Thread"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Pesan baru"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Notifikasi diblokir",
+    "disableNotifications": "Nonaktifkan notifikasi",
+    "enableNotifications": "Aktifkan notifikasi",
+    "signOut": "Keluar",
+    "updateStatus": "Perbarui status Anda",
+    "pauseNotifications": "Jeda notifikasi",
+    "pausedUntil": "Dijeda sampai {time}",
+    "pausedIndefinitely": "Dijeda sampai status Anda dihapus",
+    "resumeNotifications": "Lanjutkan notifikasi",
+    "pause": {
+      "m30": "30 menit",
+      "h1": "1 jam",
+      "h2": "2 jam",
+      "tomorrow": "Sampai besok"
+    },
+    "pauseError": "Tidak dapat mengubah jeda notifikasi. Silakan coba lagi.",
+    "accessTokens": "Token akses pribadi",
+    "sessions": "Perangkat yang masuk",
+    "twoFactor": "Autentikasi dua faktor",
+    "changePassword": "Ganti kata sandi",
+    "connectedApps": "Aplikasi terhubung"
+  },
+  "sections": {
+    "starred": "Berbintang",
+    "channels": "Channel",
+    "addChannels": "Tambah channel",
+    "directMessages": "Pesan langsung",
+    "addTeammates": "Tambah rekan",
+    "starredEmpty": "Beri bintang pada channel atau percakapan agar tetap tampil di sini.",
+    "collapse": "Ciutkan {section}",
+    "expand": "Perluas {section}"
+  },
+  "teammates": {
+    "title": "Pesan langsung",
+    "subtitle": "Cari atau mulai percakapan",
+    "searchPlaceholder": "Cari berdasarkan nama...",
+    "noUsers": "Pengguna tidak ditemukan",
+    "close": "Tutup",
+    "pickSubtitle": "Pilih hingga {max, plural, other {# orang}}",
+    "select": "Pilih {name}",
+    "selectedCount": "{count} dari {max} dipilih",
+    "start": "Mulai percakapan",
+    "startGroup": "Mulai percakapan grup"
+  },
+  "you": "(Anda)",
+  "notifications": {
+    "someone": "Seseorang",
+    "sentAttachment": "Mengirim lampiran",
+    "threadTitle": "{name} (thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# anggota}}",
+    "createError": "Tidak dapat memulai percakapan grup. Silakan coba lagi."
+  },
+  "statusDialog": {
+    "title": "Atur status",
+    "emojiLabel": "Pilih emoji",
+    "textLabel": "Apa status Anda?",
+    "textPlaceholder": "Apa status Anda?",
+    "durationLabel": "Hapus setelah",
+    "duration": {
+      "never": "Jangan hapus",
+      "m30": "30 menit",
+      "h1": "1 jam",
+      "h4": "4 jam",
+      "today": "Hari ini",
+      "week": "Minggu ini"
+    },
+    "pauseCheckbox": "Jeda notifikasi sampai status dihapus",
+    "save": "Simpan",
+    "clear": "Hapus status",
+    "cancel": "Batal",
+    "expiresAt": "Dihapus pada {time}",
+    "saveError": "Tidak dapat menyimpan status. Silakan coba lagi."
+  },
+  "findConversation": "Cari percakapan"
+}

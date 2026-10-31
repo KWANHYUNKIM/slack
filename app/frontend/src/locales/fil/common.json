@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "I-save",
+    "cancel": "Kanselahin",
+    "delete": "Burahin",
+    "edit": "I-edit",
+    "close": "Isara",
+    "send": "Ipadala",
+    "confirm": "Kumpirmahin",
+    "back": "Bumalik",
+    "remove": "Alisin",
+    "add": "Idagdag",
+    "create": "Gumawa",
+    "retry": "Subukan muli",
+    "search": "Maghanap",
+    "copy": "Kopyahin",
+    "done": "Tapos na",
+    "next": "Susunod",
+    "more": "Higit pa"
+  },
+  "emojiPicker": {
+    "loadFailed": "Hindi ma-load ang emoji. Suriin ang iyong koneksyon at subukan muli.",
+    "retry": "Subukan muli"
+  },
+  "status": {
+    "loading": "Naglo-load...",
+    "saving": "Sine-save...",
+    "deleting": "Binubura..."
+  },
+  "dates": {
+    "today": "Ngayon",
+    "yesterday": "Kahapon"
+  },
+  "quickSwitcher": {
+    "title": "Mabilis na pagpalit",
+    "inputLabel": "Pumunta sa usapan",
+    "placeholder": "Pumunta sa channel o usapan",
+    "recent": "Kamakailan",
+    "results": "Mga resulta",
+    "clearRecent": "Burahin ang kamakailan",
+    "listLabel": "Mga usapan",
+    "noResults": "Walang tugmang usapan",
+    "starred": "Starred",
+    "unread": "Hindi pa nababasa",
+    "dnd": "Huwag istorbohin",
+    "footer": "{keys} para buksan. Up at Down para gumalaw, Enter para pumunta, Esc para isara.",
+    "open": "Pumunta sa…",
+    "kind": {
+      "channel": "Channel",
+      "dm": "Direktang mensahe",
+      "group": "Group na mensahe"
+    }
+  },
+  "shortcuts": {
+    "title": "Mga keyboard shortcut",
+    "groups": {
+      "navigation": "Nabigasyon",
+      "general": "Pangkalahatan"
+    },
+    "items": {
+      "switcher": "Buksan ang mabilis na pagpalit",
+      "prevChannel": "Nakaraang usapan",
+      "nextChannel": "Susunod na usapan",
+      "prevUnread": "Nakaraang hindi pa nababasang usapan",
+      "nextUnread": "Susunod na hindi pa nababasang usapan",
+      "help": "Ipakita ang mga keyboard shortcut",
+      "closeTop": "Isara ang mabilis na pagpalit o ang dialog na ito"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Workspace"
+  },
+  "organization": {
+    "defaultName": "Organisasyon"
+  }
+}

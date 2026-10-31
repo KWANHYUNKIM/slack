@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Tạo kênh",
+    "tabBrowse": "Duyệt kênh",
+    "nameLabel": "Tên kênh",
+    "namePlaceholder": "ví dụ: ngan-sach-du-an",
+    "visibility": "Hiển thị",
+    "public": "Công khai",
+    "private": "Riêng tư",
+    "publicHint": "Mọi người trong không gian làm việc đều có thể tìm và tham gia kênh này.",
+    "privateHint": "Chỉ thành viên được mời mới tìm và tham gia được kênh này.",
+    "cancel": "Hủy",
+    "create": "Tạo",
+    "noChannels": "Không có kênh nào để tham gia",
+    "memberCount": "{count, plural, one {# thành viên} other {# thành viên}}",
+    "joined": "Đã tham gia",
+    "join": "Tham gia",
+    "close": "Đóng",
+    "errors": {
+      "createFailed": "Không tạo được kênh"
+    }
+  },
+  "errors": {
+    "loadConversations": "Không tải được cuộc trò chuyện.",
+    "loadChannels": "Không tải được kênh."
+  },
+  "membersPanel": {
+    "title": "Thành viên",
+    "addPeople": "Thêm người",
+    "loadError": "Không tải được thành viên.",
+    "removeError": "Không xóa được thành viên",
+    "online": "Đang hoạt động — {count}",
+    "offline": "Ngoại tuyến — {count}",
+    "removeDialog": {
+      "title": "Xóa thành viên?",
+      "message": "Xóa <bold>{name}</bold> khỏi kênh này?"
+    },
+    "removing": "Đang xóa...",
+    "searchByName": "Tìm theo tên...",
+    "noUsers": "Không tìm thấy người dùng",
+    "roles": {
+      "owner": "Chủ sở hữu",
+      "moderator": "Quản trị viên"
+    },
+    "removeMember": "Xóa thành viên"
+  },
+  "dm": {
+    "messagePlaceholder": "Nhắn tin cho {name}",
+    "you": "(bạn)",
+    "star": "Thêm vào mục Đã gắn sao",
+    "unstar": "Xóa khỏi mục Đã gắn sao",
+    "loadingMessages": "Đang tải tin nhắn...",
+    "selfSpace": "Đây là không gian riêng của bạn. Soạn nháp, ghi danh sách việc cần làm, hoặc giữ liên kết và tệp ở gần.",
+    "conversationStart": "Bắt đầu cuộc trò chuyện của bạn với {name}",
+    "sendToBegin": "Gửi một tin nhắn để bắt đầu.",
+    "edited": "(đã chỉnh sửa)",
+    "pinnedMessages": "Tin nhắn đã ghim",
+    "noPins": "Chưa có tin nhắn nào được ghim",
+    "files": "Tệp",
+    "noFiles": "Chưa có tệp nào được chia sẻ",
+    "loadError": "Không tải được tin nhắn.",
+    "sendError": "Gửi tin nhắn thất bại. Vui lòng thử lại."
+  },
+  "nameRules": {
+    "required": "Nhập tên kênh.",
+    "tooLong": "Tên kênh phải có tối đa {max} ký tự.",
+    "invalidChars": "Tên kênh chỉ được chứa chữ cái, số, dấu gạch ngang và gạch dưới, và phải bắt đầu bằng chữ cái hoặc số.",
+    "tooManyMarks": "Tên kênh không được có quá 4 dấu kết hợp liên tiếp.",
+    "mixedScripts": "Tên kênh không được trộn bảng chữ cái dễ nhầm lẫn (như Latin với Cyrillic hoặc Hy Lạp) hoặc chữ số của hệ thống số khác.",
+    "taken": "Đã có kênh với tên này."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# thành viên} other {# thành viên}}",
+    "nameLabel": "Tên cuộc trò chuyện",
+    "namePlaceholder": "Thêm tên",
+    "noName": "Không có tên (hiển thị tên thành viên)",
+    "rename": "Đổi tên cuộc trò chuyện",
+    "addPeople": "Thêm người",
+    "add": "Thêm",
+    "createWith": "Bắt đầu cuộc trò chuyện nhóm",
+    "leave": "Rời cuộc trò chuyện",
+    "leaveConfirm": "Rời cuộc trò chuyện này? Bạn sẽ không còn thấy tin nhắn của cuộc trò chuyện này nữa.",
+    "conversationStart": "Đây là phần bắt đầu cuộc trò chuyện của bạn với {names}",
+    "addError": "Không thêm được người. Vui lòng thử lại.",
+    "renameError": "Không đổi được tên cuộc trò chuyện. Vui lòng thử lại.",
+    "leaveError": "Không rời được cuộc trò chuyện. Vui lòng thử lại."
+  }
+}

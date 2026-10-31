@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktiviti",
+    "unreads": "Belum dibaca",
+    "later": "Kemudian",
+    "files": "Fail",
+    "admin": "Pentadbir",
+    "threads": "Benang"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Mesej baharu"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Pemberitahuan disekat",
+    "disableNotifications": "Nyahdayakan pemberitahuan",
+    "enableNotifications": "Dayakan pemberitahuan",
+    "signOut": "Log keluar",
+    "updateStatus": "Kemas kini status anda",
+    "pauseNotifications": "Jeda pemberitahuan",
+    "pausedUntil": "Dijeda sehingga {time}",
+    "pausedIndefinitely": "Dijeda sehingga status anda dikosongkan",
+    "resumeNotifications": "Sambung semula pemberitahuan",
+    "pause": {
+      "m30": "30 minit",
+      "h1": "1 jam",
+      "h2": "2 jam",
+      "tomorrow": "Sehingga esok"
+    },
+    "pauseError": "Tidak dapat menukar jeda pemberitahuan. Sila cuba lagi.",
+    "accessTokens": "Token akses peribadi",
+    "sessions": "Peranti yang log masuk",
+    "twoFactor": "Pengesahan dua faktor",
+    "changePassword": "Tukar kata laluan",
+    "connectedApps": "Aplikasi yang disambungkan"
+  },
+  "sections": {
+    "starred": "Berbintang",
+    "channels": "Saluran",
+    "addChannels": "Tambah saluran",
+    "directMessages": "Mesej langsung",
+    "addTeammates": "Tambah rakan sepasukan",
+    "starredEmpty": "Berbintangkan saluran atau perbualan untuk menyimpannya di sini.",
+    "collapse": "Kuncupkan {section}",
+    "expand": "Kembangkan {section}"
+  },
+  "teammates": {
+    "title": "Mesej langsung",
+    "subtitle": "Cari atau mulakan perbualan",
+    "searchPlaceholder": "Cari mengikut nama...",
+    "noUsers": "Tiada pengguna ditemui",
+    "close": "Tutup",
+    "pickSubtitle": "Pilih sehingga {max, plural, other {# orang}}",
+    "select": "Pilih {name}",
+    "selectedCount": "{count} daripada {max} dipilih",
+    "start": "Mulakan perbualan",
+    "startGroup": "Mulakan perbualan kumpulan"
+  },
+  "you": "(anda)",
+  "notifications": {
+    "someone": "Seseorang",
+    "sentAttachment": "Menghantar lampiran",
+    "threadTitle": "{name} (benang)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# ahli}}",
+    "createError": "Tidak dapat memulakan perbualan kumpulan. Sila cuba lagi."
+  },
+  "statusDialog": {
+    "title": "Tetapkan status",
+    "emojiLabel": "Pilih emoji",
+    "textLabel": "Apakah status anda?",
+    "textPlaceholder": "Apakah status anda?",
+    "durationLabel": "Kosongkan selepas",
+    "duration": {
+      "never": "Jangan kosongkan",
+      "m30": "30 minit",
+      "h1": "1 jam",
+      "h4": "4 jam",
+      "today": "Hari ini",
+      "week": "Minggu ini"
+    },
+    "pauseCheckbox": "Jeda pemberitahuan sehingga status dikosongkan",
+    "save": "Simpan",
+    "clear": "Kosongkan status",
+    "cancel": "Batal",
+    "expiresAt": "Dikosongkan pada {time}",
+    "saveError": "Tidak dapat menyimpan status anda. Sila cuba lagi."
+  },
+  "findConversation": "Cari perbualan"
+}

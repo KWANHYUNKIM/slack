@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Panel Pentadbir",
+    "openSidebar": "Buka bar sisi",
+    "tabs": {
+      "members": "Ahli",
+      "invites": "Jemputan",
+      "channels": "Saluran",
+      "webhooks": "Webhook",
+      "audit": "Log Audit",
+      "retention": "Pengekalan data",
+      "security": "Keselamatan",
+      "dlp": "DLP",
+      "legalHolds": "Tahanan undang-undang"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Saluran",
+      "members": "Ahli",
+      "messages": "Mesej",
+      "created": "Dicipta"
+    },
+    "actions": {
+      "rename": "Namakan semula saluran",
+      "archive": "Arkibkan saluran",
+      "delete": "Padam saluran",
+      "unarchive": "Nyahariskan saluran",
+      "deletePermanently": "Padam secara kekal"
+    },
+    "emptyActive": "Tiada saluran aktif",
+    "archivedHeading": "Saluran diarkibkan ({count})",
+    "archivedOn": "diarkibkan {date}",
+    "messageCount": "{count, plural, other {# mesej}}",
+    "deleteDialog": {
+      "title": "Padam saluran",
+      "message": "Adakah anda pasti mahu memadam #{name} secara kekal? Semua mesej akan hilang. Tindakan ini tidak boleh dibatalkan."
+    },
+    "archiveDialog": {
+      "title": "Arkibkan saluran",
+      "confirm": "Arkibkan",
+      "message": "Arkibkan #{name}? Ia akan disembunyikan daripada bar sisi tetapi mesejnya akan dikekalkan. Anda boleh menyahariskannya kemudian."
+    },
+    "unarchiveDialog": {
+      "title": "Nyahariskan saluran",
+      "confirm": "Nyahariskan",
+      "message": "Nyahariskan #{name}? Ia akan muncul semula dalam bar sisi untuk semua ahli."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Cari ahli...",
+    "columns": {
+      "user": "Pengguna",
+      "email": "Emel",
+      "role": "Peranan",
+      "status": "Status",
+      "actions": "Tindakan"
+    },
+    "you": "(anda)",
+    "roles": {
+      "owner": "Pemilik",
+      "admin": "Pentadbir",
+      "member": "Ahli",
+      "guest": "Tetamu"
+    },
+    "status": {
+      "active": "Aktif",
+      "deactivated": "Dinyahaktifkan"
+    },
+    "actions": {
+      "transfer": "Pindahkan pemilikan",
+      "reactivate": "Aktifkan semula",
+      "deactivate": "Nyahaktifkan",
+      "forceLogout": "Paksa log keluar",
+      "resetMfa": "Tetapkan semula 2FA"
+    },
+    "empty": "Tiada pengguna ditemui",
+    "dialogs": {
+      "transfer": {
+        "title": "Pindahkan pemilikan ruang kerja",
+        "confirm": "Pindahkan",
+        "message": "Adakah anda pasti mahu memindahkan pemilikan ruang kerja kepada {name}? Anda akan diturunkan kepada Pentadbir."
+      },
+      "deactivate": {
+        "title": "Nyahaktifkan pengguna",
+        "confirm": "Nyahaktifkan",
+        "message": "Adakah anda pasti mahu menyahaktifkan {name}? Mereka akan dilog keluar serta-merta dan tidak dapat log masuk."
+      },
+      "reactivate": {
+        "title": "Aktifkan semula pengguna",
+        "confirm": "Aktifkan semula",
+        "message": "Adakah anda pasti mahu mengaktifkan semula {name}? Mereka akan dapat log masuk semula."
+      },
+      "forceLogout": {
+        "title": "Paksa log keluar",
+        "confirm": "Log keluar",
+        "message": "Logkan {name} keluar daripada setiap peranti sekarang? Akaun mereka kekal aktif dan mereka boleh log masuk semula."
+      },
+      "resetMfa": {
+        "title": "Tetapkan semula pengesahan dua faktor",
+        "confirm": "Tetapkan semula",
+        "message": "Alih keluar pengesahan dua faktor untuk {name}? Mereka akan dilog keluar daripada setiap peranti dan hanya boleh log masuk dengan kata laluan."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Pengesahan dua faktor dihidupkan"
+    }
+  },
+  "invites": {
+    "createHeading": "Cipta pautan jemputan",
+    "fields": {
+      "role": "Peranan",
+      "maxUses": "Bilangan guna maks",
+      "expiresIn": "Tamat tempoh dalam"
+    },
+    "unlimited": "Tanpa had",
+    "expiry": {
+      "1d": "1 hari",
+      "7d": "7 hari",
+      "30d": "30 hari",
+      "never": "Tidak pernah"
+    },
+    "expired": "Tamat tempoh",
+    "columns": {
+      "url": "URL jemputan",
+      "uses": "Penggunaan",
+      "expires": "Tamat tempoh",
+      "createdBy": "Dicipta oleh"
+    },
+    "copyUrl": "Salin URL jemputan",
+    "full": "(penuh)",
+    "delete": "Padam jemputan",
+    "empty": "Belum ada pautan jemputan"
+  },
+  "webhooks": {
+    "createHeading": "Cipta webhook",
+    "fields": {
+      "name": "Nama webhook",
+      "channel": "Saluran"
+    },
+    "namePlaceholder": "Integrasi Saya",
+    "selectChannel": "Pilih saluran...",
+    "columns": {
+      "name": "Nama",
+      "url": "URL webhook",
+      "lastUsed": "Kali terakhir digunakan"
+    },
+    "never": "Tidak pernah",
+    "justNow": "Sebentar tadi",
+    "inactive": "Tidak aktif",
+    "copyUrl": "Salin URL webhook",
+    "delete": "Padam webhook",
+    "empty": "Belum ada webhook dikonfigurasi"
+  },
+  "audit": {
+    "empty": "Tiada entri log audit yang sepadan. Tindakan yang direkodkan akan dipaparkan di sini.",
+    "loadMore": "Muatkan lagi",
+    "targets": {
+      "user": "Pengguna",
+      "channel": "Saluran",
+      "invite": "Jemputan",
+      "webhook": "Webhook",
+      "message": "Mesej",
+      "directMessage": "Mesej langsung",
+      "token": "Token akses",
+      "auditLog": "Log audit",
+      "mcpTool": "Alat MCP",
+      "workspace": "Ruang kerja",
+      "file": "Fail",
+      "dlpRule": "Peraturan DLP",
+      "legalHold": "Tahanan undang-undang"
+    },
+    "action": {
+      "authLogin": "Log masuk",
+      "authLoginFailed": "Log masuk gagal",
+      "authLogout": "Log keluar",
+      "authPasswordChanged": "Kata laluan ditukar",
+      "userRoleChanged": "Peranan ditukar",
+      "userDeactivated": "Dinyahaktifkan",
+      "userForceLogout": "Log keluar paksa",
+      "userReactivated": "Diaktifkan semula",
+      "ownershipTransferred": "Pemilikan dipindahkan",
+      "ownerBootstrapped": "Pemilik dicipta",
+      "channelCreated": "Saluran dicipta",
+      "channelEdited": "Saluran disunting",
+      "channelArchived": "Saluran diarkibkan",
+      "channelUnarchived": "Saluran dinyahariskan",
+      "channelDeleted": "Saluran dipadam",
+      "channelMemberAdded": "Ahli ditambah",
+      "channelMemberRemoved": "Ahli dialih keluar",
+      "inviteCreated": "Jemputan dicipta",
+      "inviteDeleted": "Jemputan dipadam",
+      "webhookCreated": "Webhook dicipta",
+      "webhookDeleted": "Webhook dipadam",
+      "tokenCreate": "Token dicipta",
+      "tokenRevoke": "Token dibatalkan",
+      "mcpToolCall": "Panggilan alat MCP",
+      "auditExported": "Log audit dieksport",
+      "authLoginLocked": "Akaun dikunci",
+      "sessionRevoked": "Peranti dilog keluar",
+      "sessionRevokedAll": "Semua peranti dilog keluar",
+      "retentionPurged": "Data tamat tempoh dipadam",
+      "retentionWorkspaceUpdated": "Dasar pengekalan ditukar",
+      "retentionChannelUpdated": "Pengekalan saluran ditukar",
+      "retentionChannelCleared": "Pengekalan saluran ditetapkan semula",
+      "mfaEnabled": "Dua faktor dihidupkan",
+      "mfaDisabled": "Dua faktor dimatikan",
+      "mfaRecoveryUsed": "Kod pemulihan digunakan",
+      "mfaRecoveryRegenerated": "Kod pemulihan dijana semula",
+      "mfaResetByAdmin": "Dua faktor ditetapkan semula oleh pentadbir",
+      "mfaPolicyChanged": "Keperluan dua faktor ditukar",
+      "dlpBlocked": "Mesej disekat oleh DLP",
+      "dlpWarned": "Amaran DLP",
+      "dlpRuleCreated": "Peraturan DLP dicipta",
+      "dlpRuleUpdated": "Peraturan DLP ditukar",
+      "dlpRuleDeleted": "Peraturan DLP dipadam",
+      "dlpRuleTimeout": "Peraturan DLP tamat masa",
+      "dlpRuleAutoDisabled": "Peraturan DLP dinyahaktifkan secara automatik",
+      "legalHoldCreated": "Tahanan undang-undang dicipta",
+      "legalHoldUpdated": "Tahanan undang-undang disunting",
+      "legalHoldCustodianAdded": "Orang ditambah ke tahanan undang-undang",
+      "legalHoldCustodianRemoved": "Orang dialih keluar daripada tahanan undang-undang",
+      "legalHoldReleased": "Tahanan undang-undang dilepaskan",
+      "ediscoverySearched": "Carian eDiscovery",
+      "ediscoveryExportRequested": "Eksport eDiscovery dipohon",
+      "ediscoveryExported": "eDiscovery dieksport"
+    },
+    "filters": {
+      "allActions": "Semua tindakan",
+      "actionsSelected": "{count, plural, other {# tindakan}}",
+      "actor": "Pelaku",
+      "allActors": "Semua pelaku",
+      "targetType": "Jenis sasaran",
+      "allTargets": "Semua sasaran",
+      "from": "Daripada",
+      "to": "Kepada",
+      "apply": "Guna",
+      "reset": "Tetapkan semula"
+    },
+    "export": {
+      "csv": "Eksport CSV",
+      "json": "Eksport JSON"
+    },
+    "unknownActor": "Tidak diketahui"
+  },
+  "errors": {
+    "archiveChannel": "Gagal mengarkibkan saluran",
+    "createInvite": "Gagal mencipta jemputan",
+    "createWebhook": "Gagal mencipta webhook",
+    "deactivateUser": "Gagal menyahaktifkan pengguna",
+    "deleteChannel": "Gagal memadam saluran",
+    "deleteInvite": "Gagal memadam jemputan",
+    "deleteWebhook": "Gagal memadam webhook",
+    "editChannel": "Gagal menyunting saluran",
+    "exportAuditLog": "Gagal mengeksport log audit",
+    "fetchAuditLog": "Gagal mendapatkan log audit",
+    "fetchChannels": "Gagal mendapatkan saluran",
+    "fetchInvites": "Gagal mendapatkan jemputan",
+    "fetchUsers": "Gagal mendapatkan pengguna",
+    "fetchWebhooks": "Gagal mendapatkan webhook",
+    "forceLogout": "Gagal melog keluar pengguna secara paksa",
+    "reactivateUser": "Gagal mengaktifkan semula pengguna",
+    "removeChannelMember": "Gagal mengalih keluar ahli saluran",
+    "transferOwnership": "Gagal memindahkan pemilikan",
+    "unarchiveChannel": "Gagal menyahariskan saluran",
+    "updateRole": "Gagal mengemas kini peranan",
+    "resetMfa": "Gagal menetapkan semula pengesahan dua faktor"
+  },
+  "retention": {
+    "title": "Pengekalan data",
+    "description": "Padam mesej secara automatik selepas bilangan hari tertentu. Fail dipadam bersama mesejnya. Pembersihan dijalankan sekali sehari. Peringatan dikekalkan dan dipaparkan sebagai \"mesej dipadam\".",
+    "loadError": "Gagal memuatkan dasar pengekalan",
+    "saveError": "Gagal menyimpan dasar pengekalan",
+    "resetError": "Gagal menetapkan semula dasar saluran",
+    "workspace": {
+      "heading": "Lalai ruang kerja",
+      "hint": "Terpakai kepada setiap saluran tanpa tetapan sendiri, serta mesej langsung dan mesej kumpulan."
+    },
+    "mode": {
+      "forever": "Kekalkan selamanya",
+      "days": "Padam selepas beberapa hari",
+      "inherit": "Guna lalai ruang kerja"
+    },
+    "daysLabel": "Hari",
+    "daysHint": "{min} hingga {max} hari",
+    "effective": {
+      "forever": "Dikekalkan selamanya",
+      "days": "{count, plural, other {# hari}}"
+    },
+    "channels": {
+      "heading": "Saluran",
+      "columns": {
+        "channel": "Saluran",
+        "policy": "Dasar",
+        "effective": "Terpakai"
+      },
+      "legalHold": "Tahanan undang-undang",
+      "reset": "Tetapkan semula kepada lalai",
+      "empty": "Tiada saluran"
+    },
+    "save": "Simpan",
+    "saved": "Disimpan",
+    "confirm": {
+      "title": "Padam mesej lama secara kekal?",
+      "message": "Pada pembersihan seterusnya, mesej yang lebih lama daripada {count, plural, other {# hari}} akan dipadam secara kekal bersama fail-failnya. Tindakan ini tidak boleh dibatalkan.",
+      "confirm": "Guna dasar"
+    }
+  },
+  "security": {
+    "title": "Pengesahan dua faktor",
+    "requireMfa": "Wajibkan pengesahan dua faktor untuk semua orang",
+    "requireMfaHint": "Ahli yang tiada pengesahan dua faktor hanya boleh sampai ke skrin persediaan sehingga mereka menghidupkannya.",
+    "unavailable": "Pengesahan dua faktor dimatikan pada pelayan ini kerana tiada kunci penyulitan ditetapkan (TOTP_ENCRYPTION_KEY). Keperluan ini tidak dikuatkuasakan.",
+    "saved": "Tetapan keselamatan disimpan",
+    "loading": "Memuatkan...",
+    "errors": {
+      "loadFailed": "Tidak dapat memuatkan tetapan keselamatan.",
+      "saveFailed": "Tidak dapat menyimpan tetapan keselamatan."
+    },
+    "allowOAuthApps": "Benarkan ahli menyambungkan aplikasi OAuth",
+    "allowOAuthAppsHint": "Membenarkan ahli menyambungkan aplikasi seperti Claude melalui aliran log masuk OAuth. Mematikan ini akan memutuskan sambungan setiap aplikasi serta-merta."
+  },
+  "dlp": {
+    "title": "Pencegahan kehilangan data",
+    "description": "Kesan corak sensitif seperti nombor kad dalam mesej. Peraturan sekatan menghalang mesej daripada disimpan. Peraturan amaran menyimpan mesej dan merekodkannya dalam log audit. Teks mesej tidak pernah ditulis ke dalam log.",
+    "loadError": "Gagal memuatkan peraturan DLP",
+    "saveError": "Gagal menyimpan peraturan",
+    "toggleError": "Gagal menukar peraturan",
+    "deleteError": "Gagal memadam peraturan",
+    "testError": "Gagal menguji corak",
+    "builtinBadge": "Terbina dalam",
+    "builtinPattern": "Pengesan terbina dalam",
+    "builtin": {
+      "credit_card": "Nombor kad kredit",
+      "kr_rrn": "Nombor pendaftaran penduduk Korea",
+      "aws_access_key": "Kunci akses AWS",
+      "private_key": "Kunci persendirian"
+    },
+    "action": {
+      "BLOCK": "Sekat",
+      "WARN": "Amaran"
+    },
+    "columns": {
+      "name": "Peraturan",
+      "pattern": "Corak",
+      "action": "Tindakan",
+      "enabled": "Status"
+    },
+    "on": "Hidup",
+    "off": "Mati",
+    "toggleLabel": "Hidupkan atau matikan {name}",
+    "edit": "Sunting",
+    "editLabel": "Sunting {name}",
+    "delete": "Padam",
+    "deleteLabel": "Padam {name}",
+    "form": {
+      "createHeading": "Tambah peraturan",
+      "editHeading": "Sunting peraturan",
+      "name": "Nama",
+      "pattern": "Corak (ungkapan biasa)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Tindakan",
+      "add": "Tambah peraturan",
+      "save": "Simpan",
+      "cancel": "Batal",
+      "hint": "Sehingga {max} aksara. Ulangan bersarang seperti (a+)+, rujukan balik dan bilangan ulangan yang sangat besar akan ditolak."
+    },
+    "patternProblem": {
+      "empty": "Masukkan corak.",
+      "tooLong": "Corak terlalu panjang.",
+      "invalid": "Ini bukan ungkapan biasa yang sah.",
+      "backreference": "Rujukan balik tidak dibenarkan.",
+      "nestedQuantifier": "Ulangan bersarang boleh menjadikan semakan sangat perlahan dan tidak dibenarkan.",
+      "repeatTooLarge": "Bilangan ulangan terlalu besar (200 paling banyak)."
+    },
+    "test": {
+      "heading": "Uji corak",
+      "hint": "Tiada apa-apa disimpan. Masukkan corak di atas, atau pilih peraturan yang disimpan, kemudian taip teks sampel.",
+      "source": "Corak untuk diuji",
+      "sourceDraft": "Corak dalam borang di atas",
+      "sample": "Teks sampel",
+      "run": "Uji",
+      "matched": "Sepadan. Teks ini akan dikesan.",
+      "notMatched": "Tidak sepadan.",
+      "timedOut": "Semakan mengambil masa terlalu lama dan telah dihentikan. Permudahkan corak."
+    },
+    "confirmDelete": {
+      "title": "Padam peraturan ini?",
+      "message": "Peraturan \"{name}\" akan dialih keluar dan tidak lagi disemak."
+    }
+  },
+  "legalHolds": {
+    "description": "Kekalkan segala yang pernah ditulis atau diterima seseorang, walaupun pengekalan data akan memadamkannya. Pentadbir boleh mencari dan mengeksport data yang dikekalkan untuk semakan undang-undang.",
+    "statusFilter": "Papar",
+    "status": {
+      "active": "Aktif",
+      "released": "Dilepaskan",
+      "all": "Semua"
+    },
+    "empty": "Tiada tahanan undang-undang",
+    "selectHint": "Pilih tahanan undang-undang untuk mengurus orangnya dan mencari datanya.",
+    "loadMore": "Muatkan lagi",
+    "custodianCount": "{count, plural, other {# orang}}",
+    "createdOn": "Dicipta {date}",
+    "releasedOn": "Dilepaskan {date}",
+    "createdBy": "Dicipta oleh {name} pada {date}",
+    "releasedBy": "Dilepaskan oleh {name} pada {date}",
+    "unknownUser": "Pengguna tidak diketahui",
+    "edit": "Sunting",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "fields": {
+      "name": "Nama",
+      "description": "Penerangan (pilihan)"
+    },
+    "create": {
+      "open": "Tahanan baharu",
+      "submit": "Cipta tahanan",
+      "hint": "Anda boleh menambah orang selepas mencipta tahanan."
+    },
+    "custodians": {
+      "heading": "Orang dalam tahanan",
+      "pick": "Pilih seseorang",
+      "add": "Tambah",
+      "remove": "Alih keluar {name} daripada tahanan ini",
+      "empty": "Belum ada sesiapa dalam tahanan ini.",
+      "deactivated": "Dinyahaktifkan"
+    },
+    "release": {
+      "open": "Lepaskan tahanan",
+      "title": "Lepaskan tahanan undang-undang ini?",
+      "message": "\"{name}\" akan berhenti mengekalkan data. Orang yang tiada dalam tahanan aktif yang lain akan kembali di bawah dasar pengekalan biasa, dan mesej lama mereka mungkin dipadam pada pembersihan seterusnya. Tahanan dan senarai orangnya kekal direkodkan. Tindakan ini tidak boleh dibatalkan.",
+      "confirm": "Lepaskan"
+    },
+    "discovery": {
+      "heading": "Carian dan eksport",
+      "hint": "Meliputi mesej yang ditulis oleh orang dalam tahanan di mana-mana saluran (termasuk saluran persendirian), mesej langsung dan kumpulan yang mereka sertai, serta butiran fail. Mesej yang dipadam turut disertakan dan ditandakan.",
+      "query": "Kata kunci",
+      "from": "Daripada",
+      "to": "Kepada",
+      "search": "Cari",
+      "export": "Eksport (JSONL)",
+      "exportHint": "Mengeksport hasil carian terakhir. Setiap carian dan eksport direkodkan dalam log audit.",
+      "searchFirst": "Cari dengan penapis ini dahulu. Eksport menggunakan penapis carian yang dipaparkan di bawah.",
+      "kinds": {
+        "channel": "Mesej saluran",
+        "dm": "Mesej langsung",
+        "file": "Fail"
+      },
+      "empty": "Tiada hasil",
+      "deleted": "Dipadam",
+      "edited": "Disunting",
+      "reply": "Balasan benang",
+      "groupDm": "Mesej kumpulan #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Gagal memuatkan tahanan undang-undang",
+      "create": "Gagal mencipta tahanan undang-undang",
+      "update": "Gagal mengemas kini tahanan undang-undang",
+      "custodians": "Gagal menukar orang dalam tahanan",
+      "release": "Gagal melepaskan tahanan undang-undang",
+      "search": "Carian gagal",
+      "export": "Eksport gagal"
+    }
+  }
+}

@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "I-notify ang lahat ng online",
+    "channelLabel": "@channel",
+    "channelHint": "I-notify ang lahat sa channel na ito"
+  },
+  "deleteDialog": {
+    "title": "Burahin ang mensahe",
+    "body": "Sigurado ka bang gusto mong burahin ang mensaheng ito? Hindi ito na-undo."
+  },
+  "editorToolbar": {
+    "attachFile": "Mag-attach ng file",
+    "emoji": "Emoji",
+    "mention": "Mag-mention ng tao",
+    "stopRecording": "Itigil ang pag-record",
+    "recordVoice": "Mag-record ng voice clip"
+  },
+  "emojiAutocomplete": {
+    "navigate": "para gumalaw",
+    "select": "para pumili",
+    "dismiss": "para isara",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Alisin ang {name}"
+  },
+  "fileModal": {
+    "download": "I-download",
+    "loadFailed": "Hindi ma-load ang nilalaman ng file",
+    "truncated": "... (pinutol)",
+    "noPreview": "Walang preview",
+    "downloadToView": "I-download ang file para makita ito"
+  },
+  "files": {
+    "allFiles": "Lahat ng file",
+    "channelFiles": "Mga file ng channel",
+    "loadFailed": "Hindi ma-load ang mga file.",
+    "empty": "Wala pang na-upload na file",
+    "download": "I-download",
+    "menu": "Menu",
+    "unavailable": "Hindi available ang file",
+    "preparing": "Inihahanda ang file"
+  },
+  "format": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "strike": "Strikethrough",
+    "link": "Link",
+    "orderedList": "Numbered list",
+    "bulletList": "Bulleted list",
+    "code": "Code",
+    "codeBlock": "Code block",
+    "quote": "Quote"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Walang bagong notification",
+    "unreadCount": "{count, plural, one {# hindi pa nababasang mensahe} other {# hindi pa nababasang mensahe}}"
+  },
+  "search": {
+    "placeholder": "Maghanap",
+    "searching": "Naghahanap...",
+    "noResults": "Walang nakitang resulta",
+    "previewHint": "{count, plural, one {Nangungunang # resulta} other {Nangungunang # na resulta}} · Tingnan lahat (Enter)",
+    "truncatedNotice": "Maraming resulta. Magdagdag ng filter para paliitin ito.",
+    "retry": "Subukan muli",
+    "ignoredChip": "{token} (hindi pinansin)",
+    "ignoredLimitChip": "{token} (hindi pinansin: sobra)",
+    "inChannel": "sa #{channel}",
+    "title": "Mga resulta ng paghahanap",
+    "resultsFor": "Mga resulta para sa \"{query}\"",
+    "emptyQuery": "I-type ang search term, o gumamit ng mga filter gaya ng from:, in:, has:, before:, after:.",
+    "noResultsHint": "Subukan ang ibang keyword o alisin ang ilang filter.",
+    "clearFilters": "Burahin lahat ng filter",
+    "removeFilter": "Alisin ang filter {filter}",
+    "loadFailed": "Nabigo ang paghahanap. Subukan muli.",
+    "loadMore": "Mag-load pa",
+    "threadReply": "Sagot sa thread",
+    "directMessage": "Direktang mensahe",
+    "groupMessage": "Group na usapan",
+    "joined": "Nasalihan na",
+    "privateChannel": "Pribado",
+    "archivedChannel": "Naka-archive",
+    "back": "Bumalik",
+    "tabs": {
+      "label": "Mga uri ng resulta ng paghahanap",
+      "messages": "Mga mensahe",
+      "files": "Mga file",
+      "people": "Mga tao",
+      "channels": "Mga channel"
+    },
+    "sort": {
+      "label": "Ayusin ayon sa",
+      "relevance": "Kaugnayan",
+      "recent": "Pinakabago"
+    }
+  },
+  "headerTabs": {
+    "files": "Mga file",
+    "pins": "Mga pin"
+  },
+  "lightbox": {
+    "close": "Isara"
+  },
+  "later": {
+    "title": "Mamaya",
+    "saved": "Na-save",
+    "scheduled": "Naka-schedule",
+    "loadFailed": "Hindi ma-load ang mga na-save na mensahe.",
+    "empty": "Wala pang na-save na mensahe. I-click ang bookmark icon sa anumang mensahe para i-save ito.",
+    "removeSaved": "Alisin sa Saved",
+    "menu": "Menu",
+    "reminders": "Mga paalala"
+  },
+  "linkModal": {
+    "title": "Magdagdag ng link",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Display text",
+    "optional": "(opsyonal)",
+    "textPlaceholder": "Text ng link",
+    "close": "Isara"
+  },
+  "actionsMenu": {
+    "noActions": "Walang available na aksyon",
+    "markUnread": "Markahan bilang hindi pa nababasa",
+    "pin": "I-pin ang mensahe",
+    "unpin": "Alisin ang pin sa mensahe",
+    "edit": "I-edit ang mensahe",
+    "delete": "Burahin ang mensahe",
+    "copyLink": "Kopyahin ang link",
+    "remind": "Paalalahanan ako tungkol dito"
+  },
+  "area": {
+    "selectChannel": "Pumili ng channel para magsimulang magmensahe",
+    "openMenu": "Buksan ang menu",
+    "placeholder": "Mensahe sa #{channel}",
+    "viewing": "Tinitingnan mo ang <bold>#{channel}</bold>",
+    "joinChannel": "Sumali sa Channel"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Alisin sa Starred",
+    "star": "Idagdag sa Starred",
+    "members": "Mga miyembro: {count}",
+    "search": "Maghanap",
+    "channelMenu": "Mga opsyon ng channel",
+    "leaveChannel": "Umalis sa channel",
+    "leaveLastMember": "Hindi makaalis sa channel — ikaw ang huling miyembro.",
+    "dismiss": "I-dismiss",
+    "addTopic": "Magdagdag ng topic",
+    "editDetails": "I-edit ang detalye ng channel"
+  },
+  "message": {
+    "edited": "(na-edit)",
+    "pinned": "Naka-pin",
+    "showMore": "Ipakita pa",
+    "showLess": "Ipakita nang mas kaunti",
+    "repliedToThread": "Sumagot sa thread: {excerpt}",
+    "deletedPlaceholder": "Binura ang mensaheng ito.",
+    "sendToChannel": "Ipadala rin sa channel",
+    "removeFromChannel": "Alisin sa channel"
+  },
+  "input": {
+    "uploading": "Nag-a-upload...",
+    "scheduleMessage": "I-schedule ang mensahe",
+    "send": "Ipadala ang mensahe",
+    "hint": "Pindutin ang <kbd>Enter</kbd> para magpadala, <kbd>Shift + Enter</kbd> para sa bagong linya",
+    "scheduledFor": "Naka-schedule sa {time}",
+    "scheduleFailed": "Hindi ma-schedule ang mensahe. Subukan muli."
+  },
+  "list": {
+    "loading": "Naglo-load ng mga mensahe...",
+    "empty": "Wala pang mensahe",
+    "emptyReadOnly": "Walang mensahe ang channel na ito.",
+    "emptyFirst": "Ikaw ang unang magpadala ng mensahe!"
+  },
+  "reactions": {
+    "tooltip": "Nag-react ang {names} ng {emoji}",
+    "add": "Magdagdag ng reaksyon",
+    "you": "Ikaw"
+  },
+  "toolbar": {
+    "addReaction": "Magdagdag ng reaksyon",
+    "replyInThread": "Sumagot sa thread",
+    "removeBookmark": "Alisin ang bookmark",
+    "bookmark": "I-bookmark ang mensaheng ito",
+    "moreActions": "Higit pang aksyon"
+  },
+  "mobileSearch": {
+    "placeholder": "Maghanap ng mensahe...",
+    "hint": "Maghanap ng mensahe sa lahat ng channel at usapan",
+    "close": "Isara ang paghahanap"
+  },
+  "pins": {
+    "title": "Mga naka-pin na mensahe",
+    "loadFailed": "Hindi ma-load ang mga naka-pin na mensahe.",
+    "empty": "Wala pang naka-pin na mensahe"
+  },
+  "schedule": {
+    "menuTitle": "I-schedule ang mensahe",
+    "in20": "Sa loob ng 20 minuto",
+    "in1h": "Sa loob ng 1 oras",
+    "in3h": "Sa loob ng 3 oras",
+    "tomorrow9": "Bukas ng 9:00 AM",
+    "custom": "Custom na oras...",
+    "modalTitle": "I-schedule ang mensahe",
+    "dateTime": "Petsa at oras",
+    "pickFuture": "Pumili ng oras sa hinaharap.",
+    "submit": "I-schedule",
+    "submitting": "Ini-schedule...",
+    "close": "Isara"
+  },
+  "scheduled": {
+    "loadFailed": "Hindi ma-load ang mga naka-schedule na mensahe.",
+    "cancelFailed": "Hindi makansela ang mensahe.",
+    "sendFailed": "Hindi maipadala ang mensahe.",
+    "saveFailed": "Hindi ma-save ang mga pagbabago.",
+    "empty": "Walang naka-schedule na mensahe. Gamitin ang clock icon sa message composer para mag-schedule.",
+    "sendAt": "Ipadala sa:",
+    "edit": "I-edit",
+    "sendNow": "Ipadala ngayon",
+    "cancel": "Kanselahin",
+    "failedDlp": "Hindi naipadala ang mensaheng ito dahil tumugma ito sa data protection rule ({rule}). Burahin ito at magsulat ng bago."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# sagot} other {# na sagot}}"
+  },
+  "unreads": {
+    "title": "Hindi pa nababasa",
+    "loadFailed": "Hindi ma-load ang mga hindi pa nababasang mensahe.",
+    "empty": "Walang hindi pa nababasang mensahe. Nabasa mo na ang lahat! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Sumagot...",
+    "loadFailed": "Hindi ma-load ang thread. Subukan muli.",
+    "loading": "Naglo-load ng thread...",
+    "replyFailed": "Hindi naipadala ang sagot. Subukan muli.",
+    "joinToReply": "Sumali sa channel para makasagot sa mga thread",
+    "alsoSendToChannel": "Ipadala rin sa channel"
+  },
+  "errors": {
+    "messageEmpty": "Hindi maaaring walang laman ang mensahe.",
+    "pasteUploadFailed": "Hindi ma-upload ang na-paste na larawan. Subukan muli.",
+    "dropUploadFailed": "Hindi ma-upload ang na-drop na file. Subukan muli.",
+    "uploadFailed": "Hindi ma-upload ang file. Subukan muli.",
+    "voiceUploadFailed": "Hindi ma-upload ang voice message.",
+    "micDenied": "Tinanggihan ang access sa mikropono. Pahintulutan ang access sa mikropono.",
+    "loadFailed": "Hindi ma-load ang mga mensahe.",
+    "sendTimeout": "Nag-timeout ang pagpapadala ng mensahe. Subukan muli.",
+    "sendFailed": "Hindi naipadala ang mensahe. Subukan muli.",
+    "pushNotConfigured": "Hindi pa naka-set up ang push notifications sa server",
+    "serviceWorkerUnavailable": "Hindi available ang service worker",
+    "subscribeFailed": "Hindi ma-register ang subscription",
+    "editFailed": "Hindi ma-save ang edit. Subukan muli."
+  },
+  "details": {
+    "title": "Mga detalye ng channel",
+    "name": "Pangalan",
+    "topic": "Topic",
+    "topicPlaceholder": "Tungkol saan ang channel na ito?",
+    "description": "Paglalarawan",
+    "descriptionPlaceholder": "Magdagdag ng paglalarawan",
+    "createdBy": "Ginawa ni {name}",
+    "readOnly": "Ang mga may-ari ng channel, moderator, at admin ng workspace lamang ang maaaring mag-edit ng mga detalyeng ito.",
+    "save": "I-save",
+    "cancel": "Kanselahin",
+    "saveFailed": "Hindi ma-save ang mga detalye ng channel."
+  },
+  "intro": {
+    "title": "Maligayang pagdating sa #{name}",
+    "noDescription": "Wala pang paglalarawan.",
+    "editDescription": "I-edit ang paglalarawan"
+  },
+  "threads": {
+    "title": "Mga thread",
+    "menu": "Menu",
+    "loadFailed": "Hindi ma-load ang mga thread.",
+    "empty": "Wala pang thread",
+    "emptyHint": "Lalabas dito ang mga thread na sinimulan mo o sinagutan mo.",
+    "newReplies": "{count, plural, one {# bagong sagot} other {# na bagong sagot}}",
+    "replyCount": "{count, plural, one {# sagot} other {# na sagot}}",
+    "olderReplies": "Buksan ang thread para makita ang mga naunang sagot",
+    "replyPlaceholder": "Sumagot...",
+    "send": "Ipadala",
+    "replyFailed": "Hindi naipadala ang sagot. Subukan muli.",
+    "alsoSendToChannel": "Ipadala rin sa channel",
+    "openThread": "Buksan ang thread",
+    "loadMore": "Mag-load pa",
+    "loading": "Naglo-load..."
+  },
+  "permalink": {
+    "copied": "Nakopya ang link",
+    "notFound": "Hindi mahanap ang mensaheng ito, o wala kang pahintulot na tingnan ito",
+    "goHome": "Pumunta sa home",
+    "copyManually": "Hindi awtomatikong makopya. Kopyahin ang link na ito: {url}"
+  },
+  "unread": {
+    "divider": "Bago",
+    "newMessagesBar": "{count, plural, one {# bagong mensahe} other {# na bagong mensahe}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# o higit pang bagong mensahe} other {# o higit pang bagong mensahe}}",
+    "markRead": "Markahan bilang nabasa",
+    "jumpFailed": "Hindi ma-load ang posisyon ng hindi pa nababasa"
+  },
+  "reminder": {
+    "set": "Magtakda ng paalala",
+    "customLabel": "Petsa at oras ng paalala",
+    "preset": {
+      "in20": "Sa loob ng 20 minuto",
+      "in1h": "Sa loob ng 1 oras",
+      "in3h": "Sa loob ng 3 oras",
+      "tomorrow": "Bukas",
+      "nextWeek": "Susunod na linggo",
+      "custom": "Custom..."
+    },
+    "status": {
+      "pending": "Paparating",
+      "done": "Tapos na"
+    },
+    "snooze": {
+      "m10": "10 minuto",
+      "h1": "1 oras",
+      "tomorrow": "Bukas"
+    },
+    "loadFailed": "Hindi ma-load ang mga paalala.",
+    "empty": "Walang paalala. Gamitin ang more actions menu sa isang mensahe o i-type ang /remind para magdagdag.",
+    "emptyDone": "Walang natapos na paalala.",
+    "dueAt": "Due {time}",
+    "firedAt": "Dapat ay {time}",
+    "completedAt": "Natapos {time}",
+    "messageDeleted": "Binurang mensahe",
+    "complete": "Markahan bilang tapos",
+    "reopen": "Markahan bilang hindi pa tapos",
+    "delete": "Burahin ang paalala",
+    "toast": {
+      "created": "Naitakda na ang paalala",
+      "due": "Paalala: {text}",
+      "createFailed": "Hindi maitakda ang paalala. Subukan muli."
+    },
+    "command": {
+      "syntax": "Paraan ng paggamit: /remind me [text] in [numero] [minutes|hours|days]",
+      "tooShort": "Dapat hindi bababa sa 1 minuto ang layo ng paalala.",
+      "tooLong": "Dapat nasa loob ng isang taon ang paalala.",
+      "created": "Naitakda ang paalala para sa {time}"
+    },
+    "pastTime": "Pumili ng oras sa hinaharap.",
+    "loadMore": "Mag-load pa"
+  }
+}
