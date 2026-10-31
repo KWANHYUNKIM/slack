@@ -15,6 +15,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner';
 const ACTION_KEYS: Record<string, string> = {
   'auth.login': 'authLogin',
   'auth.login_failed': 'authLoginFailed',
+  'auth.login_locked': 'authLoginLocked',
   'auth.logout': 'authLogout',
   'auth.password_changed': 'authPasswordChanged',
   'user.role_changed': 'userRoleChanged',
