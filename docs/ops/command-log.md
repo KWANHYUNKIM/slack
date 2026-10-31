@@ -117,3 +117,16 @@
 | 13:47 | 사용자 지시: "다시 실행줘" (세션 재시작 후 루프 재개) | 자원 점검: 여유 29%, 디스크 14GB → 감속 단계, 한도 1 | |
 | 13:48 | `gh auth status` 정상 복구 확인 → PR #13(fix/activity-race, #12 위), PR #14(feat/channel-name-unicode, #11 위) 생성 | 인증 만료로 막혀 있던 2건 | |
 | 13:49 | dev-1(sonnet) test/suite-flaky-rest 재투입 | 12:36 배정분이 세션 종료로 중단. 남은 부분 작업(scale.test.ts, setup.ts)에서 이어서 | 진행 중 |
+| 14:19 | 사용자 지시: "더 작업할거 없나? 커밋 푸쉬는 안해주나?" | 문서 변경 커밋 6040593 푸시(PR #2) | |
+| 14:21 | PR #2, #5, #4, #6, #7 squash 머지 | 모두 리뷰 반영 완료분 | main |
+| 14:22 | **CI 실패 원인**: GitHub 계정 결제 문제로 Actions 작업이 시작되지 않음("account is locked due to a billing issue"). 코드 문제 아님 → PR #3 머지(설정은 리뷰 완료). 사용자에게 결제 확인 요청 | 그동안 총괄이 로컬에서 tsc·eslint·i18n:check로 대신 확인 | |
+| 14:23 | PR #8 base를 main으로 바꾸고 머지 | | |
+| 14:30 | PR #9 충돌(스택 PR을 squash 머지해서 생김). 별도 worktree에서 main 병합, 충돌은 01b 쪽으로 해결. 자동 병합이 #9 리뷰에서 지운 useChannelStore 필드를 되살린 것을 검증에서 발견해 되돌림. "01b와 다른 파일 = #2·#3·#4·#6 파일이며 main과 같음"을 확인 후 c2776df 푸시·머지 | 공유 작업 트리는 건드리지 않음 | |
+| 14:40 | PR #10·#11·#12 같은 방식(브랜치가 바꾼 파일은 브랜치, 나머지는 main)으로 병합 커밋 푸시. 1차 시도는 zsh 단어 분리 문제로 검증에서 걸려 푸시 안 함 → bash로 재실행 | | |
+| 14:42 | PR #10, #11 머지. main b0f092f에서 프런트 tsc·eslint·i18n:check, 백엔드 tsc 통과 | | |
+| 14:43 | PR #12 `/code-review medium` 시작. #13·#14는 리뷰 대기(감속 단계) | | |
+| 14:27 | PR #12 리뷰 7건 분류: 7건 모두 #12에서 수정. 핵심은 ② 멘션 정리를 baseline(커서가 실제로 움직이는 곳)으로 옮기기, ① 커서 조건부 갱신(역행 방지), ③④ /read는 커서가 앞으로 갈 때만 요청한 messageId까지 정리, ⑦ 삭제된 messageId도 정리 경로 유지, ⑥ 테스트는 baseline API 경유 | 감속 단계·dev-1 진행 중이라 배정 대기. dev-1 완료 후 sonnet 1명에게 배정. #13은 #12 위라 #12 수정 후 재병합 | |
+| 14:39 | dev-1 보고(test/suite-flaky-rest): DB는 원인 아님(연결 최대 18/100, 145/256MiB, 잠금·OOM 없음). 호스트 스왑 10.1/11.3GB로 인한 멈춤 → 타임아웃 → 늦은 요청이 다음 테스트와 섞이는 연쇄. testTimeout 30s, isolatedModules, settleBackgroundWork 대기로 3회 연속 503/503 | 총괄 검토: 변경은 테스트 설정 3파일뿐, 승인. main 위 test/suite-flaky-rest 5741c82 → PR #15 | 실제 50분 |
+| 14:42 | 총괄이 scripts/check-resources.sh에 스왑 사용률 추가: 90% 이상이면 정상 → 감속(한도 1) | memory_pressure만으로는 스왑 압박이 안 잡힘(dev-1 제안). 현재 88% | |
+| 14:43 | 7 | dev-1 sonnet: PR #12 리뷰 7건 반영(공유 트리, channels.ts /read·/read/baseline만) / `/code-review medium 14` | 정상 단계. #14 base를 main으로 변경. 수정 전 파일 스냅샷을 scratchpad에 저장(추출용) | 진행 중 |
+| 14:43 | 후속 파트 등록: fix/auth-error-logging(auth 미들웨어가 DB 오류도 401로 삼킴, catch에서 logError) | dev-1 남은 이슈 3 | |
