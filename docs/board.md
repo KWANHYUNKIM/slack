@@ -14,7 +14,7 @@
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 완료(PR #3 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
 | D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | 완료(PR #45 머지) | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
 | D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | dev-4 | sonnet | 완료(PR #51 머지) | 1.5h | 2026-10-31 23:33 | | D1 이후 |
-| E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
+| E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 진행(E4·E5·E7 완료, E7b 리뷰, E6·E10 진행) | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
 | security/deps-upgrade-frontend: quill, react-router 등 | dev-3 | sonnet | 완료(PR #4 머지) | 1h | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3 |
 | security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | 완료(PR #6 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
@@ -28,7 +28,7 @@
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
-| feat/channel-name-hardening: 결합 문자 연속 개수 제한, 문자 체계 혼합(키릴+라틴 동형 문자) 차단 검토, 관리자 상한 80과 생성 상한 25 통일 여부 | dev-1 | sonnet | 진행 | 45분 | 2026-11-01 02:19 | | dev-5 남은 이슈 |
+| feat/channel-name-hardening: 결합 문자 연속 개수 제한, 문자 체계 혼합(키릴+라틴 동형 문자) 차단 검토, 관리자 상한 80과 생성 상한 25 통일 여부 | dev-1 | sonnet | 완료(PR #94 머지) | 45분 | 2026-11-01 02:19 | 2026-11-01 02:40 | dev-5 남은 이슈 |
 | fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | dev-4 | sonnet | 완료(PR #33에 포함) | 1h | | | 06 search-v2와 함께 |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
@@ -71,10 +71,12 @@
 | E4 감사 로그 강화: 기록 범위 보강, 조회·필터 API, CSV/JSON 내보내기(수식 주입 방지), 보존 기간, 관리자 탭 | dev-1 | sonnet | 완료(PR #77 머지) | 2h | 2026-11-01 00:48 | | 엔터프라이즈 3절, 선행 없음 |
 | E7 세션 관리: Session 모델·sid, 기기 목록·개별/전체 로그아웃, 관리자 강제 로그아웃 UI, 유휴·최대 수명 정책(2FA는 E7b) | dev-5 | sonnet | 완료(PR #80 머지) | 2h | 2026-11-01 01:17 | | 엔터프라이즈 3절 |
 | E5 데이터 보존 정책: 워크스페이스·채널 보존 일수, 일 1회 하드 삭제 배치, legalHold 제외 자리, 관리자 탭 | dev-1 | sonnet | 완료(PR #84 머지) | 2h | 2026-11-01 01:40 | 2026-11-01 02:00 | 엔터프라이즈 3절 |
-| E7b 2단계 인증: TOTP(암호화 저장), 복구 코드, 로그인 2단계, 조직 필수 정책, 관리자 초기화 | dev-4 | opus | PR #89 리뷰 반영 중(10건 중 9건) | 2h | 2026-11-01 01:40 | | E7 후속 |
+| E7b 2단계 인증: TOTP(암호화 저장), 복구 코드, 로그인 2단계, 조직 필수 정책, 관리자 초기화 | dev-4 | opus | PR #89 재리뷰 반영 중(10건 중 9건) | 2h | 2026-11-01 01:40 | | E7 후속 |
+| E6 법적 보존과 eDiscovery: LegalHold 건·대상자, 보존 정리 제외, 관리자 검색·스트리밍 내보내기, 감사 로그 | dev-1 | opus | 진행 | 2h | 2026-11-01 02:42 | | 엔터프라이즈 3절, 마이그레이션 060000 |
+| E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 진행 | 2h | 2026-11-01 02:42 | | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | - | sonnet | 대기 | 1.5h | | | E7b 남은 이슈 |
-| fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 진행 | 45분 | 2026-11-01 02:26 | | PR #91 보고 |
+| fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 완료(PR #93 머지) | 45분 | 2026-11-01 02:26 | 2026-11-01 02:30 | PR #91 보고 |
 | refactor/api-401-by-code: 프런트 request()가 401 전체가 아니라 토큰 code(AUTH_INVALID_TOKEN 등)일 때만 로그아웃, 이후 2FA·비밀번호 오류 상태 코드 정리 | - | sonnet | 대기 | 1h | | | PR #89 리뷰 |
 | feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | - | haiku | 대기 | 45분 | | | PR #86 남은 이슈 |
 | test/socket-listen-loopback: websocket 등 host 없는 httpServer.listen()도 127.0.0.1 고정 검토 | dev-3 | haiku | 완료(PR #91 머지) | 30분 | 2026-11-01 02:15 | 2026-11-01 02:24 | PR #87 남은 이슈 |

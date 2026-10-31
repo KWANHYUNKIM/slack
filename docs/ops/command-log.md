@@ -249,3 +249,10 @@
 | 2026-11-01 02:24 | dev-3 검토: 소켓 테스트 11개 127.0.0.1 고정, websocket·presence 19/19, tsc → PR #91, /code-review low. activity 동시 /read 커서 경쟁 1회 실패 → fix/read-cursor-race 보드 추가 |
 | 2026-11-01 02:25 | PR #91 리뷰: 테스트 파일만이라 low 단계 검토 대상 없음(총괄이 diff와 테스트로 확인) → 머지 |
 | 2026-11-01 02:26 | 배정: dev-3 fix/read-cursor-race(sonnet, worktree, dev3 DB). 진행 3명(dev-1, dev-3, dev-4) |
+| 2026-11-01 02:30 | dev-3 검토: 원인 advanceReadCursor 3단계 경쟁 → upsert 한 문장. 총괄 추가 실행 channels·dm-unread-divider·unreads-threads·activity 통과 → PR #93, /code-review medium |
+| 2026-11-01 02:31 | PR #93 리뷰 7건: 하드 삭제 FK 500 방지(EXISTS), updatedAt 앱 시계, baseline ON CONFLICT DO NOTHING, 무의미한 삭제 확인 제거, 반복 5회 → dev-3. 미반영: raw SQL 타입 검사, /unread와 느린 /read 순서 경쟁(알려진 한계) |
+| 2026-11-01 02:36 | E7b 리뷰 반영 검토: 리베이스 충돌 0, mfa 26·auth 25·mcp 30, sessions 1회 실패 후 2회 재실행 27/27(스왑 부하) → 푸시, /code-review medium 재리뷰 |
+| 2026-11-01 02:38 | PR #93 리뷰 반영 검토: activity 45, unread-divider 10, tsc → 머지 |
+| 2026-11-01 02:40 | dev-1 검토: 리베이스 후 channels 14·channel-create-errors 2·channel-meta-star 17, tsc, i18n → PR #94, /code-review low 지적 0 → 머지 |
+| 2026-11-01 02:42 | 배정: dev-1 E6 법적 보존·eDiscovery(opus, 060000), dev-5 E10 DLP(sonnet, 070000). 둘 다 worktree·전용 DB·설치 금지 |
+| 2026-11-01 02:43 | PR #89 재리뷰 10건 → dev-4에 9건: 여러 탭 토큰 교체(storage 이벤트, 같은 토큰일 때만 삭제), PAT 상한 먼저·복구 코드 되돌리기, 맞는 코드가 잠금 만들지 않게, 키 없음은 503, 초기화 kick 사유, 정책 시 끄기 버튼 숨김, 키 파싱 캐시, base32Decode 정리, 복구 코드 파일명 번역 키. 미반영: PAT용 TOTP의 같은 창 재사용 차단(의도) |
