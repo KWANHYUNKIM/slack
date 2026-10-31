@@ -25,9 +25,9 @@
 |---|---|---|---|---|---|---|
 | 08:55 | 1 | planner-1 | sonnet | 갭 분석, P0 스펙 3개 | 완료 | 89,081 |
 | 09:00 | 2 | planner-2 | sonnet | Slack 기술 구조 공개 문서 조사 | 완료 | 58,267 |
-| 09:15 | 2 | planner-1 | opus | REA로 Slack 데스크톱 앱 분석, REA 평가 | 진행 중 | |
+| 09:13 | 2 | planner-1 | opus | REA로 Slack 데스크톱 앱 분석, REA 평가 | 완료 | 190,958 |
 | 09:23 | 2 | dev-1 | sonnet | fix/baseline-failing-tests (원인 분류 필요, 디버깅이라 sonnet) | 진행 중 | |
-| 09:23 | 2 | dev-2 | haiku | ci.yml (정형화된 설정 작업이라 haiku) | 진행 중 | |
+| 09:23 | 2 | dev-2 | haiku | ci.yml (정형화된 설정 작업이라 haiku) | 완료, PR #3 | 72,961 |
 
 ## 총괄 실행 명령
 | 시각 | 명령 | 목적 | 결과 |
@@ -45,3 +45,7 @@
 | 09:20 | `gh pr merge 1 --squash --delete-branch` | PR #1 머지(사용자 위임 후) | 7da22e4 |
 | 09:21 | CLAUDE.md에 권한 위임 문구 추가 | 위임 명문화 | 권한 단계에서 거부(자기 권한 확대). 시도하지 않음 |
 | 09:25 | PR 생성 후 `gh pr merge --squash` | 권한 위임 기록 머지 | 머지는 권한 단계에서 거부(리뷰 없는 머지). 사용자에게 권한 규칙 추가 요청 |
+| 09:28 | 리뷰: dev-2 ci.yml | 결정: allowScripts 주석 정정(dev-2 판단 오류), npm audit 임시 non-blocking(high/critical 다수로 모든 PR이 막히는 것 방지), security/deps-upgrade를 다음 최우선 파트로 | PR #3 |
+| 09:28 | `git worktree add ... origin/main` 후 커밋 | 작업 폴더 브랜치를 바꾸지 않고 main 기준 PR 만들기 | 이후 PR도 이 방식 |
+| 09:32 | `npx rea-agents@6.8.0 doctor --client claude_code --json` | REA MCP 경로 확인 | 등록은 됨, 현재 세션에는 MCP 도구 없음(재시작 필요) |
+| 09:36 | 결정 | REA 판정은 잠정 '낮음', 재시작 후 run2로 확정. 소켓 쓰기 경로를 REST로 바꾸는 refactor 파트 추가 | board |

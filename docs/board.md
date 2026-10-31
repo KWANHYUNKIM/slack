@@ -7,11 +7,14 @@
 | 03-channel-meta-star | - | sonnet | 대기 | 1.5h | | | P0, 스키마 변경 |
 | 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
 | 04-threads-view, 05-user-status-dnd 스펙 | - | sonnet | 대기 | | | | P0 스펙 미작성 |
-| REA run1: Slack 데스크톱 앱 분석과 REA 평가 | planner-1 | opus | 진행 중 | 45분 | 2026-10-31 09:15 | | 루프 2 |
+| REA run1: Slack 데스크톱 앱 분석과 REA 평가 | planner-1 | opus | 완료 | 45분 | 2026-10-31 09:13 | 2026-10-31 09:35 | 루프 2 |
 | 규칙 문서(git, FE, BE, 보안, 기술 스택, 엔터프라이즈·배포) | 총괄 | - | 완료 | 30분 | 2026-10-31 09:15 | 2026-10-31 09:35 | |
 | fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | 진행 중 | 1h | 2026-10-31 09:23 | | security, files, edge-cases, admin |
-| ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 진행 중 | 1h | 2026-10-31 09:23 | | |
+| ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | PR #3 | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
 | D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | - | opus | 대기 | 2h | | | 보안 문서 9절 |
 | D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | - | sonnet | 대기 | 1.5h | | | D1 이후 |
 | E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
+| security/deps-upgrade: npm audit high/critical 해소(backend critical 1), CI audit 차단 복구 | - | sonnet | 대기(다음 최우선) | 1.5h | | | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
+| REA run2: Claude Code 재시작 후 MCP 경로로 재평가 | - | sonnet | 대기(재시작 필요) | 30분 | | | run1과 같은 질문 Q1~Q3 |
+| refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
