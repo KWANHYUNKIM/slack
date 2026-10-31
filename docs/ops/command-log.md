@@ -164,3 +164,7 @@
 | 2026-10-31 21:40 | PR #23 머지(514b1eb). 실수: 첫 merge 시도가 "Base branch was modified"로 실패했는데 바로 원격 브랜치를 지워 PR이 닫힘 → 브랜치 재푸시, gh pr reopen, 다시 squash 머지. 이후 merge 성공 확인 뒤에만 브랜치 삭제(--delete-branch). 마이그레이션 20261031140000_add_group_dm을 dev1·2·3·5·slackclone·slackclone_dev에 적용. dev-4 worktree 제거 |
 | 2026-10-31 21:42 | 자원 정상(여유 30%, 스왑 84%, 한도 3). 스왑이 90%에 가까워 2개만 배정: planner-1 00b-gap-analysis-v2(sonnet, 사용자 지시, #claude-test에서 CRUD 관찰), dev-5 04-threads-view(sonnet, worktree, dev5 DB) |
 | 2026-10-31 21:47 | planner-1 완료: 00b 차이표 30항목, 스펙 06~10 신규, 04·05 보완. 단 이 세션에 Claude in Chrome 도구가 없어 #claude-test 실관찰 못 함(쓰기 없음) → 문서 기반 추정, 각 스펙에 "검증 필요" 표시. 04 보완(부모 삭제 자리표시자 등)을 진행 중인 dev-5에게 전달. 자원 감속(스왑 92%) 한도 1이라 추가 배정 보류 |
+| 2026-10-31 21:52 | dev-5 04 완료 검토: main(2adf8b6) 리베이스, tsc·eslint·i18n·외부 URL·threads-view 19/19 재확인 → PR #26, /code-review medium |
+| 2026-10-31 21:53 | PR #26 리뷰 10건 → dev-5 반영 지시. 총괄 결정: HTTP PATCH도 message:updated 송신(parent 발췌 포함), 스레드 목록 재조회는 화면 열렸을 때만, 읽음 위치 GREATEST, 답글 조회 부모별 20개 SQL 제한, 중첩 답글 400 |
+| 2026-10-31 21:57 | PR #26 머지(08b87ee). 마이그레이션 20261031150000_add_thread_view를 dev1~4·slackclone·slackclone_dev에 적용, dev-5 worktree 제거. 실수: main 정리 명령에 `git checkout -- .`을 섞어 미커밋 문서 기록을 지울 뻔함(권한 단계에서 거부되어 손실 없음). 공유 트리에서는 checkout/reset 계열을 쓰지 않는다 |
+| 2026-10-31 21:58 | 배정: dev-1 05-user-status-dnd(sonnet, 스키마, shouldNotify를 채널·DM·그룹 DM·스레드 푸시에 연결). 자원 감속(스왑 90%) 한도 1 |
