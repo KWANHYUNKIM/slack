@@ -1,21 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useFileTokens } from '@/hooks/useFileTokens';
 import { FileText, Download, Menu } from 'lucide-react';
+import { AuthFileImage, AuthFileLink, AuthFileLightbox } from './AuthFile';
 import { useTranslation } from 'react-i18next';
 import { formatDate, DATE_MEDIUM } from '@/lib/i18n/format';
-import { getUserFiles, getAuthFileUrl, getFileUrl, type ApiFileWithUser } from '@/lib/api';
+import { getUserFiles, type ApiFileWithUser } from '@/lib/api';
 import { formatBytes } from '@/lib/fileUtils';
 import { FileIcon } from './FileIcon';
-import { ImageLightbox } from './ImageLightbox';
 import { useMobileStore } from '@/stores/useMobileStore';
 
 export function FilesPage() {
   const { t } = useTranslation(['messages', 'common']);
-  useFileTokens();
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxFileId, setLightboxFileId] = useState<number | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
 
   const fetchFiles = useCallback(() => {
@@ -62,11 +60,11 @@ export function FilesPage() {
               <div key={file.id} className="flex items-start gap-3 rounded-lg p-3 hover:bg-slack-hover">
                 {file.mimetype.startsWith('image/') ? (
                   <button
-                    onClick={() => { setLightboxSrc(getFileUrl(file.id)); setLightboxAlt(file.originalName); }}
+                    onClick={() => { setLightboxFileId(file.id); setLightboxAlt(file.originalName); }}
                     className="flex-shrink-0 cursor-zoom-in"
                   >
-                    <img
-                      src={getFileUrl(file.id)}
+                    <AuthFileImage
+                      fileId={file.id}
                       alt={file.originalName}
                       className="h-10 w-10 rounded object-cover"
                     />
@@ -79,46 +77,42 @@ export function FilesPage() {
                 <div className="flex-1 min-w-0">
                   {file.mimetype.startsWith('image/') ? (
                     <button
-                      onClick={() => { setLightboxSrc(getFileUrl(file.id)); setLightboxAlt(file.originalName); }}
+                      onClick={() => { setLightboxFileId(file.id); setLightboxAlt(file.originalName); }}
                       className="block text-[14px] font-medium text-slack-link hover:underline truncate text-start"
                     >
                       {file.originalName}
                     </button>
                   ) : (
-                    <a
-                      href={getFileUrl(file.id)}
+                    <AuthFileLink
+                      fileId={file.id}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-[14px] font-medium text-slack-link hover:underline truncate"
                     >
                       {file.originalName}
-                    </a>
+                    </AuthFileLink>
                   )}
                   <p className="text-[12px] text-slack-secondary">
                     {formatBytes(file.size)} &middot; {file.user.name} &middot;{' '}
                     {formatDate(file.createdAt, DATE_MEDIUM)}
                   </p>
                 </div>
-                <a
-                  href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
+                <AuthFileLink
+                  fileId={file.id} forceDownload
                   download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
                   className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-border-light"
                   title={t('messages:files.download')}
                 >
                   <Download className="h-4 w-4 text-slack-secondary" />
-                </a>
+                </AuthFileLink>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {lightboxSrc && (
-        <ImageLightbox
-          src={lightboxSrc}
-          alt={lightboxAlt}
-          onClose={() => setLightboxSrc(null)}
-        />
+      {lightboxFileId !== null && (
+        <AuthFileLightbox fileId={lightboxFileId} alt={lightboxAlt} onClose={() => setLightboxFileId(null)} />
       )}
     </div>
   );

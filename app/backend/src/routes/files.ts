@@ -9,7 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { Storage } from '@google-cloud/storage';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireFileAccess, verifyFileAccess } from '../middleware/authorize.js';
+import { requireFileAccess, verifyFileAccess, verifyFilesAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -368,12 +368,12 @@ router.post('/download-token', authMiddleware, async (req: AuthRequest, res: Res
     }
 
     const tokens: Record<number, string> = {};
-    for (const fileId of new Set(parsed.data.fileIds)) {
-      if (await verifyFileAccess(userId, fileId)) {
-        tokens[fileId] = signDownloadToken(userId, user.tokenVersion, fileId);
-      }
+    const allowed = await verifyFilesAccess(userId, parsed.data.fileIds);
+    for (const fileId of allowed) {
+      tokens[fileId] = signDownloadToken(userId, user.tokenVersion, fileId);
     }
-    res.json({ tokens });
+    // limit: 프런트가 묶음 크기를 서버 값에 맞추게 한다
+    res.json({ tokens, limit: MAX_TOKENS_PER_REQUEST });
   } catch (error) {
     logError('Generate download token error', error);
     res.status(500).json({ error: 'Failed to generate download token' });
@@ -425,6 +425,18 @@ router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
   try {
     const file = req.file;
 
+    // ETag: 파일 내용은 바뀌지 않으므로 id·크기·생성 시각으로 만든다.
+    // 토큰·접근 검증(requireFileAccess)은 이 앞에서 이미 끝났으므로 304도 권한이 있는 요청에만 나간다.
+    // no-cache는 "저장은 하되 매번 재검증"이라 채널을 나간 뒤에는 304가 아니라 404가 된다.
+    const etag = `"${file.id}-${file.size}-${new Date(file.createdAt).getTime()}"`;
+    res.setHeader('ETag', etag);
+    res.setHeader('Cache-Control', 'private, no-cache');
+    const inm = req.headers['if-none-match'];
+    if (inm && inm.split(',').some((v) => v.trim() === etag)) {
+      res.status(304).end();
+      return;
+    }
+
     // GCS files: stream through backend (ADC on Cloud Run lacks signing key for getSignedUrl)
     if (file.gcsPath && bucket) {
       const forceAttachment = !INLINE_SAFE_TYPES.has(file.mimetype);
@@ -433,7 +445,6 @@ router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
       res.setHeader('Content-Type', file.mimetype);
       res.setHeader('Content-Disposition', contentDisposition(disposition, file.originalName));
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'private, max-age=3600');
 
       const gcsFile = bucket.file(file.gcsPath);
       const stream = gcsFile.createReadStream();

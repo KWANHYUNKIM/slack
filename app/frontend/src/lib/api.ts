@@ -1,126 +1,48 @@
 import i18n, { t } from '@/lib/i18n';
 import type { CustomStatus, Dnd } from '@/lib/types';
+import { createFileTokenCache, buildFileUrl, type TokenResponse, type TokenState } from '@/lib/fileTokens';
 
 /**
- * 파일별 다운로드 토큰 저장소.
- * <img>·<a>는 Authorization 헤더를 못 붙이므로 URL 쿼리에 토큰을 싣는다. 토큰은 파일 하나에 묶이고(fileId)
- * 5분 뒤 만료되며 purpose=file-download라 로그인 토큰으로는 쓸 수 없다. 로그인 토큰은 URL에 싣지 않는다.
- * 캐시에 없으면 URL만 돌려주고(토큰 없음) 한 틱 모아서 일괄 발급받은 뒤 구독자에게 다시 그리라고 알린다.
+ * 파일별 다운로드 토큰. 캐시·갱신·거부 처리 로직은 lib/fileTokens.ts(순수)에 있고 여기서는 fetch만 붙인다.
+ * <img>·<a>는 Authorization 헤더를 못 붙이므로 URL 쿼리에 파일 하나에 묶인 5분짜리 토큰을 싣는다.
+ * 토큰이 없으면 URL을 만들지 않는다(null). 호출한 쪽이 자리표시자를 그린다.
  */
-const TOKEN_REUSE_MS = 4 * 60 * 1000; // 만료 1분 전에 갈아 끼운다
-const _fileTokens = new Map<number, { token: string; expires: number }>();
-const _pendingIds = new Set<number>();
-const _expiryTimers = new Map<number, ReturnType<typeof setTimeout>>();
-const _listeners = new Set<() => void>();
-let _tokenVersion = 0;
-let _flushScheduled = false;
-
-function notifyTokens() {
-  _tokenVersion++;
-  _listeners.forEach((l) => l());
-}
-
-export function subscribeDownloadTokens(listener: () => void): () => void {
-  _listeners.add(listener);
-  return () => { _listeners.delete(listener); };
-}
-
-export function getDownloadTokenVersion(): number {
-  return _tokenVersion;
-}
-
-async function flushTokenRequests() {
-  _flushScheduled = false;
-  const fileIds = [..._pendingIds];
-  _pendingIds.clear();
+async function fetchFileTokens(fileIds: number[]): Promise<TokenResponse | null> {
   const authToken = localStorage.getItem('token');
-  if (!authToken || fileIds.length === 0) return;
-  // 서버 한도(50)에 맞춰 나눠 보낸다
-  for (let i = 0; i < fileIds.length; i += 50) {
-    const chunk = fileIds.slice(i, i + 50);
-    try {
-      const res = await fetch('/files/download-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ fileIds: chunk }),
-      });
-      if (!res.ok) continue;
-      const data = (await res.json()) as { tokens: Record<string, string> };
-      const now = Date.now();
-      for (const [id, token] of Object.entries(data.tokens)) {
-        const fileId = Number(id);
-        _fileTokens.set(fileId, { token, expires: now + TOKEN_REUSE_MS });
-        clearTimeout(_expiryTimers.get(fileId));
-        // 만료되면 캐시에서 빼고 다시 그리게 해서 화면에 있는 파일만 새 토큰을 받는다
-        _expiryTimers.set(fileId, setTimeout(() => {
-          _fileTokens.delete(fileId);
-          _expiryTimers.delete(fileId);
-          notifyTokens();
-        }, TOKEN_REUSE_MS));
-      }
-      notifyTokens();
-    } catch {
-      // 네트워크 오류: 다음 렌더에서 다시 요청한다
-    }
-  }
+  if (!authToken) return null;
+  const res = await fetch('/files/download-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+    body: JSON.stringify({ fileIds }),
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as TokenResponse;
 }
 
-function requestFileToken(fileId: number) {
-  _pendingIds.add(fileId);
-  if (_flushScheduled) return;
-  _flushScheduled = true;
-  setTimeout(flushTokenRequests, 20);
-}
+const fileTokenCache = createFileTokenCache({ fetchTokens: fetchFileTokens });
 
-/** 그 파일의 토큰을 미리 받아 둔다(목록을 그릴 때). */
+export const subscribeDownloadTokens = fileTokenCache.subscribe;
+
+/** 파일 토큰을 미리 받아 둔다(메시지 목록을 받았을 때 등). 이미 있거나 요청 중인 것은 건너뛴다. */
 export function prefetchFileTokens(fileIds: number[]): void {
-  const now = Date.now();
-  for (const id of fileIds) {
-    const cached = _fileTokens.get(id);
-    if (!cached || cached.expires <= now) requestFileToken(id);
-  }
+  fileTokenCache.ensure(fileIds);
+}
+
+export function getFileTokenState(fileId: number): TokenState {
+  return fileTokenCache.peek(fileId);
 }
 
 /**
- * Appends a file-scoped download token to a file URL for use in <img> and <a> tags
- * that can't send Authorization headers.
+ * 파일 다운로드 URL(파일별 토큰 포함). 토큰이 아직 없거나 접근 불가면 null이다.
+ * 렌더 중에는 토큰을 요청하지 않는다. 요청은 prefetchFileTokens나 useFileUrl 훅이 한다.
  */
-export function getAuthFileUrl(url: string, { download = false }: { download?: boolean } = {}): string {
-  if (!url) return url;
-  // Only append token to our own download endpoints, not external URLs
-  const match = /^\/files\/(\d+)\/download(\?|$)/.exec(url);
-  if (!match) return url;
-  const fileId = Number(match[1]);
-  let result = url;
-  if (download) {
-    result = `${result}${result.includes('?') ? '&' : '?'}dl=1`;
-  }
-  const cached = _fileTokens.get(fileId);
-  if (cached && cached.expires > Date.now()) {
-    return `${result}${result.includes('?') ? '&' : '?'}token=${cached.token}`;
-  }
-  // 토큰이 없거나 만료됐다: 일괄 발급을 요청하고 도착하면 구독자가 다시 그린다
-  _fileTokens.delete(fileId);
-  requestFileToken(fileId);
-  return result;
+export function getFileUrl(fileId: number, opts: { download?: boolean } = {}): string | null {
+  return buildFileUrl(fileId, fileTokenCache.peek(fileId), opts);
 }
 
-/**
- * Returns a proxied file URL via the download endpoint.
- * This ensures a fresh signed URL is generated by the backend on each request,
- * avoiding GCS signed URL expiration issues (30-min TTL).
- */
-export function getFileUrl(fileId: number): string {
-  return getAuthFileUrl(`/files/${fileId}/download`);
-}
-
-/** Clear cached download tokens (call on logout) */
+/** Clear cached download tokens (call on logout). 늦게 도착한 응답은 세대 번호로 버린다. */
 export function clearDownloadToken(): void {
-  _fileTokens.clear();
-  _pendingIds.clear();
-  _expiryTimers.forEach((t) => clearTimeout(t));
-  _expiryTimers.clear();
-  notifyTokens();
+  fileTokenCache.clear();
 }
 
 export class ApiError extends Error {
