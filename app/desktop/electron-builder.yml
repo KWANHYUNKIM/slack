@@ -71,5 +71,5 @@ linux:
 appImage:
   artifactName: TeamMessenger-${version}-${arch}.${ext}
 
-# 자동 업데이트 피드(GitHub Releases, latest.yml)는 D2에서 설정한다. 지금은 아무 데도 올리지 않는다.
+# 자동 업데이트는 규칙 17(외부 https 의존 금지) 때문에 쓰지 않는다(docs/ops/release.md). 업로드는 release.yml이 gh로 한다.
 publish: null
