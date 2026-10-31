@@ -97,3 +97,4 @@
 | 10:50 | 6 | dev-2 sonnet: i18n-1 / dev-4 sonnet: 내장 STUN / dev-1 sonnet: 채널 읽음 멘션 버그 | 정상 단계 3명. 파일 영역 분리(프런트 전반 / useHuddleStore+stun / mentionService·channels) | 진행 중 |
 | 10:57 | **문제 발견**: 여러 개발자가 같은 테스트 DB로 jest를 동시에 돌려 서로 DB를 비움(전체 41건 실패의 원인) | 개발자별 DB `slackclone_test_dev1~5` 생성·마이그레이션, CLAUDE.md·developer.md·backend.md 규칙 갱신 | DB 컨테이너 125MB/256MB |
 | 10:59 | STUN 테스트를 전용 DB(dev3)로 재확인 19/19, PR #10을 01b 위에 쌓아 생성 | | |
+| 11:01 | PR #11(i18n-1)을 01b 위에 PR #4를 merge해서 생성. 총괄이 PR 브랜치에서 tsc·eslint·i18n:check 재확인 | package.json이 #4와 겹쳐서 | |
