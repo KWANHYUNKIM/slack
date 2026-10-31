@@ -31,7 +31,8 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | `list_channels` | channels:read | 내가 속한 채널과 공개 채널 목록 |
 | `read_channel` | channels:history | 채널 최근 메시지(커서 페이지네이션, 개수 상한) |
 | `read_thread` | channels:history | 스레드 전체 |
-| `search_messages` | search:read | 06 search-v2 필터 문법 사용 |
+| `search` | search:read | 검색창과 같은 문법(from:, in:, has:, is:, before:/after:/on:)과 탭(messages, dms, files, people, channels). REST `GET /search`와 같은 `services/searchService.ts`를 쓴다. DM 결과(탭 dms, DM 첨부 파일)는 토큰에 `im:history`가 더 있을 때만 포함하고, 파일 결과에는 url을 넣지 않는다 |
+| `list_files` | files:read | 채널(내가 멤버) 파일 메타데이터. 대상을 안 주면 내 모든 채널. DM(`userId`/`groupId`)은 `im:history`도 필요. 다운로드 URL·토큰 없음 |
 | `send_message` | chat:write | 채널이나 스레드에 메시지 작성. 멘션 문법 지원(01 서비스 재사용) |
 | `list_dms` | im:read | 1:1 DM과 그룹 DM 대화 목록(마지막 메시지, 안 읽은 수). 읽음 처리 안 함 |
 | `read_dm` | im:history | 1:1(`userId`) 또는 그룹(`groupId`) 메시지, 커서 페이지네이션. 읽음 처리 안 함, 스레드 답글 제외 |
@@ -41,13 +42,14 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | `add_reaction`, `remove_reaction` | reactions:write | |
 | `list_users`, `get_user` | users:read | 프로필, 상태 |
 | `get_activity` | channels:history | 내 멘션과 활동(01 Activity API) |
-| `read_file` | files:read | 텍스트 계열 파일 내용(크기 상한) |
+| `read_file` | files:read | 텍스트 계열(text/*, JSON, XML, YAML) 파일 내용, 상한 256KB. 초과·바이너리는 메타데이터와 `reason`(too_large, not_text, unavailable)만. 접근 규칙은 PR #52의 `verifyFileAccess`. DM 파일은 `im:history`도 필요 |
 
 - DM 수정·삭제를 `edit_message`/`delete_message`에 합치지 않고 별도 도구로 둔 이유: 채널 메시지(`Message`)와 DM(`DirectMessage`)은 다른 테이블이라 id가 겹치고, 한 `messageId`가 어느 쪽인지 알 수 없다. 범위도 `chat:write`와 `im:write`로 나뉘어, 채널 쓰기 권한만 준 토큰이 DM을 고치지 못한다.
 - DM 도구의 대상이 없거나 접근할 수 없으면(없는 사용자·그룹, 비활성 사용자, 게스트 격리, 그룹 비멤버) 같은 문구(`Conversation not found or not accessible`, 메시지는 `Message not found or not accessible`)로 답한다.
 - DM 전송·수정·삭제는 `services/dmService.ts`(1:1)와 `services/dmGroupService.ts`(그룹)를 REST·소켓·MCP가 함께 쓴다.
-- **리소스(Resources)**: `channel://<id>`, `thread://<id>`를 읽기 전용 리소스로 노출한다.
-- **프롬프트(Prompts)**: "채널 요약", "내 멘션 정리" 템플릿을 제공한다.
+- **리소스(Resources)**: `channel://{id}`(최근 메시지 50개), `thread://{id}`를 읽기 전용 리소스 템플릿으로 노출한다(`mcp/resources.ts`). `channels:history` 범위가 있을 때만 등록하고 `read_channel`/`read_thread`와 같은 권한 규칙을 따른다. 목록(`resources/list`)은 비워 둔다.
+- **프롬프트(Prompts)**: `summarize_channel`(인자 `channelId`), `summarize_my_mentions` 템플릿을 제공한다(`channels:history` 범위).
+- 도구 이름은 `search_messages` 대신 `search`로 정했다. 메시지뿐 아니라 파일·사람·채널·DM 탭을 모두 다루기 때문이다.
 
 ## 5. 보안 (docs/security/nodejs-security.md와 함께)
 - MCP로 들어온 쓰기 동작은 감사 로그에 `via: mcp`, 토큰 id와 함께 남긴다(E4).

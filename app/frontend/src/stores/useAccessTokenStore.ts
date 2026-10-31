@@ -15,6 +15,8 @@ export const ACCESS_TOKEN_SCOPES: { scope: AccessTokenScope; key: string }[] = [
   { scope: 'im:read', key: 'imRead' },
   { scope: 'im:history', key: 'imHistory' },
   { scope: 'im:write', key: 'imWrite' },
+  { scope: 'search:read', key: 'searchRead' },
+  { scope: 'files:read', key: 'filesRead' },
 ];
 
 interface AccessTokenState {
