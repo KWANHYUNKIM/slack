@@ -1,16 +1,16 @@
 import React from 'react';
-import { parsePermalink } from '@/lib/permalink';
+import { buildPermalinkPath, parsePermalink } from '@/lib/permalink';
+import { navigateInApp } from '@/lib/navigation';
 
 const LINK_CLASS = 'text-slack-link underline hover:text-slack-link-hover';
 
-/** 우리 퍼말링크는 새 탭 대신 앱 안에서 이동한다(라우터가 popstate로 위치를 다시 읽는다). 그 외 링크는 새 탭. */
+/** 우리 퍼말링크는 새 탭 대신 라우터로 앱 안에서 이동한다. 그 외 링크는 새 탭. */
 function renderLink(key: number, href: string, label: React.ReactNode): React.ReactNode {
-  if (parsePermalink(href)) {
+  const permalink = parsePermalink(href);
+  if (permalink) {
     const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-      e.preventDefault();
-      window.history.pushState({}, '', new URL(href).pathname + new URL(href).search);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      if (navigateInApp(buildPermalinkPath(permalink))) e.preventDefault();
     };
     return <a key={key} href={href} onClick={onClick} className={LINK_CLASS}>{label}</a>;
   }

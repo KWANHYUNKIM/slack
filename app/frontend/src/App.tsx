@@ -17,6 +17,7 @@ import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { markDMGroupRead } from '@/lib/api';
 import { usePermalinkSync } from '@/hooks/usePermalinkSync';
+import { registerNavigate } from '@/lib/navigation';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
@@ -203,6 +204,13 @@ function useFocusTracking() {
 }
 
 function AppShell() {
+  // 렌더 함수(메시지 본문 링크)가 라우터로 이동할 수 있게 등록한다
+  const navigateRef = useNavigate();
+  useEffect(() => {
+    registerNavigate((to) => navigateRef(to));
+    return () => registerNavigate(null);
+  }, [navigateRef]);
+
   const fetchChannels = useChannelStore((s) => s.fetchChannels);
   const channels = useChannelStore((s) => s.channels);
   const joinedChannelsRef = useRef<Set<number>>(new Set());

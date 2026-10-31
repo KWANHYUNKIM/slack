@@ -77,4 +77,62 @@ test.describe('Message permalink', () => {
     await ownerCtx.close();
     await outsiderCtx.close();
   });
+
+  test('opening the same link again re-highlights, and a deleted parent opens its thread', async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await register(page, `PlkAgain_${Date.now()}`, uniqueEmail(), TEST_PASSWORD);
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+    const auth = { Authorization: `Bearer ${await token(page)}` };
+
+    const text = `again-${Date.now()}`;
+    await sendMessage(page, text);
+    await waitForMessage(page, text);
+    const id = Number(await row(page, text).getAttribute('data-message-id'));
+    const channelId = Number(new URL(page.url()).pathname.split('/')[2]);
+    const link = `/c/${channelId}/m/${id}`;
+
+    // 같은 링크를 다시 눌러도 강조가 다시 일어난다(본문 링크는 라우터로 이동)
+    const linkText = `${new URL(page.url()).origin}${link}`;
+    await sendMessage(page, `see ${linkText}`);
+    await waitForMessage(page, 'see http');
+    for (let i = 0; i < 2; i++) {
+      await page.locator(`a[href="${linkText}"]`).first().click();
+      await expect(page.locator(`[data-message-id="${id}"]`).locator('xpath=..')).toHaveClass(/bg-yellow-100/);
+      await expect(page.locator(`[data-message-id="${id}"]`).locator('xpath=..')).not.toHaveClass(/bg-yellow-100/, { timeout: 5000 });
+    }
+
+    // 삭제된 부모(살아 있는 답글 있음)의 링크는 스레드 패널을 연다
+    await page.request.post(`${API}/messages/${id}/reply`, { headers: auth, data: { content: 'survivor reply' } });
+    await page.request.delete(`${API}/messages/${id}`, { headers: auth });
+    await page.goto(link);
+    await expect(page.getByTestId('thread-panel')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('thread-panel').getByText('survivor reply')).toBeVisible();
+    // 열린 뒤 주소는 대화 주소로 정리된다
+    await expect(page).toHaveURL(new RegExp(`/c/${channelId}$`));
+    await context.close();
+  });
+
+  test('copy link falls back to a manual-copy toast when the clipboard is unavailable', async ({ browser }) => {
+    const context = await browser.newContext();
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+      document.execCommand = () => false;
+    });
+    const page = await context.newPage();
+    await register(page, `PlkClip_${Date.now()}`, uniqueEmail(), TEST_PASSWORD);
+    await clickChannel(page, 'general');
+    await waitForChannelReady(page);
+    const text = `clip-${Date.now()}`;
+    await sendMessage(page, text);
+    await waitForMessage(page, text);
+    const id = await row(page, text).getAttribute('data-message-id');
+
+    await row(page, text).hover();
+    await page.locator('.absolute.-top-4.end-5').first().locator('[title="More actions"]').click();
+    await page.getByTestId('copy-link-btn').click();
+    await expect(page.getByTestId('toast')).toContainText(`/m/${id}`);
+    await context.close();
+  });
 });

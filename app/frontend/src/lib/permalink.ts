@@ -19,8 +19,13 @@ export interface PermalinkTarget {
 const PREFIX: Record<PermalinkKind, string> = { channel: 'c', dm: 'd', group: 'g' };
 const KIND_BY_PREFIX: Record<string, PermalinkKind> = { c: 'channel', d: 'dm', g: 'group' };
 
-function isId(n: number): boolean {
+export function isId(n: number): boolean {
   return Number.isInteger(n) && n > 0;
+}
+
+/** 대화 자체의 주소(/c/3, /d/7, /g/5) */
+export function buildConversationPath(target: Pick<PermalinkTarget, 'kind' | 'conversationId'>): string {
+  return `/${PREFIX[target.kind]}/${target.conversationId}`;
 }
 
 /** 앱 안 경로(쿼리 포함)를 만든다 */

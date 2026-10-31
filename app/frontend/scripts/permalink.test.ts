@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPermalink, buildPermalinkPath, parsePermalink, type PermalinkTarget } from '../src/lib/permalink.ts';
+import { buildConversationPath, buildPermalink, buildPermalinkPath, isId, parsePermalink, type PermalinkTarget } from '../src/lib/permalink.ts';
 
 const ORIGIN = 'http://localhost:5173';
 
@@ -32,4 +32,14 @@ test('형식이 다르거나 id가 올바르지 않으면 null', () => {
 
 test('올바르지 않은 reply는 무시한다', () => {
   assert.deepEqual(parsePermalink('/c/3/m/42?reply=abc', ORIGIN), { kind: 'channel', conversationId: 3, messageId: 42 });
+});
+
+test('대화 주소와 id 검사', () => {
+  assert.equal(buildConversationPath({ kind: 'channel', conversationId: 3 }), '/c/3');
+  assert.equal(buildConversationPath({ kind: 'dm', conversationId: 7 }), '/d/7');
+  assert.equal(buildConversationPath({ kind: 'group', conversationId: 5 }), '/g/5');
+  assert.equal(isId(1), true);
+  assert.equal(isId(0), false);
+  assert.equal(isId(1.5), false);
+  assert.equal(isId(Number('x')), false);
 });

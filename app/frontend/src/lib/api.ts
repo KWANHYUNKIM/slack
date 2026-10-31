@@ -413,6 +413,8 @@ export interface LocatedMessage {
   groupId?: number;
   /** 스레드 답글이면 부모 id */
   parentId?: number;
+  /** 삭제됐지만 살아 있는 답글이 남은 부모(자리표시자) */
+  deleted?: boolean;
 }
 
 export function locateMessage(messageId: number, kind: 'channel' | 'dm') {

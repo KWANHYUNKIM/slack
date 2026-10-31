@@ -15,7 +15,7 @@ export function Toaster() {
           key={toast.id}
           data-testid="toast"
           className={cn(
-            'rounded-lg px-4 py-2 text-[13px] text-white shadow-lg',
+            'pointer-events-auto max-w-[90vw] select-text break-all rounded-lg px-4 py-2 text-[13px] text-white shadow-lg',
             toast.kind === 'error' ? 'bg-slack-error' : 'bg-gray-900',
           )}
         >

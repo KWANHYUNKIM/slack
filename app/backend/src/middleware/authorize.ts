@@ -263,6 +263,24 @@ export async function requireDmGroupMember(
 }
 
 /**
+ * 채널 읽기 권한 규칙: 멤버이거나, 공개 채널이면 비멤버(게스트 제외)도 읽을 수 있다.
+ * 채널이 없으면 exists:false. 읽기 접근 미들웨어와 퍼말링크 locate가 함께 쓴다.
+ */
+export async function canReadChannel(
+  userId: number,
+  role: string | undefined,
+  channelId: number,
+): Promise<{ exists: boolean; allowed: boolean; isMember: boolean }> {
+  const [membership, channel] = await Promise.all([
+    prisma.channelMember.findUnique({ where: { userId_channelId: { userId, channelId } } }),
+    prisma.channel.findUnique({ where: { id: channelId }, select: { id: true, isPrivate: true } }),
+  ]);
+  if (!channel) return { exists: false, allowed: false, isMember: false };
+  const isMember = !!membership;
+  return { exists: true, allowed: isMember || (!channel.isPrivate && role !== 'GUEST'), isMember };
+}
+
+/**
  * Allows non-members to read public channels.
  * Members always pass; non-members pass only if the channel is public.
  * Attaches req.channelId and req.isChannelMember.
@@ -278,29 +296,18 @@ export async function requirePublicChannelReadAccess(
     return;
   }
 
-  const userId = req.user!.userId;
-  const [membership, channel] = await Promise.all([
-    prisma.channelMember.findUnique({
-      where: { userId_channelId: { userId, channelId } },
-    }),
-    prisma.channel.findUnique({
-      where: { id: channelId },
-      select: { id: true, isPrivate: true },
-    }),
-  ]);
-
-  if (!channel) {
+  const access = await canReadChannel(req.user!.userId, req.user!.role, channelId);
+  if (!access.exists) {
     res.status(404).json({ error: 'Channel not found' });
     return;
   }
-
-  if (!membership && (channel.isPrivate || req.user!.role === 'GUEST')) {
+  if (!access.allowed) {
     res.status(403).json({ error: 'You must be a member of this channel' });
     return;
   }
 
   req.channelId = channelId;
-  req.isChannelMember = !!membership;
+  req.isChannelMember = access.isMember;
   next();
 }
 
@@ -343,30 +350,19 @@ async function messageReadAccess(
     return;
   }
 
-  const userId = req.user!.userId;
-  const [membership, channel] = await Promise.all([
-    prisma.channelMember.findUnique({
-      where: { userId_channelId: { userId, channelId: message.channelId } },
-    }),
-    prisma.channel.findUnique({
-      where: { id: message.channelId },
-      select: { id: true, isPrivate: true },
-    }),
-  ]);
-
-  if (!channel) {
+  const access = await canReadChannel(req.user!.userId, req.user!.role, message.channelId);
+  if (!access.exists) {
     res.status(404).json({ error: 'Channel not found' });
     return;
   }
-
-  if (!membership && (channel.isPrivate || req.user!.role === 'GUEST')) {
+  if (!access.allowed) {
     res.status(403).json({ error: 'You must be a member of this channel' });
     return;
   }
 
   req.message = message;
   req.channelId = message.channelId;
-  req.isChannelMember = !!membership;
+  req.isChannelMember = access.isMember;
   next();
 }
 

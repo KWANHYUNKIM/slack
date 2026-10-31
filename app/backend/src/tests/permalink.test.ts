@@ -58,14 +58,14 @@ describe('Message permalink: locate and around', () => {
     const afterEdit = await request(app).get(`/channels/${pubId}/messages?around=${msg.id}`).set(auth(alice));
     expect(afterEdit.body.messages.find((m: { id: number }) => m.id === msg.id).content).toBe('edited');
 
-    // Delete: 삭제 뒤에는 locate와 around 모두 404
+    // Delete: 삭제 뒤 locate는 404, around는 예전처럼 관대하게 200(대상만 빠진다)
     expect((await request(app).delete(`/messages/${msg.id}`).set(auth(alice))).status).toBe(200);
     const gone = await locate(alice, msg.id);
     expect(gone.status).toBe(404);
     expect(gone.body.code).toBe('MESSAGE_NOT_FOUND');
     const goneAround = await request(app).get(`/channels/${pubId}/messages?around=${msg.id}`).set(auth(alice));
-    expect(goneAround.status).toBe(404);
-    expect(goneAround.body.code).toBe('MESSAGE_NOT_FOUND');
+    expect(goneAround.status).toBe(200);
+    expect(goneAround.body.messages.map((m: { id: number }) => m.id)).not.toContain(msg.id);
   });
 
   it('returns parentId for a thread reply', async () => {
@@ -92,10 +92,29 @@ describe('Message permalink: locate and around', () => {
     expect((await locate(carol, msg.id)).status).toBe(200);
   });
 
-  it('returns 404 when around targets a message of another channel', async () => {
+  it('keeps around lenient: thread reply or other channel target still returns 200 (search, later, activity use it)', async () => {
     const other = (await post(alice, privId, 'other channel')).body;
-    const res = await request(app).get(`/channels/${pubId}/messages?around=${other.id}`).set(auth(alice));
-    expect(res.status).toBe(404);
+    expect((await request(app).get(`/channels/${pubId}/messages?around=${other.id}`).set(auth(alice))).status).toBe(200);
+    const parent = (await post(alice, pubId, 'around parent')).body;
+    const rep = (await request(app).post(`/messages/${parent.id}/reply`).set(auth(bob)).send({ content: 'around reply' })).body;
+    expect((await request(app).get(`/channels/${pubId}/messages?around=${rep.id}`).set(auth(alice))).status).toBe(200);
+  });
+
+  it('locates a deleted parent that still has live replies, flagged deleted', async () => {
+    const parent = (await post(alice, pubId, 'to be deleted parent')).body;
+    const rep = (await request(app).post(`/messages/${parent.id}/reply`).set(auth(bob)).send({ content: 'survivor' })).body;
+    expect((await request(app).delete(`/messages/${parent.id}`).set(auth(alice))).status).toBe(200);
+    const res = await locate(alice, parent.id);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ messageId: parent.id, channelId: pubId, deleted: true });
+    // 비공개 채널의 비멤버는 여전히 404
+    const privParent = (await post(alice, privId, 'priv parent')).body;
+    await request(app).post(`/messages/${privParent.id}/reply`).set(auth(bob)).send({ content: 'priv reply' });
+    await request(app).delete(`/messages/${privParent.id}`).set(auth(alice));
+    expect((await locate(carol, privParent.id)).status).toBe(404);
+    // 답글이 모두 지워지면 404
+    await request(app).delete(`/messages/${rep.id}`).set(auth(bob));
+    expect((await locate(alice, parent.id)).status).toBe(404);
   });
 
   it('locates 1:1 DMs for both participants and hides them from others', async () => {

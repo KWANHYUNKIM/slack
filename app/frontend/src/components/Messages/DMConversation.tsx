@@ -1,7 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { isToday, isYesterday } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { usePermalinkStore } from '@/stores/usePermalinkStore';
 import { copyPermalink } from '@/hooks/useCopyPermalink';
 import { formatDate, formatTime, formatTimeShort, formatDateTime } from '@/lib/i18n/format';
 import { t as translate } from '@/lib/i18n';
@@ -295,16 +296,20 @@ export function DMConversation(props: DMConversationProps) {
     setShowMembers(false);
   }
 
-  // 퍼말링크(/d/:userId/m/:parentId?reply=:replyId)로 들어오면 그 스레드를 열고 답글을 강조한다
-  const { messageId: routeMessageId } = useParams<{ messageId?: string }>();
-  const routeSearch = useLocation().search;
-  const highlightReplyId = Number(new URLSearchParams(routeSearch).get('reply')) || null;
-  const permalinkKey = highlightReplyId && Number(routeMessageId) > 0 ? `${userId}:${routeMessageId}:${highlightReplyId}` : null;
-  const [openedPermalinkKey, setOpenedPermalinkKey] = useState<string | null>(null);
-  if (permalinkKey !== openedPermalinkKey) {
-    setOpenedPermalinkKey(permalinkKey);
-    if (permalinkKey) setActiveThreadId(Number(routeMessageId));
+  // 퍼말링크(답글, 삭제된 부모)가 요청한 스레드를 연다. 한 번 쓰면 비운다.
+  const [permalinkReplyId, setPermalinkReplyId] = useState<number | null>(null);
+  const pendingThread = usePermalinkStore((s) => s.pendingThread);
+  const conversationKind = isGroup ? 'group' : 'dm';
+  const conversationId = isGroup ? groupId : props.userId;
+  const [consumedThread, setConsumedThread] = useState<typeof pendingThread>(null);
+  if (pendingThread && pendingThread !== consumedThread && pendingThread.kind === conversationKind && pendingThread.conversationId === conversationId) {
+    setConsumedThread(pendingThread);
+    setActiveThreadId(pendingThread.parentId);
+    setPermalinkReplyId(pendingThread.replyId ?? null);
   }
+  useEffect(() => {
+    if (consumedThread) usePermalinkStore.getState().setPendingThread(null);
+  }, [consumedThread]);
 
   // 링크 복사가 가리킬 대화: 그룹 DM은 그룹 id, 1:1은 상대 userId
   const permalinkBase = isGroup
@@ -804,7 +809,7 @@ export function DMConversation(props: DMConversationProps) {
             variant="dm"
             onClose={handleCloseThread}
             onReplyCountChange={handleReplyCountChange}
-            highlightReplyId={highlightReplyId}
+            highlightReplyId={permalinkReplyId}
             permalinkBase={permalinkBase}
           />
         )}

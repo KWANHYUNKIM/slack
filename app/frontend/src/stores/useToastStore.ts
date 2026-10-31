@@ -8,7 +8,7 @@ export interface Toast {
 
 interface ToastState {
   toasts: Toast[];
-  show: (message: string, kind?: Toast['kind']) => void;
+  show: (message: string, kind?: Toast['kind'], durationMs?: number) => void;
   dismiss: (id: number) => void;
 }
 
@@ -17,10 +17,10 @@ let nextId = 1;
 
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
-  show: (message, kind = 'success') => {
+  show: (message, kind = 'success', durationMs = TOAST_MS) => {
     const id = nextId++;
     set((s) => ({ toasts: [...s.toasts, { id, message, kind }] }));
-    setTimeout(() => get().dismiss(id), TOAST_MS);
+    setTimeout(() => get().dismiss(id), durationMs);
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })),
 }));

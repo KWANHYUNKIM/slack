@@ -179,11 +179,6 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
           take: half,
         }),
       ]);
-      // 대상이 이 채널 타임라인에 없으면(삭제됨, 다른 채널, 스레드 답글) 존재 여부를 숨기려 404로 답한다
-      if (target.length === 0) {
-        res.status(404).json({ error: 'Message not found', code: 'MESSAGE_NOT_FOUND' });
-        return;
-      }
       const combined = [...before.reverse(), ...target, ...after];
       res.json({
         messages: enrichMessages(combined),

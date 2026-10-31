@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireMessageAccess, requireThreadReadAccess, canAccessDm } from '../middleware/authorize.js';
+import { requireMessageAccess, requireThreadReadAccess, canAccessDm, canReadChannel } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
 import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES, THREAD_REPLY_INCLUDE } from '../db/selects.js';
@@ -365,17 +365,22 @@ router.get('/:id/locate', authMiddleware, async (req: AuthRequest, res: Response
       where: { id: messageId },
       select: { id: true, channelId: true, threadId: true, deletedAt: true },
     });
-    if (!message || message.deletedAt) return notFound();
-    const [membership, channel] = await Promise.all([
-      prisma.channelMember.findUnique({ where: { userId_channelId: { userId, channelId: message.channelId } } }),
-      prisma.channel.findUnique({ where: { id: message.channelId }, select: { isPrivate: true } }),
-    ]);
-    // 멤버이거나, 공개 채널이면 비멤버(게스트 제외)도 읽을 수 있다(채널 메시지 조회와 같은 규칙)
-    if (!channel || (!membership && (channel.isPrivate || req.user!.role === 'GUEST'))) return notFound();
+    if (!message) return notFound();
+    // 삭제됐어도 살아 있는 답글이 남은 부모는 자리표시자로 열 수 있다. 그 외 삭제 메시지는 404.
+    const deleted = !!message.deletedAt;
+    if (deleted) {
+      const liveReplies = message.threadId === null
+        ? await prisma.message.count({ where: { threadId: message.id, deletedAt: null } })
+        : 0;
+      if (liveReplies === 0) return notFound();
+    }
+    const access = await canReadChannel(userId, req.user!.role, message.channelId);
+    if (!access.exists || !access.allowed) return notFound();
     res.json({
       messageId: message.id,
       channelId: message.channelId,
       ...(message.threadId !== null && { parentId: message.threadId }),
+      ...(deleted && { deleted: true }),
     });
   } catch (error) {
     logError('Locate message error', error);
