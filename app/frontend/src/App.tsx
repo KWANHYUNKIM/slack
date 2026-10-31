@@ -199,6 +199,7 @@ function AppShell() {
   useEffect(() => {
     fetchChannels();
     fetchDirectMessages();
+    useChannelStore.getState().fetchSidebarPrefs();
     loadBookmarks();
 
     // Auto-request push notification permission on first load
@@ -385,6 +386,14 @@ function AppShell() {
       }
     };
 
+    const handleChannelUpdated = (data: { id: number; name: string; topic: string | null; description: string | null }) => {
+      useChannelStore.getState().applyChannelMeta(data);
+    };
+
+    const handleStarUpdated = (data: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => {
+      useChannelStore.getState().applyRemoteStar(data);
+    };
+
     const handleChannelUnarchived = () => {
       useChannelStore.getState().fetchChannels();
     };
@@ -414,6 +423,8 @@ function AppShell() {
     socket.on('channel:deleted', handleChannelDeleted);
     socket.on('channel:archived', handleChannelArchived);
     socket.on('channel:unarchived', handleChannelUnarchived);
+    socket.on('channel:updated', handleChannelUpdated);
+    socket.on('star:updated', handleStarUpdated);
     socket.on('reaction:added', handleReactionAdded);
     socket.on('reaction:removed', handleReactionRemoved);
 
@@ -471,6 +482,8 @@ function AppShell() {
       socket.off('channel:deleted', handleChannelDeleted);
       socket.off('channel:archived', handleChannelArchived);
       socket.off('channel:unarchived', handleChannelUnarchived);
+      socket.off('channel:updated', handleChannelUpdated);
+      socket.off('star:updated', handleStarUpdated);
       socket.off('reaction:added', handleReactionAdded);
       socket.off('reaction:removed', handleReactionRemoved);
       socket.off('huddle:invite:sent', handleInviteSent);

@@ -199,7 +199,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
-    const mentionCounts = await getMentionCountsByDmPartner(userId);
+    const [mentionCounts, stars] = await Promise.all([
+      getMentionCountsByDmPartner(userId),
+      prisma.dMStar.findMany({ where: { userId }, select: { otherUserId: true } }),
+    ]);
+    const starredIds = new Set(stars.map(st => st.otherUserId));
 
     // Apply online status from WebSocket tracking
     const result = filteredConversations.map((conv) => ({
@@ -210,12 +214,58 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       lastMessage: conv.lastMessage,
       unreadCount: Number(conv.unreadCount),
       mentionCount: conv.otherUser ? mentionCounts.get(conv.otherUser.id) ?? 0 : 0,
+      isStarred: conv.otherUser ? starredIds.has(conv.otherUser.id) : false,
     }));
 
     res.json(result);
   } catch (error) {
     logError('Get DM conversations error', error);
     res.status(500).json({ error: 'Failed to get DM conversations' });
+  }
+});
+
+// PUT /dms/:userId/star - 1:1 DM 상대 즐겨찾기 추가 (멱등)
+router.put('/:userId/star', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const otherUserId = parseIntParam(req.params.userId);
+    if (!otherUserId || otherUserId === req.user!.userId) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+    const userId = req.user!.userId;
+    const other = await prisma.user.findUnique({ where: { id: otherUserId }, select: { id: true, deactivatedAt: true } });
+    if (!other || other.deactivatedAt) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    await prisma.dMStar.upsert({
+      where: { userId_otherUserId: { userId, otherUserId } },
+      create: { userId, otherUserId },
+      update: {},
+    });
+    getIO()?.to(`user:${userId}`).emit('star:updated', { type: 'dm', id: otherUserId, isStarred: true });
+    res.json({ userId: otherUserId, isStarred: true });
+  } catch (error) {
+    logError('Star DM error', error);
+    res.status(500).json({ error: 'Failed to star conversation' });
+  }
+});
+
+// DELETE /dms/:userId/star - 1:1 DM 상대 즐겨찾기 해제 (멱등)
+router.delete('/:userId/star', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const otherUserId = parseIntParam(req.params.userId);
+    if (!otherUserId) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+    const userId = req.user!.userId;
+    await prisma.dMStar.deleteMany({ where: { userId, otherUserId } });
+    getIO()?.to(`user:${userId}`).emit('star:updated', { type: 'dm', id: otherUserId, isStarred: false });
+    res.json({ userId: otherUserId, isStarred: false });
+  } catch (error) {
+    logError('Unstar DM error', error);
+    res.status(500).json({ error: 'Failed to unstar conversation' });
   }
 });
 

@@ -94,12 +94,17 @@ export function clearDownloadToken(): void {
   stopDownloadTokenRefresh();
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
+  /** Machine-readable error code from the server (e.g. CHANNEL_NAME_TAKEN) */
+  code?: string;
+  reason?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string, reason?: string) {
     super(message);
     this.status = status;
+    this.code = code;
+    this.reason = reason;
     this.name = 'ApiError';
   }
 }
@@ -128,7 +133,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const errorMsg = Array.isArray(body.error)
       ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
       : body.error || t('errors:client.requestFailed');
-    throw new ApiError(errorMsg, res.status);
+    throw new ApiError(errorMsg, res.status, body.code, body.reason);
   }
 
   return res.json();
@@ -174,6 +179,9 @@ export interface ApiChannel {
   id: number;
   name: string;
   isPrivate: boolean;
+  topic?: string | null;
+  description?: string | null;
+  isStarred?: boolean;
   createdAt: string;
   unreadCount: number;
   mentionCount?: number;
@@ -202,6 +210,52 @@ export function getChannels() {
 
 export function getChannel(id: number) {
   return request<ApiChannelDetail>(`/channels/${id}`);
+}
+
+export interface ChannelMetaUpdate {
+  name?: string;
+  topic?: string | null;
+  description?: string | null;
+}
+
+export function updateChannel(id: number, data: ChannelMetaUpdate) {
+  return request<ApiChannel>(`/channels/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function starChannel(id: number) {
+  return request<{ channelId: number; isStarred: boolean }>(`/channels/${id}/star`, { method: 'PUT' });
+}
+
+export function unstarChannel(id: number) {
+  return request<{ channelId: number; isStarred: boolean }>(`/channels/${id}/star`, { method: 'DELETE' });
+}
+
+export function starDM(userId: number) {
+  return request<{ userId: number; isStarred: boolean }>(`/dms/${userId}/star`, { method: 'PUT' });
+}
+
+export function unstarDM(userId: number) {
+  return request<{ userId: number; isStarred: boolean }>(`/dms/${userId}/star`, { method: 'DELETE' });
+}
+
+export interface SidebarCollapsed {
+  starred: boolean;
+  channels: boolean;
+  dms: boolean;
+}
+
+export function getSidebarPrefs() {
+  return request<{ collapsed: SidebarCollapsed }>('/users/me/sidebar');
+}
+
+export function updateSidebarPrefs(collapsed: Partial<SidebarCollapsed>) {
+  return request<{ collapsed: SidebarCollapsed }>('/users/me/sidebar', {
+    method: 'PATCH',
+    body: JSON.stringify({ collapsed }),
+  });
 }
 
 export function createChannel(name: string, isPrivate = false) {
@@ -552,6 +606,7 @@ export interface ApiDMConversation {
   lastMessage: { content: string; createdAt: string; fromUserId: number } | null;
   unreadCount: number;
   mentionCount?: number;
+  isStarred?: boolean;
 }
 
 export interface ApiDMReaction {

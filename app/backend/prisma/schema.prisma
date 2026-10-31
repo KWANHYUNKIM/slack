@@ -52,6 +52,10 @@ model User {
   webhooks           Webhook[]
   activitiesReceived Activity[] @relation("ActivityRecipient")
   activitiesSent     Activity[] @relation("ActivityActor")
+  channelStars       ChannelStar[]
+  dmStars            DMStar[]      @relation("DMStarOwner")
+  dmStarredBy        DMStar[]      @relation("DMStarTarget")
+  sidebarPref        SidebarPref?
 }
 
 model InviteLink {
@@ -73,8 +77,11 @@ model Channel {
   createdBy  Int?
   archivedAt DateTime?
   createdAt  DateTime  @default(now())
+  topic       String?  @db.VarChar(250)
+  description String?  @db.VarChar(500)
 
   messages           Message[]
+  stars              ChannelStar[]
   members            ChannelMember[]
   reads              ChannelRead[]
   scheduledMessages  ScheduledMessage[]
@@ -318,4 +325,39 @@ model Activity {
   @@index([messageId])
   @@index([dmId])
   @@index([userId, channelId, readAt])
+}
+
+// 즐겨찾기(채널)
+model ChannelStar {
+  userId    Int
+  channelId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@id([userId, channelId])
+  @@index([channelId])
+}
+
+// 즐겨찾기(1:1 DM 상대)
+model DMStar {
+  userId      Int
+  otherUserId Int
+  createdAt   DateTime @default(now())
+
+  user      User @relation("DMStarOwner", fields: [userId], references: [id], onDelete: Cascade)
+  otherUser User @relation("DMStarTarget", fields: [otherUserId], references: [id], onDelete: Cascade)
+
+  @@id([userId, otherUserId])
+  @@index([otherUserId])
+}
+
+// 사이드바 섹션 접기 상태. 예: {"starred":false,"channels":true,"dms":false}
+model SidebarPref {
+  userId    Int      @id
+  collapsed Json     @default("{}")
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

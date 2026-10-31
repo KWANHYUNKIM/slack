@@ -107,6 +107,60 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// 사이드바 섹션 접기 상태. 키는 고정 목록만 받는다(임의 JSON 저장 방지).
+const sidebarSchema = z.object({
+  collapsed: z.object({
+    starred: z.boolean().optional(),
+    channels: z.boolean().optional(),
+    dms: z.boolean().optional(),
+  }).strict(),
+});
+
+function normalizeCollapsed(raw: unknown) {
+  const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  return {
+    starred: obj.starred === true,
+    channels: obj.channels === true,
+    dms: obj.dms === true,
+  };
+}
+
+// GET /users/me/sidebar - 섹션 접기 상태 조회
+router.get('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const pref = await prisma.sidebarPref.findUnique({ where: { userId: req.user!.userId } });
+    res.json({ collapsed: normalizeCollapsed(pref?.collapsed) });
+  } catch (error) {
+    logError('Get sidebar pref error', error);
+    res.status(500).json({ error: 'Failed to get sidebar preferences' });
+  }
+});
+
+// PATCH /users/me/sidebar - 섹션 접기 상태 저장 (보낸 키만 병합)
+router.patch('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const parsed = sidebarSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
+      return;
+    }
+    const userId = req.user!.userId;
+    // 보낸 키만 한 번의 UPDATE로 병합한다(읽고 쓰기 사이에 다른 요청의 키가 덮이지 않게). 값은 파라미터로 바인딩한다.
+    const patchJson = JSON.stringify(parsed.data.collapsed);
+    const rows = await prisma.$queryRaw<Array<{ collapsed: unknown }>>`
+      INSERT INTO "SidebarPref" ("userId", "collapsed", "updatedAt")
+      VALUES (${userId}, ${patchJson}::jsonb, NOW())
+      ON CONFLICT ("userId") DO UPDATE
+        SET "collapsed" = "SidebarPref"."collapsed" || EXCLUDED."collapsed", "updatedAt" = NOW()
+      RETURNING "collapsed"
+    `;
+    res.json({ collapsed: normalizeCollapsed(rows[0]?.collapsed) });
+  } catch (error) {
+    logError('Update sidebar pref error', error);
+    res.status(500).json({ error: 'Failed to update sidebar preferences' });
+  }
+});
+
 // PATCH /users/me - Update current user profile
 router.patch('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

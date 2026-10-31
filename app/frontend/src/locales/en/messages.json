@@ -112,7 +112,9 @@
     "channelMenu": "Channel options",
     "leaveChannel": "Leave channel",
     "leaveLastMember": "Cannot leave channel — you are the last member.",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "addTopic": "Add a topic",
+    "editDetails": "Edit channel details"
   },
   "message": {
     "edited": "(edited)",
@@ -211,5 +213,23 @@
     "pushNotConfigured": "Push notifications are not set up on the server",
     "serviceWorkerUnavailable": "Service worker not available",
     "subscribeFailed": "Failed to register subscription"
+  },
+  "details": {
+    "title": "Channel details",
+    "name": "Name",
+    "topic": "Topic",
+    "topicPlaceholder": "What is this channel about?",
+    "description": "Description",
+    "descriptionPlaceholder": "Add a description",
+    "createdBy": "Created by {name}",
+    "readOnly": "Only channel owners, moderators, and workspace admins can edit these details.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saveFailed": "Failed to save channel details."
+  },
+  "intro": {
+    "title": "Welcome to #{name}",
+    "noDescription": "No description yet.",
+    "editDescription": "Edit description"
   }
 }

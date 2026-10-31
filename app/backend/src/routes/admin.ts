@@ -8,7 +8,8 @@ import { AuthRequest } from '../types.js';
 import { getIO, kickUser } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { CHANNEL_NAME_ADMIN_MAX, validateChannelName } from '../utils/channelName.js';
+import { CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
+import { updateChannel } from '../services/channelService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 
 const router = Router();
@@ -484,73 +485,25 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
       return;
     }
-    // 이름은 생성 경로와 같은 검증을 쓴다. 상한만 관리자 상한(CHANNEL_NAME_ADMIN_MAX)이다.
-    let newName: string | undefined;
-    if (parsed.data.name !== undefined) {
-      const nameResult = validateChannelName(parsed.data.name, CHANNEL_NAME_ADMIN_MAX);
-      if (!nameResult.ok) {
-        res.status(400).json({ error: nameResult.error, code: nameResult.code });
-        return;
-      }
-      newName = nameResult.name;
-    }
-
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
     }
 
-    const updateData: { name?: string; isPrivate?: boolean } = {};
-    const changes: string[] = [];
-
-    if (newName && newName !== channel.name) {
-      // Check for name conflicts (case-insensitive, same as create)
-      const existing = await prisma.channel.findFirst({
-        where: { name: { equals: newName, mode: 'insensitive' }, id: { not: id } },
-      });
-      if (existing) {
-        res.status(400).json({ error: 'A channel with that name already exists' });
-        return;
-      }
-      updateData.name = newName;
-      changes.push(`Renamed from #${channel.name} to #${newName}`);
-    }
-
-    if (parsed.data.isPrivate !== undefined && parsed.data.isPrivate !== channel.isPrivate) {
-      updateData.isPrivate = parsed.data.isPrivate;
-      changes.push(`Changed to ${parsed.data.isPrivate ? 'private' : 'public'}`);
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      res.json(channel);
+    // 이름 검증·중복·감사 로그·알림은 채널 수정 경로와 같은 서비스 함수가 맡는다.
+    // 이름은 생성 경로와 같은 검증을 쓰고, 상한만 관리자 상한(CHANNEL_NAME_ADMIN_MAX)이다.
+    const result = await updateChannel({
+      channel,
+      actorId: req.user!.userId,
+      input: { name: parsed.data.name, isPrivate: parsed.data.isPrivate },
+      nameMax: CHANNEL_NAME_ADMIN_MAX,
+    });
+    if (!result.ok) {
+      res.status(result.status).json(result.body);
       return;
     }
-
-    let updated;
-    try {
-      updated = await prisma.channel.update({
-        where: { id },
-        data: updateData,
-        include: { _count: { select: { members: true, messages: true } } },
-      });
-    } catch (error) {
-      // 위 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(유니크 제약). POST /channels와 같은 응답을 준다.
-      if ((error as { code?: string }).code === 'P2002') {
-        res.status(400).json({ error: 'A channel with that name already exists' });
-        return;
-      }
-      throw error;
-    }
-
-    writeAuditLog({
-      action: 'channel.edited',
-      actorId: req.user!.userId,
-      targetType: 'channel',
-      targetId: id,
-      targetName: updated.name,
-      details: changes.join('; '),
-    });
+    const updated = result.channel;
 
     res.json(updated);
   } catch (error) {

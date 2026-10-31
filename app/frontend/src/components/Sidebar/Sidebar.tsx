@@ -45,8 +45,11 @@ export function Sidebar() {
   const { openProfile } = useProfileStore();
   const { permission, isSubscribed, subscribe, unsubscribe } = useNotificationStore();
   const closeSidebar = useMobileStore((s) => s.closeSidebar);
-  const [channelsExpanded, setChannelsExpanded] = useState(true);
-  const [dmsExpanded, setDmsExpanded] = useState(true);
+  const sidebarCollapsed = useChannelStore((s) => s.sidebarCollapsed);
+  const toggleSection = useChannelStore((s) => s.toggleSection);
+  const channelsExpanded = !sidebarCollapsed.channels;
+  const dmsExpanded = !sidebarCollapsed.dms;
+  const starredExpanded = !sidebarCollapsed.starred;
   const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
@@ -163,8 +166,13 @@ export function Sidebar() {
   const collator = getCollator(i18n.language);
   const sortByName = (a: Channel, b: Channel) => collator.compare(a.name, b.name);
   const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember).sort(sortByName);
-  const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember).sort(sortByName);
-  const privateChannels = channels.filter((ch) => ch.isPrivate && ch.isMember).sort(sortByName);
+  const starredDMs = directMessages.filter((dm) => dm.isStarred);
+  // 별표를 단 항목은 즐겨찾기 섹션으로 옮겨 간다
+  const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
+  const privateChannels = channels.filter((ch) => ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
+  const plainDMs = directMessages.filter((dm) => !dm.isStarred);
+  const sectionToggleLabel = (expanded: boolean, label: string) =>
+    expanded ? t('sections.collapse', { section: label }) : t('sections.expand', { section: label });
 
   return (
     <div className="flex h-full">
@@ -291,13 +299,25 @@ export function Sidebar() {
         {/* Scrollable Content - 0 0 16px 0 padding */}
         <div className="flex-1 overflow-y-auto pb-4">
           {/* Starred Section */}
-          {starredChannels.length > 0 && (
-            <div data-testid="starred-section" className="mb-3 mt-3">
-              <div className="flex w-full items-center gap-1.5 ps-4 pe-2 py-[6px] text-[15px] text-white/70">
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span>{t('sections.starred')}</span>
-              </div>
+          <div data-testid="starred-section" className="mb-3 mt-3">
+            <button
+              data-testid="starred-section-toggle"
+              onClick={() => toggleSection('starred')}
+              aria-expanded={starredExpanded}
+              aria-label={sectionToggleLabel(starredExpanded, t('sections.starred'))}
+              className="flex w-full items-center gap-1.5 ps-4 pe-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
+            >
+              {starredExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              <span>{t('sections.starred')}</span>
+            </button>
+            {starredExpanded && (
               <div>
+                {starredChannels.length === 0 && starredDMs.length === 0 && (
+                  <p data-testid="starred-empty" className="px-4 py-1 text-[13px] text-white/50">
+                    {t('sections.starredEmpty')}
+                  </p>
+                )}
                 {starredChannels.map((channel) => (
                   <ChannelItem
                     key={channel.id}
@@ -307,14 +327,25 @@ export function Sidebar() {
                     isPrivate={channel.isPrivate}
                   />
                 ))}
+                {starredDMs.map((dm) => (
+                  <DirectMessageItem
+                    key={dm.id}
+                    dm={dm}
+                    isActive={activeDMId === dm.id}
+                    onClick={() => navTo(`/d/${dm.userId}`)}
+                  />
+                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Channels Section */}
           <div className="mb-3 mt-3">
             <button
-              onClick={() => setChannelsExpanded(!channelsExpanded)}
+              onClick={() => toggleSection('channels')}
+              aria-expanded={channelsExpanded}
+              aria-label={sectionToggleLabel(channelsExpanded, t('sections.channels'))}
+              data-testid="channels-section-toggle"
               className="flex w-full items-center gap-1.5 ps-4 pe-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
             >
               {channelsExpanded ? (
@@ -360,7 +391,10 @@ export function Sidebar() {
           {/* Direct Messages Section */}
           <div>
             <button
-              onClick={() => setDmsExpanded(!dmsExpanded)}
+              onClick={() => toggleSection('dms')}
+              aria-expanded={dmsExpanded}
+              aria-label={sectionToggleLabel(dmsExpanded, t('sections.directMessages'))}
+              data-testid="dms-section-toggle"
               className="flex w-full items-center gap-1.5 ps-4 pe-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
             >
               {dmsExpanded ? (
@@ -373,7 +407,7 @@ export function Sidebar() {
 
             {dmsExpanded && (
               <div>
-                {directMessages.map((dm) => (
+                {plainDMs.map((dm) => (
                   <DirectMessageItem
                     key={dm.id}
                     dm={dm}

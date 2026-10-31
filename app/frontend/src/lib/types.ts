@@ -19,7 +19,9 @@ export interface User {
 export interface Channel {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
+  /** Single-line header text shown next to the channel name */
+  topic?: string | null;
   isPrivate: boolean;
   memberCount: number;
   unreadCount: number;
@@ -38,6 +40,7 @@ export interface DirectMessage {
   userStatus: UserStatus;
   unreadCount: number;
   mentionCount: number;
+  isStarred?: boolean;
 }
 
 export interface Reaction {
