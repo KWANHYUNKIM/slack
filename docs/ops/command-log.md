@@ -302,3 +302,10 @@
 | 2026-11-01 04:22 | 배정: dev-4 E1a 스키마와 백필(opus, 마이그레이션 20261102010000, retentionService·설정 표 불가침). 진행 3명(dev-2 E2E, dev-3 #112, dev-4 E1a) |
 | 2026-11-01 04:27 | PR #112 검토: 첫 리베이스에서 스키마 충돌이 났는데 같은 명령 안에서 generate·tsc까지 이어 실행(스키마 검증 실패로 DB 변경 없음) → 중단 후 커밋 2개를 합쳐 다시 리베이스, 충돌(OAuth 모델과 StorageDeletionRetry) 양쪽 보존, 이후 단계는 분리 실행. dev3 DB에 080000 적용, retention 35·file-detach 8·legal-holds 10·ediscovery 9·oauth 42, tsc → 머지(0ded45d). 110000을 slackclone, slackclone_dev, dev1·5에 적용(dev2·4는 진행 중 파트 검토 때) |
 | 2026-11-01 04:29 | 배정: dev-5 i18n-5a(haiku, 2등급 기반·검사 확장·ja·zh-Hans·es). 31개 일괄은 분량 과다(ko 66KB × 31)라 분할. 진행 3명(dev-2 E2E, dev-4 E1a, dev-5) |
+| 2026-11-01 04:34 | E1a 검토: 리베이스 충돌 0(확인 분리), dev4 DB에 090000·110000·E1a 적용, e1-migration 7·auth 25·channels 14·admin 48·retention 35·oauth 42, tsc → PR #115, /code-review high |
+| 2026-11-01 04:36 | E2E 검토: 스모크 10건 통과(실제 chromium), 버그 2건 수정(dev 프록시 누락, 2FA 첫 설정 복구 코드 창 닫힘) → PR #116, /code-review low. 남은 이슈 2파트 보드 등록 |
+| 2026-11-01 04:41 | PR #116 리뷰 1건(bypass 중복)을 총괄이 공용 함수로 정리 — 리뷰 포크가 E2E worktree를 pr115로 체크아웃해 둔 것을 발견해 그쪽 잘못 적용한 수정은 되돌리고 별도 worktree에서 작업 → 머지 |
+| 2026-11-01 04:44 | PR #115 리뷰 10건 → dev-4: 강등 시 주 소유자 재지정, 기본 채널은 isDefault 하나로(비공개·보관 시 해제), 기본 채널 중첩 create, 백필 isDefault 미보관·주 소유자 활성만, isHost 컬럼 제거(Channel.workspaceId로 판단), 역할 쓰기 setUserRole 단일화+정적 검사, seed 헬퍼 사용, 기본 이름 빈 문자열+번역 키 |
+| 2026-11-01 04:45 | i18n-5a 검토: 리베이스 충돌 0, tsc, lint, i18n:check, i18n:test 25, 물리 방향 187, 외부 URL → PR #117, /code-review low |
+| 2026-11-01 04:47 | PR #117 리뷰 지적 0(출력이 tiers.ts에서 잘려 총괄이 나머지를 직접 확인) → 머지 |
+| 2026-11-01 04:49 | 배정: dev-2 fix/spa-routes+UI 경합 2건(haiku), dev-5 i18n-5b zh-Hant·fr·de·pt-BR(haiku). 감속(스왑 91%)이나 3명 허용에 따라 진행 3명(dev-4 E1a 리뷰 반영, dev-2, dev-5) |
