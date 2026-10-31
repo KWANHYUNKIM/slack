@@ -90,3 +90,8 @@
 | 2026-10-31 23:28 | code-review | (리뷰) | PR #47 low | 51,735 |
 | 2026-10-31 23:30 | dev-2 | sonnet | mcp-2 write tools | 128,724 |
 | 2026-10-31 23:30 | dev-4 | opus | PR #45 리뷰 반영 | 43,761 |
+| 2026-10-31 23:33 | code-review | (리뷰) | PR #49 medium | 77,141 |
+| 2026-10-31 23:36 | dev-4 | sonnet | D2 release | 85,719 |
+| 2026-10-31 23:37 | dev-2 | sonnet | PR #49 리뷰 반영 | 30,295 |
+| 2026-10-31 23:37 | dev-3 | sonnet | security/file-scoped-download-token | 98,005 |
+| 2026-10-31 23:38 | code-review | (리뷰) | PR #51 medium | 64,163 |
