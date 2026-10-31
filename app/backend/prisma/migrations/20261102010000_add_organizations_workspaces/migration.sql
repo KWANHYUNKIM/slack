@@ -46,7 +46,6 @@ CREATE TABLE "WorkspaceMember" (
 CREATE TABLE "ChannelWorkspace" (
     "channelId" INTEGER NOT NULL,
     "workspaceId" INTEGER NOT NULL,
-    "isHost" BOOLEAN NOT NULL DEFAULT false,
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "nameKey" VARCHAR(80) NOT NULL,
     "sharedBy" INTEGER,
@@ -62,9 +61,10 @@ ALTER TABLE "Channel" ADD COLUMN "workspaceId" INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE "InviteLink" ADD COLUMN "workspaceId" INTEGER NOT NULL DEFAULT 1;
 
 -- 2) 백필: 기본 조직 1, 기본 워크스페이스 1. 빈 DB여도 만든다(첫 OWNER 부트스트랩과 가입이 이 행을 쓴다).
--- 이름은 번역 키가 아니라 데이터다. 첫 OWNER가 관리 화면에서 바꾼다.
-INSERT INTO "Organization" ("id", "name") VALUES (1, 'Organization');
-INSERT INTO "Workspace" ("id", "organizationId", "slug", "name", "discoverability") VALUES (1, 1, 'main', 'Workspace', 'INVITE_ONLY');
+-- 이름은 빈 문자열로 둔다. 화면은 빈 이름을 번역 키(common:organization.defaultName, common:workspace.defaultName)로
+-- 보여 주고, 첫 OWNER가 관리 화면에서 이름을 정하면 그 값을 쓴다.
+INSERT INTO "Organization" ("id", "name") VALUES (1, '');
+INSERT INTO "Workspace" ("id", "organizationId", "slug", "name", "discoverability") VALUES (1, 1, 'main', '', 'INVITE_ONLY');
 -- id를 직접 넣었으므로 다음 자동 id가 2부터 나오게 맞춘다.
 SELECT setval(pg_get_serial_sequence('"Organization"', 'id'), 1);
 SELECT setval(pg_get_serial_sequence('"Workspace"', 'id'), 1);
@@ -76,22 +76,26 @@ UPDATE "User" SET "defaultWorkspaceId" = 1,
     WHEN 'ADMIN' THEN 'ADMIN'::"OrgRole"
     ELSE 'MEMBER'::"OrgRole"
   END;
-UPDATE "Organization" SET "primaryOwnerId" = (SELECT "id" FROM "User" WHERE "role" = 'OWNER' ORDER BY "id" LIMIT 1) WHERE "id" = 1;
+-- 주 소유자는 활성 OWNER 중 가장 오래된 사람(workspaceService.setUserRole의 재지정 규칙과 같다). 없으면 비운다.
+UPDATE "Organization" SET "primaryOwnerId" = (
+  SELECT "id" FROM "User" WHERE "role" = 'OWNER' AND "deactivatedAt" IS NULL ORDER BY "createdAt", "id" LIMIT 1
+) WHERE "id" = 1;
 
 -- 비활성 사용자도 넣는다(계정 비활성과 워크스페이스 멤버십은 별개 축이다).
 INSERT INTO "WorkspaceMember" ("workspaceId", "userId", "role", "joinedAt")
   SELECT 1, "id", "role", "createdAt" FROM "User";
 
--- 모든 채널(보관·비공개 포함)을 기본 워크스페이스의 호스트 행으로 연결한다.
+-- 모든 채널(보관·비공개 포함)을 기본 워크스페이스에 연결한다. 호스트 여부는 따로 저장하지 않고
+-- Channel.workspaceId(=1)와 같은 워크스페이스의 행인지로 판단한다. 기본 채널은 공개·미보관 general·random만.
 -- Channel.name 유니크는 대소문자를 구분하므로 옛 데이터에 'Dev'와 'dev'가 함께 있을 수 있다. nameKey 유니크(소문자)에
 -- 걸리지 않게 같은 키의 두 번째 채널부터는 채널 이름에 쓸 수 없는 '~'와 채널 id를 붙인다(이름 자체는 바꾸지 않는다).
-INSERT INTO "ChannelWorkspace" ("channelId", "workspaceId", "isHost", "isDefault", "nameKey", "sharedAt")
-  SELECT "id", 1, true,
-    ("name" IN ('general', 'random') AND "isPrivate" = false),
+INSERT INTO "ChannelWorkspace" ("channelId", "workspaceId", "isDefault", "nameKey", "sharedAt")
+  SELECT "id", 1,
+    ("name" IN ('general', 'random') AND "isPrivate" = false AND "archivedAt" IS NULL),
     CASE WHEN rn = 1 THEN key ELSE left(key, 80 - length('~' || "id")) || '~' || "id" END,
     "createdAt"
   FROM (
-    SELECT "id", "name", "isPrivate", "createdAt", lower("name") AS key,
+    SELECT "id", "name", "isPrivate", "archivedAt", "createdAt", lower("name") AS key,
       row_number() OVER (PARTITION BY lower("name") ORDER BY "id") AS rn
     FROM "Channel"
   ) c;

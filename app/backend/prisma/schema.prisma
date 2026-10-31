@@ -90,12 +90,12 @@ model WorkspaceMember {
   @@index([workspaceId, leftAt, role])
 }
 
-// 채널이 보이는 워크스페이스. 모든 채널은 호스트 행(isHost=true) 1개를 가지고, 공유하면 행이 늘어난다.
+// 채널이 보이는 워크스페이스. 공유하면 행이 늘어난다. 호스트 여부는 따로 두지 않고 Channel.workspaceId와 같은
+// 워크스페이스의 행인지로 판단한다(workspaceService.isHostRow). 모든 채널은 호스트 워크스페이스의 행을 정확히 하나 가진다.
 // nameKey는 Channel.name의 소문자형이고 이름 유일성을 워크스페이스 단위로 강제한다.
 model ChannelWorkspace {
   channelId   Int
   workspaceId Int
-  isHost      Boolean  @default(false)
   isDefault   Boolean  @default(false) // 새 멤버가 자동으로 들어가는 기본 채널
   nameKey     String   @db.VarChar(80)
   sharedBy    Int?
@@ -144,7 +144,7 @@ model User {
 
   // 조직·워크스페이스(E1a). 서버당 조직이 하나라 organizationId 기본값은 1이다.
   // role은 E1h까지 호환 컬럼으로 남고, 그동안 WorkspaceMember.role(기본 워크스페이스)과 orgRole은
-  // services/workspaceService.ts의 mirrorUserRole로 같은 값을 따라간다.
+  // services/workspaceService.ts의 setUserRole로만 바뀌고 같은 값을 따라간다.
   organizationId     Int     @default(1)
   orgRole            OrgRole @default(MEMBER)
   defaultWorkspaceId Int?

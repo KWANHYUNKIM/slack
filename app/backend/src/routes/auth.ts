@@ -11,7 +11,7 @@ import { rotateSessions } from '../services/sessionRotation.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
-import { DEFAULT_WORKSPACE_ID, addWorkspaceMember, orgRoleFor } from '../services/workspaceService.js';
+import { DEFAULT_WORKSPACE_ID, addWorkspaceMember, setUserRole } from '../services/workspaceService.js';
 import { createSessionToken, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 import {
@@ -125,10 +125,16 @@ router.post('/register', async (req: Request, res: Response) => {
           email,
           password: hashedPassword,
           name,
-          role: assignedRole,
-          orgRole: orgRoleFor(assignedRole),
           defaultWorkspaceId: workspaceId,
         },
+        select: { id: true },
+      });
+      // 계정과 워크스페이스 멤버십은 같은 트랜잭션에서 생긴다(멤버십 없는 계정이 남지 않게).
+      // 역할은 setUserRole 하나로 쓴다(조직 역할·워크스페이스 역할이 같은 규칙을 따른다).
+      await addWorkspaceMember(tx, { workspaceId, userId: created.id, role: assignedRole, invitedBy });
+      await setUserRole(tx, created.id, assignedRole);
+      return tx.user.findUniqueOrThrow({
+        where: { id: created.id },
         select: {
           id: true,
           name: true,
@@ -136,9 +142,6 @@ router.post('/register', async (req: Request, res: Response) => {
           createdAt: true,
         },
       });
-      // 계정과 워크스페이스 멤버십은 같은 트랜잭션에서 생긴다(멤버십 없는 계정이 남지 않게)
-      await addWorkspaceMember(tx, { workspaceId, userId: created.id, role: assignedRole, invitedBy });
-      return created;
     });
 
     // Auto-join default channels — guests get NO auto-join (admin assigns channels)

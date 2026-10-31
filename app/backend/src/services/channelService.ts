@@ -73,15 +73,13 @@ export async function updateChannel(params: {
 
   let updated;
   try {
-    const nameKey = newName === undefined ? undefined : channelNameKey(newName);
-    updated = nameKey === undefined
-      ? await prisma.channel.update({ where: { id: channel.id }, data, include: channelWithCounts })
-      // 이름이 바뀌면 채널이 보이는 모든 워크스페이스의 nameKey도 같은 트랜잭션에서 바꾼다(워크스페이스 단위 유일성)
-      : await prisma.$transaction(async (tx) => {
-        const result = await tx.channel.update({ where: { id: channel.id }, data, include: channelWithCounts });
-        await tx.channelWorkspace.updateMany({ where: { channelId: channel.id }, data: { nameKey } });
-        return result;
-      });
+    // 채널이 보이는 모든 워크스페이스 행을 같은 UPDATE 문맥에서 맞춘다(E1a).
+    // 이름이 바뀌면 nameKey(워크스페이스 단위 유일성), 비공개로 바뀌면 기본 채널 표시를 끈다. 이름만 바뀌면 isDefault는 유지한다.
+    const rowData: Prisma.ChannelWorkspaceUpdateManyMutationInput = {};
+    if (newName !== undefined) rowData.nameKey = channelNameKey(newName);
+    if (data.isPrivate === true) rowData.isDefault = false;
+    if (Object.keys(rowData).length > 0) data.workspaces = { updateMany: { where: {}, data: rowData } };
+    updated = await prisma.channel.update({ where: { id: channel.id }, data, include: channelWithCounts });
   } catch (error) {
     // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(Channel.name 또는 ChannelWorkspace.nameKey 유니크 제약)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

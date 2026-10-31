@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import {
+  DEFAULT_WORKSPACE_ID, addWorkspaceMember, channelHostData, setUserRole,
+} from '../src/services/workspaceService.js';
 
 const prisma = new PrismaClient();
 
@@ -462,17 +465,17 @@ async function main() {
           status: u.status,
           avatar: u.avatar,
           lastSeen: u.status === 'offline' ? minsAgo(300) : minsAgo(5),
-          ...(i === 0 ? { role: 'OWNER' as const, orgRole: 'OWNER' as const } : {}),
-          defaultWorkspaceId: 1,
+          defaultWorkspaceId: DEFAULT_WORKSPACE_ID,
         },
       })
     )
   );
-  // 기본 워크스페이스(id=1, 마이그레이션이 만든다) 멤버십과 조직 주 소유자(E1a)
-  await prisma.workspaceMember.createMany({
-    data: users.map((u) => ({ workspaceId: 1, userId: u.id, role: u.role })),
-  });
-  await prisma.organization.update({ where: { id: 1 }, data: { primaryOwnerId: users[0].id } });
+  // 기본 워크스페이스(마이그레이션이 만든다) 멤버십과 역할(E1a). 역할은 setUserRole로만 쓰고, 첫 사용자가 OWNER이자 조직 주 소유자다.
+  for (const [i, u] of users.entries()) {
+    const role = i === 0 ? 'OWNER' as const : 'MEMBER' as const;
+    await addWorkspaceMember(prisma, { workspaceId: DEFAULT_WORKSPACE_ID, userId: u.id, role });
+    await setUserRole(prisma, u.id, role);
+  }
   console.log(`  Created ${users.length} users`);
 
   // Channels
@@ -481,15 +484,8 @@ async function main() {
       data: {
         name: c.name,
         isPrivate: c.isPrivate,
-        // 기본 워크스페이스의 호스트 행. general·random 공개 채널은 새 멤버가 들어가는 기본 채널이다(E1a)
-        workspaces: {
-          create: {
-            workspaceId: 1,
-            isHost: true,
-            isDefault: !c.isPrivate && (c.name === 'general' || c.name === 'random'),
-            nameKey: c.name.toLowerCase(),
-          },
-        },
+        // 기본 워크스페이스 호스트 행. general·random 공개 채널은 새 멤버가 들어가는 기본 채널이다(E1a)
+        ...channelHostData(c.name, DEFAULT_WORKSPACE_ID, !c.isPrivate && (c.name === 'general' || c.name === 'random')),
       },
     }))
   );

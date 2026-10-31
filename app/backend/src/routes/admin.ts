@@ -15,7 +15,7 @@ import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
-import { mirrorUserRole } from '../services/workspaceService.js';
+import { setUserRole } from '../services/workspaceService.js';
 
 const router = Router();
 
@@ -95,15 +95,10 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // 기본 워크스페이스 역할·조직 역할도 같은 트랜잭션에서 따라간다(E1a, workspaceService.mirrorUserRole)
+    // 역할 쓰기는 setUserRole 하나로: 조직 역할·기본 워크스페이스 역할·주 소유자까지 같은 트랜잭션에서 맞춘다(E1a)
     const updated = await prisma.$transaction(async (tx) => {
-      const result = await tx.user.update({
-        where: { id: userId },
-        data: { role },
-        select: ADMIN_USER_SELECT,
-      });
-      await mirrorUserRole(tx, userId, role);
-      return result;
+      await setUserRole(tx, userId, role);
+      return tx.user.findUniqueOrThrow({ where: { id: userId }, select: ADMIN_USER_SELECT });
     });
 
     // Invalidate cached auth so the new role takes effect immediately
@@ -616,7 +611,8 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
 
     const updated = await prisma.channel.update({
       where: { id },
-      data: { archivedAt: new Date() },
+      // 보관한 채널은 기본 채널에서 빠진다(E1a). 보관 해제해도 자동으로 되돌리지 않는다.
+      data: { archivedAt: new Date(), workspaces: { updateMany: { where: {}, data: { isDefault: false } } } },
       include: { _count: { select: { members: true, messages: true } } },
     });
 
@@ -897,11 +893,9 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
 
     // Atomic: demote current owner to ADMIN, promote target to OWNER
     await prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: ownerId }, data: { role: 'ADMIN' } });
-      await tx.user.update({ where: { id: userId }, data: { role: 'OWNER' } });
-      // 기본 워크스페이스 역할·조직 역할과 조직 주 소유자도 함께 넘긴다(E1a)
-      await mirrorUserRole(tx, ownerId, 'ADMIN');
-      await mirrorUserRole(tx, userId, 'OWNER');
+      // 올리는 쪽을 먼저: 이전 소유자가 강등될 때 주 소유자가 남은 활성 OWNER(새 소유자)로 넘어간다(E1a)
+      await setUserRole(tx, userId, 'OWNER');
+      await setUserRole(tx, ownerId, 'ADMIN');
     });
 
     // Invalidate cached auth so the new roles take effect immediately

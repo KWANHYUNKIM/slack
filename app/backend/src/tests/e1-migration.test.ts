@@ -7,11 +7,14 @@ import { Prisma } from '@prisma/client';
 import app from '../app.js';
 import prisma from '../db.js';
 import { createInitialOwner } from '../services/bootstrapService.js';
-import { DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID } from '../services/workspaceService.js';
+import {
+  DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID, channelHostData, isHostRow, setUserRole,
+} from '../services/workspaceService.js';
 
 // E1a 조직·워크스페이스 스키마와 백필(docs/specs/E1-multi-workspace.md 4.2절).
 // 1) 마이그레이션 SQL을 옛 형태의 표가 있는 임시 스키마에 트랜잭션으로 적용해 백필 결과를 확인하고 ROLLBACK한다.
-// 2) 이미 마이그레이션된 테스트 DB에서 가입·부트스트랩·채널 생성·이름 변경·역할 변경·삭제가 새 행을 맞게 쓰는지 CRUD로 반복한다.
+// 2) 이미 마이그레이션된 테스트 DB에서 가입·부트스트랩·채널 생성·이름 변경·비공개 전환·보관·역할 변경·삭제가
+//    새 행을 맞게 쓰는지 생성·조회·수정·삭제로 반복한다.
 
 const MIGRATION_SQL = fs.readFileSync(
   path.join(path.dirname(fileURLToPath(import.meta.url)), '../../prisma/migrations/20261102010000_add_organizations_workspaces/migration.sql'),
@@ -42,22 +45,34 @@ const LEGACY_DDL = [
 ];
 
 const LEGACY_DATA = [
+  // 10: 가장 먼저 만든 OWNER지만 비활성이라 주 소유자가 되지 않는다
   `INSERT INTO "User" ("id", "email", "role", "deactivatedAt", "createdAt") VALUES
+     (10, 'old-owner@e1.test', 'OWNER', '2026-02-01', '2025-12-31'),
      (11, 'owner@e1.test', 'OWNER', NULL, '2026-01-01'),
      (12, 'admin@e1.test', 'ADMIN', NULL, '2026-01-02'),
      (13, 'member@e1.test', 'MEMBER', NULL, '2026-01-03'),
      (14, 'guest@e1.test', 'GUEST', NULL, '2026-01-04'),
      (15, 'gone@e1.test', 'MEMBER', '2026-02-01', '2026-01-05'),
      (16, 'owner2@e1.test', 'OWNER', NULL, '2026-01-06')`,
+  // random은 보관돼 있어 기본 채널이 아니다
   `INSERT INTO "Channel" ("id", "name", "isPrivate", "archivedAt") VALUES
      (21, 'general', false, NULL),
-     (22, 'random', false, NULL),
+     (22, 'random', false, '2026-03-01'),
      (23, 'Dev', false, NULL),
      (24, 'dev', false, NULL),
      (25, 'secret', true, NULL),
      (26, 'old', false, '2026-03-01')`,
   `INSERT INTO "InviteLink" ("code", "createdBy") VALUES ('legacy-a', 11), ('legacy-b', 12)`,
 ];
+
+// 불변식: 모든 채널은 호스트 워크스페이스(Channel.workspaceId)의 ChannelWorkspace 행을 정확히 하나 가진다
+async function channelsBreakingHostInvariant(db: Prisma.TransactionClient): Promise<number[]> {
+  const rows = await db.$queryRaw<Array<{ id: number }>>`
+    SELECT c."id" FROM "Channel" c
+    WHERE (SELECT count(*) FROM "ChannelWorkspace" cw WHERE cw."channelId" = c."id" AND cw."workspaceId" = c."workspaceId") <> 1
+    ORDER BY c."id"`;
+  return rows.map((r) => r.id);
+}
 
 class Rollback extends Error {}
 
@@ -96,25 +111,28 @@ describe('E1a migration backfill (transaction + ROLLBACK)', () => {
       members: await tx.$queryRaw<Array<{ userId: number; workspaceId: number; role: string; joinedOk: boolean; leftAt: Date | null }>>`
         SELECT m."userId", m."workspaceId", m."role"::text, m."joinedAt" = u."createdAt" AS "joinedOk", m."leftAt"
         FROM "WorkspaceMember" m JOIN "User" u ON u."id" = m."userId" ORDER BY m."userId"`,
-      channels: await tx.$queryRaw<Array<{ id: number; workspaceId: number; isHost: boolean; isDefault: boolean; nameKey: string }>>`
-        SELECT c."id", c."workspaceId", cw."isHost", cw."isDefault", cw."nameKey"
+      channels: await tx.$queryRaw<Array<{ id: number; channelWorkspaceId: number; rowWorkspaceId: number; isDefault: boolean; nameKey: string }>>`
+        SELECT c."id", c."workspaceId" AS "channelWorkspaceId", cw."workspaceId" AS "rowWorkspaceId", cw."isDefault", cw."nameKey"
         FROM "Channel" c JOIN "ChannelWorkspace" cw ON cw."channelId" = c."id" ORDER BY c."id"`,
+      broken: await channelsBreakingHostInvariant(tx),
       invites: await tx.$queryRaw<Array<{ workspaceId: number }>>`SELECT "workspaceId" FROM "InviteLink"`,
-      org: await tx.$queryRaw<Array<{ id: number; primaryOwnerId: number | null }>>`SELECT "id", "primaryOwnerId" FROM "Organization"`,
-      workspaces: await tx.$queryRaw<Array<{ id: number; organizationId: number; slug: string; discoverability: string }>>`
-        SELECT "id", "organizationId", "slug", "discoverability"::text FROM "Workspace"`,
+      org: await tx.$queryRaw<Array<{ id: number; name: string; primaryOwnerId: number | null }>>`
+        SELECT "id", "name", "primaryOwnerId" FROM "Organization"`,
+      workspaces: await tx.$queryRaw<Array<{ id: number; organizationId: number; slug: string; name: string; discoverability: string }>>`
+        SELECT "id", "organizationId", "slug", "name", "discoverability"::text FROM "Workspace"`,
       nextWorkspaceId: (await tx.$queryRaw<Array<{ id: number }>>`
         INSERT INTO "Workspace" ("organizationId", "slug", "name") VALUES (1, 'second', 'Second') RETURNING "id"`)[0].id,
     }));
 
-    // 행 수: User = WorkspaceMember, Channel = ChannelWorkspace(isHost)
+    // 행 수: User = WorkspaceMember, 채널마다 호스트 워크스페이스 행 하나
     expect(snapshot.members).toHaveLength(snapshot.users.length);
     expect(snapshot.channels).toHaveLength(6);
-    expect(snapshot.channels.every((c) => c.isHost && c.workspaceId === 1)).toBe(true);
+    expect(snapshot.broken).toEqual([]);
+    expect(snapshot.channels.every((c) => c.channelWorkspaceId === 1 && isHostRow({ workspaceId: c.rowWorkspaceId }, { workspaceId: c.channelWorkspaceId }))).toBe(true);
 
     // 역할 매핑: 워크스페이스 역할은 그대로, 조직 역할은 OWNER/ADMIN만 올라간다. 비활성 사용자도 멤버다.
     const orgRoles = Object.fromEntries(snapshot.users.map((u) => [u.id, u.orgRole]));
-    expect(orgRoles).toEqual({ 11: 'OWNER', 12: 'ADMIN', 13: 'MEMBER', 14: 'MEMBER', 15: 'MEMBER', 16: 'OWNER' });
+    expect(orgRoles).toEqual({ 10: 'OWNER', 11: 'OWNER', 12: 'ADMIN', 13: 'MEMBER', 14: 'MEMBER', 15: 'MEMBER', 16: 'OWNER' });
     for (const m of snapshot.members) {
       expect(m.workspaceId).toBe(1);
       expect(m.role).toBe(snapshot.users.find((u) => u.id === m.userId)!.role);
@@ -123,16 +141,16 @@ describe('E1a migration backfill (transaction + ROLLBACK)', () => {
     }
     expect(snapshot.users.every((u) => u.organizationId === 1 && u.defaultWorkspaceId === 1)).toBe(true);
 
-    // 주 소유자는 가장 먼저 만든 OWNER
-    expect(snapshot.org).toEqual([{ id: 1, primaryOwnerId: 11 }]);
-    expect(snapshot.workspaces).toEqual([{ id: 1, organizationId: 1, slug: 'main', discoverability: 'INVITE_ONLY' }]);
+    // 주 소유자는 활성 OWNER 중 가장 오래된 사람(비활성 10은 건너뛴다). 이름은 빈 문자열(화면은 번역 키로 표시)
+    expect(snapshot.org).toEqual([{ id: 1, name: '', primaryOwnerId: 11 }]);
+    expect(snapshot.workspaces).toEqual([{ id: 1, organizationId: 1, slug: 'main', name: '', discoverability: 'INVITE_ONLY' }]);
     // id를 직접 넣은 뒤에도 시퀀스가 맞아 다음 워크스페이스는 2다
     expect(snapshot.nextWorkspaceId).toBe(2);
 
-    // 기본 채널은 공개 general·random, 대소문자만 다른 옛 이름은 nameKey가 겹치지 않게 접미사를 받는다
+    // 기본 채널은 공개·미보관 general·random만, 대소문자만 다른 옛 이름은 nameKey가 겹치지 않게 접미사를 받는다
     const byId = Object.fromEntries(snapshot.channels.map((c) => [c.id, c]));
     expect(byId[21]).toMatchObject({ isDefault: true, nameKey: 'general' });
-    expect(byId[22]).toMatchObject({ isDefault: true, nameKey: 'random' });
+    expect(byId[22]).toMatchObject({ isDefault: false, nameKey: 'random' });
     expect(byId[23]).toMatchObject({ isDefault: false, nameKey: 'dev' });
     expect(byId[24]).toMatchObject({ isDefault: false, nameKey: 'dev~24' });
     expect(byId[25]).toMatchObject({ isDefault: false, nameKey: 'secret' });
@@ -177,43 +195,59 @@ describe('E1a creation paths write workspace rows', () => {
     return res.body.token as string;
   }
 
+  async function register(email: string) {
+    const res = await request(app).post('/auth/register').send({ email, password: TEST_PASSWORD, name: email.split('@')[0] });
+    expect(res.status).toBe(201);
+    return { id: res.body.user.id as number, token: res.body.token as string };
+  }
+
   async function membership(userId: number) {
     return prisma.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: DEFAULT_WORKSPACE_ID, userId } } });
   }
 
+  async function joinedChannelNames(userId: number) {
+    const rows = await prisma.channelMember.findMany({ where: { userId }, include: { channel: { select: { name: true } } } });
+    return rows.map((r) => r.channel.name).sort();
+  }
+
+  async function primaryOwnerId() {
+    return (await prisma.organization.findUniqueOrThrow({ where: { id: DEFAULT_ORGANIZATION_ID } })).primaryOwnerId;
+  }
+
   beforeEach(resetDb);
+  // 각 테스트의 앱 경로가 만든 채널은 모두 호스트 행 불변식을 지킨다
+  afterEach(async () => {
+    expect(await channelsBreakingHostInvariant(prisma)).toEqual([]);
+  });
 
   it('bootstrap owner becomes primary owner and workspace OWNER, deleting the user cascades', async () => {
     const owner = await createInitialOwner({ email: 'e1-owner@example.com', password: TEST_PASSWORD, name: 'E1 Owner' });
 
     const user = await prisma.user.findUniqueOrThrow({ where: { id: owner.id } });
-    expect(user).toMatchObject({ organizationId: DEFAULT_ORGANIZATION_ID, orgRole: 'OWNER', defaultWorkspaceId: DEFAULT_WORKSPACE_ID });
+    expect(user).toMatchObject({ role: 'OWNER', organizationId: DEFAULT_ORGANIZATION_ID, orgRole: 'OWNER', defaultWorkspaceId: DEFAULT_WORKSPACE_ID });
     expect(await membership(owner.id)).toMatchObject({ role: 'OWNER', leftAt: null });
-    expect((await prisma.organization.findUniqueOrThrow({ where: { id: 1 } })).primaryOwnerId).toBe(owner.id);
+    expect(await primaryOwnerId()).toBe(owner.id);
 
-    // 기본 채널은 기본 워크스페이스의 기본 채널로 연결된다
+    // 기본 채널은 기본 워크스페이스의 기본 채널(호스트 행)로 만들어진다
     const defaults = await prisma.channelWorkspace.findMany({
       where: { workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true },
-      include: { channel: { select: { name: true } } },
+      include: { channel: { select: { name: true, workspaceId: true } } },
     });
     expect(defaults.map((d) => d.channel.name).sort()).toEqual(['general', 'random']);
-    expect(defaults.every((d) => d.isHost)).toBe(true);
+    expect(defaults.every((d) => isHostRow(d, d.channel))).toBe(true);
 
     // Delete: 사용자를 지우면 멤버십이 연쇄로 지워지고 주 소유자는 비워진다
     await prisma.auditLog.deleteMany();
     await prisma.channelMember.deleteMany();
     await prisma.user.delete({ where: { id: owner.id } });
     expect(await membership(owner.id)).toBeNull();
-    expect((await prisma.organization.findUniqueOrThrow({ where: { id: 1 } })).primaryOwnerId).toBeNull();
+    expect(await primaryOwnerId()).toBeNull();
   });
 
   it('invite registration joins the invite workspace with the invite role and inviter', async () => {
-    const adminRes = await request(app).post('/auth/register')
-      .send({ email: 'e1-admin@example.com', password: TEST_PASSWORD, name: 'E1 Admin' });
-    expect(adminRes.status).toBe(201);
-    const adminId = adminRes.body.user.id as number;
-    expect(await membership(adminId)).toMatchObject({ role: 'MEMBER', invitedBy: null });
-    await prisma.user.update({ where: { id: adminId }, data: { role: 'ADMIN' } });
+    const admin = await register('e1-admin@example.com');
+    expect(await membership(admin.id)).toMatchObject({ role: 'MEMBER', invitedBy: null });
+    await prisma.$transaction((tx) => setUserRole(tx, admin.id, 'ADMIN'));
     const adminToken = await login('e1-admin@example.com');
 
     // 관리자 API로 만든 초대는 기본 워크스페이스를 가리킨다
@@ -225,16 +259,15 @@ describe('E1a creation paths write workspace rows', () => {
     const guestRes = await request(app).post('/auth/register')
       .send({ email: 'e1-guest@example.com', password: TEST_PASSWORD, name: 'E1 Guest', inviteCode: invite.body.code });
     expect(guestRes.status).toBe(201);
+    expect(guestRes.body.user.role).toBe('GUEST');
     const guestId = guestRes.body.user.id as number;
-    expect(await membership(guestId)).toMatchObject({ role: 'GUEST', invitedBy: adminId, leftAt: null });
+    expect(await membership(guestId)).toMatchObject({ role: 'GUEST', invitedBy: admin.id, leftAt: null });
     expect(await prisma.user.findUniqueOrThrow({ where: { id: guestId } }))
-      .toMatchObject({ orgRole: 'MEMBER', defaultWorkspaceId: DEFAULT_WORKSPACE_ID, organizationId: DEFAULT_ORGANIZATION_ID });
+      .toMatchObject({ role: 'GUEST', orgRole: 'MEMBER', defaultWorkspaceId: DEFAULT_WORKSPACE_ID, organizationId: DEFAULT_ORGANIZATION_ID });
   });
 
   it('channel create, rename and delete keep the host ChannelWorkspace row in sync', async () => {
-    const res = await request(app).post('/auth/register')
-      .send({ email: 'e1-maker@example.com', password: TEST_PASSWORD, name: 'E1 Maker' });
-    const token = res.body.token as string;
+    const { token } = await register('e1-maker@example.com');
 
     for (let round = 0; round < 2; round++) {
       // Create
@@ -247,7 +280,7 @@ describe('E1a creation paths write workspace rows', () => {
       const host = await prisma.channelWorkspace.findUniqueOrThrow({
         where: { channelId_workspaceId: { channelId, workspaceId: DEFAULT_WORKSPACE_ID } },
       });
-      expect(host).toMatchObject({ isHost: true, isDefault: false, nameKey: `e1-chan-${round}` });
+      expect(host).toMatchObject({ isDefault: false, nameKey: `e1-chan-${round}` });
       expect((await prisma.channel.findUniqueOrThrow({ where: { id: channelId } })).workspaceId).toBe(DEFAULT_WORKSPACE_ID);
 
       // Update: 이름을 바꾸면 nameKey도 바뀐다
@@ -257,12 +290,10 @@ describe('E1a creation paths write workspace rows', () => {
       const after = await prisma.channelWorkspace.findMany({ where: { channelId } });
       expect(after.map((r) => r.nameKey)).toEqual([`e1-renamed-${round}`]);
 
-      // 같은 워크스페이스에서 대소문자만 다른 이름은 nameKey 유니크에 걸린다(DB 수준)
-      const other = await prisma.channel.create({ data: { name: `E1-Renamed-${round}` } });
-      await expect(prisma.channelWorkspace.create({
-        data: { channelId: other.id, workspaceId: DEFAULT_WORKSPACE_ID, isHost: true, nameKey: `e1-renamed-${round}` },
-      })).rejects.toMatchObject({ code: 'P2002' });
-      await prisma.channel.delete({ where: { id: other.id } });
+      // 같은 워크스페이스에서 대소문자만 다른 이름은 nameKey 유니크에 걸린다(DB 수준, 채널 생성 자체가 원자적으로 실패)
+      await expect(prisma.channel.create({ data: { name: `E1-Renamed-${round}`, ...channelHostData(`E1-Renamed-${round}`) } }))
+        .rejects.toMatchObject({ code: 'P2002' });
+      expect(await prisma.channel.count({ where: { name: `E1-Renamed-${round}` } })).toBe(0);
 
       // Delete: 채널을 지우면 연결 행도 사라진다
       await prisma.channel.delete({ where: { id: channelId } });
@@ -270,34 +301,105 @@ describe('E1a creation paths write workspace rows', () => {
     }
   });
 
+  it('default channels follow isDefault: rename keeps it, private or archived drops it', async () => {
+    await createInitialOwner({ email: 'e1-def-owner@example.com', password: TEST_PASSWORD, name: 'Def Owner' });
+    const ownerToken = await login('e1-def-owner@example.com');
+    const general = await prisma.channel.findFirstOrThrow({ where: { name: 'general' } });
+    const random = await prisma.channel.findFirstOrThrow({ where: { name: 'random' } });
+
+    // #general 이름을 바꿔도 기본 채널로 남고, 새 가입자가 들어가도 general이 새로 생기지 않는다
+    const renamed = await request(app).patch(`/channels/${general.id}`).set('Authorization', `Bearer ${ownerToken}`).send({ name: 'lobby' });
+    expect(renamed.status).toBe(200);
+    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: general.id } })).isDefault).toBe(true);
+    const u1 = await register('e1-def-1@example.com');
+    expect(await joinedChannelNames(u1.id)).toEqual(['lobby', 'random']);
+    expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(0);
+
+    // 비공개로 바꾸면 자동 가입 대상이 아니다
+    const priv = await request(app).patch(`/admin/channels/${random.id}`).set('Authorization', `Bearer ${ownerToken}`).send({ isPrivate: true });
+    expect(priv.status).toBe(200);
+    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: random.id } })).isDefault).toBe(false);
+    const u2 = await register('e1-def-2@example.com');
+    expect(await joinedChannelNames(u2.id)).toEqual(['lobby']);
+
+    // 보관해도 빠진다. 기본 채널이 하나도 남지 않으면 그때만 general을 새로 만들고(random은 비공개라 건너뜀)
+    const archived = await request(app).post(`/admin/channels/${general.id}/archive`).set('Authorization', `Bearer ${ownerToken}`);
+    expect(archived.status).toBe(200);
+    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: general.id } })).isDefault).toBe(false);
+    const u3 = await register('e1-def-3@example.com');
+    expect(await joinedChannelNames(u3.id)).toEqual(['general']);
+    const fresh = await prisma.channel.findFirstOrThrow({ where: { name: 'general' }, include: { workspaces: true } });
+    expect(fresh.workspaces).toEqual([expect.objectContaining({ workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true, nameKey: 'general' })]);
+    expect(await prisma.channel.count({ where: { name: 'random' } })).toBe(1);
+
+    // 다음 가입자는 다시 만들지 않고 같은 general에 들어간다
+    const u4 = await register('e1-def-4@example.com');
+    expect(await joinedChannelNames(u4.id)).toEqual(['general']);
+    expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(1);
+  });
+
+  it('uses an existing channel that differs only in case as the default instead of creating one', async () => {
+    const upper = await prisma.channel.create({ data: { name: 'General', ...channelHostData('General') } });
+    const u = await register('e1-case@example.com');
+    expect(await joinedChannelNames(u.id)).toEqual(['General', 'random']);
+    expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(0);
+    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: upper.id } })).isDefault).toBe(true);
+  });
+
   it('role change and ownership transfer mirror into workspace role, org role and primary owner', async () => {
     const owner = await createInitialOwner({ email: 'e1-own@example.com', password: TEST_PASSWORD, name: 'E1 Own' });
     const ownerToken = await login('e1-own@example.com');
-    const memberRes = await request(app).post('/auth/register')
-      .send({ email: 'e1-mem@example.com', password: TEST_PASSWORD, name: 'E1 Mem' });
-    const memberId = memberRes.body.user.id as number;
+    const member = await register('e1-mem@example.com');
 
-    // Update: MEMBER → ADMIN → MEMBER 반복
+    // Update: MEMBER → ADMIN → MEMBER → ADMIN 반복
     for (const role of ['ADMIN', 'MEMBER', 'ADMIN'] as const) {
-      const changed = await request(app).patch(`/admin/users/${memberId}`).set('Authorization', `Bearer ${ownerToken}`).send({ role });
+      const changed = await request(app).patch(`/admin/users/${member.id}`).set('Authorization', `Bearer ${ownerToken}`).send({ role });
       expect(changed.status).toBe(200);
-      expect((await membership(memberId))!.role).toBe(role);
-      expect((await prisma.user.findUniqueOrThrow({ where: { id: memberId } })).orgRole).toBe(role);
+      expect(changed.body.role).toBe(role);
+      expect((await membership(member.id))!.role).toBe(role);
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: member.id } })).orgRole).toBe(role);
     }
 
     const transfer = await request(app).post('/admin/transfer-ownership').set('Authorization', `Bearer ${ownerToken}`)
-      .send({ userId: memberId });
+      .send({ userId: member.id });
     expect(transfer.status).toBe(200);
-    expect((await membership(memberId))!.role).toBe('OWNER');
+    expect((await membership(member.id))!.role).toBe('OWNER');
     expect((await membership(owner.id))!.role).toBe('ADMIN');
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: owner.id } })).orgRole).toBe('ADMIN');
-    expect((await prisma.organization.findUniqueOrThrow({ where: { id: 1 } })).primaryOwnerId).toBe(memberId);
+    expect(await prisma.user.findUniqueOrThrow({ where: { id: owner.id } })).toMatchObject({ role: 'ADMIN', orgRole: 'ADMIN' });
+    expect(await primaryOwnerId()).toBe(member.id);
+  });
+
+  it('demoting the primary owner hands it to the oldest remaining active OWNER, or clears it', async () => {
+    const a = await createInitialOwner({ email: 'e1-po-a@example.com', password: TEST_PASSWORD, name: 'A' });
+    const b = await register('e1-po-b@example.com');
+    const c = await register('e1-po-c@example.com');
+    await prisma.$transaction(async (tx) => {
+      await setUserRole(tx, c.id, 'OWNER');
+      await setUserRole(tx, b.id, 'OWNER');
+    });
+    // 다른 사람을 OWNER로 올려도 주 소유자는 그대로
+    expect(await primaryOwnerId()).toBe(a.id);
+
+    // A 강등 → 활성 OWNER 중 가장 오래된 B
+    await prisma.$transaction((tx) => setUserRole(tx, a.id, 'ADMIN'));
+    expect(await primaryOwnerId()).toBe(b.id);
+
+    // B가 비활성이면 건너뛴다: B 강등 전 비활성화 → C
+    await prisma.user.update({ where: { id: b.id }, data: { deactivatedAt: new Date() } });
+    await prisma.$transaction((tx) => setUserRole(tx, b.id, 'MEMBER'));
+    expect(await primaryOwnerId()).toBe(c.id);
+
+    // 마지막 OWNER 강등 → 비움, 다시 OWNER가 생기면 채운다
+    await prisma.$transaction((tx) => setUserRole(tx, c.id, 'MEMBER'));
+    expect(await primaryOwnerId()).toBeNull();
+    await prisma.$transaction((tx) => setUserRole(tx, a.id, 'OWNER'));
+    expect(await primaryOwnerId()).toBe(a.id);
+    expect(await membership(a.id)).toMatchObject({ role: 'OWNER' });
+    expect(await membership(c.id)).toMatchObject({ role: 'MEMBER' });
   });
 
   it('workspace rows: create, read, update, delete with unique slug and restricted host delete', async () => {
-    const userRes = await request(app).post('/auth/register')
-      .send({ email: 'e1-ws@example.com', password: TEST_PASSWORD, name: 'E1 Ws' });
-    const userId = userRes.body.user.id as number;
+    const { id: userId } = await register('e1-ws@example.com');
 
     for (let round = 0; round < 2; round++) {
       // Create
@@ -310,11 +412,9 @@ describe('E1a creation paths write workspace rows', () => {
       await expect(prisma.workspace.create({ data: { organizationId: 1, slug: 'other', name: `E1 WS ${round}` } }))
         .rejects.toMatchObject({ code: 'P2002' });
 
-      // 같은 이름 채널을 다른 워크스페이스에 연결할 수 있다(워크스페이스 단위 유일성)
-      const general = await prisma.channelWorkspace.findFirst({ where: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey: 'general' } });
-      expect(general).not.toBeNull();
-      const hosted = await prisma.channel.create({ data: { name: `e1-hosted-${round}`, workspaceId: ws.id } });
-      await prisma.channelWorkspace.create({ data: { channelId: hosted.id, workspaceId: ws.id, isHost: true, nameKey: 'general' } });
+      // 같은 nameKey 채널을 다른 워크스페이스에 호스트할 수 있다(워크스페이스 단위 유일성)
+      expect(await prisma.channelWorkspace.findFirst({ where: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey: 'general' } })).not.toBeNull();
+      const hosted = await prisma.channel.create({ data: { name: `e1-hosted-${round}`, ...channelHostData('general', ws.id) } });
 
       // Read
       const read = await prisma.workspace.findUniqueOrThrow({
@@ -324,6 +424,7 @@ describe('E1a creation paths write workspace rows', () => {
       expect(read.members).toEqual([expect.objectContaining({ userId, role: 'ADMIN', leftAt: null })]);
       expect(read.channels.map((c) => c.channelId)).toEqual([hosted.id]);
       expect(read.hostedChannels.map((c) => c.id)).toEqual([hosted.id]);
+      expect(isHostRow(read.channels[0], hosted)).toBe(true);
 
       // Update: 나가기는 행을 남기고 leftAt만 채운다
       await prisma.workspace.update({ where: { id: ws.id }, data: { name: `E1 WS ${round} renamed`, discoverability: 'OPEN' } });
