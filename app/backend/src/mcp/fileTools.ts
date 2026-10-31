@@ -1,11 +1,10 @@
-import fs from 'fs';
-import path from 'path';
 import type { Prisma } from '@prisma/client';
 import prisma from '../db.js';
-import { checkDmGroupMembership, verifyFileAccess, verifyFilesAccess } from '../middleware/authorize.js';
+import { checkDmGroupMembership, verifyFileAccessWithDm, verifyFilesAccess } from '../middleware/authorize.js';
 import { sharesChannel } from '../services/dmService.js';
+import { readStoredBytes } from '../services/fileStorage.js';
+import { MAX_READ_FILE_BYTES, isTextMimetype } from '../utils/fileTypes.js';
 import { paginateResults } from '../utils/pagination.js';
-import { logError } from '../utils/logger.js';
 import { ToolAccessError, type ToolContext } from './readTools.js';
 
 // MCP 파일 도구(mcp-3): list_files(메타데이터)와 read_file(텍스트 내용).
@@ -18,22 +17,7 @@ const NOT_ACCESSIBLE_CHANNEL = 'Channel not found or not accessible';
 const NOT_ACCESSIBLE_CONVERSATION = 'Conversation not found or not accessible';
 const DM_SCOPE = 'im:history';
 
-/** read_file이 내용을 돌려주는 최대 크기(바이트). 넘으면 메타데이터만 돌려준다. */
-export const MAX_READ_FILE_BYTES = 256 * 1024;
-
-// 업로드 허용 형식 중 텍스트 계열(text/*, JSON)과 흔한 텍스트 형식만 읽는다
-const TEXT_MIMES = new Set([
-  'application/json', 'application/xml', 'application/x-yaml', 'application/yaml', 'application/toml',
-  'application/javascript', 'application/x-ndjson', 'application/sql',
-]);
-
-export function isTextMimetype(mimetype: string): boolean {
-  const base = mimetype.split(';')[0].trim().toLowerCase();
-  return base.startsWith('text/') || TEXT_MIMES.has(base) || base.endsWith('+json') || base.endsWith('+xml');
-}
-
-// 업로드 위치(routes/files.ts의 uploadDir과 같다)
-const uploadDir = path.join(process.cwd(), 'uploads');
+export { MAX_READ_FILE_BYTES };
 
 const FILE_META_SELECT = {
   id: true, originalName: true, mimetype: true, size: true, createdAt: true, messageId: true, dmId: true,
@@ -63,7 +47,7 @@ function toFileMeta(f: FileMetaRow, ctxUserId: number) {
 }
 
 /** 1:1 DM 상대를 볼 수 있는지: 상대가 있어야 하고, 게스트는 채널을 공유하는 상대만(자기 자신은 가능) */
-async function assertCanSeeUserDm(ctx: ToolContext, otherUserId: number) {
+export async function assertCanSeeUserDm(ctx: ToolContext, otherUserId: number) {
   if (otherUserId === ctx.userId) return;
   const other = await prisma.user.findUnique({ where: { id: otherUserId }, select: { id: true } });
   if (!other) throw new ToolAccessError(NOT_ACCESSIBLE_CONVERSATION);
@@ -105,9 +89,8 @@ export async function listFiles(
       };
     }
   } else {
-    // 대상을 안 주면 내가 속한 채널의 파일만(DM 파일은 대화를 지정해야 한다)
-    const memberships = await prisma.channelMember.findMany({ where: { userId: ctx.userId }, select: { channelId: true } });
-    where = { message: { channelId: { in: memberships.map((m) => m.channelId) }, deletedAt: null } };
+    // 대상을 안 주면 내가 속한 채널의 파일만(DM 파일은 대화를 지정해야 한다). 멤버십은 관계 필터로 한 번에 건다.
+    where = { message: { deletedAt: null, channel: { members: { some: { userId: ctx.userId } } } } };
   }
 
   const rows = await prisma.file.findMany({
@@ -122,44 +105,16 @@ export async function listFiles(
   return { items: results.filter((f) => allowed.has(f.id)).map((f) => toFileMeta(f, ctx.userId)), nextCursor: nextCursor ?? null };
 }
 
-type ReadOutcome = { bytes: Buffer } | { reason: 'unavailable' };
-
-/** 저장소(로컬 디스크 또는 GCS)에서 앞부분 최대 maxBytes 바이트를 읽는다 */
-async function readStoredBytes(file: { filename: string; gcsPath: string | null }, maxBytes: number): Promise<ReadOutcome> {
-  try {
-    if (file.gcsPath) {
-      const bucketName = process.env.GCS_BUCKET_NAME;
-      if (!bucketName) return { reason: 'unavailable' };
-      const { Storage } = await import('@google-cloud/storage');
-      const [bytes] = await new Storage().bucket(bucketName).file(file.gcsPath).download({ start: 0, end: maxBytes - 1 });
-      return { bytes };
-    }
-    const filePath = path.resolve(uploadDir, file.filename);
-    if (!filePath.startsWith(uploadDir + path.sep)) return { reason: 'unavailable' };
-    const handle = await fs.promises.open(filePath, 'r');
-    try {
-      const buf = Buffer.alloc(maxBytes);
-      const { bytesRead } = await handle.read(buf, 0, maxBytes, 0);
-      return { bytes: buf.subarray(0, bytesRead) };
-    } finally {
-      await handle.close();
-    }
-  } catch (error) {
-    logError('MCP read_file storage error', error);
-    return { reason: 'unavailable' };
-  }
-}
-
 export async function readFile(ctx: ToolContext, args: { fileId: number }) {
-  const file = await verifyFileAccess(ctx.userId, args.fileId);
-  if (!file) throw new ToolAccessError(NOT_ACCESSIBLE_FILE);
-  if (file.dmId && !file.messageId) {
-    // DM 파일은 im:history 범위와 게스트 격리(1:1은 채널을 공유하는 상대만)를 더 확인한다
+  const access = await verifyFileAccessWithDm(ctx.userId, args.fileId);
+  if (!access) throw new ToolAccessError(NOT_ACCESSIBLE_FILE);
+  const { file, dm } = access;
+  if (dm) {
+    // DM 파일은 im:history 범위와 게스트 격리(1:1은 채널을 공유하는 상대만)를 더 확인한다. verifyFileAccess가 읽은 DM 행을 그대로 쓴다.
     if (!ctx.scopes.includes(DM_SCOPE)) throw new ToolAccessError(NOT_ACCESSIBLE_FILE);
-    const dm = await prisma.directMessage.findUnique({ where: { id: file.dmId }, select: { groupId: true, fromUserId: true, toUserId: true } });
-    if (dm && !dm.groupId && ctx.role === 'GUEST') {
+    if (!dm.groupId) {
       const otherId = dm.fromUserId === ctx.userId ? dm.toUserId : dm.fromUserId;
-      if (otherId !== null && otherId !== ctx.userId && !(await sharesChannel(ctx.userId, otherId))) throw new ToolAccessError(NOT_ACCESSIBLE_FILE);
+      if (otherId !== null) await assertCanSeeUserDm(ctx, otherId).catch(() => { throw new ToolAccessError(NOT_ACCESSIBLE_FILE); });
     }
   }
 
@@ -176,14 +131,14 @@ export async function readFile(ctx: ToolContext, args: { fileId: number }) {
   if (meta.size > MAX_READ_FILE_BYTES) return { ...meta, content: null, reason: 'too_large', maxBytes: MAX_READ_FILE_BYTES };
 
   // DB의 size를 믿지 않고 상한+1바이트까지만 읽어 상한을 넘는지 다시 확인한다
-  const outcome = await readStoredBytes(file, MAX_READ_FILE_BYTES + 1);
-  if ('reason' in outcome) return { ...meta, content: null, reason: outcome.reason };
-  if (outcome.bytes.length > MAX_READ_FILE_BYTES) return { ...meta, content: null, reason: 'too_large', maxBytes: MAX_READ_FILE_BYTES };
+  const bytes = await readStoredBytes(file, MAX_READ_FILE_BYTES + 1);
+  if (!bytes) return { ...meta, content: null, reason: 'unavailable' };
+  if (bytes.length > MAX_READ_FILE_BYTES) return { ...meta, content: null, reason: 'too_large', maxBytes: MAX_READ_FILE_BYTES };
   // NUL 바이트가 있거나 UTF-8이 아니면 텍스트가 아니다(mimetype만 text인 바이너리)
-  if (outcome.bytes.includes(0)) return { ...meta, content: null, reason: 'not_text' };
+  if (bytes.includes(0)) return { ...meta, content: null, reason: 'not_text' };
   let content: string;
   try {
-    content = new TextDecoder('utf-8', { fatal: true }).decode(outcome.bytes);
+    content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch {
     return { ...meta, content: null, reason: 'not_text' };
   }

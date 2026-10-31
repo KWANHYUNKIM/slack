@@ -91,6 +91,17 @@ export async function verifyFileAccess(
   userId: number,
   fileId: number,
 ): Promise<any | null> {
+  return (await verifyFileAccessWithDm(userId, fileId))?.file ?? null;
+}
+
+/**
+ * verifyFileAccess와 같은 판정이고, DM 첨부 파일이면 판정에 읽은 DM 행도 함께 돌려준다
+ * (호출 쪽이 상대 사용자 같은 추가 규칙을 확인할 때 같은 행을 다시 조회하지 않게).
+ */
+export async function verifyFileAccessWithDm(
+  userId: number,
+  fileId: number,
+): Promise<{ file: any; dm: { groupId: number | null; fromUserId: number; toUserId: number | null } | null } | null> {
   const file = await prisma.file.findUnique({
     where: { id: fileId },
     include: {
@@ -100,6 +111,7 @@ export async function verifyFileAccess(
 
   if (!file) return null;
 
+  let dmRow: { groupId: number | null; fromUserId: number; toUserId: number | null } | null = null;
   if (file.messageId) {
     const message = await prisma.message.findUnique({
       where: { id: file.messageId, deletedAt: null },
@@ -116,11 +128,12 @@ export async function verifyFileAccess(
     });
     if (!dm || dm.deletedAt) return null;
     if (!(await canAccessDm(dm, userId))) return null;
+    dmRow = { groupId: dm.groupId, fromUserId: dm.fromUserId, toUserId: dm.toUserId };
   } else {
     if (file.userId !== userId) return null;
   }
 
-  return file;
+  return { file, dm: dmRow };
 }
 
 /**

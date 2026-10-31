@@ -19,6 +19,7 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
    - Claude Code에서는 `claude mcp add --transport http team-messenger https://<서버>/mcp --header "Authorization: Bearer <PAT>"`로 연결한다.
    - 권한 범위: `channels:read`, `channels:history`, `chat:write`, `reactions:write`, `search:read`, `users:read`, `files:read`, `im:read`, `im:history`, `im:write`
    - DM 범위(`im:*`)는 개인 대화를 다루므로 토큰 생성 화면에서 기본으로 해제되어 있고, 범위를 주지 않고 만든 토큰에도 들어가지 않는다.
+   - `files:read`는 파일 본문 접근 권한이라 토큰 생성 화면에서 기본 해제한다(직접 켜야 함). `search:read`는 기본 선택을 유지한다. 서버 기본 범위(범위를 안 준 토큰)에는 둘 다 들어가지 않는다.
 2. **OAuth 2.1**: 2단계, claude.ai 커넥터용
    - MCP 인가 사양을 따른다: Authorization Server Metadata, Protected Resource Metadata, PKCE, Dynamic Client Registration.
    - 사용자가 동의 화면에서 권한 범위를 승인한다. 엔터프라이즈 관리자는 조직 단위로 MCP 사용을 끄거나 범위를 제한할 수 있다(E8 관리자 역할과 연동).
@@ -31,7 +32,7 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | `list_channels` | channels:read | 내가 속한 채널과 공개 채널 목록 |
 | `read_channel` | channels:history | 채널 최근 메시지(커서 페이지네이션, 개수 상한) |
 | `read_thread` | channels:history | 스레드 전체 |
-| `search` | search:read | 검색창과 같은 문법(from:, in:, has:, is:, before:/after:/on:)과 탭(messages, dms, files, people, channels). REST `GET /search`와 같은 `services/searchService.ts`를 쓴다. DM 결과(탭 dms, DM 첨부 파일)는 토큰에 `im:history`가 더 있을 때만 포함하고, 파일 결과에는 url을 넣지 않는다 |
+| `search` | search:read | 검색창과 같은 문법(from:, in:, has:, is:, before:/after:/on:)과 탭(messages, dms, files, people, channels). REST `GET /search`와 같은 `services/searchService.ts`를 쓴다. 결과는 토큰 범위로 한 번 더 거른다: 채널 메시지 `channels:history`, DM(탭 dms, DM 첨부 파일) `im:history`, 파일 탭 `files:read`, 사람 탭 `users:read`, 채널 탭 `channels:read`. 필요한 범위가 없으면 범위 이름을 알리는 도구 오류를 돌려주고, 응답의 `included`에 실제로 검색한 종류를 표시한다. 파일 결과에는 url을 넣지 않는다 |
 | `list_files` | files:read | 채널(내가 멤버) 파일 메타데이터. 대상을 안 주면 내 모든 채널. DM(`userId`/`groupId`)은 `im:history`도 필요. 다운로드 URL·토큰 없음 |
 | `send_message` | chat:write | 채널이나 스레드에 메시지 작성. 멘션 문법 지원(01 서비스 재사용) |
 | `list_dms` | im:read | 1:1 DM과 그룹 DM 대화 목록(마지막 메시지, 안 읽은 수). 읽음 처리 안 함 |
@@ -42,7 +43,7 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | `add_reaction`, `remove_reaction` | reactions:write | |
 | `list_users`, `get_user` | users:read | 프로필, 상태 |
 | `get_activity` | channels:history | 내 멘션과 활동(01 Activity API) |
-| `read_file` | files:read | 텍스트 계열(text/*, JSON, XML, YAML) 파일 내용, 상한 256KB. 초과·바이너리는 메타데이터와 `reason`(too_large, not_text, unavailable)만. 접근 규칙은 PR #52의 `verifyFileAccess`. DM 파일은 `im:history`도 필요 |
+| `read_file` | files:read | 텍스트 계열(text/*, JSON, XML, YAML) 파일 내용, 상한 256KB. 초과·바이너리는 메타데이터와 `reason`(too_large, not_text, unavailable)만. 접근 규칙은 PR #52의 `verifyFileAccess`(채널 멤버만). `read_channel`/`read_thread`의 파일 항목에는 `readable`(멤버이고 `files:read`가 있고 텍스트·상한 이내)을 표시한다. 저장소 읽기는 `services/fileStorage.ts`를 REST 다운로드와 함께 쓴다(GCS 버킷 설정이 없으면 로컬 uploads). DM 파일은 `im:history`도 필요 |
 
 - DM 수정·삭제를 `edit_message`/`delete_message`에 합치지 않고 별도 도구로 둔 이유: 채널 메시지(`Message`)와 DM(`DirectMessage`)은 다른 테이블이라 id가 겹치고, 한 `messageId`가 어느 쪽인지 알 수 없다. 범위도 `chat:write`와 `im:write`로 나뉘어, 채널 쓰기 권한만 준 토큰이 DM을 고치지 못한다.
 - DM 도구의 대상이 없거나 접근할 수 없으면(없는 사용자·그룹, 비활성 사용자, 게스트 격리, 그룹 비멤버) 같은 문구(`Conversation not found or not accessible`, 메시지는 `Message not found or not accessible`)로 답한다.

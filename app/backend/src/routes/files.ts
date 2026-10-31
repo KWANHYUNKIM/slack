@@ -6,7 +6,6 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import rateLimit from 'express-rate-limit';
-import { Storage } from '@google-cloud/storage';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireFileAccess, verifyFileAccess, verifyFilesAccess } from '../middleware/authorize.js';
@@ -14,6 +13,8 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { JWT_SECRET } from '../config.js';
+import { bucket, uploadDir } from '../services/fileStorage.js';
+import { UPLOAD_ALLOWED_MIMES } from '../utils/fileTypes.js';
 
 // Maximum file size in MB (configurable via environment variable, defaults to 50MB)
 const MAX_FILE_SIZE_MB = parseInt(process.env.MAX_FILE_SIZE_MB || '50', 10);
@@ -27,19 +28,11 @@ function stripInternalFields(file: any): any {
   return safe;
 }
 
-// GCS setup - only initialize if bucket name is configured
-const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME;
-const gcsStorage = GCS_BUCKET_NAME ? new Storage() : null;
-const bucket = gcsStorage && GCS_BUCKET_NAME ? gcsStorage.bucket(GCS_BUCKET_NAME) : null;
+// GCS 클라이언트와 uploads 폴더는 services/fileStorage.ts에서 공용으로 만든다
 
 const router = Router();
 
 // Configure multer for file uploads
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -57,27 +50,7 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     // Allow common file types
-    const allowedMimes = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'application/pdf',
-      'text/plain',
-      'application/json',
-      'application/zip',
-      'application/x-zip-compressed',
-      'audio/webm',
-      'audio/webm;codecs=opus',
-      'audio/ogg',
-      'audio/mp4',
-      'audio/mpeg',
-      'audio/mp4;codecs=opus',
-      'audio/aac',
-      'video/mp4',
-      'video/webm',
-      'video/quicktime',
-    ];
+    const allowedMimes = UPLOAD_ALLOWED_MIMES;
     // Accept application/octet-stream for video extensions (browsers/clients
     // sometimes don't set the correct MIME); magic-byte validation later
     // will verify the actual content.
