@@ -30,7 +30,8 @@
     },
     "pauseError": "Could not change notification pause. Please try again.",
     "accessTokens": "Personal access tokens",
-    "sessions": "Signed-in devices"
+    "sessions": "Signed-in devices",
+    "twoFactor": "Two-factor authentication"
   },
   "sections": {
     "starred": "Starred",

@@ -17,11 +17,11 @@ const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
 
 export function AdminMembersTab() {
   const { t } = useTranslation('admin');
-  const { users, updateUserRole, deactivateUser, reactivateUser, transferOwnership } = useAdminStore();
+  const { users, updateUserRole, deactivateUser, reactivateUser, transferOwnership, fetchUsers } = useAdminStore();
   const currentUser = useAuthStore((s) => s.user);
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'deactivate' | 'reactivate' | 'transfer' | 'forceLogout';
+    type: 'deactivate' | 'reactivate' | 'transfer' | 'forceLogout' | 'resetMfa';
     userId: number;
     userName: string;
   } | null>(null);
@@ -41,10 +41,12 @@ export function AdminMembersTab() {
     const fallbackKey = type === 'transfer'
       ? 'admin:errors.transferOwnership'
       : type === 'forceLogout' ? 'admin:errors.forceLogout'
+      : type === 'resetMfa' ? 'admin:errors.resetMfa'
       : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
     const ok = await dialogAction.run(() => {
       if (type === 'transfer') return transferOwnership(userId);
       if (type === 'forceLogout') return api.adminForceLogout(userId).then(() => undefined);
+      if (type === 'resetMfa') return api.adminResetUserMfa(userId).then(() => fetchUsers());
       if (type === 'deactivate') return deactivateUser(userId);
       return reactivateUser(userId);
     }, fallbackKey);
@@ -121,6 +123,16 @@ export function AdminMembersTab() {
                       <span className="font-medium text-slack-primary">
                         {user.name}
                         {isMe && <span className="ms-1 text-slack-hint text-xs">{t('members.you')}</span>}
+                        {user.mfaEnabledAt && (
+                          <span
+                            data-testid="member-mfa-badge"
+                            title={t('members.badges.mfaLabel')}
+                            aria-label={t('members.badges.mfaLabel')}
+                            className="ms-1.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700"
+                          >
+                            {t('members.badges.mfa')}
+                          </span>
+                        )}
                       </span>
                     </div>
                   </td>
@@ -167,6 +179,15 @@ export function AdminMembersTab() {
                           className="text-xs font-medium text-slack-secondary hover:text-slack-primary"
                         >
                           {t('members.actions.forceLogout')}
+                        </button>
+                      )}
+                      {modifiable && user.mfaEnabledAt && (
+                        <button
+                          data-testid="reset-mfa-button"
+                          onClick={() => setConfirmAction({ type: 'resetMfa', userId: user.id, userName: user.name })}
+                          className="text-xs font-medium text-slack-secondary hover:text-slack-primary"
+                        >
+                          {t('members.actions.resetMfa')}
                         </button>
                       )}
                       {modifiable && (

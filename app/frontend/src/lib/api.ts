@@ -1,6 +1,7 @@
 import i18n, { t } from '@/lib/i18n';
 import type { CustomStatus, Dnd } from '@/lib/types';
 import { createFileTokenCache, buildFileUrl, type TokenResponse, type TokenState } from '@/lib/fileTokens';
+import { sessionEndAction } from '@/lib/sessionEnd';
 
 /**
  * 파일별 다운로드 토큰. 캐시·갱신·거부 처리 로직은 lib/fileTokens.ts(순수)에 있고 여기서는 fetch만 붙인다.
@@ -80,9 +81,14 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     // Auto-logout on 401 (expired/invalid token).
     // Guard: only redirect once — concurrent 401s after token removal are no-ops.
     // Uses hard reload (window.location) so all in-memory Zustand state is wiped.
-    if (res.status === 401 && localStorage.getItem('token')) {
+    // 실패한 요청의 토큰이 지금 저장된 토큰일 때만 지운다(다른 탭이 2FA를 켜고 꺼서 새 토큰을 저장했으면 그대로 둔다)
+    if (res.status === 401 && sessionEndAction(token, localStorage.getItem('token')) === 'clear') {
       localStorage.removeItem('token');
       window.location.href = '/login';
+    }
+    // 조직이 2FA를 필수로 했는데 아직 등록하지 않았다(E7b). 인증 스토어가 듣고 등록 화면으로 보낸다.
+    if (res.status === 403 && body.code === MFA_ENROLLMENT_REQUIRED) {
+      window.dispatchEvent(new Event(MFA_ENROLLMENT_EVENT));
     }
     const errorMsg = Array.isArray(body.error)
       ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
@@ -109,12 +115,72 @@ export interface AuthUser {
 export interface AuthResponse {
   user: AuthUser;
   token: string;
+  /** 조직이 2FA를 필수로 했는데 아직 등록하지 않았다. 등록 화면만 쓸 수 있다. */
+  mfaEnrollmentRequired?: boolean;
 }
 
+/** 2FA 사용자는 비밀번호 뒤에 세션 대신 5분짜리 mfaToken을 받는다. */
+export interface MfaChallengeResponse {
+  mfaRequired: true;
+  mfaToken: string;
+  expiresIn: number;
+}
+
+export const MFA_ENROLLMENT_REQUIRED = 'MFA_ENROLLMENT_REQUIRED';
+export const MFA_ENROLLMENT_EVENT = 'mfa-enrollment-required';
+
 export function login(email: string, password: string) {
-  return request<AuthResponse>('/auth/login', {
+  return request<AuthResponse | MfaChallengeResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+  });
+}
+
+/** 로그인 2단계: 인증 앱 6자리 코드 또는 복구 코드 */
+export function loginTwoFactor(mfaToken: string, code: string) {
+  return request<AuthResponse>('/auth/login/2fa', {
+    method: 'POST',
+    body: JSON.stringify({ mfaToken, code }),
+  });
+}
+
+// ---- Two-factor authentication (E7b) ----
+
+export interface MfaStatus {
+  enabled: boolean;
+  enabledAt: string | null;
+  recoveryCodesRemaining: number;
+  /** 서버에 암호화 키가 있어 2FA를 쓸 수 있는지 */
+  available: boolean;
+  /** 조직 정책: 모든 사용자 2FA 필수 */
+  required: boolean;
+}
+
+export function getMfaStatus() {
+  return request<MfaStatus>('/users/me/2fa');
+}
+
+/** 새 비밀을 만든다. QR은 그리지 않고(외부 QR 서비스 금지) URI와 수동 입력 키만 보여 준다. */
+export function setupMfa() {
+  return request<{ secret: string; otpauthUri: string }>('/users/me/2fa/setup', { method: 'POST' });
+}
+
+/**
+ * 켜기. 현재 비밀번호를 다시 받는다. 켜면 다른 기기는 로그아웃되고 이전 토큰은 모두 무효라 응답의 token으로 바꿔야 한다.
+ * 복구 코드는 이 응답에서 한 번만 받는다.
+ */
+export function enableMfa(password: string, code: string) {
+  return request<{ enabled: true; recoveryCodes: string[]; revokedSessions: number; token: string }>('/users/me/2fa/enable', {
+    method: 'POST',
+    body: JSON.stringify({ password, code }),
+  });
+}
+
+/** 끄기. 켤 때처럼 다른 기기는 로그아웃되고 응답의 token으로 바꿔야 한다. 조직이 필수로 했으면 MFA_REQUIRED_BY_POLICY. */
+export function disableMfa(password: string, code: string) {
+  return request<{ enabled: false; revokedSessions: number; token: string }>('/users/me/2fa/disable', {
+    method: 'POST',
+    body: JSON.stringify({ password, code }),
   });
 }
 
@@ -1099,6 +1165,8 @@ export interface AdminUser {
   status?: string;
   deactivatedAt?: string | null;
   createdAt: string;
+  /** 2FA를 켠 시각(E7b). 없으면 꺼져 있다. */
+  mfaEnabledAt?: string | null;
 }
 
 export interface AdminChannel {
@@ -1189,6 +1257,25 @@ export function revokeMySession(id: string) {
 
 export function revokeOtherSessions() {
   return request<{ revoked: number }>('/users/me/sessions', { method: 'DELETE' });
+}
+
+/** 사용자의 2FA를 지우고 그 사용자의 세션을 모두 끊는다(E7b) */
+export function adminResetUserMfa(userId: number) {
+  return request<{ reset: true; sessionsRevoked: number }>(`/admin/users/${userId}/2fa/reset`, { method: 'POST' });
+}
+
+export interface SecuritySettings {
+  requireMfa: boolean;
+  /** false면 서버에 암호화 키가 없어 정책을 켤 수 없고 걸리지도 않는다 */
+  mfaAvailable: boolean;
+}
+
+export function adminGetSecuritySettings() {
+  return request<SecuritySettings>('/admin/settings/security');
+}
+
+export function adminUpdateSecuritySettings(requireMfa: boolean) {
+  return request<SecuritySettings>('/admin/settings/security', { method: 'PATCH', body: JSON.stringify({ requireMfa }) });
 }
 
 export function adminForceLogout(userId: number) {
@@ -1384,7 +1471,8 @@ export function listAccessTokens() {
   return request<{ items: AccessToken[]; nextCursor: null }>('/tokens');
 }
 
-export function createAccessToken(data: { name: string; scopes: AccessTokenScope[]; expiresInDays: number | null }) {
+/** code: 2FA 사용자는 발급할 때 인증 코드를 다시 보낸다 */
+export function createAccessToken(data: { name: string; scopes: AccessTokenScope[]; expiresInDays: number | null; code?: string }) {
   return request<CreatedAccessToken>('/tokens', { method: 'POST', body: JSON.stringify(data) });
 }
 

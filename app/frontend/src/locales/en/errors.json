@@ -49,6 +49,15 @@
     "INVALID_FILE_IDS": "Some attached files are not valid.",
     "TOKEN_LIMIT_REACHED": "You have reached the limit for access tokens. Delete one first.",
     "PAYLOAD_TOO_LARGE": "The request is too large.",
-    "UNSUPPORTED_MEDIA_TYPE": "This content type is not supported."
+    "UNSUPPORTED_MEDIA_TYPE": "This content type is not supported.",
+    "MFA_INVALID_CODE": "The authentication code is incorrect.",
+    "MFA_TOKEN_INVALID": "This sign-in attempt has expired. Sign in again.",
+    "MFA_UNAVAILABLE": "Two-factor authentication is not available on this server.",
+    "MFA_ALREADY_ENABLED": "Two-factor authentication is already on.",
+    "MFA_NOT_ENABLED": "Two-factor authentication is not on. Turn it on for your own account first.",
+    "MFA_SETUP_NOT_STARTED": "Start the setup again.",
+    "MFA_ENROLLMENT_REQUIRED": "Your organization requires two-factor authentication.",
+    "MFA_CODE_REQUIRED": "Enter your two-factor code.",
+    "MFA_REQUIRED_BY_POLICY": "Your organization requires two-factor authentication, so you cannot turn it off. Ask an administrator to reset it if you lost your device."
   }
 }

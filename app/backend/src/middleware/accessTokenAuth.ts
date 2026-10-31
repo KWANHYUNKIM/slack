@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types.js';
 import { looksLikeAccessToken, verifyAccessToken } from '../services/accessTokenService.js';
 import { ERR } from '../utils/errorCodes.js';
+import { isMfaPolicyEnforced } from '../services/mfaService.js';
 
 function reject(res: Response): void {
   // RFC 6750: Bearer 인증 실패에는 WWW-Authenticate를 붙인다. 실패 이유는 구분하지 않는다.
@@ -31,6 +32,15 @@ export async function accessTokenAuth(req: AuthRequest, res: Response, next: Nex
     const verified = await verifyAccessToken(token);
     if (!verified) {
       reject(res);
+      return;
+    }
+    // 조직이 2FA를 필수로 했는데 소유자가 아직 등록하지 않았으면 PAT도 막는다(E7b). /mcp는 JSON-RPC라 그 형식으로 답한다.
+    if (!verified.mfaEnabled && (await isMfaPolicyEnforced())) {
+      res.status(403).json({
+        jsonrpc: '2.0',
+        error: { code: -32001, message: 'Two-factor authentication enrollment required', data: { code: ERR.MFA_ENROLLMENT_REQUIRED } },
+        id: null,
+      });
       return;
     }
     req.user = { userId: verified.userId, role: verified.role };

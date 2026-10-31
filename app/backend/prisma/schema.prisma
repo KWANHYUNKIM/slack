@@ -47,6 +47,13 @@ model User {
   locale   String? @db.VarChar(35)
   timeZone String? @db.VarChar(64)
 
+  // 2단계 인증(E7b). 비밀은 AES-256-GCM으로 암호화한 값만 둔다. mfaEnabledAt이 있으면 켜진 상태다.
+  // mfaPendingSecret은 등록 중(코드 확인 전) 비밀, mfaLastUsedStep은 마지막으로 받은 30초 창(같은 코드 재사용 방지).
+  mfaSecret        String?   @db.VarChar(255)
+  mfaPendingSecret String?   @db.VarChar(255)
+  mfaEnabledAt     DateTime?
+  mfaLastUsedStep  Int?
+
   messages           Message[]
   channels           ChannelMember[]
   reactions          Reaction[]
@@ -72,6 +79,8 @@ model User {
   threadReads        ThreadRead[]
   accessTokens       PersonalAccessToken[]
   sessions           Session[]
+  mfaRecoveryCodes   MfaRecoveryCode[]
+  mfaChallenges      MfaChallenge[]
 
   // 법적 보존(E6). true면 이 사용자가 쓰거나 받은 메시지는 데이터 보존 정리(E5)에서 제외한다.
   legalHold Boolean @default(false)
@@ -135,9 +144,11 @@ model AuditLog {
 
 // 워크스페이스 설정(E5). 행은 id=1 하나뿐이다(멀티 워크스페이스(E1)에서 workspaceId로 바꾼다).
 // messageRetentionDays가 null이면 무기한이다. DM과 그룹 DM은 이 값을 따른다.
+// requireMfa(E7b): 모든 사용자 2FA 필수. 보존 정책과 같은 행을 쓰고, 각 서비스는 자기 컬럼만 upsert한다.
 model WorkspaceSetting {
-  id                   Int      @id
+  id                   Int      @id @default(1)
   messageRetentionDays Int?
+  requireMfa           Boolean  @default(false)
   updatedAt            DateTime @default(now()) @updatedAt
 }
 
@@ -514,4 +525,33 @@ model Session {
   @@index([expiresAt])
   @@index([lastSeenAt])
   @@index([revokedAt])
+}
+
+// 2FA 복구 코드(E7b). 원문은 등록할 때 한 번만 보여 주고 SHA-256 해시만 둔다. 쓰면 usedAt이 채워져 다시 못 쓴다.
+model MfaRecoveryCode {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  codeHash  String    @db.Char(64)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+}
+
+// 비밀번호를 통과한 2FA 사용자의 로그인 2단계 대기(5분, 1회용). id는 mfaToken 원문의 SHA-256이다.
+model MfaChallenge {
+  id           String    @id @db.Char(64)
+  userId       Int
+  tokenVersion Int
+  attempts     Int       @default(0)
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

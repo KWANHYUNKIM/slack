@@ -8,6 +8,7 @@ import { processDueReminders } from './services/reminderService.js';
 import { getAuditRetentionDays } from './config.js';
 import { purgeOldAuditLogs } from './utils/auditLog.js';
 import { purgeSessions } from './services/sessionService.js';
+import { purgeMfaChallenges } from './services/mfaService.js';
 import { purgeExpiredMessages, type PurgeCounts } from './services/retentionService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
@@ -194,11 +195,22 @@ export async function purgeSessionsIfDue(now: number = Date.now()): Promise<numb
   return purgeSessions(new Date(now));
 }
 
+const MFA_CHALLENGE_PURGE_INTERVAL_MS = 10 * 60 * 1000; // 대기는 5분짜리라 10분마다 치운다(유효성은 요청 때 따로 본다)
+let nextMfaChallengePurgeAt = 0;
+
+/** 틱마다 불러도 10분에 한 번만 만료됐거나 닫힌 2FA 로그인 대기(E7b)를 지운다. 지운 행 수를 돌려준다. */
+export async function purgeMfaChallengesIfDue(now: number = Date.now()): Promise<number> {
+  if (now < nextMfaChallengePurgeAt) return 0;
+  nextMfaChallengePurgeAt = now + MFA_CHALLENGE_PURGE_INTERVAL_MS;
+  return purgeMfaChallenges(new Date(now));
+}
+
 export function startScheduler(): NodeJS.Timeout {
   console.log('Scheduler started — checking every 30s for due messages');
 
   const handle = setInterval(() => {
     void purgeSessionsIfDue().catch((err) => logError('Scheduler: purgeSessions failed', err));
+    void purgeMfaChallengesIfDue().catch((err) => logError('Scheduler: purgeMfaChallenges failed', err));
     void purgeAuditLogsIfDue().catch((err) => logError('Scheduler: purgeAuditLogs failed', err));
     void purgeRetentionIfDue().catch((err) => logError('Scheduler: purgeRetention failed', err));
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.

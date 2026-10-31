@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Shield, Users, Link2, Hash, Menu, ScrollText, Webhook, Archive } from 'lucide-react';
+import { Shield, Users, Link2, Hash, Menu, ScrollText, Webhook, Archive, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useMobileStore } from '@/stores/useMobileStore';
@@ -10,8 +10,9 @@ import { AdminChannelsTab } from './AdminChannelsTab';
 import { AdminWebhooksTab } from './AdminWebhooksTab';
 import { AdminAuditLogTab } from './AdminAuditLogTab';
 import { AdminRetentionTab } from './AdminRetentionTab';
+import { AdminSecurityTab } from './AdminSecurityTab';
 
-type Tab = 'members' | 'invites' | 'channels' | 'webhooks' | 'audit' | 'retention';
+type Tab = 'members' | 'invites' | 'channels' | 'webhooks' | 'audit' | 'retention' | 'security';
 
 const TABS: { id: Tab; labelKey: string; icon: typeof Users }[] = [
   { id: 'members', labelKey: 'page.tabs.members', icon: Users },
@@ -20,6 +21,7 @@ const TABS: { id: Tab; labelKey: string; icon: typeof Users }[] = [
   { id: 'webhooks', labelKey: 'page.tabs.webhooks', icon: Webhook },
   { id: 'audit', labelKey: 'page.tabs.audit', icon: ScrollText },
   { id: 'retention', labelKey: 'page.tabs.retention', icon: Archive },
+  { id: 'security', labelKey: 'page.tabs.security', icon: ShieldCheck },
 ];
 
 export function AdminPage() {
@@ -76,6 +78,7 @@ export function AdminPage() {
         {activeTab === 'webhooks' && <AdminWebhooksTab />}
         {activeTab === 'audit' && <AdminAuditLogTab />}
         {activeTab === 'retention' && <AdminRetentionTab />}
+        {activeTab === 'security' && <AdminSecurityTab />}
       </div>
     </div>
   );

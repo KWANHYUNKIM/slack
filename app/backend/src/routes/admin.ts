@@ -5,13 +5,15 @@ import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../types.js';
-import { getIO, kickUser, kickSession } from '../websocket/index.js';
+import { getIO, kickUser, kickSession, MFA_KICK_MESSAGE } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { updateChannel } from '../services/channelService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
 import { sessionView } from './sessions.js';
+import { ERR } from '../utils/errorCodes.js';
+import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 
 const router = Router();
 
@@ -27,6 +29,8 @@ const ADMIN_USER_SELECT = {
   status: true,
   deactivatedAt: true,
   createdAt: true,
+  // 2FA 사용 여부(E7b). 비밀 값은 고르지 않는다.
+  mfaEnabledAt: true,
 } as const;
 
 // GET /admin/users - List all users
@@ -288,6 +292,92 @@ router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) =
   } catch (error) {
     logError('Admin force logout error', error);
     res.status(500).json({ error: 'Failed to force logout' });
+  }
+});
+
+// POST /admin/users/:id/2fa/reset - 휴대폰을 잃은 사용자의 2FA를 지운다(E7b). 그 사용자의 세션도 모두 끊는다.
+// 자기 자신은 초기화할 수 없다(본인은 비밀번호와 코드로 해제한다. 관리자 권한으로 본인 확인을 건너뛰지 않게).
+router.post('/users/:id/2fa/reset', async (req: AuthRequest, res: Response) => {
+  try {
+    const target = await loadSessionTarget(req, res);
+    if (!target) return;
+    if (target.id === req.user!.userId) {
+      res.status(400).json({ error: 'Use your own security settings to turn off two-factor authentication', code: ERR.BAD_REQUEST });
+      return;
+    }
+    const row = await prisma.user.findUnique({ where: { id: target.id }, select: { mfaEnabledAt: true, mfaPendingSecret: true } });
+    if (!row?.mfaEnabledAt && !row?.mfaPendingSecret) {
+      res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
+      return;
+    }
+    await clearMfa(target.id);
+    // 강제 로그아웃과 같은 방식: tokenVersion으로 옛 토큰까지 막고 세션 행을 폐기하고 소켓을 끊는다
+    await prisma.user.update({ where: { id: target.id }, data: { tokenVersion: { increment: 1 } } });
+    const revoked = await revokeUserSessions(target.id);
+    invalidateTokenCache(target.id);
+    // 계정 비활성화가 아니라 세션 폐기이므로 세션 폐기와 같은 사유로 끊는다
+    kickUser(target.id, 'Session revoked');
+    await writeAuditLog({
+      action: 'mfa.reset_by_admin', actorId: req.user!.userId, targetType: 'user', targetId: target.id,
+      targetName: target.name, details: `sessions=${revoked.length}`,
+    });
+    res.json({ reset: true, sessionsRevoked: revoked.length });
+  } catch (error) {
+    logError('Admin reset 2FA error', error);
+    res.status(500).json({ error: 'Failed to reset 2FA', code: ERR.INTERNAL_ERROR });
+  }
+});
+
+// GET /admin/settings/security - 조직 보안 정책. mfaAvailable이 false면(암호화 키 없음) 필수 정책을 켤 수 없고 걸리지도 않는다.
+router.get('/settings/security', async (_req: AuthRequest, res: Response) => {
+  try {
+    res.json({ requireMfa: await getRequireMfa(), mfaAvailable: isMfaAvailable() });
+  } catch (error) {
+    logError('Admin get security settings error', error);
+    res.status(500).json({ error: 'Failed to get settings', code: ERR.INTERNAL_ERROR });
+  }
+});
+
+// PATCH /admin/settings/security - "모든 사용자 2FA 필수" 켜고 끄기
+router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
+  try {
+    const { requireMfa } = z.object({ requireMfa: z.boolean() }).strict().parse(req.body);
+    if (requireMfa && !isMfaAvailable()) {
+      res.status(503).json({ error: 'Two-factor authentication is not available on this server', code: ERR.MFA_UNAVAILABLE });
+      return;
+    }
+    // 켜는 관리자부터 2FA가 있어야 한다(없이 켜면 그 자리에서 자기 화면이 등록 화면으로 막힌다)
+    if (requireMfa) {
+      const actor = await prisma.user.findUnique({ where: { id: req.user!.userId }, select: { mfaEnabledAt: true } });
+      if (!actor?.mfaEnabledAt) {
+        res.status(400).json({ error: 'Turn on two-factor authentication for your own account first', code: ERR.MFA_NOT_ENABLED });
+        return;
+      }
+    }
+    const before = await getRequireMfa();
+    await setRequireMfa(requireMfa);
+    if (before !== requireMfa) {
+      await writeAuditLog({
+        action: 'workspace.mfa_policy_changed', actorId: req.user!.userId, targetType: 'workspace',
+        details: `requireMfa=${requireMfa}`,
+      });
+    }
+    // 켜면 2FA가 없는 사용자의 실시간 연결을 바로 끊는다(다시 붙으려 해도 핸드셰이크가 거부한다). HTTP는 다음 요청부터 막힌다.
+    if (requireMfa) {
+      const unenrolled = await prisma.user.findMany({ where: { mfaEnabledAt: null, deactivatedAt: null }, select: { id: true } });
+      for (const u of unenrolled) {
+        invalidateTokenCache(u.id);
+        kickUser(u.id, MFA_KICK_MESSAGE);
+      }
+    }
+    res.json({ requireMfa, mfaAvailable: isMfaAvailable() });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
+      return;
+    }
+    logError('Admin update security settings error', error);
+    res.status(500).json({ error: 'Failed to update settings', code: ERR.INTERNAL_ERROR });
   }
 });
 

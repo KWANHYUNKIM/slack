@@ -95,8 +95,12 @@
       "renameFailed": "Failed to rename the token.",
       "revokeFailed": "Failed to revoke the token.",
       "copyFailed": "Couldn't copy. Select the text and copy it manually.",
-      "limitReached": "You can have up to {max} active tokens. Revoke one you no longer use and try again."
-    }
+      "limitReached": "You can have up to {max} active tokens. Revoke one you no longer use and try again.",
+      "codeRequired": "Enter your two-factor code to create a token.",
+      "invalidCode": "The two-factor code is incorrect."
+    },
+    "codeLabel": "Two-factor code",
+    "codeHint": "Enter a code from your authenticator app to create a token."
   },
   "sessions": {
     "title": "Signed-in devices",
@@ -124,6 +128,66 @@
       "browser": "{browser}",
       "browserOn": "{browser} on {os}",
       "unknownOn": "Unknown device on {os}"
+    }
+  },
+  "twoFactor": {
+    "title": "Two-factor authentication",
+    "description": "Ask for a code from your authenticator app in addition to your password when you sign in.",
+    "loading": "Loading...",
+    "statusOn": "On",
+    "statusOff": "Off",
+    "enabledSince": "Turned on {date}",
+    "recoveryRemaining": "{count, plural, one {# recovery code left} other {# recovery codes left}}",
+    "unavailable": "Two-factor authentication is not available on this server. Ask your administrator.",
+    "requiredNotice": "Your organization requires two-factor authentication.",
+    "close": "Close",
+    "setup": {
+      "start": "Set up two-factor authentication",
+      "starting": "Preparing...",
+      "step1": "1. Add this account to your authenticator app. Open the link on your phone, or enter the setup key by hand.",
+      "uriLabel": "Setup link",
+      "openInApp": "Open in authenticator app",
+      "keyLabel": "Setup key",
+      "copyKey": "Copy setup key",
+      "copyUri": "Copy setup link",
+      "copied": "Copied",
+      "step2": "2. Enter the 6-digit code your app shows.",
+      "codeLabel": "Authentication code",
+      "codePlaceholder": "123456",
+      "verify": "Turn on",
+      "verifying": "Checking...",
+      "cancel": "Cancel",
+      "passwordLabel": "3. Enter your current password.",
+      "sessionsNote": "When you turn this on, your other signed-in devices are signed out."
+    },
+    "recovery": {
+      "title": "Save your recovery codes",
+      "description": "Use a recovery code to sign in if you lose your device. Each code works once. They will not be shown again.",
+      "download": "Download",
+      "copy": "Copy all",
+      "fileHeader": "Recovery codes. Each code works once. Keep them somewhere safe.",
+      "confirmSaved": "I saved my recovery codes",
+      "fileName": "recovery-codes.txt"
+    },
+    "disable": {
+      "title": "Turn off two-factor authentication",
+      "description": "Enter your password and a code from your authenticator app (or a recovery code).",
+      "start": "Turn off",
+      "passwordLabel": "Password",
+      "codeLabel": "Authentication or recovery code",
+      "submit": "Turn off two-factor authentication",
+      "submitting": "Turning off...",
+      "cancel": "Cancel",
+      "blockedByPolicy": "Your organization requires two-factor authentication, so you cannot turn it off. If you lost your device, ask an administrator to reset it."
+    },
+    "enabledToast": "Two-factor authentication is on",
+    "disabledToast": "Two-factor authentication is off",
+    "errors": {
+      "loadFailed": "Could not load two-factor settings.",
+      "setupFailed": "Could not start setup. Try again.",
+      "enableFailed": "Could not turn on two-factor authentication.",
+      "disableFailed": "Could not turn off two-factor authentication.",
+      "copyFailed": "Could not copy to the clipboard."
     }
   }
 }

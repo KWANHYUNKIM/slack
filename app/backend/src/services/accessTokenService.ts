@@ -64,6 +64,8 @@ export interface VerifiedAccessToken {
   role: string;
   scopes: string[];
   expiresAt: Date | null;
+  /** 소유자가 2FA를 켰는지(E7b). 조직 필수 정책 판단에 쓴다. */
+  mfaEnabled: boolean;
 }
 
 /**
@@ -77,7 +79,7 @@ export async function verifyAccessToken(token: string): Promise<VerifiedAccessTo
 
   const row = await prisma.personalAccessToken.findUnique({
     where: { publicId },
-    include: { user: { select: { role: true, deactivatedAt: true } } },
+    include: { user: { select: { role: true, deactivatedAt: true, mfaEnabledAt: true } } },
   });
   // 없는 publicId도 해시 비교까지 같은 일을 해서 응답 시간 차이를 줄인다.
   const expected = Buffer.from(row?.tokenHash ?? '0'.repeat(64), 'hex');
@@ -97,5 +99,8 @@ export async function verifyAccessToken(token: string): Promise<VerifiedAccessTo
       .catch((err) => logError('Update token lastUsedAt failed', err));
   }
 
-  return { tokenId: row.id, userId: row.userId, role: row.user.role, scopes: row.scopes, expiresAt: row.expiresAt };
+  return {
+    tokenId: row.id, userId: row.userId, role: row.user.role, scopes: row.scopes, expiresAt: row.expiresAt,
+    mfaEnabled: row.user.mfaEnabledAt !== null,
+  };
 }
