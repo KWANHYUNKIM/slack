@@ -44,23 +44,33 @@ export async function readStoredBytes(
   }
 }
 
+export type StoredFileDeletion = { ok: true } | { ok: false; permanent: boolean; error: string };
+
 /**
- * 저장소(GCS 또는 로컬)에서 파일 본체를 지운다. 이미 없으면 성공으로 본다. 지우지 못했으면 false.
+ * 저장소(GCS 또는 로컬)에서 파일 본체를 지운다. 이미 없으면 성공으로 본다.
+ * 실패하면 원인을 돌려준다(오류 코드와 메시지만, 업로드 폴더 경로는 가린다). permanent는 다시 시도해도 소용없는 실패(업로드 폴더 밖 경로)다.
  * 데이터 보존 정리(retentionService)가 쓴다. DB 행은 건드리지 않는다.
  */
-export async function deleteStoredFile(file: { filename: string; gcsPath: string | null }): Promise<boolean> {
+export async function deleteStoredFileDetailed(file: { filename: string; gcsPath: string | null }): Promise<StoredFileDeletion> {
   try {
     if (file.gcsPath && bucket) {
       await bucket.file(file.gcsPath).delete({ ignoreNotFound: true });
-      return true;
+      return { ok: true };
     }
     const filePath = path.resolve(uploadDir, file.filename);
     // 업로드 폴더 밖 경로는 건드리지 않는다
-    if (!filePath.startsWith(uploadDir + path.sep)) return false;
+    if (!filePath.startsWith(uploadDir + path.sep)) return { ok: false, permanent: true, error: 'path outside the upload directory' };
     await fs.promises.rm(filePath, { force: true });
-    return true;
+    return { ok: true };
   } catch (error) {
     logError('Delete stored file error', error);
-    return false;
+    const e = error as { code?: string | number; name?: string; message?: string };
+    const text = `${e.code ?? e.name ?? 'Error'}: ${e.message ?? ''}`.split(uploadDir).join('<uploads>');
+    return { ok: false, permanent: false, error: text.slice(0, 500) };
   }
+}
+
+/** 지웠으면 true. 원인이 필요 없는 호출자용. */
+export async function deleteStoredFile(file: { filename: string; gcsPath: string | null }): Promise<boolean> {
+  return (await deleteStoredFileDetailed(file)).ok;
 }

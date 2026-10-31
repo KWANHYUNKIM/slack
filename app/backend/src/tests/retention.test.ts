@@ -11,7 +11,7 @@ import app from '../app.js';
 import prisma from '../db.js';
 import { uploadDir } from '../services/fileStorage.js';
 import { Prisma } from '@prisma/client';
-import { purgeExpiredMessages, effectiveDays, HELD_CTE, HELD_USER, NOT_HELD_USER } from '../services/retentionService.js';
+import { purgeExpiredMessages, MAX_STORAGE_DELETE_ATTEMPTS, effectiveDays, HELD_CTE, HELD_USER, NOT_HELD_USER } from '../services/retentionService.js';
 import { utcTimestamp } from '../db/sqlTime.js';
 import { purgeRetentionIfDue, resetRetentionSchedule } from '../scheduler.js';
 
@@ -36,6 +36,7 @@ describe('Data retention', () => {
     await prisma.reaction.deleteMany();
     await prisma.dMReaction.deleteMany();
     await prisma.file.deleteMany();
+    await prisma.storageDeletionRetry.deleteMany();
     await prisma.message.deleteMany();
     await prisma.channelRead.deleteMany();
     await prisma.channelMember.deleteMany();
@@ -448,16 +449,174 @@ describe('Data retention', () => {
       expect((await prisma.message.findUniqueOrThrow({ where: { id: parent.id } })).content).toBe('');
     });
 
-    it('keeps a file whose storage delete failed and retries it next time', async () => {
+    // 저장소 삭제 실패 주입: 같은 이름의 비어 있지 않은 폴더는 rm이 실패한다. 폴더를 파일로 바꾸면 다음 실행에서 지워진다.
+    const failBlob = (name: string) => {
+      const filename = `ret-fail-${name}-${Date.now()}`;
+      fs.mkdirSync(path.join(uploadDir, filename));
+      fs.writeFileSync(path.join(uploadDir, filename, 'x'), 'x');
+      return filename;
+    };
+    const healBlob = (filename: string) => {
+      fs.rmSync(path.join(uploadDir, filename), { recursive: true, force: true });
+      fs.writeFileSync(path.join(uploadDir, filename), 'x');
+    };
+    const mkBlobFile = (filename: string, messageId: number) =>
+      prisma.file.create({ data: { filename, originalName: 'o.txt', mimetype: 'text/plain', size: 1, url: `/files/${filename}`, userId: memberId, messageId } });
+
+    it('deletes the row first, queues a failed blob delete in the retry table, and removes it on the next run', async () => {
       await setWorkspace(30);
       const ch = await mkChannel('ret-file-fail');
       const old = await mkMsg(ch.id, 40);
-      // 업로드 폴더 밖을 가리키는 파일 이름: 지우지 않고 실패로 본다
-      const file = await prisma.file.create({ data: { filename: '../outside.txt', originalName: 'o.txt', mimetype: 'text/plain', size: 1, url: '/files/x', userId: memberId, messageId: old.id } });
+      const filename = failBlob('leaf');
+      const file = await mkBlobFile(filename, old.id);
 
-      expect(await purgeExpiredMessages()).toMatchObject({ messages: 0 });
+      // 정리: 메시지와 파일 행은 지워지고, 본체 삭제 실패는 재시도 표에 남는다
+      expect(await purgeExpiredMessages()).toMatchObject({ messages: 1, files: 1 });
+      expect(await exists(old.id)).toBe(false);
+      expect(await prisma.file.findUnique({ where: { id: file.id } })).toBeNull();
+      const queued = await prisma.storageDeletionRetry.findMany();
+      expect(queued).toHaveLength(1);
+      expect(queued[0].filename).toBe(filename);
+
+      // 다음 실행도 실패하면 시도 횟수만 오른다
+      await purgeExpiredMessages();
+      expect((await prisma.storageDeletionRetry.findMany())[0].attempts).toBe(2);
+
+      // 저장소가 회복되면 다음 실행에서 본체를 지우고 표에서 뺀다
+      healBlob(filename);
+      await purgeExpiredMessages();
+      expect(fs.existsSync(path.join(uploadDir, filename))).toBe(false);
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+    });
+
+    it('records the real failure cause in lastError without the upload path', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-file-cause');
+      const old = await mkMsg(ch.id, 40);
+      const filename = failBlob('cause');
+      await mkBlobFile(filename, old.id);
+      await purgeExpiredMessages();
+      const row = (await prisma.storageDeletionRetry.findMany())[0];
+      expect(row.attempts).toBe(1);
+      expect(row.lastError).toMatch(/EISDIR|ERR_FS_EISDIR|directory/i);
+      expect(row.lastError).not.toContain(uploadDir);
+      expect(row.lastTriedAt).not.toBeNull();
+      fs.rmSync(path.join(uploadDir, filename), { recursive: true, force: true });
+    });
+
+    it('drops a permanent failure (path outside the upload directory) at once instead of retrying', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-file-permanent');
+      const old = await mkMsg(ch.id, 40);
+      const file = await mkBlobFile('../outside.txt', old.id);
+      expect(await purgeExpiredMessages()).toMatchObject({ messages: 1, files: 1 });
+      expect(await prisma.file.findUnique({ where: { id: file.id } })).toBeNull();
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+    });
+
+    it('still removes the blob on the next run when the process stops after commit and before the storage delete', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-file-crash');
+      const old = await mkMsg(ch.id, 40);
+      const filename = `ret-crash-${Date.now()}.txt`;
+      fs.writeFileSync(path.join(uploadDir, filename), 'x');
+      const file = await mkBlobFile(filename, old.id);
+
+      // 커밋 뒤 본체 삭제 전에 중단: DB 행은 지워졌고 본체는 남았으며 아웃박스 행이 있다
+      await expect(
+        purgeExpiredMessages(new Date(), {
+          beforeBlobDelete: async () => {
+            throw new Error('crash');
+          },
+        }),
+      ).rejects.toThrow();
+      expect(await exists(old.id)).toBe(false);
+      expect(await prisma.file.findUnique({ where: { id: file.id } })).toBeNull();
+      expect(fs.existsSync(path.join(uploadDir, filename))).toBe(true);
+      expect((await prisma.storageDeletionRetry.findMany()).map((r) => r.filename)).toEqual([filename]);
+
+      // 다음 실행이 본체를 지우고 아웃박스를 비운다
+      await purgeExpiredMessages();
+      expect(fs.existsSync(path.join(uploadDir, filename))).toBe(false);
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+    });
+
+    it('processes every leftover outbox row in batches and counts them against the budget', async () => {
+      await prisma.storageDeletionRetry.createMany({ data: Array.from({ length: 2500 }, (_, i) => ({ filename: `ret-none-${i}.txt` })) });
+      await purgeExpiredMessages();
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+
+      // 예산(maxRows)이 모자라면 남은 만큼은 다음 실행으로 넘기고 partial로 알린다
+      await prisma.storageDeletionRetry.createMany({ data: Array.from({ length: 30 }, (_, i) => ({ filename: `ret-none-b${i}.txt` })) });
+      const r = await purgeExpiredMessages(new Date(), { maxRows: 20 });
+      expect(r.partial).toBe(true);
+      expect(await prisma.storageDeletionRetry.count()).toBe(10);
+      await purgeExpiredMessages();
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+    });
+
+    it('retries rows with fewer attempts first', async () => {
+      const fresh = await prisma.storageDeletionRetry.create({ data: { filename: 'ret-order-fresh.txt', attempts: 0 } });
+      const worn = await prisma.storageDeletionRetry.create({ data: { filename: 'ret-order-worn.txt', attempts: 3 } });
+      await purgeExpiredMessages(new Date(), { maxRows: 1 });
+      expect(await prisma.storageDeletionRetry.findUnique({ where: { id: fresh.id } })).toBeNull();
+      expect(await prisma.storageDeletionRetry.findUnique({ where: { id: worn.id } })).not.toBeNull();
+    });
+
+    it('gives up after the maximum attempts and drops the retry row', async () => {
+      const filename = failBlob('giveup');
+      await prisma.storageDeletionRetry.create({ data: { filename, attempts: MAX_STORAGE_DELETE_ATTEMPTS - 1 } });
+      await purgeExpiredMessages();
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+      fs.rmSync(path.join(uploadDir, filename), { recursive: true, force: true });
+    });
+
+    it('removes the blob of a blanked parent after commit and queues it when the delete fails', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-file-parent');
+      const parent = await mkMsg(ch.id, 100);
+      await prisma.message.create({ data: { content: 'recent reply', userId: memberId, channelId: ch.id, threadId: parent.id, createdAt: ago(1) } });
+      const ok = `ret-ok-${Date.now()}.txt`;
+      fs.writeFileSync(path.join(uploadDir, ok), 'x');
+      const bad = failBlob('parent');
+      await mkBlobFile(ok, parent.id);
+      await mkBlobFile(bad, parent.id);
+
+      expect(await purgeExpiredMessages()).toMatchObject({ placeholders: 1, files: 2 });
+      expect(await prisma.file.count({ where: { messageId: parent.id } })).toBe(0);
+      expect(fs.existsSync(path.join(uploadDir, ok))).toBe(false);
+      expect((await prisma.storageDeletionRetry.findMany()).map((r) => r.filename)).toEqual([bad]);
+      fs.rmSync(path.join(uploadDir, bad), { recursive: true, force: true });
+    });
+
+    it('keeps the blob and the file row when a hold lands after the channel batch was selected', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-file-race');
+      const old = await mkMsg(ch.id, 40);
+      const parent = await mkMsg(ch.id, 100);
+      await prisma.message.create({ data: { content: 'recent reply', userId: memberId, channelId: ch.id, threadId: parent.id, createdAt: ago(1) } });
+      const leafName = `ret-race-leaf-${Date.now()}.txt`;
+      const parentName = `ret-race-parent-${Date.now()}.txt`;
+      for (const n of [leafName, parentName]) fs.writeFileSync(path.join(uploadDir, n), 'x');
+      const leafFile = await mkBlobFile(leafName, old.id);
+      const parentFile = await mkBlobFile(parentName, parent.id);
+
+      let calls = 0;
+      await purgeExpiredMessages(new Date(), {
+        afterSelect: async () => {
+          if (calls++ === 0) await prisma.legalHold.create({ data: { name: 'late channel hold', custodians: { create: { userId: memberId } } } });
+        },
+      });
+      expect(calls).toBeGreaterThan(0);
       expect(await exists(old.id)).toBe(true);
-      expect(await prisma.file.findUnique({ where: { id: file.id } })).not.toBeNull();
+      expect(await prisma.file.findUnique({ where: { id: leafFile.id } })).not.toBeNull();
+      expect(await prisma.file.findUnique({ where: { id: parentFile.id } })).not.toBeNull();
+      for (const n of [leafName, parentName]) {
+        expect(fs.existsSync(path.join(uploadDir, n))).toBe(true);
+        fs.rmSync(path.join(uploadDir, n), { force: true });
+      }
+      expect(await prisma.storageDeletionRetry.count()).toBe(0);
+      await prisma.legalHold.deleteMany();
     });
 
     it('excludes a whole channel when a legal-hold user is a member', async () => {
