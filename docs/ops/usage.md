@@ -133,3 +133,7 @@
 | 2026-11-01 01:53 | code-review | (리뷰) | PR #84 medium | 93,373 |
 | 2026-11-01 01:58 | dev-1 | sonnet | PR #84 리뷰 반영 | 205,560 |
 | 2026-11-01 02:01 | dev-4 | opus | E7b 2단계 인증 | 283,460 |
+| 2026-11-01 02:08 | dev-5 | haiku | fix/change-password-401 | 91,387 |
+| 2026-11-01 02:08 | dev-3 | sonnet | test/flaky-code-under-load | 130,970 |
+| 2026-11-01 02:09 | code-review | (리뷰) | PR #86 low | 43,978 |
+| 2026-11-01 02:11 | code-review | (리뷰) | PR #87 low | 48,778 |
