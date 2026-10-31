@@ -35,3 +35,5 @@
 | 09:01 | `npm ci`, `npm install-scripts approve ...`(prisma, bcrypt, esbuild, sharp 등 8개) | 백엔드 의존성 | 완료 |
 | 09:02 | `npx prisma migrate deploy` | 스키마 적용 | 완료 |
 | 09:05 | `npm test` (backend) | 기준 테스트 | 375개 중 369개 통과, 6개 실패(4개 스위트: security, files, edge-cases, admin). Jest가 종료되지 않음(열린 핸들) |
+| 09:38 | `git switch -c docs/team-conventions`, 커밋, `git push` | 규칙 문서 반영 | PR #1 생성 |
+| 09:40 | `gh pr merge --squash` | PR #1 머지 | **권한 단계에서 거부**(리뷰 없는 머지). 사용자 승인 대기 |
