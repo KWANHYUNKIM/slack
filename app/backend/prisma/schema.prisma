@@ -36,6 +36,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
+  // 커스텀 상태와 방해금지(05). status(프레즌스)와 별개 축이다.
+  customStatusEmoji     String?   @db.VarChar(50)
+  customStatusText      String?   @db.VarChar(100)
+  customStatusExpiresAt DateTime?
+  dndUntil              DateTime?
+  dndWithStatus         Boolean   @default(false)
+
   messages           Message[]
   channels           ChannelMember[]
   reactions          Reaction[]
@@ -58,6 +65,9 @@ model User {
   sidebarPref        SidebarPref?
   dmGroups           DMGroupMember[]
   threadReads        ThreadRead[]
+
+  @@index([dndUntil])
+  @@index([customStatusExpiresAt])
 }
 
 model InviteLink {

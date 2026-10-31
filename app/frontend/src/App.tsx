@@ -9,6 +9,7 @@ import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
+import { useStatusStore, isMyDndNow } from '@/stores/useStatusStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { useActivityStore } from '@/stores/useActivityStore';
 import { useThreadStore } from '@/stores/useThreadStore';
@@ -213,12 +214,15 @@ function AppShell() {
     fetchGroupDMs();
     useChannelStore.getState().fetchSidebarPrefs();
     loadBookmarks();
+    useStatusStore.getState().loadMine().catch(() => {});
+    const stopStatusTicker = useStatusStore.getState().startTicker();
 
     // Auto-request push notification permission on first load
     const { permission, isSubscribed, subscribe } = useNotificationStore.getState();
     if (permission !== 'unsupported' && permission !== 'denied' && !isSubscribed) {
       subscribe();
     }
+    return stopStatusTicker;
   }, [fetchChannels, fetchDirectMessages, fetchGroupDMs, loadBookmarks]);
 
   // Connect socket and set up event listeners
@@ -253,7 +257,7 @@ function AppShell() {
       if (msg.channelId !== activeChannelId) {
         incrementUnread(msg.channelId);
         // Show desktop notification when tab is hidden (visible tab uses in-app unread indicators)
-        if (document.hidden && msg.user?.id !== currentUserId && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+        if (document.hidden && msg.user?.id !== currentUserId && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
           const channelName = useChannelStore.getState().channels.find(c => c.id === msg.channelId)?.name;
           if (channelName) {
             navigator.serviceWorker.ready.then((reg) => {
@@ -286,7 +290,7 @@ function AppShell() {
         void fetchGroupDMs();
       } else if (activeGroupId !== dm.groupId && !isFromMe) {
         incrementGroupUnread(dm.groupId);
-        if (document.hidden && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+        if (document.hidden && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
           navigator.serviceWorker.ready.then((reg) => {
             reg.showNotification(dm.fromUser.name, {
               body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
@@ -328,7 +332,7 @@ function AppShell() {
       if (activeDMId !== otherUserId && !isSelfDM) {
         incrementDMUnread(otherUserId);
         // Show desktop notification when tab is hidden (visible tab uses in-app unread indicators)
-        if (document.hidden && !isFromMe && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+        if (document.hidden && !isFromMe && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
           navigator.serviceWorker.ready.then((reg) => {
             reg.showNotification(otherUser.name, {
               body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
@@ -367,7 +371,7 @@ function AppShell() {
       // Show desktop notification for DM thread replies when tab is hidden
       const { activeDMId, activeGroupId } = useChannelStore.getState();
       const isViewing = reply.groupId ? activeGroupId === reply.groupId : activeDMId === otherUserId;
-      if (document.hidden && !isViewing && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+      if (document.hidden && !isViewing && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
         navigator.serviceWorker.ready.then((reg) => {
           reg.showNotification(t('sidebar:notifications.threadTitle', { name: reply.fromUser.name }), {
             body: (reply.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
@@ -397,6 +401,10 @@ function AppShell() {
       if (currentUser && data.userId === currentUser.id) {
         useAuthStore.getState().updateUser({ status });
       }
+    };
+
+    const handleUserStatus = (data: { userId: number; customStatus: import('@/lib/types').CustomStatus | null; dnd: import('@/lib/types').Dnd }) => {
+      useStatusStore.getState().onUserStatus(data, useAuthStore.getState().user?.id);
     };
 
     const handleMemberAdded = (data: { channelId: number; memberCount: number }) => {
@@ -488,6 +496,7 @@ function AppShell() {
     socket.on('dm:reaction:added', handleDMReactionAdded);
     socket.on('dm:reaction:removed', handleDMReactionRemoved);
     socket.on('presence:update', handlePresenceUpdate);
+    socket.on('user:status', handleUserStatus);
     socket.on('channel:member-added', handleMemberAdded);
     socket.on('channel:member-left', handleMemberLeft);
     socket.on('channel:joined', handleChannelJoined);
@@ -551,6 +560,7 @@ function AppShell() {
       socket.off('dm:reaction:added', handleDMReactionAdded);
       socket.off('dm:reaction:removed', handleDMReactionRemoved);
       socket.off('presence:update', handlePresenceUpdate);
+      socket.off('user:status', handleUserStatus);
       socket.off('channel:member-added', handleMemberAdded);
       socket.off('channel:member-left', handleMemberLeft);
       socket.off('channel:joined', handleChannelJoined);

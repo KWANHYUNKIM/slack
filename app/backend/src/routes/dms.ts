@@ -11,6 +11,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { toPublicUser } from '../services/statusService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import {
   createActivitiesForDm,
@@ -109,7 +110,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             title: senderName,
             body: dm.content.slice(0, 100) || 'Sent an attachment',
             url: `/d/${fromUserId}`,
-          }).catch((err) => logError('Push notification dispatch failed', err));
+          }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
         }
       }
     }
@@ -127,6 +128,18 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to send DM' });
   }
 });
+
+// 원시 SQL(jsonb)로 읽은 상태 컬럼은 UTC ISO 문자열이다. Date로 되돌려 공개용 뷰로 바꾼다.
+function withPublicStatus<T extends Record<string, any>>(user: T) {
+  return toPublicUser({
+    ...user,
+    customStatusEmoji: user.customStatusEmoji ?? null,
+    customStatusText: user.customStatusText ?? null,
+    customStatusExpiresAt: user.customStatusExpiresAt ? new Date(user.customStatusExpiresAt) : null,
+    dndUntil: user.dndUntil ? new Date(user.dndUntil) : null,
+    dndWithStatus: user.dndWithStatus === true,
+  });
+}
 
 // GET /dms - List all DM conversations
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -171,7 +184,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       )
       SELECT
         jsonb_build_object(
-          'id', u.id, 'name', u.name, 'avatar', u.avatar, 'status', u.status
+          'id', u.id, 'name', u.name, 'avatar', u.avatar, 'status', u.status,
+          -- 컬럼은 UTC 기준 timestamp라 서버·세션 시간대와 무관하게 UTC ISO로 내보낸다
+          'customStatusEmoji', u."customStatusEmoji", 'customStatusText', u."customStatusText",
+          'customStatusExpiresAt', to_char(u."customStatusExpiresAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'dndUntil', to_char(u."dndUntil", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+          'dndWithStatus', u."dndWithStatus"
         ) AS "otherUser",
         jsonb_build_object(
           'id', lm.id, 'content', lm.content, 'fromUserId', lm."fromUserId",
@@ -210,10 +227,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Apply online status from WebSocket tracking
     const result = filteredConversations.map((conv) => ({
-      otherUser: conv.otherUser ? {
+      otherUser: conv.otherUser ? withPublicStatus({
         ...conv.otherUser,
         status: isUserOnline(conv.otherUser.id) ? 'online' : 'offline',
-      } : conv.otherUser,
+      }) : conv.otherUser,
       lastMessage: conv.lastMessage,
       unreadCount: Number(conv.unreadCount),
       mentionCount: conv.otherUser ? mentionCounts.get(conv.otherUser.id) ?? 0 : 0,
@@ -524,7 +541,7 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
           title: `${senderName} (thread)`,
           body: content.slice(0, 100) || 'Sent an attachment',
           url: `/d/${fromUserId}`,
-        }).catch((err) => logError('Push notification dispatch failed', err));
+        }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
       }
     }
 

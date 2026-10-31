@@ -112,7 +112,7 @@ setInterval(() => {
 }, 5 * 60 * 1000).unref();
 
 // Get users who share channels or DMs with the given user (single query)
-async function getSharedUsers(userId: number): Promise<number[]> {
+export async function getSharedUsers(userId: number): Promise<number[]> {
   const rows = await prisma.$queryRaw<Array<{ userId: number }>>`
     SELECT DISTINCT "userId" FROM (
       SELECT cm2."userId"
@@ -729,7 +729,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
               title: senderName,
               body: dm.content.slice(0, 100) || 'Sent an attachment',
               url: `/d/${socket.user.userId}`,
-            }).catch((err) => logError('Push notification dispatch failed', err));
+            }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
           }
         }
 

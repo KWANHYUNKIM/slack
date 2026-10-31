@@ -47,6 +47,12 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | `message:send` (확장) | 클라이언트 -> 서버 | - | `alsoSendToChannel?: boolean` 추가 (`threadId`가 있을 때만 의미) | 채널에도 보내기 |
 | `message:new` / `message:updated` (확장) | 서버 -> 클라이언트 | `channel:<id>` | 스레드 답글에 `alsoSendToChannel`, `parent`(`{ id, content(100자 발췌), deletedAt, user }`) 포함 | `POST/DELETE /messages/:id/broadcast`와 HTTP `PATCH /messages/:id`(소켓 `message:edit`과 같은 payload)는 `message:updated`로 알린다 |
 
+## 커스텀 상태·방해금지 - 파트 05
+
+| 이벤트 | 방향 | 대상 room | payload | 시점 |
+|---|---|---|---|---|
+| `user:status` | 서버 -> 클라이언트 | 본인(모든 탭)과, 같은 채널·DM·그룹 DM을 쓰는 사용자 각자의 `user:<id>` | `{ userId, customStatus: { emoji, text, expiresAt } \| null, dnd: { active, until } }` | `PUT/DELETE /users/me/custom-status`, `PUT/POST/DELETE /users/me/dnd`, 스케줄러가 만료된 상태·DND를 정리했을 때. 만료된 값은 null/꺼짐으로 계산해 보낸다. 타인에게는 `dnd`가 `{ active, until }`뿐이고, 본인의 모든 탭에는 `dnd.withStatus`(상태에 묶인 방해금지인지)가 더 붙는다. `PUT /users/me/custom-status`에서 `expiresAt`을 빼면 기존 만료를 유지하고 `null`이면 만료를 없앤다 |
+
 ## 기존 이벤트 (slawk에서 이어받음)
 
 | 이벤트 | 방향 | 비고 |

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { UserStatus } from '@/lib/types';
@@ -9,6 +10,10 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   fallback?: string;
   size?: 'sm' | 'md' | 'lg';
   status?: UserStatus;
+  /** 커스텀 상태 이모지(05). 아바타 모서리에 붙는다. */
+  statusEmoji?: string | null;
+  /** 방해금지 중이면 달 표시를 얹는다. 프레즌스 점은 바꾸지 않는다. */
+  dnd?: boolean;
 }
 
 const sizeClasses = {
@@ -25,7 +30,7 @@ const statusColors = {
 };
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt, fallback, size = 'md', status, ...props }, ref) => {
+  ({ className, src, alt, fallback, size = 'md', status, statusEmoji, dnd, ...props }, ref) => {
     const { t } = useTranslation('settings');
     const [imageError, setImageError] = React.useState(false);
     const imgRef = React.useRef<HTMLImageElement>(null);
@@ -79,6 +84,24 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             </span>
           )}
         </div>
+        {statusEmoji && size !== 'sm' && (
+          <span
+            data-testid="avatar-status-emoji"
+            className="absolute -top-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[11px] leading-none shadow"
+            aria-hidden="true"
+          >
+            {statusEmoji}
+          </span>
+        )}
+        {dnd && size !== 'sm' && (
+          <span
+            data-testid="avatar-dnd-icon"
+            className="absolute -bottom-1 -start-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-slack-hint shadow"
+            title={t('avatar.dnd')}
+          >
+            <Moon className="h-3 w-3" aria-label={t('avatar.dnd')} />
+          </span>
+        )}
         {status && (
           <span
             className={cn(

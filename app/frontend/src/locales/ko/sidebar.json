@@ -16,7 +16,19 @@
     "notificationsBlocked": "알림이 차단됨",
     "disableNotifications": "알림 끄기",
     "enableNotifications": "알림 켜기",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "updateStatus": "상태 업데이트",
+    "pauseNotifications": "알림 일시 중지",
+    "pausedUntil": "{time}까지 일시 중지됨",
+    "pausedIndefinitely": "상태를 지울 때까지 일시 중지됨",
+    "resumeNotifications": "알림 재개",
+    "pause": {
+      "m30": "30분",
+      "h1": "1시간",
+      "h2": "2시간",
+      "tomorrow": "내일까지"
+    },
+    "pauseError": "알림 일시 중지를 바꾸지 못했습니다. 다시 시도해 주세요."
   },
   "sections": {
     "starred": "즐겨찾기",
@@ -49,5 +61,26 @@
   "groupDM": {
     "memberCount": "멤버 {count}명",
     "createError": "그룹 대화를 시작하지 못했습니다. 다시 시도해 주세요."
+  },
+  "statusDialog": {
+    "title": "상태 설정",
+    "emojiLabel": "이모지 고르기",
+    "textLabel": "지금 상태는 어떤가요?",
+    "textPlaceholder": "지금 상태는 어떤가요?",
+    "durationLabel": "지워지는 시점",
+    "duration": {
+      "never": "지우지 않음",
+      "m30": "30분",
+      "h1": "1시간",
+      "h4": "4시간",
+      "today": "오늘",
+      "week": "이번 주"
+    },
+    "pauseCheckbox": "상태가 지워질 때까지 알림 일시 중지",
+    "save": "저장",
+    "clear": "상태 지우기",
+    "cancel": "취소",
+    "expiresAt": "{time}에 지워짐",
+    "saveError": "상태를 저장하지 못했습니다. 다시 시도해 주세요."
   }
 }

@@ -16,7 +16,19 @@
     "notificationsBlocked": "Notifications blocked",
     "disableNotifications": "Disable notifications",
     "enableNotifications": "Enable notifications",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "updateStatus": "Update your status",
+    "pauseNotifications": "Pause notifications",
+    "pausedUntil": "Paused until {time}",
+    "pausedIndefinitely": "Paused until your status is cleared",
+    "resumeNotifications": "Resume notifications",
+    "pause": {
+      "m30": "30 minutes",
+      "h1": "1 hour",
+      "h2": "2 hours",
+      "tomorrow": "Until tomorrow"
+    },
+    "pauseError": "Could not change notification pause. Please try again."
   },
   "sections": {
     "starred": "Starred",
@@ -49,5 +61,26 @@
   "groupDM": {
     "memberCount": "{count, plural, one {# member} other {# members}}",
     "createError": "Could not start the group conversation. Please try again."
+  },
+  "statusDialog": {
+    "title": "Set a status",
+    "emojiLabel": "Choose an emoji",
+    "textLabel": "What is your status?",
+    "textPlaceholder": "What is your status?",
+    "durationLabel": "Clear after",
+    "duration": {
+      "never": "Don't clear",
+      "m30": "30 minutes",
+      "h1": "1 hour",
+      "h4": "4 hours",
+      "today": "Today",
+      "week": "This week"
+    },
+    "pauseCheckbox": "Pause notifications until the status is cleared",
+    "save": "Save",
+    "clear": "Clear status",
+    "cancel": "Cancel",
+    "expiresAt": "Clears at {time}",
+    "saveError": "Could not save your status. Please try again."
   }
 }
