@@ -1,3 +1,5 @@
+import { DlpBlockedError } from './services/messageService.js';
+import { enforceDlp, recordDlpWarnings } from './services/dlpService.js';
 import prisma from './db.js';
 import { getIO } from './websocket/index.js';
 import { USER_SELECT_BASIC, FILE_SELECT } from './db/selects.js';
@@ -67,6 +69,17 @@ async function runDueScheduledMessages(): Promise<void> {
           continue;
         }
 
+        // 데이터 유출 방지: 예약한 뒤 규칙이 바뀌었을 수 있으니 보내는 시점에 다시 본다. 막히면 보내지 않고 취소한다.
+        let dlpWarned: string[];
+        try {
+          dlpWarned = await enforceDlp(scheduled.userId, scheduled.content, 'message');
+        } catch (dlpError) {
+          if (!(dlpError instanceof DlpBlockedError)) throw dlpError;
+          await prisma.scheduledMessage.update({ where: { id: scheduled.id }, data: { sent: true } });
+          console.log(`Scheduler: cancelled scheduled message ${scheduled.id} — blocked by a data loss prevention rule`);
+          continue;
+        }
+
         // Atomically claim, re-verify authorization, and create message.
         // Membership and archival are checked inside the transaction to
         // close the TOCTOU gap — without this, a user removed from the
@@ -120,6 +133,8 @@ async function runDueScheduledMessages(): Promise<void> {
           console.log(`Scheduler: cancelled scheduled message ${scheduled.id} — ${reason}`);
           continue;
         }
+
+        recordDlpWarnings(scheduled.userId, 'message', message.id, dlpWarned);
 
         // Broadcast via WebSocket to the channel
         if (io) {

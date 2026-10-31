@@ -253,7 +253,8 @@
     "sendFailed": "Message failed to send. Please try again.",
     "pushNotConfigured": "Push notifications are not set up on the server",
     "serviceWorkerUnavailable": "Service worker not available",
-    "subscribeFailed": "Failed to register subscription"
+    "subscribeFailed": "Failed to register subscription",
+    "editFailed": "Could not save the edit. Please try again."
   },
   "details": {
     "title": "Channel details",

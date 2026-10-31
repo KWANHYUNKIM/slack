@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { t } from '@/lib/i18n';
+import { apiErrorMessage } from '@/lib/apiErrors';
 
 interface UseMessageEditOptions {
   onSave: (messageId: number, content: string) => Promise<void>;
@@ -43,7 +44,13 @@ export function useMessageEdit({ onSave }: UseMessageEditOptions) {
       return;
     }
     if (trimmed !== originalContent) {
-      await onSave(editingId, trimmed);
+      try {
+        await onSave(editingId, trimmed);
+      } catch (err) {
+        // 저장하지 못하면 편집 상태와 입력 내용을 그대로 두고 이유를 보여 준다(예: 데이터 유출 방지 규칙)
+        setEditError(apiErrorMessage(err, 'messages:errors.editFailed'));
+        return;
+      }
     }
     setEditError(null);
     setEditingId(null);

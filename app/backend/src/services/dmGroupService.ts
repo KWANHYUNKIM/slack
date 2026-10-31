@@ -5,6 +5,7 @@ import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from './pushService.js';
 import { createActivitiesForDm } from './mentionService.js';
+import { enforceDlp, recordDlpWarnings } from './dlpService.js';
 
 // 그룹 DM(본인 포함 3~9명) 공용 로직. HTTP 라우트(routes/dmGroups.ts, routes/dms.ts의 메시지 단위 경로)와
 // 소켓(dmgroup:send)이 같은 함수를 불러 동작을 맞춘다. 권한 검사(멤버 여부)는 호출한 쪽이 먼저 한다.
@@ -239,6 +240,7 @@ export interface GroupMessageInput {
  */
 export async function sendGroupMessage(input: GroupMessageInput) {
   const { groupId, fromUserId, content, fileIds, threadId } = input;
+  const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
 
   const dm = await prisma.$transaction(async (tx) => {
     const created = await tx.directMessage.create({
@@ -265,6 +267,8 @@ export async function sendGroupMessage(input: GroupMessageInput) {
       include: DM_INCLUDE_USERS,
     });
   });
+
+  recordDlpWarnings(fromUserId, 'direct_message', dm.id, dlpWarned);
 
   const memberIds = await getGroupMemberIds(groupId);
   emitToUsers(memberIds, threadId ? 'dm:reply' : 'dm:new', dm);

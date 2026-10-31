@@ -21,7 +21,7 @@ import {
 // Huddle schemas imported by huddles.ts directly
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
-import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
+import { ServiceError, serviceErrorExtra, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import { useSecureTransport } from '../runtimeConfig.js';
@@ -349,10 +349,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
     });
 
     // Send message
-    socket.on('message:send', async (rawData: unknown, ack?: (response: { error?: string }) => void) => {
-      const sendError = (message: string) => {
-        if (typeof ack === 'function') ack({ error: message });
-        else socket.emit('error', { message });
+    socket.on('message:send', async (rawData: unknown, ack?: (response: { error?: string; code?: string; rule?: string }) => void) => {
+      const sendError = (message: string, extra: { code?: string; rule?: string } = {}) => {
+        if (typeof ack === 'function') ack({ error: message, ...extra });
+        else socket.emit('error', { message, ...extra });
       };
 
       if (!socket.user) return;
@@ -390,7 +390,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         if (typeof ack === 'function') ack({});
       } catch (error) {
         if (error instanceof ServiceError) {
-          sendError(error.message);
+          sendError(error.message, serviceErrorExtra(error));
           return;
         }
         logError('WebSocket message error', error);
@@ -432,7 +432,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         await editChannelMessage(socket.user.userId, message, data.content);
       } catch (error) {
         if (error instanceof ServiceError) {
-          socket.emit('error', { message: error.message });
+          socket.emit('error', { message: error.message, ...serviceErrorExtra(error) });
           return;
         }
         logError('WebSocket edit message error', error);
@@ -597,7 +597,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         );
       } catch (error) {
         if (error instanceof ServiceError) {
-          socket.emit('error', { message: error.message });
+          socket.emit('error', { message: error.message, ...serviceErrorExtra(error) });
           return;
         }
         logError('WebSocket DM error', error);
@@ -659,10 +659,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
     });
 
     // 그룹 DM 전송. HTTP POST /dms/groups/:id/messages와 같은 서비스를 쓴다. ack가 있으면 결과를 ack로 돌려준다.
-    socket.on('dmgroup:send', async (rawData: unknown, ack?: (response: { error?: string; code?: string; id?: number }) => void) => {
-      const sendError = (message: string, code?: string) => {
-        if (typeof ack === 'function') ack({ error: message, ...(code && { code }) });
-        else socket.emit('error', { message });
+    socket.on('dmgroup:send', async (rawData: unknown, ack?: (response: { error?: string; code?: string; rule?: string; id?: number }) => void) => {
+      const sendError = (message: string, code?: string, rule?: string) => {
+        if (typeof ack === 'function') ack({ error: message, ...(code && { code }), ...(rule && { rule }) });
+        else socket.emit('error', { message, ...(code && { code }), ...(rule && { rule }) });
       };
 
       if (!socket.user) return;
@@ -686,6 +686,11 @@ export function initializeWebSocket(httpServer: HttpServer) {
         const dm = await sendGroupMessage({ groupId, fromUserId: socket.user.userId, content, fileIds });
         if (typeof ack === 'function') ack({ id: dm.id });
       } catch (error) {
+        if (error instanceof ServiceError) {
+          const extra = serviceErrorExtra(error);
+          sendError(error.message, extra.code, extra.rule);
+          return;
+        }
         if (error instanceof InvalidFileIdsError) {
           sendError(error.message, error.code);
           return;

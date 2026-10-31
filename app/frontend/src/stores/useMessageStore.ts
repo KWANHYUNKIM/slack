@@ -4,6 +4,7 @@ import { getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { Message, Reaction } from '@/lib/types';
 import { t } from '@/lib/i18n';
+import { dlpBlockedMessage } from '@/lib/apiErrors';
 
 function transformApiMessage(msg: api.ApiMessage): Message {
   // Group raw reaction rows into { emoji, count, userIds[] }
@@ -120,10 +121,12 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           set({ sendError: t('messages:errors.sendTimeout') });
           reject(new Error('Message send timed out'));
         }, 10000);
-        socket.emit('message:send', { channelId, content, fileIds }, (response: { error?: string }) => {
+        socket.emit('message:send', { channelId, content, fileIds }, (response: { error?: string; code?: string; rule?: string }) => {
           clearTimeout(timeout);
           if (response?.error) {
-            set({ sendError: response.error });
+            // 데이터 유출 방지 규칙에 걸리면 서버의 영어 원문 대신 번역된 문구를 보여 준다(입력 내용은 그대로 둔다)
+            const shown = response.code === 'DLP_BLOCKED' ? dlpBlockedMessage(response.rule) : response.error;
+            set({ sendError: shown });
             reject(new Error(response.error));
           } else {
             set({ sendError: null });
@@ -141,7 +144,9 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           sendError: null,
         }));
       } catch (err) {
-        const msg = (err instanceof Error && err.message) || t('messages:errors.sendFailed');
+        const msg = err instanceof api.ApiError && err.code === 'DLP_BLOCKED'
+          ? dlpBlockedMessage(err.rule)
+          : (err instanceof Error && err.message) || t('messages:errors.sendFailed');
         set({ sendError: msg });
         throw err;
       }

@@ -59,6 +59,11 @@
     "MFA_SETUP_NOT_STARTED": "Start the setup again.",
     "MFA_ENROLLMENT_REQUIRED": "Your organization requires two-factor authentication.",
     "MFA_CODE_REQUIRED": "Enter your two-factor code.",
-    "MFA_REQUIRED_BY_POLICY": "Your organization requires two-factor authentication, so you cannot turn it off. Ask an administrator to reset it if you lost your device."
+    "MFA_REQUIRED_BY_POLICY": "Your organization requires two-factor authentication, so you cannot turn it off. Ask an administrator to reset it if you lost your device.",
+    "DLP_BLOCKED": "This message was blocked by a data protection rule ({rule}). Remove the sensitive content and try again.",
+    "DLP_PATTERN_INVALID": "The pattern is not allowed.",
+    "DLP_RULE_NAME_TAKEN": "A rule with this name already exists.",
+    "DLP_RULE_BUILTIN": "Built-in rules can only be turned on or off.",
+    "DLP_RULE_LIMIT": "You have reached the limit for rules. Delete one first."
   }
 }

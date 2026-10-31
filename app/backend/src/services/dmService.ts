@@ -7,6 +7,7 @@ import { logError } from '../utils/logger.js';
 import { ServiceError } from './messageService.js';
 import { InvalidFileIdsError, emitToGroup } from './dmGroupService.js';
 import { sendPushToUser } from './pushService.js';
+import { enforceDlp, recordDlpWarnings } from './dlpService.js';
 import { toPublicUser } from './statusService.js';
 import {
   createActivitiesForDm,
@@ -62,6 +63,7 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
   const fromUserId = sender.userId;
   if (!(await canSendDm(sender, toUserId))) throw new ServiceError(400, UNABLE_TO_SEND);
   const { content, fileIds } = input;
+  const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
 
   const dm = await prisma.$transaction(async (tx) => {
     const created = await tx.directMessage.create({
@@ -84,6 +86,8 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
 
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
   });
+
+  recordDlpWarnings(fromUserId, 'direct_message', dm.id, dlpWarned);
 
   // Broadcast via WebSocket so the recipient sees the DM in real-time
   const io = getIO();
@@ -125,12 +129,14 @@ async function emitToParticipants(dm: { fromUserId: number; toUserId: number | n
 /** 내 DM(1:1 또는 그룹) 수정. 참여자 전원(보낸 사람의 다른 탭 포함)에게 dm:updated를 보낸다. */
 export async function editDirectMessage(userId: number, dm: DirectMessage, content: string) {
   await assertCanModifyDm(userId, dm);
+  const dlpWarned = await enforceDlp(userId, content, 'direct_message');
   const updated = await prisma.directMessage.update({
     where: { id: dm.id },
     data: { content, editedAt: new Date() },
     include: { ...DM_INCLUDE_USERS },
   });
 
+  recordDlpWarnings(userId, 'direct_message', updated.id, dlpWarned);
   // 보낸 사람의 다른 탭·기기도 갱신되도록 보낸 사람 본인의 user 룸에도 보낸다(클라이언트는 id로 교체하므로 중복 적용해도 같다)
   await emitToParticipants(updated, 'dm:updated', updated);
   void syncActivitiesOnDmEdit(updated);

@@ -13,7 +13,8 @@ import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import { sharesChannel, sendDirectMessage, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
-import { ServiceError } from '../services/messageService.js';
+import { ServiceError, serviceErrorBody } from '../services/messageService.js';
+import { enforceDlp, recordDlpWarnings } from '../services/dlpService.js';
 import {
   createActivitiesForDm,
   createReactionActivity,
@@ -46,7 +47,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     if (error instanceof InvalidFileIdsError) {
@@ -345,6 +346,7 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       }
     }
 
+    const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
     const reply = await prisma.$transaction(async (tx) => {
       const created = await tx.directMessage.create({
         data: {
@@ -373,6 +375,8 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       });
     });
 
+    if (reply) recordDlpWarnings(fromUserId, 'direct_message', reply.id, dlpWarned);
+
     // Broadcast to both users so the thread updates in real-time
     const io = getIO();
     if (io) {
@@ -400,6 +404,10 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     if (error instanceof InvalidFileIdsError) {
@@ -456,7 +464,7 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
       return;
     }
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Edit DM error', error);
@@ -471,7 +479,7 @@ router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: A
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Delete DM error', error);

@@ -66,6 +66,7 @@ model User {
   scheduledMessages  ScheduledMessage[]
   inviteLinks        InviteLink[]
   auditLogs          AuditLog[]
+  dlpRules           DlpRule[]
   pushSubscriptions  PushSubscription[]
   webhooks           Webhook[]
   activitiesReceived Activity[] @relation("ActivityRecipient")
@@ -554,4 +555,28 @@ model MfaChallenge {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+enum DlpAction {
+  BLOCK
+  WARN
+}
+
+// 데이터 유출 방지(E10) 규칙. 내장 규칙(builtin)은 key로 코드의 탐지기와 연결되며 켜고 끄기만 된다.
+// 사용자 정의 규칙의 pattern은 저장할 때 검증한다(길이, 위험한 중첩 수량자, 컴파일).
+model DlpRule {
+  id          Int       @id @default(autoincrement())
+  key         String?   @unique @db.VarChar(40) // 내장 규칙 식별자. 사용자 정의 규칙은 null
+  name        String    @unique @db.VarChar(100)
+  pattern     String    @db.VarChar(500)
+  action      DlpAction @default(BLOCK)
+  enabled     Boolean   @default(true)
+  builtin     Boolean   @default(false)
+  createdById Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([enabled])
 }

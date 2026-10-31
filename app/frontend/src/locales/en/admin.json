@@ -9,7 +9,8 @@
       "webhooks": "Webhooks",
       "audit": "Audit Log",
       "retention": "Data retention",
-      "security": "Security"
+      "security": "Security",
+      "dlp": "DLP"
     }
   },
   "channels": {
@@ -165,7 +166,8 @@
       "auditLog": "Audit log",
       "mcpTool": "MCP tool",
       "workspace": "Workspace",
-      "file": "File"
+      "file": "File",
+      "dlpRule": "DLP rule"
     },
     "action": {
       "authLogin": "Signed in",
@@ -204,7 +206,12 @@
       "mfaDisabled": "Two-factor turned off",
       "mfaRecoveryUsed": "Recovery code used",
       "mfaResetByAdmin": "Two-factor reset by admin",
-      "mfaPolicyChanged": "Two-factor requirement changed"
+      "mfaPolicyChanged": "Two-factor requirement changed",
+      "dlpBlocked": "Message blocked by DLP",
+      "dlpWarned": "DLP warning",
+      "dlpRuleCreated": "DLP rule created",
+      "dlpRuleUpdated": "DLP rule changed",
+      "dlpRuleDeleted": "DLP rule deleted"
     },
     "filters": {
       "allActions": "All actions",
@@ -297,6 +304,74 @@
     "errors": {
       "loadFailed": "Could not load security settings.",
       "saveFailed": "Could not save security settings."
+    }
+  },
+  "dlp": {
+    "title": "Data loss prevention",
+    "description": "Detect sensitive patterns such as card numbers in messages. A blocking rule stops the message from being saved. A warning rule saves it and records it in the audit log. Message text is never written to the log.",
+    "loadError": "Failed to load DLP rules",
+    "saveError": "Failed to save the rule",
+    "toggleError": "Failed to change the rule",
+    "deleteError": "Failed to delete the rule",
+    "testError": "Failed to test the pattern",
+    "builtinBadge": "Built-in",
+    "builtinPattern": "Built-in detector",
+    "builtin": {
+      "credit_card": "Credit card number",
+      "kr_rrn": "Korean resident registration number",
+      "aws_access_key": "AWS access key",
+      "private_key": "Private key"
+    },
+    "action": {
+      "BLOCK": "Block",
+      "WARN": "Warn"
+    },
+    "columns": {
+      "name": "Rule",
+      "pattern": "Pattern",
+      "action": "Action",
+      "enabled": "Status"
+    },
+    "on": "On",
+    "off": "Off",
+    "toggleLabel": "Turn {name} on or off",
+    "edit": "Edit",
+    "editLabel": "Edit {name}",
+    "delete": "Delete",
+    "deleteLabel": "Delete {name}",
+    "form": {
+      "createHeading": "Add a rule",
+      "editHeading": "Edit rule",
+      "name": "Name",
+      "pattern": "Pattern (regular expression)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Action",
+      "add": "Add rule",
+      "save": "Save",
+      "cancel": "Cancel",
+      "hint": "Up to {max} characters. Nested repeats such as (a+)+, back-references and very large repeat counts are rejected."
+    },
+    "patternProblem": {
+      "empty": "Enter a pattern.",
+      "tooLong": "The pattern is too long.",
+      "invalid": "This is not a valid regular expression.",
+      "backreference": "Back-references are not allowed.",
+      "nestedQuantifier": "Nested repeats can make checks very slow and are not allowed.",
+      "repeatTooLarge": "The repeat count is too large (200 at most)."
+    },
+    "test": {
+      "heading": "Test a pattern",
+      "hint": "Nothing is saved. Enter a pattern above, or pick a saved rule, then type sample text.",
+      "source": "Pattern to test",
+      "sourceDraft": "Pattern in the form above",
+      "sample": "Sample text",
+      "run": "Test",
+      "matched": "Matches. This text would be caught.",
+      "notMatched": "No match."
+    },
+    "confirmDelete": {
+      "title": "Delete this rule?",
+      "message": "The rule \"{name}\" will be removed and no longer checked."
     }
   }
 }

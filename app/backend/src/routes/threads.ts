@@ -11,7 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { blankIfDeleted, setReplyBroadcast } from '../services/threadService.js';
 import { markThreadMentionsRead } from '../services/mentionService.js';
-import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
+import { ServiceError, serviceErrorBody, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 import { ERR } from '../utils/errorCodes.js';
 
 const router = Router();
@@ -46,7 +46,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
       return;
     }
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Reply error', error);
@@ -100,7 +100,7 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
       return;
     }
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Edit message error', error);
@@ -115,7 +115,7 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Delete message error', error);

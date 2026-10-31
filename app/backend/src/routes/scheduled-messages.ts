@@ -1,3 +1,5 @@
+import { ServiceError, serviceErrorBody } from '../services/messageService.js';
+import { enforceDlp, recordDlpWarnings } from '../services/dlpService.js';
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
@@ -66,6 +68,8 @@ router.post('/schedule', authMiddleware, async (req: AuthRequest, res: Response)
       return;
     }
 
+    // 예약해 두는 시점에도 검사한다(발송 시점에 한 번 더 본다)
+    await enforceDlp(userId, content, 'message');
     const scheduled = await prisma.scheduledMessage.create({
       data: {
         content,
@@ -82,6 +86,10 @@ router.post('/schedule', authMiddleware, async (req: AuthRequest, res: Response)
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Schedule message error', error);
@@ -186,7 +194,10 @@ router.patch('/scheduled/:id', authMiddleware, async (req: AuthRequest, res: Res
     }
 
     const updateData: { content?: string; scheduledAt?: Date } = {};
-    if (parsed.data.content) updateData.content = parsed.data.content;
+    if (parsed.data.content) {
+      await enforceDlp(userId, parsed.data.content, 'message');
+      updateData.content = parsed.data.content;
+    }
     if (parsed.data.scheduledAt) {
       const newDate = new Date(parsed.data.scheduledAt);
       if (newDate <= new Date()) {
@@ -204,6 +215,10 @@ router.patch('/scheduled/:id', authMiddleware, async (req: AuthRequest, res: Res
 
     res.json(updated);
   } catch (error) {
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
+      return;
+    }
     logError('Edit scheduled message error', error);
     res.status(500).json({ error: 'Failed to edit scheduled message' });
   }
@@ -232,6 +247,8 @@ router.post('/scheduled/:id/send', authMiddleware, async (req: AuthRequest, res:
       res.status(400).json({ error: 'Message has already been sent' });
       return;
     }
+
+    const dlpWarned = await enforceDlp(userId, scheduled.content, 'message');
 
     // Atomically verify authorization and send — membership and archival
     // are checked inside the transaction to close the TOCTOU gap.
@@ -271,6 +288,7 @@ router.post('/scheduled/:id/send', authMiddleware, async (req: AuthRequest, res:
     }
 
     const { message } = result;
+    recordDlpWarnings(userId, 'message', message.id, dlpWarned);
 
     // Broadcast via WebSocket
     const { getIO } = await import('../websocket/index.js');
@@ -283,6 +301,10 @@ router.post('/scheduled/:id/send', authMiddleware, async (req: AuthRequest, res:
 
     void processNewChannelMessage(message, { generalPush: true });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      res.status(error.status).json(serviceErrorBody(error));
+      return;
+    }
     logError('Send scheduled message now error', error);
     res.status(500).json({ error: 'Failed to send message' });
   }

@@ -8,7 +8,7 @@ import { AuthRequest } from '../types.js';
 import { MESSAGE_INCLUDE_FULL } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
-import { ServiceError, messageContentSchema, sendChannelMessage } from '../services/messageService.js';
+import { ServiceError, serviceErrorBody, messageContentSchema, sendChannelMessage } from '../services/messageService.js';
 import { PARENT_EXCERPT_INCLUDE, blankIfDeleted, toParentExcerpt } from '../services/threadService.js';
 
 const router = Router();
@@ -36,7 +36,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
       return;
     }
     if (error instanceof ServiceError) {
-      res.status(error.status).json({ error: error.message });
+      res.status(error.status).json(serviceErrorBody(error));
       return;
     }
     logError('Send message error', error);
