@@ -5,19 +5,19 @@
 slack/
   app/backend/     Express + Socket.io + Prisma API 서버 (웹 프런트 정적 파일도 서빙)
   app/frontend/    React SPA (웹에서 동작, 데스크톱 앱도 같은 화면을 띄움)
-  desktop/         Electron 셸 (새로 만듦)
+  app/desktop/     Electron 셸 (새로 만듦, D1)
   .github/workflows/  ci.yml (PR 테스트), release.yml (태그 시 빌드와 업로드)
   docs/
 ```
 - **웹**: 사용자가 브라우저로 서버 주소에 접속한다. 배포는 `app/Dockerfile` 하나(프런트 빌드 결과를 백엔드가 서빙)로 한다.
 - **데스크톱**: Slack 데스크톱 앱과 같은 방식으로, 설치 파일 안에 서버를 넣지 않고 **서버 주소(워크스페이스 URL)를 띄우는 Electron 셸**로 만든다. 처음 실행하면 서버 주소를 입력받고, 이후에는 기억한다. 화면 코드는 웹과 100% 공유한다.
   - 장점: 기능을 추가하면 웹과 데스크톱에 한 번에 반영되고, 앱을 다시 배포할 필요가 적다.
-  - 데스크톱에서만 하는 일은 preload의 `window.desktop` API로 노출한다: 네이티브 알림, 작업 표시줄과 독 배지 숫자, 트레이, 딥링크(`slackclone://`), 자동 업데이트, 시작 시 실행.
+  - 데스크톱에서만 하는 일은 preload의 `window.desktop` API로 노출한다: 네이티브 알림, 작업 표시줄과 독 배지 숫자, 트레이, 딥링크(`teammessenger://`), 자동 업데이트, 시작 시 실행.
 
 ## 2. 데스크톱 빌드와 업로드
 | 대상 | 산출물 | 빌드 위치 |
 |---|---|---|
-| Windows | NSIS 설치 파일 `SlackClone-Setup-x.y.z.exe`, 포터블 `.exe` | GitHub Actions `windows-latest` |
+| Windows | NSIS 설치 파일 `TeamMessenger-Setup-x.y.z.exe`, 포터블 `TeamMessenger-x.y.z-portable.exe` | GitHub Actions `windows-latest` |
 | macOS | `.dmg` (arm64, x64) | `macos-latest` (로컬 M2에서도 가능) |
 | Linux | `.AppImage` | `ubuntu-latest` |
 

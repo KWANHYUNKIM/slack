@@ -14,7 +14,8 @@
     "permalink:test": "node --test scripts/permalink.test.ts",
     "unread:test": "node --test scripts/unread.test.ts",
     "remind:test": "node --test scripts/remind.test.mjs",
-    "admin:test": "node --test scripts/admin-rollback.test.ts"
+    "admin:test": "node --test scripts/admin-rollback.test.ts",
+    "desktop:test": "node --test scripts/desktop.test.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
