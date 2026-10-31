@@ -84,6 +84,7 @@
     "LAST_WORKSPACE_OWNER": "A workspace needs at least one owner. Make someone else an owner first.",
     "LAST_WORKSPACE": "You can't archive the last active workspace.",
     "USER_ALREADY_WORKSPACE_MEMBER": "This person is already in the workspace.",
+    "USER_NOT_IN_WORKSPACE": "This person isn't in this channel's workspace.",
     "USER_NOT_FOUND": "Person not found.",
     "CANNOT_REMOVE_PRIMARY_OWNER": "The primary owner of the organization can't be removed.",
     "WORKSPACE_SLUG_TAKEN": "That workspace URL is already taken.",

@@ -295,6 +295,19 @@ export async function lockWorkspace(db: Prisma.TransactionClient, workspaceId: n
   await db.$queryRaw`SELECT "id" FROM "Workspace" WHERE "id" = ${workspaceId} FOR UPDATE`;
 }
 
+// 채널 이름 잠금의 첫 키. 두 정수 형식 advisory lock이라 한 정수 형식(legalHoldService)과 키 공간이 겹치지 않는다.
+const CHANNEL_NAME_LOCK = 0x434e; // 'CN'
+
+/**
+ * 워크스페이스 안 채널 이름을 정하는 경로(기본 채널 자리 채우기, 채널 생성, 이름 변경)를 워크스페이스 단위로 줄 세운다(E1c).
+ * 트랜잭션 안에서 불러야 하고 트랜잭션이 끝날 때 풀린다. 여러 워크스페이스는 id 오름차순으로 잠가 교착을 막는다.
+ */
+export async function lockWorkspaceChannelNames(db: Prisma.TransactionClient, workspaceIds: number[]): Promise<void> {
+  for (const id of [...new Set(workspaceIds)].sort((a, b) => a - b)) {
+    await db.$executeRaw`SELECT pg_advisory_xact_lock(${CHANNEL_NAME_LOCK}::int4, ${id}::int4)`;
+  }
+}
+
 /** 마지막 OWNER를 빼거나 강등하려 할 때 던진다. 라우트가 409 LAST_WORKSPACE_OWNER로 바꾼다 */
 export class LastWorkspaceOwnerError extends Error {
   constructor() {
@@ -393,12 +406,16 @@ export async function changeWorkspaceRole(
 /**
  * 워크스페이스에서 뺀다(제거, 나가기). 행은 지우지 않고 leftAt을 채운다. 행이 없던 기본 워크스페이스 암묵 멤버는
  * 나간 행을 새로 만든다(다시 암묵 멤버가 되지 않게). 그 워크스페이스를 기본으로 기억하고 있으면 비운다.
- * 채널 정리(그 워크스페이스에만 보이는 채널의 ChannelMember 삭제)는 E1c가 붙인다.
+ * 채널 정리(E1c, 스펙 5.3): 그 워크스페이스에 보이는 채널 중 남은 활성 워크스페이스 어디에도 보이지 않는 채널에서
+ * ChannelMember와 즐겨찾기를 지운다. 공유 채널은 남은 워크스페이스에 여전히 보이면 유지한다. 읽음 행은 채널 나가기처럼 남긴다.
+ * 그 결과 멤버가 아무도 남지 않은 비공개 채널은 채널 나가기(POST /channels/:id/leave)의 마지막 멤버 규칙처럼 지운다.
+ * 단 보관된 채널(나가기 라우트도 막는다)과 법적 보존 채널은 기록 보호를 위해 남긴다.
+ * 멤버십을 잃은 채널과 지운 채널(지우기 전의 workspaceIds 포함)을 돌려준다. 호출한 쪽이 소켓 room 정리와 이벤트를 보낸다.
  */
 export async function leaveWorkspace(
   db: Prisma.TransactionClient,
   params: { workspaceId: number; userId: number; currentRole: Role },
-): Promise<void> {
+): Promise<LeaveWorkspaceResult> {
   const { workspaceId, userId, currentRole } = params;
   const now = new Date();
   await db.workspaceMember.upsert({
@@ -407,6 +424,38 @@ export async function leaveWorkspace(
     update: { leftAt: now },
   });
   await db.user.updateMany({ where: { id: userId, defaultWorkspaceId: workspaceId }, data: { defaultWorkspaceId: null } });
+
+  const remaining = (await loadUserWorkspaceState(db, userId))?.memberships.map((m) => m.workspaceId) ?? [];
+  const lost = await db.channelMember.findMany({
+    where: {
+      userId,
+      channel: {
+        workspaces: { some: { workspaceId }, none: { workspaceId: { in: remaining } } },
+      },
+    },
+    select: { channelId: true },
+  });
+  const channelIds = lost.map((m) => m.channelId);
+  if (channelIds.length === 0) return { lostChannelIds: [], deletedChannels: [] };
+  await db.channelMember.deleteMany({ where: { userId, channelId: { in: channelIds } } });
+  await db.channelStar.deleteMany({ where: { userId, channelId: { in: channelIds } } });
+
+  const orphans = await db.channel.findMany({
+    where: { id: { in: channelIds }, isPrivate: true, archivedAt: null, legalHold: false, members: { none: {} } },
+    select: { id: true, workspaces: { select: { workspaceId: true }, orderBy: { workspaceId: 'asc' } } },
+  });
+  if (orphans.length > 0) await db.channel.deleteMany({ where: { id: { in: orphans.map((c) => c.id) } } });
+  return {
+    lostChannelIds: channelIds,
+    deletedChannels: orphans.map((c) => ({ id: c.id, workspaceIds: c.workspaces.map((w) => w.workspaceId) })),
+  };
+}
+
+export interface LeaveWorkspaceResult {
+  /** 멤버십을 잃은 채널(지운 채널 포함) */
+  lostChannelIds: number[];
+  /** 마지막 멤버가 빠져 지운 비공개 채널과 지우기 전 보이던 워크스페이스 */
+  deletedChannels: Array<{ id: number; workspaceIds: number[] }>;
 }
 
 /** 공개·미보관 기본 채널 가입(기본 워크스페이스가 아닌 곳). 기본 워크스페이스는 자리 채우기까지 하는 joinDefaultChannels를 쓴다 */

@@ -222,7 +222,7 @@ model InviteLink {
 
 model Channel {
   id         Int       @id @default(autoincrement())
-  name       String    @unique @db.VarChar(80)
+  name       String    @db.VarChar(80) // 유일성은 워크스페이스 단위(ChannelWorkspace.nameKey 유니크, E1c)
   isPrivate  Boolean   @default(false)
   createdBy  Int?
   archivedAt DateTime?

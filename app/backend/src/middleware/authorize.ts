@@ -4,6 +4,9 @@ import prisma from '../db.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam, MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { ERR } from '../utils/errorCodes.js';
+import { ActiveMembership } from '../services/workspaceService.js';
+import { channelInWorkspaceWhere, channelScopeFor } from '../services/workspaceScopeService.js';
+import { Prisma } from '@prisma/client';
 
 // ── Express Middleware ──────────────────────────────────────────────
 
@@ -28,12 +31,23 @@ export async function requireChannelMembership(
   });
 
   if (!membership) {
+    // 다른 워크스페이스의 채널(또는 없는 채널)은 존재를 숨긴다(E1c, D7). 같은 워크스페이스의 채널은 기존대로 403
+    if (!(await isChannelInViewerWorkspaces(req, channelId))) {
+      res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
+      return;
+    }
     res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
 
   req.channelId = channelId;
   next();
+}
+
+/** 채널이 있고, 요청자가 채널이 보이는 워크스페이스 중 하나의 활성 멤버인지(비멤버 응답을 403과 404로 가르는 데 쓴다) */
+async function isChannelInViewerWorkspaces(req: AuthRequest, channelId: number): Promise<boolean> {
+  const scope = await channelScopeFor(req.user!.userId, channelId, req.workspaceState?.memberships);
+  return scope.role !== null;
 }
 
 /**
@@ -68,6 +82,10 @@ export async function requireMessageAccess(
   });
 
   if (!membership) {
+    if (!(await isChannelInViewerWorkspaces(req, message.channelId))) {
+      res.status(404).json({ error: 'Message not found', code: ERR.MESSAGE_NOT_FOUND });
+      return;
+    }
     res.status(403).json({ error: 'You must be a member of this channel', code: ERR.NOT_CHANNEL_MEMBER });
     return;
   }
@@ -333,20 +351,24 @@ export async function requireDmGroupMember(
 
 /**
  * 채널 읽기 권한 규칙: 멤버이거나, 공개 채널이면 비멤버(게스트 제외)도 읽을 수 있다.
- * 채널이 없으면 exists:false. 읽기 접근 미들웨어와 퍼말링크 locate가 함께 쓴다.
+ * 비멤버는 채널이 보이는 워크스페이스 중 하나에 활성 멤버여야 하고(E1c, 5.3), 아니면 채널이 없는 것으로 답한다(D7 404).
+ * 게스트 여부는 그 워크스페이스들에서의 역할로 본다. 채널이 없으면 exists:false.
+ * 읽기 접근 미들웨어, 퍼말링크 locate, MCP가 함께 쓴다. memberships는 요청에서 이미 읽은 활성 멤버십(없으면 조회한다).
  */
 export async function canReadChannel(
   userId: number,
-  role: string | undefined,
   channelId: number,
+  memberships?: ActiveMembership[],
 ): Promise<{ exists: boolean; allowed: boolean; isMember: boolean }> {
   const [membership, channel] = await Promise.all([
     prisma.channelMember.findUnique({ where: { userId_channelId: { userId, channelId } } }),
     prisma.channel.findUnique({ where: { id: channelId }, select: { id: true, isPrivate: true } }),
   ]);
   if (!channel) return { exists: false, allowed: false, isMember: false };
-  const isMember = !!membership;
-  return { exists: true, allowed: isMember || (!channel.isPrivate && role !== 'GUEST'), isMember };
+  if (membership) return { exists: true, allowed: true, isMember: true };
+  const scope = await channelScopeFor(userId, channelId, memberships);
+  if (scope.role === null) return { exists: false, allowed: false, isMember: false };
+  return { exists: true, allowed: !channel.isPrivate && scope.role !== 'GUEST', isMember: false };
 }
 
 /**
@@ -365,7 +387,7 @@ export async function requirePublicChannelReadAccess(
     return;
   }
 
-  const access = await canReadChannel(req.user!.userId, req.user!.role, channelId);
+  const access = await canReadChannel(req.user!.userId, channelId, req.workspaceState?.memberships);
   if (!access.exists) {
     res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
     return;
@@ -419,7 +441,7 @@ async function messageReadAccess(
     return;
   }
 
-  const access = await canReadChannel(req.user!.userId, req.user!.role, message.channelId);
+  const access = await canReadChannel(req.user!.userId, message.channelId, req.workspaceState?.memberships);
   if (!access.exists) {
     res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
     return;
@@ -437,10 +459,11 @@ async function messageReadAccess(
 
 /**
  * 채널 목록에 보이는 채널: 보관되지 않은 채널 중 공개 채널과 내가 속한 채널. 게스트는 속한 채널만.
- * GET /channels와 MCP list_channels가 같이 쓴다.
+ * workspaceId를 주면 그 워크스페이스에 보이는 채널(ChannelWorkspace)만 고르고(E1c), role은 그 워크스페이스에서의 역할이다.
+ * GET /channels와 MCP list_channels가 같이 쓴다(MCP의 워크스페이스 인자는 E1d).
  */
-export function listableChannelsWhere(userId: number, role: string | undefined) {
-  return role === 'GUEST'
+export function listableChannelsWhere(userId: number, role: string | undefined, workspaceId?: number): Prisma.ChannelWhereInput {
+  const where: Prisma.ChannelWhereInput = role === 'GUEST'
     ? { members: { some: { userId } }, archivedAt: null }
     : {
         archivedAt: null,
@@ -449,6 +472,7 @@ export function listableChannelsWhere(userId: number, role: string | undefined) 
           { members: { some: { userId } } },
         ],
       };
+  return workspaceId === undefined ? where : channelInWorkspaceWhere(workspaceId, where);
 }
 
 /**

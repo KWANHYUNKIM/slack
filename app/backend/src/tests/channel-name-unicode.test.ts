@@ -370,8 +370,8 @@ describe('Channel names (unicode)', () => {
     it('returns 409 CHANNEL_NAME_TAKEN when the unique constraint fires (race after the duplicate check)', async () => {
       const created = await create('rename-me');
       expect((await create('taken')).status).toBe(201);
-      // 중복 검사(findFirst)와 update 사이에 다른 요청이 같은 이름을 저장한 상황을 만든다
-      const spy = jest.spyOn(prisma.channel, 'findFirst').mockResolvedValueOnce(null);
+      // 중복 검사(워크스페이스 단위 nameKey 조회, E1c)와 update 사이에 다른 요청이 같은 이름을 저장한 상황을 만든다
+      const spy = jest.spyOn(prisma.channelWorkspace, 'findFirst').mockResolvedValueOnce(null);
       try {
         const res = await adminEdit(created.body.id, 'taken');
         expect(res.status).toBe(409);

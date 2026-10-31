@@ -7,7 +7,7 @@ import { DEFAULT_ORGANIZATION_ID, channelHostData, setUserRole } from '../../ser
 // 교차 워크스페이스 테스트 공용 픽스처(E1b, 스펙 5.6). 워크스페이스 A·B와 사용자
 //   a(A만), b(B만), ab(둘 다), orgAdmin(조직 관리자, A만 멤버), ga(A 게스트), aAdmin(A 관리자), bOwner(B 소유자)
 // 와 A·B의 공개·비공개 채널을 만든다. 기본 워크스페이스(id=1)에는 아무도 넣지 않는다(행이 있는 사용자는 암묵 참여하지 않는다).
-// 채널 이름은 아직 전역 유니크라(E1c 전) 워크스페이스마다 다른 이름을 쓴다. E1c가 같은 이름 general을 추가한다.
+// 채널 이름 유일성은 워크스페이스 단위라(E1c) A와 B에 같은 이름 general을 하나씩 둔다(5.6-4).
 // 토큰은 로그인 없이 서명한다(sid 없는 토큰은 tokenVersion 규칙만 따른다). 사용자는 prisma로 만들고 역할은 setUserRole로 쓴다.
 
 export interface FixtureUser {
@@ -21,7 +21,7 @@ export interface WorkspaceFixture {
   workspaceA: number;
   workspaceB: number;
   users: Record<'a' | 'b' | 'ab' | 'orgAdmin' | 'ga' | 'aAdmin' | 'bOwner', FixtureUser>;
-  channels: { aPublic: number; aPrivate: number; bPublic: number; bPrivate: number };
+  channels: { aPublic: number; aPrivate: number; bPublic: number; bPrivate: number; aGeneral: number; bGeneral: number };
 }
 
 export function tokenFor(userId: number, tokenVersion = 0): string {
@@ -93,6 +93,8 @@ export async function createWorkspaceFixture(prefix = 'fx'): Promise<WorkspaceFi
     aPrivate: await createChannel(`${prefix}-a-private`, wsA.id, true, [users.a.id]),
     bPublic: await createChannel(`${prefix}-b-public`, wsB.id, false, [users.b.id, users.ab.id]),
     bPrivate: await createChannel(`${prefix}-b-private`, wsB.id, true, [users.b.id]),
+    aGeneral: await createChannel('general', wsA.id, false, [users.a.id, users.ab.id, users.aAdmin.id]),
+    bGeneral: await createChannel('general', wsB.id, false, [users.b.id, users.ab.id, users.bOwner.id]),
   };
 
   return { prefix, workspaceA: wsA.id, workspaceB: wsB.id, users, channels };

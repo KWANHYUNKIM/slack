@@ -94,7 +94,7 @@ export async function listChannels(ctx: ToolContext, args: { limit: number; curs
 }
 
 async function assertChannelReadable(ctx: ToolContext, channelId: number) {
-  const access = await canReadChannel(ctx.userId, ctx.role, channelId);
+  const access = await canReadChannel(ctx.userId, channelId);
   // 없는 채널과 권한 없는 채널을 같은 오류로 답해 비공개 채널의 존재를 숨긴다
   if (!access.exists || !access.allowed) throw new ToolAccessError('Channel not found or not accessible');
 }
