@@ -3,7 +3,7 @@ import { ApiError } from '@/lib/api';
 import { CHANNEL_NAME_MAX } from '@/lib/channelName';
 import { selectErrorKey } from '@/lib/apiErrorCodes';
 
-const NAME_REASONS = new Set(['required', 'tooLong', 'invalidChars', 'mixedScripts']);
+const NAME_REASONS = new Set(['required', 'tooLong', 'invalidChars', 'tooManyMarks', 'mixedScripts']);
 
 /**
  * API 오류를 번역된 문구로 바꾼다. 서버의 원문 메시지는 보여 주지 않고 code·reason만 본다.

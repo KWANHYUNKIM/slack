@@ -9,7 +9,7 @@ export const CHANNEL_NAME_TAKEN = 'CHANNEL_NAME_TAKEN';
 export const CHANNEL_NAME_TAKEN_MESSAGE = 'A channel with that name already exists';
 
 export interface ChannelUpdateInput {
-  /** 원문 이름. 현재 이름과 같으면 검증도 변경도 하지 않는다(대문자·25자 초과인 옛 이름 보호) */
+  /** 원문 이름. 현재 이름과 같으면 검증도 변경도 하지 않는다(대문자·80자 초과인 옛 이름 보호) */
   name?: unknown;
   topic?: string | null;
   description?: string | null;
@@ -28,14 +28,13 @@ export async function updateChannel(params: {
   channel: Channel;
   actorId: number;
   input: ChannelUpdateInput;
-  nameMax?: number;
 }): Promise<ChannelUpdateResult> {
-  const { channel, actorId, input, nameMax } = params;
+  const { channel, actorId, input } = params;
   const data: Prisma.ChannelUpdateInput = {};
   const changes: string[] = [];
 
   if (input.name !== undefined && input.name !== channel.name) {
-    const nameResult = validateChannelName(input.name, nameMax);
+    const nameResult = validateChannelName(input.name);
     if (!nameResult.ok) {
       return { ok: false, status: 400, body: { error: nameResult.error, code: nameResult.code, reason: nameResult.reason } };
     }

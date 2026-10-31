@@ -5,7 +5,6 @@ import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
 import {
-  CHANNEL_NAME_ADMIN_MAX,
   CHANNEL_NAME_MAX,
   checkChannelName,
   normalizeChannelName,
@@ -38,10 +37,25 @@ const VECTORS: [label: string, input: string, expected: Expected][] = [
   ['math bold letter', '\u{1D420}en', 'gen'],
   ['kelvin sign', '\u212Aelvin', 'kelvin'],
   ['turkish I without locale', 'INFO', 'info'],
-  ['25 code points of astral han', '\u{20BB7}'.repeat(25), '\u{20BB7}'.repeat(25)],
+  ['max code points of astral han', '\u{20BB7}'.repeat(CHANNEL_NAME_MAX), '\u{20BB7}'.repeat(CHANNEL_NAME_MAX)],
+  ['devanagari with vowel signs', 'हिन्दी', 'हिन्दी'],
+  ['devanagari conjunct', 'क्षत्रिय', 'क्षत्रिय'],
+  ['arabic with harakat', 'قَنَاةٌ', 'قَنَاةٌ'],
+  ['arabic shadda + fatha + dammatan', 'اللَّهُ', 'اللَّهُ'],
+  ['vietnamese precomposed', 'tiếng-việt', 'tiếng-việt'],
+  ['vietnamese NFD -> NFC', 'tiếng-việt'.normalize('NFD'), 'tiếng-việt'],
+  ['thai with tone marks', 'ภาษาไทย', 'ภาษาไทย'],
+  ['4 combining marks in a row', 'x\u0301\u0302\u0303\u0304', 'x\u0301\u0302\u0303\u0304'],
+  ['han + hiragana + hangul', '日本語ひらがな한글', '日本語ひらがな한글'],
+  ['latin + hangul', 'team팀', 'team팀'],
+  ['latin + han + digits', 'dev-開発-2', 'dev-開発-2'],
+  ['cyrillic + hangul', 'общий팀', 'общий팀'],
 
   ['empty', '   ', { reason: 'required' }],
-  ['26 code points', '가'.repeat(26), { reason: 'tooLong' }],
+  ['over max code points', '가'.repeat(CHANNEL_NAME_MAX + 1), { reason: 'tooLong' }],
+  ['zalgo: 5 combining marks in a row', 'x\u0301\u0302\u0303\u0304\u0305', { reason: 'tooManyMarks' }],
+  ['zalgo: heavy stacking mid-name', 'abx\u0300\u0301\u0302\u0303\u0304\u0305\u0306cd', { reason: 'tooManyMarks' }],
+  ['greek + latin (hyphen does not separate)', 'alpha-\u03B1', { reason: 'mixedScripts' }],
   ['variation selector FE0F', 'dev\uFE0F', { reason: 'invalidChars' }],
   ['variation selector supplement E0100', 'dev\u{E0100}', { reason: 'invalidChars' }],
   ['combining grapheme joiner', 'de\u034Fv', { reason: 'invalidChars' }],
@@ -135,10 +149,8 @@ describe('Channel names (unicode)', () => {
 
     it('uses a separate message for too long names', () => {
       const short = validateChannelName('가'.repeat(CHANNEL_NAME_MAX + 1));
-      const admin = validateChannelName('a'.repeat(CHANNEL_NAME_ADMIN_MAX + 1), CHANNEL_NAME_ADMIN_MAX);
       expect(!short.ok && short.error).toMatch(new RegExp(`${CHANNEL_NAME_MAX} characters or fewer`));
-      expect(!admin.ok && admin.error).toMatch(new RegExp(`${CHANNEL_NAME_ADMIN_MAX} characters or fewer`));
-      expect(validateChannelName('a'.repeat(CHANNEL_NAME_ADMIN_MAX), CHANNEL_NAME_ADMIN_MAX).ok).toBe(true);
+      expect(validateChannelName('a'.repeat(CHANNEL_NAME_MAX)).ok).toBe(true);
     });
   });
 
@@ -147,7 +159,6 @@ describe('Channel names (unicode)', () => {
   describe('frontend rules match backend', () => {
     type FrontendModule = {
       CHANNEL_NAME_MAX: number;
-      CHANNEL_NAME_ADMIN_MAX: number;
       normalizeChannelName: (input: string) => string;
       checkChannelName: (name: string, maxLength?: number) => ChannelNameReason | null;
     };
@@ -160,7 +171,7 @@ describe('Channel names (unicode)', () => {
 
     it('shares the length limits', () => {
       expect(frontend.CHANNEL_NAME_MAX).toBe(CHANNEL_NAME_MAX);
-      expect(frontend.CHANNEL_NAME_ADMIN_MAX).toBe(CHANNEL_NAME_ADMIN_MAX);
+      expect(CHANNEL_NAME_MAX).toBe(80);
     });
 
     it.each(VECTORS)('%s', (_label, input, expected) => {
@@ -172,10 +183,10 @@ describe('Channel names (unicode)', () => {
       if (typeof expected === 'string') expect(name).toBe(expected);
     });
 
-    it('applies the admin limit the same way', () => {
-      const long = 'a'.repeat(CHANNEL_NAME_ADMIN_MAX + 1);
-      expect(frontend.checkChannelName(long, CHANNEL_NAME_ADMIN_MAX)).toBe('tooLong');
-      expect(frontend.checkChannelName(long.slice(1), CHANNEL_NAME_ADMIN_MAX)).toBeNull();
+    it('applies the shared limit the same way', () => {
+      const long = 'a'.repeat(CHANNEL_NAME_MAX + 1);
+      expect(frontend.checkChannelName(long)).toBe('tooLong');
+      expect(frontend.checkChannelName(long.slice(1))).toBeNull();
     });
   });
 
@@ -278,11 +289,21 @@ describe('Channel names (unicode)', () => {
       expect(res.body.code).toBe('CHANNEL_NAME_INVALID');
     });
 
-    it('rejects over 25 code points but accepts 25 Hangul syllables', async () => {
-      const long = await create('가'.repeat(26));
+    it('rejects over the max code points but accepts exactly the max Hangul syllables', async () => {
+      const long = await create('가'.repeat(CHANNEL_NAME_MAX + 1));
       expect(long.status).toBe(400);
-      expect(long.body.error).toMatch(/25 characters or fewer/);
-      expect((await create('가'.repeat(25))).status).toBe(201);
+      expect(long.body.error).toMatch(new RegExp(`${CHANNEL_NAME_MAX} characters or fewer`));
+      expect((await create('가'.repeat(CHANNEL_NAME_MAX))).status).toBe(201);
+    });
+
+    it('rejects zalgo names with CHANNEL_NAME_INVALID and accepts normal combining marks', async () => {
+      const zalgo = await create('x\u0300\u0301\u0302\u0303\u0304');
+      expect(zalgo.status).toBe(400);
+      expect(zalgo.body.code).toBe('CHANNEL_NAME_INVALID');
+      expect(zalgo.body.reason).toBe('tooManyMarks');
+      for (const ok of ['हिन्दी', 'قَنَاةٌ', 'tiếng-việt'.normalize('NFD')]) {
+        expect((await create(ok)).status).toBe(201);
+      }
     });
 
     it('rejects the same name arriving as NFD as a duplicate', async () => {

@@ -180,9 +180,8 @@ describe('Channel meta, stars, sidebar prefs', () => {
       expect(res.status).toBe(403);
     });
 
-    it('keeps a legacy name (uppercase, over 25 chars) when only topic or description changes', async () => {
+    it('keeps a legacy name (uppercase, not normalized) when only topic or description changes', async () => {
       const legacy = 'LegacyChannelNameThatIsVeryLong_ABC';
-      expect(legacy.length).toBeGreaterThan(25);
       const ch = await prisma.channel.create({
         data: { name: legacy, createdBy: ownerId, members: { create: { userId: ownerId, role: 'OWNER' } } },
       });
