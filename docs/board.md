@@ -28,7 +28,7 @@
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
-| feat/channel-name-hardening: 결합 문자 연속 개수 제한, 문자 체계 혼합(키릴+라틴 동형 문자) 차단 검토, 관리자 상한 80과 생성 상한 25 통일 여부 | - | sonnet | 대기 | 45분 | | | dev-5 남은 이슈 |
+| feat/channel-name-hardening: 결합 문자 연속 개수 제한, 문자 체계 혼합(키릴+라틴 동형 문자) 차단 검토, 관리자 상한 80과 생성 상한 25 통일 여부 | dev-1 | sonnet | 진행 | 45분 | 2026-11-01 02:19 | | dev-5 남은 이슈 |
 | fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | dev-4 | sonnet | 완료(PR #33에 포함) | 1h | | | 06 search-v2와 함께 |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
@@ -47,7 +47,7 @@
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | dev-2 | sonnet | 완료(PR #68 머지) | 1.5h | 2026-11-01 00:15 | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
-| fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | dev-1 | haiku | 진행 | 45분 | 2026-11-01 02:11 | | PR #11 남은 이슈 |
+| fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | dev-1 | haiku | 완료(PR #90 머지) | 45분 | 2026-11-01 02:11 | 2026-11-01 02:18 | PR #11 남은 이슈 |
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
 | test/flaky-activity: 원인 2개 확정(소켓 연결 직후 리스너 없음, 활동 후처리 경쟁) → 브랜치 fix/activity-race(b79bf51, #12 위 스택). activity 30회 0 실패. 남은 전체 스위트 간헐 실패(요청 멈춤, DB 컨테이너 연결 끊김)는 원인 미확정 | dev-3 | opus | 완료(PR #13 머지) | 1.5h | 11:12 | 12:20 | 실제 70분 |
 | feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | - | haiku | 대기 | 20분 | | | PR #10 남은 이슈 |
@@ -71,9 +71,11 @@
 | E4 감사 로그 강화: 기록 범위 보강, 조회·필터 API, CSV/JSON 내보내기(수식 주입 방지), 보존 기간, 관리자 탭 | dev-1 | sonnet | 완료(PR #77 머지) | 2h | 2026-11-01 00:48 | | 엔터프라이즈 3절, 선행 없음 |
 | E7 세션 관리: Session 모델·sid, 기기 목록·개별/전체 로그아웃, 관리자 강제 로그아웃 UI, 유휴·최대 수명 정책(2FA는 E7b) | dev-5 | sonnet | 완료(PR #80 머지) | 2h | 2026-11-01 01:17 | | 엔터프라이즈 3절 |
 | E5 데이터 보존 정책: 워크스페이스·채널 보존 일수, 일 1회 하드 삭제 배치, legalHold 제외 자리, 관리자 탭 | dev-1 | sonnet | 완료(PR #84 머지) | 2h | 2026-11-01 01:40 | 2026-11-01 02:00 | 엔터프라이즈 3절 |
-| E7b 2단계 인증: TOTP(암호화 저장), 복구 코드, 로그인 2단계, 조직 필수 정책, 관리자 초기화 | dev-4 | opus | 리뷰 전 정리(WorkspaceSetting 통합, enable 비밀번호 재확인, 켤 때 다른 세션 폐기) | 2h | 2026-11-01 01:40 | | E7 후속 |
+| E7b 2단계 인증: TOTP(암호화 저장), 복구 코드, 로그인 2단계, 조직 필수 정책, 관리자 초기화 | dev-4 | opus | PR #89 리뷰 반영 중(10건 중 9건) | 2h | 2026-11-01 01:40 | | E7 후속 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | - | sonnet | 대기 | 1.5h | | | E7b 남은 이슈 |
+| fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 진행 | 45분 | 2026-11-01 02:26 | | PR #91 보고 |
+| refactor/api-401-by-code: 프런트 request()가 401 전체가 아니라 토큰 code(AUTH_INVALID_TOKEN 등)일 때만 로그아웃, 이후 2FA·비밀번호 오류 상태 코드 정리 | - | sonnet | 대기 | 1h | | | PR #89 리뷰 |
 | feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | - | haiku | 대기 | 45분 | | | PR #86 남은 이슈 |
-| test/socket-listen-loopback: websocket 등 host 없는 httpServer.listen()도 127.0.0.1 고정 검토 | - | haiku | 대기 | 30분 | | | PR #87 남은 이슈 |
+| test/socket-listen-loopback: websocket 등 host 없는 httpServer.listen()도 127.0.0.1 고정 검토 | dev-3 | haiku | 완료(PR #91 머지) | 30분 | 2026-11-01 02:15 | 2026-11-01 02:24 | PR #87 남은 이슈 |
 | fix/change-password-401: 틀린 비밀번호에 401 → 프런트가 로그아웃 처리. 400/403+code로 변경 | dev-5 | haiku | 완료(PR #86 머지) | 0.5h | 2026-11-01 02:05 | 2026-11-01 02:09 | E7b 보고 |

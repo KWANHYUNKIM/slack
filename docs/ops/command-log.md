@@ -241,3 +241,11 @@
 | 2026-11-01 02:09 | dev-5 검토: auth 25/25(dev5 DB), tsc → PR #86, /code-review low 지적 0 → 머지 |
 | 2026-11-01 02:11 | dev-3 검토: 원인 supertest listen(0) 듀얼스택 바인딩을 127.0.0.1 전용 로컬 프로세스가 가로챔(재현). 테스트 전용 루프백 바인딩, 오류 code 정적 검사, 416 본문 추가. 72/72(dev3 DB) → PR #87, /code-review low 지적 0 → 머지. 전체 스위트 재확인은 스왑 회복 후 |
 | 2026-11-01 02:11 | 배정: dev-1 fix/i18n-followups(haiku, worktree). 디스크 여유 5GB 경계라 설치·빌드 금지 지시. 진행 2명(dev-4 E7b 정리, dev-1) |
+| 2026-11-01 02:14 | E7b 검토: main(PR #86·#87 포함) 리베이스 충돌 0, mfa 23/23·auth 25/25·sessions 27/27(dev4 DB), tsc, i18n, 외부 URL, 물리 방향 170 → PR #89, 보안 파트라 /code-review high. dev-4가 본 mfa 1회 code 누락은 PR #87 이전 기반이라 포트 가로채기로 추정 |
+| 2026-11-01 02:15 | 배정: dev-3 test/socket-listen-loopback(haiku, worktree, dev3 DB). 진행: dev-1 i18n 후속, dev-3, PR #89 리뷰 |
+| 2026-11-01 02:18 | dev-1 검토: i18nui:test 스크립트 추가(총괄), 10/10, tsc, i18n:check → PR #90, /code-review low 지적 0 → 머지. 스레드 placeholder 증상은 브라우저 확인 필요 |
+| 2026-11-01 02:19 | 배정: dev-1 feat/channel-name-hardening(sonnet, worktree, dev1 DB) |
+| 2026-11-01 02:20 | PR #89 리뷰 10건 결정 → dev-4: PAT도 필수 정책 적용(이전 "무관" 결정 번복), 정책 켜면 미등록 소켓 끊기, /login/2fa 시도 슬롯 원자 확보, 복구 코드 헛소모 방지, 켜기·해제 시 tokenVersion 증가와 현재 기기 새 토큰, 정책 중 해제 403, challenge 정리는 스케줄러로, 시도 제한 헬퍼 통합, 복구 코드 단일 updateMany. 401 code 기준 로그아웃은 별도 파트 refactor/api-401-by-code |
+| 2026-11-01 02:24 | dev-3 검토: 소켓 테스트 11개 127.0.0.1 고정, websocket·presence 19/19, tsc → PR #91, /code-review low. activity 동시 /read 커서 경쟁 1회 실패 → fix/read-cursor-race 보드 추가 |
+| 2026-11-01 02:25 | PR #91 리뷰: 테스트 파일만이라 low 단계 검토 대상 없음(총괄이 diff와 테스트로 확인) → 머지 |
+| 2026-11-01 02:26 | 배정: dev-3 fix/read-cursor-race(sonnet, worktree, dev3 DB). 진행 3명(dev-1, dev-3, dev-4) |
