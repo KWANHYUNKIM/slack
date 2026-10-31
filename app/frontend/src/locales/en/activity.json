@@ -9,7 +9,8 @@
     "unread": "Unread",
     "menu": "Menu",
     "someone": "Someone",
-    "directMessage": "a direct message"
+    "directMessage": "a direct message",
+    "messageDeleted": "Deleted message"
   },
   "tabs": {
     "all": "All",
@@ -22,6 +23,7 @@
     "channelMention": "{actor} mentioned @channel in {where}",
     "hereMention": "{actor} mentioned @here in {where}",
     "threadReply": "{actor} replied to a thread in {where}",
-    "reaction": "{actor} reacted {emoji} to your message in {where}"
+    "reaction": "{actor} reacted {emoji} to your message in {where}",
+    "reminder": "Reminder"
   }
 }

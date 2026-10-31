@@ -59,6 +59,7 @@ model User {
   webhooks           Webhook[]
   activitiesReceived Activity[] @relation("ActivityRecipient")
   activitiesSent     Activity[] @relation("ActivityActor")
+  reminders          Reminder[]
   channelStars       ChannelStar[]
   dmStars            DMStar[]      @relation("DMStarOwner")
   dmStarredBy        DMStar[]      @relation("DMStarTarget")
@@ -360,6 +361,7 @@ enum ActivityType {
   HERE_MENTION
   THREAD_REPLY
   REACTION
+  REMINDER
 }
 
 // 내 활동 탭의 항목. messageId/dmId는 FK 없이 두고(채널 메시지와 DM 둘 다 가리킴) 삭제는 서비스에서 정리한다.
@@ -371,6 +373,8 @@ model Activity {
   messageId Int?
   dmId      Int?
   channelId Int?
+  reminderId Int?        // REMINDER 활동이면 리마인더 id(같은 메시지에 여러 리마인더가 있어도 활동을 따로 둔다)
+  reminderSeq Int?       // 몇 번째 발송인지(스누즈 후 다시 울릴 때 새 활동이 생기게 unique에 포함)
   dmGroupId Int?         // 그룹 DM 활동이면 그룹 id(나간 그룹의 활동을 가리고, 그룹별 멘션 수를 센다)
   emoji     String?      @db.VarChar(50)
   readAt    DateTime?
@@ -381,7 +385,7 @@ model Activity {
 
   // NULL 컬럼이 들어가면 Postgres는 NULL끼리 다르다고 보므로 이 unique는 중복을 못 막는다.
   // 그래서 mentionService가 생성 전에 기존 행을 먼저 조회해 중복을 거른다.
-  @@unique([userId, type, messageId, dmId, actorId, emoji])
+  @@unique([userId, type, messageId, dmId, actorId, emoji, reminderId, reminderSeq])
   @@index([userId, readAt, createdAt])
   @@index([messageId])
   @@index([dmId])
@@ -422,4 +426,27 @@ model SidebarPref {
   updatedAt DateTime @default(now()) @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 리마인더. messageId/dmId는 FK 없이 둔다(대상 메시지가 지워져도 리마인더는 남고 화면에서 "삭제된 메시지"로 보인다).
+model Reminder {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  messageId   Int?      // 채널 메시지
+  dmId        Int?      // 1:1 또는 그룹 DM 메시지
+  channelId   Int?
+  text        String?   @db.VarChar(500) // /remind 로 만든 경우의 본문
+  remindAt    DateTime
+  firedAt     DateTime?
+  completedAt DateTime?
+  fireSeq     Int       @default(0) // 선점(발송)할 때마다 +1. 활동의 reminderSeq와 짝
+  failCount   Int       @default(0) // 발송 실패 횟수. 한도에 닿으면 failedAt을 찍고 더 시도하지 않는다
+  failedAt    DateTime?
+  locale      String?   @db.VarChar(8) // 만든 때의 언어(푸시 문구용)
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt, remindAt])
+  @@index([remindAt, firedAt])
 }

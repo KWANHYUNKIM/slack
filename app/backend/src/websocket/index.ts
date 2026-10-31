@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 import { JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
+import { validateAccessToken, AccessTokenResult } from '../middleware/auth.js';
 import {
   checkChannelMembership,
   checkDmGroupMembership,
@@ -163,36 +164,20 @@ export function initializeWebSocket(httpServer: HttpServer) {
       return next(new Error('Authentication required'));
     }
 
+    // HTTP 미들웨어와 같은 검증을 쓴다. 토큰 문제는 'Invalid token', 서버 오류는 기록 후 'Server error'로 거부한다.
+    let result: AccessTokenResult;
     try {
-      const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload & { purpose?: string; tokenVersion?: number };
-      // Reject scoped tokens (e.g. file-download) from being used as WS auth
-      if (decoded.purpose) {
-        return next(new Error('Invalid token'));
-      }
-
-      // Reject tokens missing tokenVersion — matches HTTP auth middleware.
-      // Without this, revocation via password change / deactivation is bypassed.
-      if (decoded.tokenVersion === undefined) {
-        return next(new Error('Invalid token'));
-      }
-
-      // Verify tokenVersion against DB to reject revoked/outdated tokens
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { tokenVersion: true, role: true, deactivatedAt: true },
-      });
-      if (!user || user.deactivatedAt) {
-        return next(new Error('Invalid token'));
-      }
-      if (user.tokenVersion !== decoded.tokenVersion) {
-        return next(new Error('Invalid token'));
-      }
-
-      socket.user = { ...decoded, role: user.role };
-      next();
+      result = await validateAccessToken(token);
     } catch (error) {
-      next(new Error('Invalid token'));
+      logError('Socket auth error', error);
+      return next(new Error('Server error'));
     }
+    if (!result.ok) {
+      return next(new Error('Invalid token'));
+    }
+
+    socket.user = result.user;
+    next();
   });
 
   // Periodic token revalidation: disconnect sockets whose JWT has expired or been revoked

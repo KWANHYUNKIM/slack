@@ -18,6 +18,7 @@ import { useMessageHover } from '@/hooks/useMessageHover';
 import { useMessageEdit } from '@/hooks/useMessageEdit';
 import type { Message as MessageType } from '@/lib/types';
 import { getAuthFileUrl, getFileUrl, markChannelUnread } from '@/lib/api';
+import { useUnreadStore } from '@/stores/useUnreadStore';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { ImageLightbox } from './ImageLightbox';
 import { FilePreviewModal } from './FilePreviewModal';
@@ -427,6 +428,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
           anchorClassName="absolute -top-4 end-5 mt-9"
           onClose={() => setShowMoreMenu(false)}
           onCopyLink={handleCopyLink}
+          reminderTarget={{ messageId: message.id }}
           onMarkUnread={!isThread ? () => {
             setShowMoreMenu(false);
             const allMessages = useMessageStore.getState().messages;
@@ -434,6 +436,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
               (m) => m.channelId === message.channelId && m.id >= message.id
             ).length;
             setUnreadCount(message.channelId, unreadCount);
+            useUnreadStore.getState().markUnreadFrom(message.channelId, message.id);
             markChannelUnread(message.channelId, message.id).catch(() => {});
           } : undefined}
           onPin={!isThread ? () => {

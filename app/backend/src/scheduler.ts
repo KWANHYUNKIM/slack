@@ -4,6 +4,7 @@ import { USER_SELECT_BASIC, FILE_SELECT } from './db/selects.js';
 import { logError } from './utils/logger.js';
 import { processNewChannelMessage } from './services/mentionService.js';
 import { clearExpired } from './services/statusService.js';
+import { processDueReminders } from './services/reminderService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
@@ -14,6 +15,8 @@ export function startScheduler(): NodeJS.Timeout {
   const handle = setInterval(async () => {
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.
     void clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
+    // 리마인더도 예약 메시지 처리를 막지 않게 따로 돌린다. 겹치는 틱은 firedAt 선점이 막는다.
+    void processDueReminders().catch((err) => logError('Scheduler: processDueReminders failed', err));
     if (isProcessing) return;
     isProcessing = true;
     try {

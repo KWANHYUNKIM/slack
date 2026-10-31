@@ -70,3 +70,6 @@
 | 2026-10-31 22:49 | dev-3 | sonnet | 10-unread-divider | 122,412 |
 | 2026-10-31 22:51 | dev-4 | sonnet | PR #33 리뷰 반영 | 78,199 |
 | 2026-10-31 22:52 | code-review | (리뷰) | PR #36 medium | 76,997 |
+| 2026-10-31 22:55 | dev-1 | haiku | fix/auth-error-logging + admin-store-rethrow | 91,979 |
+| 2026-10-31 22:58 | code-review | (리뷰) | PR #38 medium | 61,048 |
+| 2026-10-31 22:56 | dev-3 | sonnet | PR #36 리뷰 반영 | 37,503 |

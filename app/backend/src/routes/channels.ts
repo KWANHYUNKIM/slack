@@ -166,7 +166,9 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
     const userId = req.user!.userId;
 
-    const [channel, star] = await Promise.all([
+    const withUnread = req.query.withUnread === '1';
+
+    const [channel, star, unreadRows] = await Promise.all([
       prisma.channel.findUnique({
       where: { id: channelId },
       include: {
@@ -186,7 +188,20 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
         where: { userId_channelId: { userId, channelId } },
         select: { userId: true },
       }),
+      withUnread
+        ? prisma.$queryRaw<Array<{ lastReadMessageId: number | null; unreadCount: bigint }>>`
+            SELECT cr."lastReadMessageId" AS "lastReadMessageId",
+              (SELECT COUNT(*)::bigint FROM "Message" m
+                WHERE m."channelId" = ${channelId}
+                  AND (m."threadId" IS NULL OR m."alsoSendToChannel")
+                  AND m."deletedAt" IS NULL
+                  AND (cr."lastReadMessageId" IS NULL OR m.id > cr."lastReadMessageId")) AS "unreadCount"
+            FROM (SELECT 1) one
+            LEFT JOIN "ChannelRead" cr ON cr."userId" = ${userId} AND cr."channelId" = ${channelId}
+          `
+        : Promise.resolve(null),
     ]);
+    const unreadRow = unreadRows?.[0];
 
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
@@ -218,7 +233,10 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    res.json({ ...channel, isStarred });
+    // 안 읽음 구분선용 기준점(?withUnread=1일 때만). 읽음 처리는 하지 않는다. 행이 없으면 목록 배지처럼 전부 안 읽음(null)이다.
+    res.json(unreadRow
+      ? { ...channel, isStarred, lastReadMessageId: unreadRow.lastReadMessageId, unreadCount: Number(unreadRow.unreadCount) }
+      : { ...channel, isStarred });
   } catch (error) {
     logError('Get channel error', error);
     res.status(500).json({ error: 'Failed to get channel' });
