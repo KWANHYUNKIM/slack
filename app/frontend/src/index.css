@@ -177,6 +177,8 @@ body {
   min-height: 38px;
   max-height: 200px;
   overflow-y: auto;
+  /* Quill 기본값 text-align:left를 덮어써 RTL에서 입력창이 오른쪽에 붙게 한다 */
+  text-align: start;
 }
 
 .slawk-editor .ql-editor.ql-blank::before {
@@ -198,10 +200,169 @@ body {
   font-weight: 700;
 }
 
-.slawk-editor .ql-editor blockquote {
+/*
+ * 인용: Quill 기본(.ql-snow .ql-editor blockquote)이 border-left/padding-left를 쓴다.
+ * 선택자를 Quill과 같은 .ql-snow .ql-editor 경로에 더 얹어 로드 순서와 무관하게 이기고,
+ * 물리 속성을 먼저 0/none으로 지운 뒤 논리 속성을 쓴다(RTL에서 양쪽 테두리가 생기지 않는다).
+ */
+.slawk-editor .ql-snow .ql-editor blockquote {
+  border-left: none;
+  border-right: none;
+  padding-left: 0;
+  padding-right: 0;
   border-inline-start: 4px solid var(--color-slack-border);
   padding-inline-start: 12px;
   margin: 4px 0;
+}
+
+/* 목록: Quill의 ol/li padding-left와 마커 margin-left/right를 논리 속성으로 덮어쓴다 */
+.slawk-editor .ql-snow .ql-editor ol,
+.slawk-editor .ql-snow .ql-editor ul {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 1.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor li,
+.slawk-editor .ql-snow .ql-editor li.ql-direction-rtl {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 1.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor li > .ql-ui:before,
+.slawk-editor .ql-snow .ql-editor li.ql-direction-rtl > .ql-ui:before {
+  margin-left: 0;
+  margin-right: 0;
+  margin-inline-start: -1.5em;
+  margin-inline-end: 0.3em;
+  text-align: end;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-1:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-1.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 3em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-1:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-1.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 4.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-2:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-2.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 6em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-2:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-2.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 7.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-3:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-3.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 9em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-3:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-3.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 10.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-4:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-4.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 12em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-4:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-4.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 13.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-5:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-5.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 15em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-5:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-5.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 16.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-6:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-6.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 18em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-6:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-6.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 19.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-7:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-7.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 21em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-7:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-7.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 22.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-8:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-8.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 24em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-8:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-8.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 25.5em;
+}
+
+.slawk-editor .ql-snow .ql-editor .ql-indent-9:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor .ql-indent-9.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 27em;
+}
+
+.slawk-editor .ql-snow .ql-editor li.ql-indent-9:not(.ql-direction-rtl),
+.slawk-editor .ql-snow .ql-editor li.ql-indent-9.ql-direction-rtl.ql-align-right {
+  padding-left: 0;
+  padding-right: 0;
+  padding-inline-start: 28.5em;
 }
 
 .slawk-editor .ql-editor pre.ql-syntax,

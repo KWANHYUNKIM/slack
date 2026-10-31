@@ -188,7 +188,7 @@ export function ScheduledMessagesTab() {
                     className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-border-light"
                     title={t('messages:scheduled.sendNow')}
                   >
-                    <Send className="h-3.5 w-3.5 text-slack-secondary" />
+                    <Send className="h-3.5 w-3.5 text-slack-secondary rtl:-scale-x-100" />
                   </button>
                   <button
                     onClick={() => handleCancel(msg.id)}

@@ -246,7 +246,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
                   : 'text-slack-disabled',
               )}
             >
-              <SendHorizontal className="h-4 w-4" />
+              <SendHorizontal className="h-4 w-4 rtl:-scale-x-100" />
             </button>
             <button
               data-testid={`${prefix}schedule-button`}
