@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "النشاط",
+    "markAllRead": "تعليم الكل كمقروء",
+    "loading": "جارٍ التحميل...",
+    "loadingMore": "جارٍ تحميل المزيد...",
+    "loadFailed": "تعذّر تحميل النشاط.",
+    "empty": "لا يوجد نشاط بعد.",
+    "unread": "غير مقروء",
+    "menu": "القائمة",
+    "someone": "شخص ما",
+    "directMessage": "رسالة مباشرة",
+    "messageDeleted": "رسالة محذوفة"
+  },
+  "tabs": {
+    "all": "الكل",
+    "mentions": "الإشارات",
+    "threads": "سلاسل الرسائل",
+    "reactions": "التفاعلات"
+  },
+  "describe": {
+    "mention": "أشار إليك {actor} في {where}",
+    "channelMention": "أشار {actor} إلى @channel في {where}",
+    "hereMention": "أشار {actor} إلى @here في {where}",
+    "threadReply": "ردّ {actor} على سلسلة رسائل في {where}",
+    "reaction": "تفاعل {actor} بـ {emoji} على رسالتك في {where}",
+    "reminder": "تذكير"
+  }
+}

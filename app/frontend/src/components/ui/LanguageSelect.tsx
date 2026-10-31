@@ -14,7 +14,7 @@ function languageName(code: string): string {
 export function LanguageSelect({ className }: { className?: string }) {
   const { t, i18n } = useTranslation('settings');
   const listed = SELECTABLE_LOCALES.some((l) => l.code === i18n.language);
-  // 번역 파일이 없는 RTL 언어(ar 등)가 켜져 있으면 목록에 없다. 그 언어를 별도 항목으로 보여 줘야
+  // 번역 파일이 없는 RTL 언어(ur 등)가 켜져 있으면 목록에 없다. 그 언어를 별도 항목으로 보여 줘야
   // 사용자가 en이나 ko를 골랐을 때 change가 발생하고 빠져나올 수 있다.
   const current = listed ? i18n.language : i18n.language || 'en';
   const pendingName = listed ? '' : languageName(i18n.language);

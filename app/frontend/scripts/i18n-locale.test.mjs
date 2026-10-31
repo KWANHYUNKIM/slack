@@ -13,9 +13,10 @@ import {
   SELECTABLE_LOCALES,
 } from '../src/lib/i18n/config.ts';
 import { TIER1_LOCALES, TIER2_LOCALES, isBetaLocale } from '../src/lib/i18n/tiers.ts';
+import { getDirection } from '../src/lib/i18n/direction.ts';
 
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales');
-const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro'];
+const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro', 'ar', 'he', 'fa'];
 
 function loadLocale(locale) {
   const dir = join(LOCALES_DIR, locale);
@@ -43,7 +44,7 @@ async function makeI18n(resources = RESOURCES) {
 const SAMPLES = [
   {
     key: 'common:actions.save',
-    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz', nl: 'Opslaan', tr: 'Kaydet', sv: 'Spara', da: 'Gem', vi: 'Lưu', id: 'Simpan', ms: 'Simpan', fil: 'I-save', hi: 'सहेजें', bn: 'সংরক্ষণ করুন', th: 'บันทึก', nb: 'Lagre', fi: 'Tallenna', cs: 'Uložit', el: 'Αποθήκευση', hu: 'Mentés', ro: 'Salvează' },
+    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz', nl: 'Opslaan', tr: 'Kaydet', sv: 'Spara', da: 'Gem', vi: 'Lưu', id: 'Simpan', ms: 'Simpan', fil: 'I-save', hi: 'सहेजें', bn: 'সংরক্ষণ করুন', th: 'บันทึก', nb: 'Lagre', fi: 'Tallenna', cs: 'Uložit', el: 'Αποθήκευση', hu: 'Mentés', ro: 'Salvează', ar: 'حفظ', he: 'שמירה', fa: 'ذخیره' },
   },
   {
     key: 'auth:login.submit',
@@ -72,12 +73,12 @@ const SAMPLES = [
       hi: 'ईमेल से साइन इन करें',
       bn: 'ইমেল দিয়ে সাইন ইন করুন',
       th: 'เข้าสู่ระบบด้วยอีเมล',
-      nb: 'Logg inn med e-post', fi: 'Kirjaudu sähköpostilla', cs: 'Přihlásit se e-mailem', el: 'Σύνδεση με email', hu: 'Bejelentkezés e-mail-címmel', ro: 'Conectare cu e-mail',
+      nb: 'Logg inn med e-post', fi: 'Kirjaudu sähköpostilla', cs: 'Přihlásit se e-mailem', el: 'Σύνδεση με email', hu: 'Bejelentkezés e-mail-címmel', ro: 'Conectare cu e-mail', ar: 'تسجيل الدخول بالبريد الإلكتروني', he: 'התחברות עם דוא"ל', fa: 'ورود با ایمیل',
     },
   },
   {
     key: 'sidebar:nav.activity',
-    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność', nl: 'Activiteit', tr: 'Etkinlik', sv: 'Aktivitet', da: 'Aktivitet', vi: 'Hoạt động', id: 'Aktivitas', ms: 'Aktiviti', fil: 'Aktibidad', hi: 'गतिविधि', bn: 'কার্যকলাপ', th: 'กิจกรรม', nb: 'Aktivitet', fi: 'Toiminta', cs: 'Aktivita', el: 'Δραστηριότητα', hu: 'Tevékenység', ro: 'Activitate' },
+    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność', nl: 'Activiteit', tr: 'Etkinlik', sv: 'Aktivitet', da: 'Aktivitet', vi: 'Hoạt động', id: 'Aktivitas', ms: 'Aktiviti', fil: 'Aktibidad', hi: 'गतिविधि', bn: 'কার্যকলাপ', th: 'กิจกรรม', nb: 'Aktivitet', fi: 'Toiminta', cs: 'Aktivita', el: 'Δραστηριότητα', hu: 'Tevékenység', ro: 'Activitate', ar: 'النشاط', he: 'פעילות', fa: 'فعالیت' },
   },
   {
     key: 'messages:input.send',
@@ -106,7 +107,7 @@ const SAMPLES = [
       hi: 'संदेश भेजें',
       bn: 'বার্তা পাঠান',
       th: 'ส่งข้อความ',
-      nb: 'Send melding', fi: 'Lähetä viesti', cs: 'Odeslat zprávu', el: 'Αποστολή μηνύματος', hu: 'Üzenet küldése', ro: 'Trimite mesajul',
+      nb: 'Send melding', fi: 'Lähetä viesti', cs: 'Odeslat zprávu', el: 'Αποστολή μηνύματος', hu: 'Üzenet küldése', ro: 'Trimite mesajul', ar: 'إرسال الرسالة', he: 'שליחת הודעה', fa: 'ارسال پیام',
     },
   },
   {
@@ -137,7 +138,7 @@ const SAMPLES = [
       hi: '2 सदस्य',
       bn: '২ জন সদস্য',
       th: '2 สมาชิก',
-      nb: '2 medlemmer', fi: '2 jäsentä', cs: '2 členové', el: '2 μέλη', hu: '2 tag', ro: '2 membri',
+      nb: '2 medlemmer', fi: '2 jäsentä', cs: '2 členové', el: '2 μέλη', hu: '2 tag', ro: '2 membri', ar: 'عضوان', he: 'שני חברים', fa: '۲ عضو',
     },
   },
   {
@@ -167,12 +168,12 @@ const SAMPLES = [
       hi: 'आइटम नहीं मिला।',
       bn: 'আইটেমটি পাওয়া যায়নি।',
       th: 'ไม่พบรายการที่ต้องการ',
-      nb: 'Fant ikke elementet.', fi: 'Kohdetta ei löytynyt.', cs: 'Položka nebyla nalezena.', el: 'Το στοιχείο δεν βρέθηκε.', hu: 'Az elem nem található.', ro: 'Elementul nu a fost găsit.',
+      nb: 'Fant ikke elementet.', fi: 'Kohdetta ei löytynyt.', cs: 'Položka nebyla nalezena.', el: 'Το στοιχείο δεν βρέθηκε.', hu: 'Az elem nem található.', ro: 'Elementul nu a fost găsit.', ar: 'العنصر غير موجود.', he: 'הפריט לא נמצא.', fa: 'این مورد پیدا نشد.',
     },
   },
   {
     key: 'settings:language.label',
-    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język', nl: 'Taal', tr: 'Dil', sv: 'Språk', da: 'Sprog', vi: 'Ngôn ngữ', id: 'Bahasa', ms: 'Bahasa', fil: 'Wika', hi: 'भाषा', bn: 'ভাষা', th: 'ภาษา', nb: 'Språk', fi: 'Kieli', cs: 'Jazyk', el: 'Γλώσσα', hu: 'Nyelv', ro: 'Limbă' },
+    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język', nl: 'Taal', tr: 'Dil', sv: 'Språk', da: 'Sprog', vi: 'Ngôn ngữ', id: 'Bahasa', ms: 'Bahasa', fil: 'Wika', hi: 'भाषा', bn: 'ভাষা', th: 'ภาษา', nb: 'Språk', fi: 'Kieli', cs: 'Jazyk', el: 'Γλώσσα', hu: 'Nyelv', ro: 'Limbă', ar: 'اللغة', he: 'שפה', fa: 'زبان' },
   },
   {
     key: 'sidebar:userMenu.pausedUntil',
@@ -202,7 +203,7 @@ const SAMPLES = [
       hi: '9:00 तक रुकी हुई',
       bn: '9:00 পর্যন্ত বিরতিতে',
       th: 'หยุดชั่วคราวจนถึง 9:00',
-      nb: 'På pause til 9:00', fi: 'Keskeytetty klo 9:00 asti', cs: 'Pozastaveno do 9:00', el: 'Σε παύση έως τις 9:00', hu: 'Szüneteltetve eddig: 9:00', ro: 'Pe pauză până la 9:00',
+      nb: 'På pause til 9:00', fi: 'Keskeytetty klo 9:00 asti', cs: 'Pozastaveno do 9:00', el: 'Σε παύση έως τις 9:00', hu: 'Szüneteltetve eddig: 9:00', ro: 'Pe pauză până la 9:00', ar: 'متوقفة حتى 9:00', he: 'מושהה עד 9:00', fa: 'تا ساعت 9:00 متوقف است',
     },
   },
 ];
@@ -330,11 +331,28 @@ const PLURAL_CASES = [
     lng: 'ro',
     cases: { 0: '0 membri', 1: '1 membru', 2: '2 membri', 5: '5 membri', 11: '11 membri', 12: '12 membri', 21: '21 de membri', 22: '22 de membri', 111: '111 membri' },
   },
+  // 3차 RTL(ar, he, fa): 아랍어는 zero·one·two·few·many·other 여섯 분기, 히브리어는 one·two·other, 페르시아어는 one·other다.
+  // 숫자는 Intl 기본 체계를 따른다. ar는 이 Node에서 라틴 숫자(1,234), fa는 페르시아 숫자(۱۲۳۴)다.
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'ar',
+    cases: { 0: 'لا أعضاء', 1: 'عضو واحد', 2: 'عضوان', 3: '3 أعضاء', 11: '11 عضوًا', 100: '100 عضو' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'he',
+    cases: { 0: '0 חברים', 1: 'חבר אחד', 2: 'שני חברים', 3: '3 חברים', 11: '11 חברים', 100: '100 חברים' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'fa',
+    cases: { 0: '۰ عضو', 1: '۱ عضو', 2: '۲ عضو', 3: '۳ عضو', 11: '۱۱ عضو', 100: '۱۰۰ عضو' },
+  },
 ];
 
 test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→nl→tr→sv→da→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
   const i18n = await makeI18n();
-  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro', 'ko', 'en']) {
+  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro', 'ar', 'he', 'fa', 'ko', 'en']) {
     await i18n.changeLanguage(lng);
     for (const sample of SAMPLES) {
       assert.equal(i18n.t(sample.key, sample.options), sample.values[lng], `${lng} ${sample.key}`);
@@ -345,7 +363,7 @@ test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→n
 test('같은 키를 여러 번 바꿔 읽어도 값이 흔들리지 않는다(반복 확인)', async () => {
   const i18n = await makeI18n();
   for (let round = 0; round < 3; round += 1) {
-    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro', 'ko', 'zh-Hans', 'en']) {
+    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'nl', 'tr', 'sv', 'da', 'vi', 'id', 'ms', 'fil', 'hi', 'bn', 'th', 'nb', 'fi', 'cs', 'el', 'hu', 'ro', 'ko', 'zh-Hans', 'en', 'ar', 'he', 'fa']) {
       await i18n.changeLanguage(lng);
       assert.equal(i18n.t('settings:language.label'), SAMPLES[6].values[lng]);
     }
@@ -687,5 +705,90 @@ test('신규 5개 언어 복수형 경계(cs, ro, el, fi, hu)는 언어를 바�
     }
     await i18n.changeLanguage('en');
     assert.equal(i18n.t('channels:dialog.memberCount', { count: 2 }), '2 members');
+  }
+});
+
+// 3차 RTL 2등급(ar, he, fa): 읽기, 수정, 삭제(영어 대체), 다시 만들기를 두 바퀴 반복하고 그때마다 방향(dir)을 확인한다.
+test('RTL 2등급(ar, he, fa)은 번역 리소스 CRUD가 같게 동작하고 방향은 rtl이다', async () => {
+  const i18n = await makeI18n();
+  for (let round = 0; round < 2; round += 1) {
+    for (const [lng, unreads] of [
+      ['ar', 'غير المقروءة'],
+      ['he', 'לא נקראו'],
+      ['fa', 'خوانده‌نشده‌ها'],
+    ]) {
+      await i18n.changeLanguage(lng);
+      assert.equal(getDirection(lng), 'rtl', `${lng} dir round ${round}`);
+      const bundle = () => structuredClone(RESOURCES[lng].sidebar);
+      const setBundle = (value) => {
+        i18n.removeResourceBundle(lng, 'sidebar');
+        i18n.addResourceBundle(lng, 'sidebar', value, true, true);
+      };
+
+      // Read
+      assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} read round ${round}`);
+
+      // Update
+      const updated = bundle();
+      updated.nav.unreads = 'TEST';
+      setBundle(updated);
+      assert.equal(i18n.t('sidebar:nav.unreads'), 'TEST', `${lng} update round ${round}`);
+
+      // Delete: 키를 지우면 영어 원문(Unreads)으로 대체된다
+      const removed = bundle();
+      delete removed.nav.unreads;
+      setBundle(removed);
+      assert.equal(i18n.t('sidebar:nav.unreads'), 'Unreads', `${lng} delete round ${round}`);
+
+      // Create: 다시 추가하면 번역이 돌아온다
+      setBundle(bundle());
+      assert.equal(i18n.t('sidebar:nav.unreads'), unreads, `${lng} create round ${round}`);
+    }
+    await i18n.changeLanguage('en');
+    assert.equal(getDirection('en'), 'ltr');
+  }
+});
+
+// 번역 파일이 아직 없는 RTL 우르두(ur): 문자열은 영어로 대체되지만 방향은 rtl이다.
+test('번역 파일이 없는 RTL 우르두(ur)는 문자열이 영어로 대체되고 방향은 rtl이다', async () => {
+  const i18n = await makeI18n();
+  await i18n.changeLanguage('ur');
+  assert.equal(getDirection('ur'), 'rtl');
+  assert.equal(i18n.t('common:actions.save'), 'Save');
+  assert.equal(i18n.t('sidebar:nav.unreads'), 'Unreads');
+  assert.equal(getDirection('ur-PK'), 'rtl');
+});
+
+// 방향 격리(U+2068 FSI … U+2069 PDI): 번역문 안의 LTR 조각(파일명, 채널)만 격리하고 자리표시자 이름은 그대로 둔다.
+test('RTL 번역은 LTR 조각을 방향 격리로 감싸고 자리표시자 값은 그대로 보간된다', async () => {
+  const i18n = await makeI18n();
+  await i18n.changeLanguage('ar');
+  assert.equal(i18n.t('messages:filePreview.remove', { name: 'report.pdf' }), 'إزالة ⁨report.pdf⁩');
+  assert.equal(i18n.t('messages:area.placeholder', { channel: 'general' }), 'رسالة إلى ⁨#general⁩');
+  await i18n.changeLanguage('he');
+  assert.equal(i18n.t('messages:filePreview.remove', { name: 'report.pdf' }), 'הסרת ⁨report.pdf⁩');
+  await i18n.changeLanguage('fa');
+  assert.equal(i18n.t('messages:search.inChannel', { channel: 'general' }), 'در ⁨#general⁩');
+});
+
+// 복수형 경계 반복 확인(ar, he, fa): 같은 키를 언어를 바꿔가며 여러 번 읽어도 분기가 흔들리지 않는다.
+test('RTL 복수형 경계(0, 1, 2, 3, 11, 100)는 언어를 바꾸고 되돌려도 같은 값을 낸다', async () => {
+  const i18n = await makeI18n();
+  for (let round = 0; round < 3; round += 1) {
+    for (const [lng, count, expected] of [
+      ['ar', 0, 'لا أعضاء'],
+      ['ar', 2, 'عضوان'],
+      ['ar', 3, '3 أعضاء'],
+      ['ar', 11, '11 عضوًا'],
+      ['he', 1, 'חבר אחד'],
+      ['he', 2, 'שני חברים'],
+      ['he', 100, '100 חברים'],
+      ['fa', 3, '۳ عضو'],
+    ]) {
+      await i18n.changeLanguage(lng);
+      assert.equal(i18n.t('channels:dialog.memberCount', { count }), expected, `${lng} ${count} round ${round}`);
+    }
+    await i18n.changeLanguage('en');
+    assert.equal(i18n.t('channels:dialog.memberCount', { count: 3 }), '3 members');
   }
 });

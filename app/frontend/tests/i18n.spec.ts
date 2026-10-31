@@ -26,10 +26,10 @@ test.describe('i18n', () => {
     await expect(page.getByPlaceholder('Password')).toBeVisible();
   });
 
-  test('아랍어(번역 파일 없음)를 고르면 dir=rtl이 되고 문자열은 영어로 대체된다', async ({ page }) => {
-    await page.addInitScript(() => localStorage.setItem('locale', 'ar'));
+  test('우르두어(번역 파일 없음)를 고르면 dir=rtl이 되고 문자열은 영어로 대체된다', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('locale', 'ur'));
     await page.goto('/login');
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ur');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.getByPlaceholder('Password')).toBeVisible();
   });

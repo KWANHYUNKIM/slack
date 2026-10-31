@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "close": "بستن",
+    "send": "ارسال",
+    "confirm": "تأیید",
+    "back": "بازگشت",
+    "remove": "حذف کردن",
+    "add": "افزودن",
+    "create": "ایجاد",
+    "retry": "تلاش دوباره",
+    "search": "جستجو",
+    "copy": "کپی",
+    "done": "تمام",
+    "next": "بعدی",
+    "more": "بیشتر"
+  },
+  "emojiPicker": {
+    "loadFailed": "بارگذاری اموجی‌ها انجام نشد. اتصال خود را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره"
+  },
+  "status": {
+    "loading": "در حال بارگذاری...",
+    "saving": "در حال ذخیره...",
+    "deleting": "در حال حذف..."
+  },
+  "dates": {
+    "today": "امروز",
+    "yesterday": "دیروز"
+  },
+  "quickSwitcher": {
+    "title": "جابه‌جایی سریع",
+    "inputLabel": "پرش به گفتگو",
+    "placeholder": "پرش به کانال یا گفتگو",
+    "recent": "اخیر",
+    "results": "نتایج",
+    "clearRecent": "پاک کردن موارد اخیر",
+    "listLabel": "گفتگوها",
+    "noResults": "گفتگوی مطابقی پیدا نشد",
+    "starred": "ستاره‌دار",
+    "unread": "خوانده‌نشده",
+    "dnd": "مزاحم نشوید",
+    "footer": "⁨{keys}⁩ برای باز کردن. کلیدهای بالا و پایین برای جابه‌جایی، Enter برای رفتن و Esc برای بستن.",
+    "open": "پرش به…",
+    "kind": {
+      "channel": "کانال",
+      "dm": "پیام مستقیم",
+      "group": "پیام گروهی"
+    }
+  },
+  "shortcuts": {
+    "title": "میان‌برهای صفحه‌کلید",
+    "groups": {
+      "navigation": "پیمایش",
+      "general": "عمومی"
+    },
+    "items": {
+      "switcher": "باز کردن جابه‌جایی سریع",
+      "prevChannel": "گفتگوی قبلی",
+      "nextChannel": "گفتگوی بعدی",
+      "prevUnread": "گفتگوی خوانده‌نشده قبلی",
+      "nextUnread": "گفتگوی خوانده‌نشده بعدی",
+      "help": "نمایش میان‌برهای صفحه‌کلید",
+      "closeTop": "بستن جابه‌جایی سریع یا این گفتگوی باز"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "فضای کاری"
+  },
+  "organization": {
+    "defaultName": "سازمان"
+  }
+}

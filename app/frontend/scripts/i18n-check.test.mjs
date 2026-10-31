@@ -139,6 +139,9 @@ test('실제 번역 파일(ko, ja, zh-Hans, zh-Hant, es, fr, de, pt-BR, it, ru, 
     ['el', 2],
     ['hu', 2],
     ['ro', 2],
+    ['ar', 2],
+    ['he', 2],
+    ['fa', 2],
   ]) {
     const { errors } = checkLocale(en, load(locale), { tier });
     assert.deepEqual(errors, [], `${locale} 오류`);
@@ -208,6 +211,9 @@ test('CLDR 분기 키는 Intl.PluralRules가 그 로캘에 대해 내는 카테�
     el: ['one', 'other'],
     hu: ['one', 'other'],
     ro: ['one', 'few', 'other'],
+    ar: ['zero', 'one', 'two', 'few', 'many', 'other'],
+    he: ['one', 'two', 'other'],
+    fa: ['one', 'other'],
   };
   for (const [locale, categories] of Object.entries(expected)) {
     // Intl이 내는 카테고리와 규칙서 값이 같은지 먼저 확인한다(이 Node의 ICU 데이터 기준)

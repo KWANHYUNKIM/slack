@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "שליחת התראה לכל מי שמחובר",
+    "channelLabel": "@channel",
+    "channelHint": "שליחת התראה לכל מי שבערוץ הזה"
+  },
+  "deleteDialog": {
+    "title": "מחיקת הודעה",
+    "body": "למחוק את ההודעה הזו? לא ניתן לבטל את הפעולה."
+  },
+  "editorToolbar": {
+    "attachFile": "צירוף קובץ",
+    "emoji": "אימוג'י",
+    "mention": "אזכור אדם",
+    "stopRecording": "עצירת הקלטה",
+    "recordVoice": "הקלטת הודעה קולית"
+  },
+  "emojiAutocomplete": {
+    "navigate": "לניווט",
+    "select": "לבחירה",
+    "dismiss": "לסגירה",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "הסרת ⁨{name}⁩"
+  },
+  "fileModal": {
+    "download": "הורדה",
+    "loadFailed": "לא ניתן לטעון את תוכן הקובץ",
+    "truncated": "... (קוצר)",
+    "noPreview": "אין תצוגה מקדימה",
+    "downloadToView": "הורד את הקובץ כדי לצפות בו"
+  },
+  "files": {
+    "allFiles": "כל הקבצים",
+    "channelFiles": "קבצי הערוץ",
+    "loadFailed": "טעינת הקבצים נכשלה.",
+    "empty": "עדיין לא הועלו קבצים",
+    "download": "הורדה",
+    "menu": "תפריט",
+    "unavailable": "הקובץ אינו זמין",
+    "preparing": "הקובץ מוכן"
+  },
+  "format": {
+    "bold": "מודגש",
+    "italic": "נטוי",
+    "strike": "קו חוצה",
+    "link": "קישור",
+    "orderedList": "רשימה ממוספרת",
+    "bulletList": "רשימת תבליטים",
+    "code": "קוד",
+    "codeBlock": "בלוק קוד",
+    "quote": "ציטוט"
+  },
+  "notifications": {
+    "title": "התראות",
+    "empty": "אין התראות חדשות",
+    "unreadCount": "{count, plural, one {הודעה אחת שלא נקראה} two {שתי הודעות שלא נקראו} other {# הודעות שלא נקראו}}"
+  },
+  "search": {
+    "placeholder": "חיפוש",
+    "searching": "מחפש...",
+    "noResults": "לא נמצאו תוצאות",
+    "previewHint": "{count, plural, one {התוצאה המובילה} two {שתי התוצאות המובילות} other {# התוצאות המובילות}} · הצג הכול (Enter)",
+    "truncatedNotice": "יש הרבה תוצאות. הוסף מסננים כדי לצמצם אותן.",
+    "retry": "נסה שוב",
+    "ignoredChip": "{token} (מתעלם)",
+    "ignoredLimitChip": "{token} (מתעלם: יותר מדי)",
+    "inChannel": "ב-⁨#{channel}⁩",
+    "title": "תוצאות חיפוש",
+    "resultsFor": "תוצאות עבור ⁨{query}⁩",
+    "emptyQuery": "הקלד מונח לחיפוש, או השתמש במסננים כמו from:‏ in:‏ has:‏ before:‏ after:.",
+    "noResultsHint": "נסה מילות מפתח אחרות או הסר חלק מהמסננים.",
+    "clearFilters": "ניקוי כל המסננים",
+    "removeFilter": "הסרת המסנן ⁨{filter}⁩",
+    "loadFailed": "החיפוש נכשל. נסה שוב.",
+    "loadMore": "טען עוד",
+    "threadReply": "תגובה בשרשור",
+    "directMessage": "הודעה פרטית",
+    "groupMessage": "שיחה קבוצתית",
+    "joined": "מצטרף",
+    "privateChannel": "פרטי",
+    "archivedChannel": "בארכיון",
+    "back": "חזרה",
+    "tabs": {
+      "label": "סוגי תוצאות חיפוש",
+      "messages": "הודעות",
+      "files": "קבצים",
+      "people": "אנשים",
+      "channels": "ערוצים"
+    },
+    "sort": {
+      "label": "מיון לפי",
+      "relevance": "רלוונטיות",
+      "recent": "החדשות ביותר"
+    }
+  },
+  "headerTabs": {
+    "files": "קבצים",
+    "pins": "הצמדות"
+  },
+  "lightbox": {
+    "close": "סגירה"
+  },
+  "later": {
+    "title": "מאוחר יותר",
+    "saved": "שמורות",
+    "scheduled": "מתוזמנות",
+    "loadFailed": "טעינת ההודעות השמורות נכשלה.",
+    "empty": "אין הודעות שמורות עדיין. לחץ על סימניית השמירה בכל הודעה כדי לשמור אותה.",
+    "removeSaved": "הסרה מהשמורות",
+    "menu": "תפריט",
+    "reminders": "תזכורות"
+  },
+  "linkModal": {
+    "title": "הוספת קישור",
+    "url": "כתובת (URL)",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "טקסט להצגה",
+    "optional": "(אופציונלי)",
+    "textPlaceholder": "טקסט הקישור",
+    "close": "סגירה"
+  },
+  "actionsMenu": {
+    "noActions": "אין פעולות זמינות",
+    "markUnread": "סימון כלא נקראה",
+    "pin": "הצמדת הודעה",
+    "unpin": "ביטול הצמדת הודעה",
+    "edit": "עריכת הודעה",
+    "delete": "מחיקת הודעה",
+    "copyLink": "העתקת קישור",
+    "remind": "הזכר לי על ההודעה הזו"
+  },
+  "area": {
+    "selectChannel": "בחר ערוץ כדי להתחיל לשלוח הודעות",
+    "openMenu": "פתיחת תפריט",
+    "placeholder": "הודעה ל-⁨#{channel}⁩",
+    "viewing": "אתה צופה ב-<bold>⁨#{channel}⁩</bold>",
+    "joinChannel": "הצטרפות לערוץ"
+  },
+  "header": {
+    "menu": "תפריט",
+    "unstar": "הסרה ממסומנות בכוכב",
+    "star": "הוספה למסומנות בכוכב",
+    "members": "חברים: {count}",
+    "search": "חיפוש",
+    "channelMenu": "אפשרויות ערוץ",
+    "leaveChannel": "יציאה מהערוץ",
+    "leaveLastMember": "לא ניתן לצאת מהערוץ — אתה החבר האחרון.",
+    "dismiss": "סגירה",
+    "addTopic": "הוספת נושא",
+    "editDetails": "עריכת פרטי הערוץ"
+  },
+  "message": {
+    "edited": "(נערך)",
+    "pinned": "מוצמד",
+    "showMore": "הצג עוד",
+    "showLess": "הצג פחות",
+    "repliedToThread": "הגיב לשרשור: {excerpt}",
+    "deletedPlaceholder": "ההודעה הזו נמחקה.",
+    "sendToChannel": "שלח גם לערוץ",
+    "removeFromChannel": "הסרה מהערוץ"
+  },
+  "input": {
+    "uploading": "מעלה...",
+    "scheduleMessage": "תזמון הודעה",
+    "send": "שליחת הודעה",
+    "hint": "לחץ <kbd>Enter</kbd> לשליחה, <kbd>Shift + Enter</kbd> לשורה חדשה",
+    "scheduledFor": "מתוזמנת ל-{time}",
+    "scheduleFailed": "תזמון ההודעה נכשל. נסה שוב."
+  },
+  "list": {
+    "loading": "טוען הודעות...",
+    "empty": "אין הודעות עדיין",
+    "emptyReadOnly": "אין הודעות בערוץ הזה.",
+    "emptyFirst": "היה הראשון לשלוח הודעה!"
+  },
+  "reactions": {
+    "tooltip": "{names} הגיבו ב-{emoji}",
+    "add": "הוספת תגובה",
+    "you": "אתה"
+  },
+  "toolbar": {
+    "addReaction": "הוספת תגובה",
+    "replyInThread": "תגובה בשרשור",
+    "removeBookmark": "הסרת סימנייה",
+    "bookmark": "הוספת סימנייה להודעה הזו",
+    "moreActions": "פעולות נוספות"
+  },
+  "mobileSearch": {
+    "placeholder": "חיפוש הודעות...",
+    "hint": "חפש הודעות בכל הערוצים והשיחות",
+    "close": "סגירת החיפוש"
+  },
+  "pins": {
+    "title": "הודעות מוצמדות",
+    "loadFailed": "טעינת ההודעות המוצמדות נכשלה.",
+    "empty": "אין הודעות מוצמדות עדיין"
+  },
+  "schedule": {
+    "menuTitle": "תזמון הודעה",
+    "in20": "בעוד 20 דקות",
+    "in1h": "בעוד שעה",
+    "in3h": "בעוד 3 שעות",
+    "tomorrow9": "מחר בשעה 9:00",
+    "custom": "זמן מותאם אישית...",
+    "modalTitle": "תזמון הודעה",
+    "dateTime": "תאריך ושעה",
+    "pickFuture": "בחר זמן בעתיד.",
+    "submit": "תזמון",
+    "submitting": "מתזמן...",
+    "close": "סגירה"
+  },
+  "scheduled": {
+    "loadFailed": "טעינת ההודעות המתוזמנות נכשלה.",
+    "cancelFailed": "ביטול ההודעה נכשל.",
+    "sendFailed": "שליחת ההודעה נכשלה.",
+    "saveFailed": "שמירת השינויים נכשלה.",
+    "empty": "אין הודעות מתוזמנות. השתמש בסמל השעון בעורך ההודעות כדי לתזמן הודעה.",
+    "sendAt": "שליחה ב:",
+    "edit": "עריכה",
+    "sendNow": "שליחה עכשיו",
+    "cancel": "ביטול",
+    "failedDlp": "ההודעה לא נשלחה כי היא התאימה לכלל הגנת מידע ({rule}). מחק אותה וכתוב הודעה חדשה."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {תגובה אחת} two {שתי תגובות} other {# תגובות}}"
+  },
+  "unreads": {
+    "title": "לא נקראו",
+    "loadFailed": "טעינת ההודעות שלא נקראו נכשלה.",
+    "empty": "אין הודעות שלא נקראו. סיימת הכול!",
+    "menu": "תפריט"
+  },
+  "threadPanel": {
+    "title": "שרשור",
+    "replyPlaceholder": "תגובה...",
+    "loadFailed": "טעינת השרשור נכשלה. נסה שוב.",
+    "loading": "טוען שרשור...",
+    "replyFailed": "שליחת התגובה נכשלה. נסה שוב.",
+    "joinToReply": "הצטרף לערוץ כדי להגיב בשרשורים",
+    "alsoSendToChannel": "שלח גם לערוץ"
+  },
+  "errors": {
+    "messageEmpty": "לא ניתן לשלוח הודעה ריקה.",
+    "pasteUploadFailed": "העלאת התמונה שהודבקה נכשלה. נסה שוב.",
+    "dropUploadFailed": "העלאת הקובץ שנגרר נכשלה. נסה שוב.",
+    "uploadFailed": "העלאת הקובץ נכשלה. נסה שוב.",
+    "voiceUploadFailed": "העלאת ההודעה הקולית נכשלה.",
+    "micDenied": "הגישה למיקרופון נדחתה. יש לאפשר גישה למיקרופון.",
+    "loadFailed": "טעינת ההודעות נכשלה.",
+    "sendTimeout": "שליחת ההודעה חרגה מהזמן המותר. נסה שוב.",
+    "sendFailed": "שליחת ההודעה נכשלה. נסה שוב.",
+    "pushNotConfigured": "התראות דחיפה אינן מוגדרות בשרת",
+    "serviceWorkerUnavailable": "שירות הרקע (Service Worker) אינו זמין",
+    "subscribeFailed": "רישום המנוי נכשל",
+    "editFailed": "לא ניתן לשמור את העריכה. נסה שוב."
+  },
+  "details": {
+    "title": "פרטי הערוץ",
+    "name": "שם",
+    "topic": "נושא",
+    "topicPlaceholder": "על מה הערוץ הזה?",
+    "description": "תיאור",
+    "descriptionPlaceholder": "הוסף תיאור",
+    "createdBy": "נוצר על ידי {name}",
+    "readOnly": "רק בעלי הערוץ, המנחים ומנהלי סביבת העבודה יכולים לערוך את הפרטים האלה.",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "saveFailed": "שמירת פרטי הערוץ נכשלה."
+  },
+  "intro": {
+    "title": "ברוכים הבאים ל-⁨#{name}⁩",
+    "noDescription": "אין עדיין תיאור.",
+    "editDescription": "עריכת התיאור"
+  },
+  "threads": {
+    "title": "שרשורים",
+    "menu": "תפריט",
+    "loadFailed": "טעינת השרשורים נכשלה.",
+    "empty": "אין שרשורים עדיין",
+    "emptyHint": "שרשורים שתפתח או שתגיב בהם יופיעו כאן.",
+    "newReplies": "{count, plural, one {תגובה חדשה אחת} two {שתי תגובות חדשות} other {# תגובות חדשות}}",
+    "replyCount": "{count, plural, one {תגובה אחת} two {שתי תגובות} other {# תגובות}}",
+    "olderReplies": "פתח את השרשור כדי לראות תגובות קודמות",
+    "replyPlaceholder": "תגובה...",
+    "send": "שליחה",
+    "replyFailed": "שליחת התגובה נכשלה. נסה שוב.",
+    "alsoSendToChannel": "שלח גם לערוץ",
+    "openThread": "פתיחת שרשור",
+    "loadMore": "טען עוד",
+    "loading": "טוען..."
+  },
+  "permalink": {
+    "copied": "הקישור הועתק",
+    "notFound": "לא ניתן למצוא את ההודעה הזו, או שאין לך הרשאה לצפות בה",
+    "goHome": "חזרה לדף הבית",
+    "copyManually": "לא ניתן להעתיק אוטומטית. העתק את הקישור הזה: {url}"
+  },
+  "unread": {
+    "divider": "חדש",
+    "newMessagesBar": "{count, plural, one {הודעה חדשה אחת} two {שתי הודעות חדשות} other {# הודעות חדשות}}",
+    "newMessagesBarAtLeast": "{count, plural, one {הודעה חדשה אחת לפחות} two {שתי הודעות חדשות לפחות} other {# הודעות חדשות לפחות}}",
+    "markRead": "סימון כנקרא",
+    "jumpFailed": "לא ניתן לטעון את מיקום ההודעות שלא נקראו"
+  },
+  "reminder": {
+    "set": "הגדרת תזכורת",
+    "customLabel": "תאריך ושעה לתזכורת",
+    "preset": {
+      "in20": "בעוד 20 דקות",
+      "in1h": "בעוד שעה",
+      "in3h": "בעוד 3 שעות",
+      "tomorrow": "מחר",
+      "nextWeek": "בשבוע הבא",
+      "custom": "מותאם אישית..."
+    },
+    "status": {
+      "pending": "קרוב",
+      "done": "הושלם"
+    },
+    "snooze": {
+      "m10": "10 דקות",
+      "h1": "שעה",
+      "tomorrow": "מחר"
+    },
+    "loadFailed": "טעינת התזכורות נכשלה.",
+    "empty": "אין תזכורות. השתמש בתפריט הפעולות של הודעה, או הקלד /remind כדי להוסיף תזכורת.",
+    "emptyDone": "אין תזכורות שהושלמו.",
+    "dueAt": "מועד: {time}",
+    "firedAt": "המועד היה {time}",
+    "completedAt": "הושלם ב-{time}",
+    "messageDeleted": "הודעה שנמחקה",
+    "complete": "סימון כהושלם",
+    "reopen": "סימון כלא הושלם",
+    "delete": "מחיקת התזכורת",
+    "toast": {
+      "created": "התזכורת נקבעה",
+      "due": "תזכורת: {text}",
+      "createFailed": "הגדרת התזכורת נכשלה. נסה שוב."
+    },
+    "command": {
+      "syntax": "שימוש: /remind me [טקסט] in [מספר] [minutes|hours|days]",
+      "tooShort": "התזכורת חייבת להיות לפחות דקה אחת מעכשיו.",
+      "tooLong": "התזכורת חייבת להיות בתוך שנה אחת.",
+      "created": "התזכורת נקבעה ל-{time}"
+    },
+    "pastTime": "בחר זמן בעתיד.",
+    "loadMore": "טען עוד"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "delete": "מחיקה",
+    "edit": "עריכה",
+    "close": "סגירה",
+    "send": "שליחה",
+    "confirm": "אישור",
+    "back": "חזרה",
+    "remove": "הסרה",
+    "add": "הוספה",
+    "create": "יצירה",
+    "retry": "ניסיון נוסף",
+    "search": "חיפוש",
+    "copy": "העתקה",
+    "done": "סיום",
+    "next": "הבא",
+    "more": "עוד"
+  },
+  "emojiPicker": {
+    "loadFailed": "לא ניתן לטעון אימוג'ים. בדוק את החיבור ונסה שוב.",
+    "retry": "ניסיון נוסף"
+  },
+  "status": {
+    "loading": "טוען...",
+    "saving": "שומר...",
+    "deleting": "מוחק..."
+  },
+  "dates": {
+    "today": "היום",
+    "yesterday": "אתמול"
+  },
+  "quickSwitcher": {
+    "title": "מעבר מהיר",
+    "inputLabel": "מעבר לשיחה",
+    "placeholder": "מעבר לערוץ או לשיחה",
+    "recent": "אחרונים",
+    "results": "תוצאות",
+    "clearRecent": "ניקוי האחרונים",
+    "listLabel": "שיחות",
+    "noResults": "אין שיחות תואמות",
+    "starred": "מסומנות בכוכב",
+    "unread": "לא נקראו",
+    "dnd": "נא לא להפריע",
+    "footer": "⁨{keys}⁩ לפתיחה. מקשי החצים למעבר, Enter למעבר, Esc לסגירה.",
+    "open": "מעבר אל…",
+    "kind": {
+      "channel": "ערוץ",
+      "dm": "הודעה פרטית",
+      "group": "הודעה קבוצתית"
+    }
+  },
+  "shortcuts": {
+    "title": "קיצורי מקלדת",
+    "groups": {
+      "navigation": "ניווט",
+      "general": "כללי"
+    },
+    "items": {
+      "switcher": "פתיחת המעבר המהיר",
+      "prevChannel": "השיחה הקודמת",
+      "nextChannel": "השיחה הבאה",
+      "prevUnread": "השיחה הקודמת שלא נקראה",
+      "nextUnread": "השיחה הבאה שלא נקראה",
+      "help": "הצגת קיצורי מקלדת",
+      "closeTop": "סגירת המעבר המהיר או תיבת הדו-שיח הזו"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "סביבת עבודה"
+  },
+  "organization": {
+    "defaultName": "ארגון"
+  }
+}

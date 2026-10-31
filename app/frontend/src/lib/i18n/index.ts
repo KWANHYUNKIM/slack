@@ -18,12 +18,9 @@ export {
 } from './config';
 export { isBetaLocale } from './tiers';
 
-/** 오른쪽에서 왼쪽으로 쓰는 언어 */
-const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur']);
+import { getDirection, RTL_LANGUAGES } from './direction';
 
-export function getDirection(locale: string): 'ltr' | 'rtl' {
-  return RTL_LANGUAGES.has(locale.split('-')[0].toLowerCase()) ? 'rtl' : 'ltr';
-}
+export { getDirection };
 
 // 번역 JSON은 번들에 포함하고 로캘별로 지연 로딩한다 (외부 CDN 금지, 규칙 17)
 const localeFiles = import.meta.glob<{ default: Record<string, unknown> }>('../../locales/*/*.json');

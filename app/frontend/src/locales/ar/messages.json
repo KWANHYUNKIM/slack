@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "إشعار كل من هو متصل الآن",
+    "channelLabel": "@channel",
+    "channelHint": "إشعار كل من في هذه القناة"
+  },
+  "deleteDialog": {
+    "title": "حذف الرسالة",
+    "body": "هل أنت متأكد من حذف هذه الرسالة؟ لا يمكن التراجع عن هذا الإجراء."
+  },
+  "editorToolbar": {
+    "attachFile": "إرفاق ملف",
+    "emoji": "رمز تعبيري",
+    "mention": "الإشارة إلى شخص",
+    "stopRecording": "إيقاف التسجيل",
+    "recordVoice": "تسجيل مقطع صوتي"
+  },
+  "emojiAutocomplete": {
+    "navigate": "للتنقل",
+    "select": "للاختيار",
+    "dismiss": "للإغلاق",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "إزالة ⁨{name}⁩"
+  },
+  "fileModal": {
+    "download": "تنزيل",
+    "loadFailed": "تعذّر تحميل محتوى الملف",
+    "truncated": "... (تم الاقتطاع)",
+    "noPreview": "لا توجد معاينة متاحة",
+    "downloadToView": "نزّل الملف لعرضه"
+  },
+  "files": {
+    "allFiles": "كل الملفات",
+    "channelFiles": "ملفات القناة",
+    "loadFailed": "تعذّر تحميل الملفات.",
+    "empty": "لم يتم رفع أي ملفات بعد",
+    "download": "تنزيل",
+    "menu": "القائمة",
+    "unavailable": "الملف غير متاح",
+    "preparing": "جارٍ تجهيز الملف"
+  },
+  "format": {
+    "bold": "غامق",
+    "italic": "مائل",
+    "strike": "يتوسطه خط",
+    "link": "رابط",
+    "orderedList": "قائمة مرقمة",
+    "bulletList": "قائمة نقطية",
+    "code": "كود",
+    "codeBlock": "كتلة كود",
+    "quote": "اقتباس"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات جديدة",
+    "unreadCount": "{count, plural, zero {لا رسائل غير مقروءة} one {# رسالة غير مقروءة} two {رسالتان غير مقروءتين} few {# رسائل غير مقروءة} many {# رسالة غير مقروءة} other {# رسالة غير مقروءة}}"
+  },
+  "search": {
+    "placeholder": "بحث",
+    "searching": "جارٍ البحث...",
+    "noResults": "لم يتم العثور على نتائج",
+    "previewHint": "{count, plural, one {أفضل نتيجة واحدة} other {أفضل # نتيجة}} · عرض الكل (Enter)",
+    "truncatedNotice": "توجد نتائج كثيرة. أضف عوامل تصفية لتضييقها.",
+    "retry": "إعادة المحاولة",
+    "ignoredChip": "{token} (تم تجاهله)",
+    "ignoredLimitChip": "{token} (تم تجاهله: كثير جدًا)",
+    "inChannel": "في ⁨#{channel}⁩",
+    "title": "نتائج البحث",
+    "resultsFor": "نتائج البحث عن ⁨{query}⁩",
+    "emptyQuery": "اكتب كلمة بحث، أو استخدم عوامل تصفية مثل from: وin: وhas: وbefore: وafter:.",
+    "noResultsHint": "جرّب كلمات أخرى أو احذف بعض عوامل التصفية.",
+    "clearFilters": "مسح كل عوامل التصفية",
+    "removeFilter": "إزالة عامل التصفية ⁨{filter}⁩",
+    "loadFailed": "فشل البحث. يرجى المحاولة مرة أخرى.",
+    "loadMore": "تحميل المزيد",
+    "threadReply": "رد في سلسلة رسائل",
+    "directMessage": "رسالة مباشرة",
+    "groupMessage": "محادثة جماعية",
+    "joined": "منضم",
+    "privateChannel": "خاصة",
+    "archivedChannel": "مؤرشفة",
+    "back": "رجوع",
+    "tabs": {
+      "label": "أنواع نتائج البحث",
+      "messages": "الرسائل",
+      "files": "الملفات",
+      "people": "الأشخاص",
+      "channels": "القنوات"
+    },
+    "sort": {
+      "label": "ترتيب حسب",
+      "relevance": "الأكثر صلة",
+      "recent": "الأحدث"
+    }
+  },
+  "headerTabs": {
+    "files": "الملفات",
+    "pins": "المثبتات"
+  },
+  "lightbox": {
+    "close": "إغلاق"
+  },
+  "later": {
+    "title": "لاحقًا",
+    "saved": "المحفوظة",
+    "scheduled": "المجدولة",
+    "loadFailed": "تعذّر تحميل الرسائل المحفوظة.",
+    "empty": "لا توجد رسائل محفوظة بعد. انقر على أيقونة الإشارة المرجعية في أي رسالة لحفظها.",
+    "removeSaved": "إزالة من المحفوظة",
+    "menu": "القائمة",
+    "reminders": "التذكيرات"
+  },
+  "linkModal": {
+    "title": "إضافة رابط",
+    "url": "الرابط",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "النص المعروض",
+    "optional": "(اختياري)",
+    "textPlaceholder": "نص الرابط",
+    "close": "إغلاق"
+  },
+  "actionsMenu": {
+    "noActions": "لا توجد إجراءات متاحة",
+    "markUnread": "تعليم كغير مقروءة",
+    "pin": "تثبيت الرسالة",
+    "unpin": "إلغاء تثبيت الرسالة",
+    "edit": "تعديل الرسالة",
+    "delete": "حذف الرسالة",
+    "copyLink": "نسخ الرابط",
+    "remind": "ذكّرني بهذه الرسالة"
+  },
+  "area": {
+    "selectChannel": "اختر قناة لبدء المراسلة",
+    "openMenu": "فتح القائمة",
+    "placeholder": "رسالة إلى ⁨#{channel}⁩",
+    "viewing": "أنت تعرض <bold>⁨#{channel}⁩</bold>",
+    "joinChannel": "الانضمام إلى القناة"
+  },
+  "header": {
+    "menu": "القائمة",
+    "unstar": "إزالة من المميزة بنجمة",
+    "star": "إضافة إلى المميزة بنجمة",
+    "members": "الأعضاء: {count}",
+    "search": "بحث",
+    "channelMenu": "خيارات القناة",
+    "leaveChannel": "مغادرة القناة",
+    "leaveLastMember": "لا يمكن مغادرة القناة، فأنت آخر عضو فيها.",
+    "dismiss": "تجاهل",
+    "addTopic": "إضافة موضوع",
+    "editDetails": "تعديل تفاصيل القناة"
+  },
+  "message": {
+    "edited": "(تم التعديل)",
+    "pinned": "مثبتة",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "repliedToThread": "ردّ على سلسلة رسائل: {excerpt}",
+    "deletedPlaceholder": "تم حذف هذه الرسالة.",
+    "sendToChannel": "إرسال إلى القناة أيضًا",
+    "removeFromChannel": "إزالة من القناة"
+  },
+  "input": {
+    "uploading": "جارٍ الرفع...",
+    "scheduleMessage": "جدولة الرسالة",
+    "send": "إرسال الرسالة",
+    "hint": "اضغط <kbd>Enter</kbd> للإرسال، و<kbd>Shift + Enter</kbd> لسطر جديد",
+    "scheduledFor": "مجدولة في {time}",
+    "scheduleFailed": "تعذّرت جدولة الرسالة. يرجى المحاولة مرة أخرى."
+  },
+  "list": {
+    "loading": "جارٍ تحميل الرسائل...",
+    "empty": "لا توجد رسائل بعد",
+    "emptyReadOnly": "لا توجد رسائل في هذه القناة.",
+    "emptyFirst": "كن أول من يرسل رسالة!"
+  },
+  "reactions": {
+    "tooltip": "تفاعل {names} بـ {emoji}",
+    "add": "إضافة تفاعل",
+    "you": "أنت"
+  },
+  "toolbar": {
+    "addReaction": "إضافة تفاعل",
+    "replyInThread": "الرد في سلسلة الرسائل",
+    "removeBookmark": "إزالة الإشارة المرجعية",
+    "bookmark": "وضع إشارة مرجعية على هذه الرسالة",
+    "moreActions": "إجراءات أخرى"
+  },
+  "mobileSearch": {
+    "placeholder": "بحث في الرسائل...",
+    "hint": "ابحث في الرسائل عبر كل القنوات والمحادثات",
+    "close": "إغلاق البحث"
+  },
+  "pins": {
+    "title": "الرسائل المثبتة",
+    "loadFailed": "تعذّر تحميل الرسائل المثبتة.",
+    "empty": "لا توجد رسائل مثبتة بعد"
+  },
+  "schedule": {
+    "menuTitle": "جدولة الرسالة",
+    "in20": "بعد 20 دقيقة",
+    "in1h": "بعد ساعة",
+    "in3h": "بعد 3 ساعات",
+    "tomorrow9": "غدًا الساعة 9:00 صباحًا",
+    "custom": "وقت مخصص...",
+    "modalTitle": "جدولة الرسالة",
+    "dateTime": "التاريخ والوقت",
+    "pickFuture": "اختر وقتًا في المستقبل.",
+    "submit": "جدولة",
+    "submitting": "جارٍ الجدولة...",
+    "close": "إغلاق"
+  },
+  "scheduled": {
+    "loadFailed": "تعذّر تحميل الرسائل المجدولة.",
+    "cancelFailed": "تعذّر إلغاء الرسالة.",
+    "sendFailed": "تعذّر إرسال الرسالة.",
+    "saveFailed": "تعذّر حفظ التغييرات.",
+    "empty": "لا توجد رسائل مجدولة. استخدم أيقونة الساعة في محرر الرسائل لجدولة رسالة.",
+    "sendAt": "الإرسال في:",
+    "edit": "تعديل",
+    "sendNow": "إرسال الآن",
+    "cancel": "إلغاء",
+    "failedDlp": "لم تُرسل هذه الرسالة لأنها طابقت قاعدة حماية البيانات ({rule}). احذفها واكتب رسالة جديدة."
+  },
+  "thread": {
+    "replyCount": "{count, plural, zero {لا ردود} one {# رد} two {ردّان} few {# ردود} many {# ردًا} other {# رد}}"
+  },
+  "unreads": {
+    "title": "غير المقروءة",
+    "loadFailed": "تعذّر تحميل الرسائل غير المقروءة.",
+    "empty": "لا توجد رسائل غير مقروءة. لقد اطلعت على كل شيء!",
+    "menu": "القائمة"
+  },
+  "threadPanel": {
+    "title": "سلسلة الرسائل",
+    "replyPlaceholder": "رد...",
+    "loadFailed": "تعذّر تحميل سلسلة الرسائل. يرجى المحاولة مرة أخرى.",
+    "loading": "جارٍ تحميل سلسلة الرسائل...",
+    "replyFailed": "تعذّر إرسال الرد. يرجى المحاولة مرة أخرى.",
+    "joinToReply": "انضم إلى القناة للرد في سلاسل الرسائل",
+    "alsoSendToChannel": "إرسال إلى القناة أيضًا"
+  },
+  "errors": {
+    "messageEmpty": "لا يمكن أن تكون الرسالة فارغة.",
+    "pasteUploadFailed": "تعذّر رفع الصورة الملصوقة. يرجى المحاولة مرة أخرى.",
+    "dropUploadFailed": "تعذّر رفع الملف المسحوب. يرجى المحاولة مرة أخرى.",
+    "uploadFailed": "تعذّر رفع الملف. يرجى المحاولة مرة أخرى.",
+    "voiceUploadFailed": "تعذّر رفع الرسالة الصوتية.",
+    "micDenied": "تم رفض الوصول إلى الميكروفون. يرجى السماح بالوصول إلى الميكروفون.",
+    "loadFailed": "تعذّر تحميل الرسائل.",
+    "sendTimeout": "انتهت مهلة إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+    "sendFailed": "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+    "pushNotConfigured": "إشعارات الدفع غير مهيأة على الخادم",
+    "serviceWorkerUnavailable": "عامل الخدمة غير متاح",
+    "subscribeFailed": "تعذّر تسجيل الاشتراك",
+    "editFailed": "تعذّر حفظ التعديل. يرجى المحاولة مرة أخرى."
+  },
+  "details": {
+    "title": "تفاصيل القناة",
+    "name": "الاسم",
+    "topic": "الموضوع",
+    "topicPlaceholder": "عن ماذا تدور هذه القناة؟",
+    "description": "الوصف",
+    "descriptionPlaceholder": "أضف وصفًا",
+    "createdBy": "أنشأها {name}",
+    "readOnly": "لا يمكن تعديل هذه التفاصيل إلا من مالكي القناة والمشرفين ومسؤولي مساحة العمل.",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "saveFailed": "تعذّر حفظ تفاصيل القناة."
+  },
+  "intro": {
+    "title": "مرحبًا بك في ⁨#{name}⁩",
+    "noDescription": "لا يوجد وصف بعد.",
+    "editDescription": "تعديل الوصف"
+  },
+  "threads": {
+    "title": "سلاسل الرسائل",
+    "menu": "القائمة",
+    "loadFailed": "تعذّر تحميل سلاسل الرسائل.",
+    "empty": "لا توجد سلاسل رسائل بعد",
+    "emptyHint": "ستظهر هنا سلاسل الرسائل التي تبدؤها أو تردّ عليها.",
+    "newReplies": "{count, plural, zero {لا ردود جديدة} one {# رد جديد} two {ردّان جديدان} few {# ردود جديدة} many {# ردًا جديدًا} other {# رد جديد}}",
+    "replyCount": "{count, plural, zero {لا ردود} one {# رد} two {ردّان} few {# ردود} many {# ردًا} other {# رد}}",
+    "olderReplies": "افتح سلسلة الرسائل لرؤية الردود السابقة",
+    "replyPlaceholder": "رد...",
+    "send": "إرسال",
+    "replyFailed": "تعذّر إرسال الرد. يرجى المحاولة مرة أخرى.",
+    "alsoSendToChannel": "إرسال إلى القناة أيضًا",
+    "openThread": "فتح سلسلة الرسائل",
+    "loadMore": "تحميل المزيد",
+    "loading": "جارٍ التحميل..."
+  },
+  "permalink": {
+    "copied": "تم نسخ الرابط",
+    "notFound": "لا يمكن العثور على هذه الرسالة، أو ليست لديك صلاحية لعرضها",
+    "goHome": "الذهاب إلى الصفحة الرئيسية",
+    "copyManually": "تعذّر النسخ تلقائيًا. انسخ هذا الرابط: {url}"
+  },
+  "unread": {
+    "divider": "جديد",
+    "newMessagesBar": "{count, plural, zero {لا رسائل جديدة} one {# رسالة جديدة} two {رسالتان جديدتان} few {# رسائل جديدة} many {# رسالة جديدة} other {# رسالة جديدة}}",
+    "newMessagesBarAtLeast": "{count, plural, zero {لا رسائل جديدة} one {# رسالة جديدة على الأقل} two {رسالتان جديدتان على الأقل} few {# رسائل جديدة على الأقل} many {# رسالة جديدة على الأقل} other {# رسالة جديدة على الأقل}}",
+    "markRead": "تعليم كمقروء",
+    "jumpFailed": "تعذّر تحميل موضع الرسائل غير المقروءة"
+  },
+  "reminder": {
+    "set": "ضبط تذكير",
+    "customLabel": "تاريخ التذكير ووقته",
+    "preset": {
+      "in20": "بعد 20 دقيقة",
+      "in1h": "بعد ساعة",
+      "in3h": "بعد 3 ساعات",
+      "tomorrow": "غدًا",
+      "nextWeek": "الأسبوع المقبل",
+      "custom": "مخصص..."
+    },
+    "status": {
+      "pending": "قادم",
+      "done": "مكتمل"
+    },
+    "snooze": {
+      "m10": "10 دقائق",
+      "h1": "ساعة واحدة",
+      "tomorrow": "غدًا"
+    },
+    "loadFailed": "تعذّر تحميل التذكيرات.",
+    "empty": "لا توجد تذكيرات. استخدم قائمة الإجراءات الإضافية على رسالة أو اكتب /remind لإضافة تذكير.",
+    "emptyDone": "لا توجد تذكيرات مكتملة.",
+    "dueAt": "موعده {time}",
+    "firedAt": "كان موعده {time}",
+    "completedAt": "اكتمل في {time}",
+    "messageDeleted": "رسالة محذوفة",
+    "complete": "تعليم كمكتمل",
+    "reopen": "تعليم كغير مكتمل",
+    "delete": "حذف التذكير",
+    "toast": {
+      "created": "تم ضبط التذكير",
+      "due": "تذكير: {text}",
+      "createFailed": "تعذّر ضبط التذكير. يرجى المحاولة مرة أخرى."
+    },
+    "command": {
+      "syntax": "الاستخدام: /remind me [النص] in [العدد] [minutes|hours|days]",
+      "tooShort": "يجب أن يكون التذكير بعد دقيقة واحدة على الأقل.",
+      "tooLong": "يجب أن يكون التذكير خلال سنة واحدة.",
+      "created": "تم ضبط التذكير في {time}"
+    },
+    "pastTime": "اختر وقتًا في المستقبل.",
+    "loadMore": "تحميل المزيد"
+  }
+}

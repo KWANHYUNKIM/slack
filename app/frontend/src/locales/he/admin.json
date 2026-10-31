@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "לוח ניהול",
+    "openSidebar": "פתיחת סרגל צד",
+    "tabs": {
+      "members": "חברים",
+      "invites": "הזמנות",
+      "channels": "ערוצים",
+      "webhooks": "Webhooks",
+      "audit": "יומן ביקורת",
+      "retention": "שמירת נתונים",
+      "security": "אבטחה",
+      "dlp": "מניעת דליפת מידע",
+      "legalHolds": "השהיות משפטיות"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "ערוץ",
+      "members": "חברים",
+      "messages": "הודעות",
+      "created": "נוצר"
+    },
+    "actions": {
+      "rename": "שינוי שם הערוץ",
+      "archive": "העברה לארכיון",
+      "delete": "מחיקת ערוץ",
+      "unarchive": "הוצאה מהארכיון",
+      "deletePermanently": "מחיקה לצמיתות"
+    },
+    "emptyActive": "אין ערוצים פעילים",
+    "archivedHeading": "ערוצים בארכיון ({count})",
+    "archivedOn": "הועבר לארכיון ב-{date}",
+    "messageCount": "{count, plural, one {הודעה אחת} two {שתי הודעות} other {# הודעות}}",
+    "deleteDialog": {
+      "title": "מחיקת ערוץ",
+      "message": "למחוק לצמיתות את ⁨#{name}⁩? כל ההודעות יאבדו. לא ניתן לבטל את הפעולה."
+    },
+    "archiveDialog": {
+      "title": "העברה לארכיון",
+      "confirm": "העברה לארכיון",
+      "message": "להעביר את ⁨#{name}⁩ לארכיון? הערוץ יוסתר מסרגל הצד, אבל ההודעות ישמרו. אפשר להוציא אותו מהארכיון בהמשך."
+    },
+    "unarchiveDialog": {
+      "title": "הוצאה מהארכיון",
+      "confirm": "הוצאה מהארכיון",
+      "message": "להוציא את ⁨#{name}⁩ מהארכיון? הוא יופיע שוב בסרגל הצד של כל החברים."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "חיפוש חברים...",
+    "columns": {
+      "user": "משתמש",
+      "email": "דוא\"ל",
+      "role": "תפקיד",
+      "status": "סטטוס",
+      "actions": "פעולות"
+    },
+    "you": "(אתה)",
+    "roles": {
+      "owner": "בעלים",
+      "admin": "מנהל",
+      "member": "חבר",
+      "guest": "אורח"
+    },
+    "status": {
+      "active": "פעיל",
+      "deactivated": "מושבת"
+    },
+    "actions": {
+      "transfer": "העברת בעלות",
+      "reactivate": "הפעלה מחדש",
+      "deactivate": "השבתה",
+      "forceLogout": "כפיית התנתקות",
+      "resetMfa": "איפוס אימות דו-שלבי"
+    },
+    "empty": "לא נמצאו משתמשים",
+    "dialogs": {
+      "transfer": {
+        "title": "העברת הבעלות על סביבת העבודה",
+        "confirm": "העברה",
+        "message": "להעביר את הבעלות על סביבת העבודה ל-{name}? התפקיד שלך ישתנה למנהל."
+      },
+      "deactivate": {
+        "title": "השבתת משתמש",
+        "confirm": "השבתה",
+        "message": "להשבית את {name}? הוא ייצא מהמערכת מיד ולא יוכל להתחבר."
+      },
+      "reactivate": {
+        "title": "הפעלה מחדש של משתמש",
+        "confirm": "הפעלה מחדש",
+        "message": "להפעיל מחדש את {name}? הוא יוכל להתחבר שוב."
+      },
+      "forceLogout": {
+        "title": "כפיית התנתקות",
+        "confirm": "התנתקות",
+        "message": "לנתק את {name} מכל המכשירים עכשיו? החשבון שלו יישאר פעיל והוא יוכל להתחבר שוב."
+      },
+      "resetMfa": {
+        "title": "איפוס אימות דו-שלבי",
+        "confirm": "איפוס",
+        "message": "להסיר את האימות הדו-שלבי של {name}? הוא ינותק מכל המכשירים ויוכל להתחבר עם סיסמה בלבד."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "אימות דו-שלבי פעיל"
+    }
+  },
+  "invites": {
+    "createHeading": "יצירת קישור הזמנה",
+    "fields": {
+      "role": "תפקיד",
+      "maxUses": "מספר שימושים מקסימלי",
+      "expiresIn": "תוקף"
+    },
+    "unlimited": "ללא הגבלה",
+    "expiry": {
+      "1d": "יום אחד",
+      "7d": "7 ימים",
+      "30d": "30 ימים",
+      "never": "ללא תפוגה"
+    },
+    "expired": "פג תוקף",
+    "columns": {
+      "url": "קישור הזמנה",
+      "uses": "שימושים",
+      "expires": "תוקף",
+      "createdBy": "נוצר על ידי"
+    },
+    "copyUrl": "העתקת קישור ההזמנה",
+    "full": "(מלא)",
+    "delete": "מחיקת הזמנה",
+    "empty": "אין עדיין קישורי הזמנה"
+  },
+  "webhooks": {
+    "createHeading": "יצירת Webhook",
+    "fields": {
+      "name": "שם ה-Webhook",
+      "channel": "ערוץ"
+    },
+    "namePlaceholder": "האינטגרציה שלי",
+    "selectChannel": "בחר ערוץ...",
+    "columns": {
+      "name": "שם",
+      "url": "כתובת ה-Webhook",
+      "lastUsed": "שימוש אחרון"
+    },
+    "never": "אף פעם",
+    "justNow": "הרגע",
+    "inactive": "לא פעיל",
+    "copyUrl": "העתקת כתובת ה-Webhook",
+    "delete": "מחיקת Webhook",
+    "empty": "עדיין לא הוגדרו Webhooks"
+  },
+  "audit": {
+    "empty": "אין רשומות ביומן הביקורת שמתאימות. פעולות שנרשמו יופיעו כאן.",
+    "loadMore": "טען עוד",
+    "targets": {
+      "user": "משתמש",
+      "channel": "ערוץ",
+      "invite": "הזמנה",
+      "webhook": "Webhook",
+      "message": "הודעה",
+      "directMessage": "הודעה פרטית",
+      "token": "אסימון גישה",
+      "auditLog": "יומן ביקורת",
+      "mcpTool": "כלי MCP",
+      "workspace": "סביבת עבודה",
+      "file": "קובץ",
+      "dlpRule": "כלל מניעת דליפת מידע",
+      "legalHold": "השהיה משפטית"
+    },
+    "action": {
+      "authLogin": "התחברות",
+      "authLoginFailed": "ההתחברות נכשלה",
+      "authLogout": "התנתקות",
+      "authPasswordChanged": "הסיסמה שונתה",
+      "userRoleChanged": "התפקיד שונה",
+      "userDeactivated": "הושבת",
+      "userForceLogout": "התנתקות בכפייה",
+      "userReactivated": "הופעל מחדש",
+      "ownershipTransferred": "הבעלות הועברה",
+      "ownerBootstrapped": "בעלים נוצר",
+      "channelCreated": "ערוץ נוצר",
+      "channelEdited": "ערוץ נערך",
+      "channelArchived": "ערוץ הועבר לארכיון",
+      "channelUnarchived": "ערוץ הוצא מהארכיון",
+      "channelDeleted": "ערוץ נמחק",
+      "channelMemberAdded": "חבר נוסף",
+      "channelMemberRemoved": "חבר הוסר",
+      "inviteCreated": "הזמנה נוצרה",
+      "inviteDeleted": "הזמנה נמחקה",
+      "webhookCreated": "Webhook נוצר",
+      "webhookDeleted": "Webhook נמחק",
+      "tokenCreate": "אסימון נוצר",
+      "tokenRevoke": "אסימון בוטל",
+      "mcpToolCall": "קריאה לכלי MCP",
+      "auditExported": "יומן הביקורת יוצא",
+      "authLoginLocked": "החשבון ננעל",
+      "sessionRevoked": "מכשיר נותק",
+      "sessionRevokedAll": "כל המכשירים נותקו",
+      "retentionPurged": "נתונים שפג תוקפם נמחקו",
+      "retentionWorkspaceUpdated": "מדיניות השמירה שונתה",
+      "retentionChannelUpdated": "שמירת הערוץ שונתה",
+      "retentionChannelCleared": "שמירת הערוץ אופסה",
+      "mfaEnabled": "אימות דו-שלבי הופעל",
+      "mfaDisabled": "אימות דו-שלבי כובה",
+      "mfaRecoveryUsed": "קוד שחזור נוצל",
+      "mfaRecoveryRegenerated": "קודי שחזור נוצרו מחדש",
+      "mfaResetByAdmin": "אימות דו-שלבי אופס על ידי מנהל",
+      "mfaPolicyChanged": "דרישת האימות הדו-שלבי שונתה",
+      "dlpBlocked": "הודעה נחסמה על ידי מניעת דליפת מידע",
+      "dlpWarned": "אזהרת מניעת דליפת מידע",
+      "dlpRuleCreated": "כלל מניעת דליפת מידע נוצר",
+      "dlpRuleUpdated": "כלל מניעת דליפת מידע שונה",
+      "dlpRuleDeleted": "כלל מניעת דליפת מידע נמחק",
+      "dlpRuleTimeout": "כלל מניעת דליפת מידע חרג מזמן הבדיקה",
+      "dlpRuleAutoDisabled": "כלל מניעת דליפת מידע כובה אוטומטית",
+      "legalHoldCreated": "השהיה משפטית נוצרה",
+      "legalHoldUpdated": "השהיה משפטית נערכה",
+      "legalHoldCustodianAdded": "אדם נוסף להשהיה משפטית",
+      "legalHoldCustodianRemoved": "אדם הוסר מהשהיה משפטית",
+      "legalHoldReleased": "השהיה משפטית שוחררה",
+      "ediscoverySearched": "חיפוש eDiscovery",
+      "ediscoveryExportRequested": "התבקש ייצוא eDiscovery",
+      "ediscoveryExported": "eDiscovery יוצא"
+    },
+    "filters": {
+      "allActions": "כל הפעולות",
+      "actionsSelected": "{count, plural, one {פעולה אחת} two {שתי פעולות} other {# פעולות}}",
+      "actor": "מבצע הפעולה",
+      "allActors": "כל מבצעי הפעולות",
+      "targetType": "סוג היעד",
+      "allTargets": "כל היעדים",
+      "from": "מתאריך",
+      "to": "עד תאריך",
+      "apply": "החלה",
+      "reset": "איפוס"
+    },
+    "export": {
+      "csv": "ייצוא CSV",
+      "json": "ייצוא JSON"
+    },
+    "unknownActor": "לא ידוע"
+  },
+  "errors": {
+    "archiveChannel": "העברת הערוץ לארכיון נכשלה",
+    "createInvite": "יצירת ההזמנה נכשלה",
+    "createWebhook": "יצירת ה-Webhook נכשלה",
+    "deactivateUser": "השבתת המשתמש נכשלה",
+    "deleteChannel": "מחיקת הערוץ נכשלה",
+    "deleteInvite": "מחיקת ההזמנה נכשלה",
+    "deleteWebhook": "מחיקת ה-Webhook נכשלה",
+    "editChannel": "עריכת הערוץ נכשלה",
+    "exportAuditLog": "ייצוא יומן הביקורת נכשל",
+    "fetchAuditLog": "טעינת יומן הביקורת נכשלה",
+    "fetchChannels": "טעינת הערוצים נכשלה",
+    "fetchInvites": "טעינת ההזמנות נכשלה",
+    "fetchUsers": "טעינת המשתמשים נכשלה",
+    "fetchWebhooks": "טעינת ה-Webhooks נכשלה",
+    "forceLogout": "ניתוק המשתמש בכפייה נכשל",
+    "reactivateUser": "הפעלת המשתמש מחדש נכשלה",
+    "removeChannelMember": "הסרת חבר הערוץ נכשלה",
+    "transferOwnership": "העברת הבעלות נכשלה",
+    "unarchiveChannel": "הוצאת הערוץ מהארכיון נכשלה",
+    "updateRole": "עדכון התפקיד נכשל",
+    "resetMfa": "איפוס האימות הדו-שלבי נכשל"
+  },
+  "retention": {
+    "title": "שמירת נתונים",
+    "description": "מחיקה אוטומטית של הודעות אחרי מספר ימים שנקבע. קבצים נמחקים יחד עם ההודעות שלהם. הניקוי פועל פעם ביום. תזכורות נשמרות ומופיע בהן \"הודעה שנמחקה\".",
+    "loadError": "טעינת מדיניות השמירה נכשלה",
+    "saveError": "שמירת מדיניות השמירה נכשלה",
+    "resetError": "איפוס מדיניות הערוץ נכשל",
+    "workspace": {
+      "heading": "ברירת המחדל של סביבת העבודה",
+      "hint": "חלה על כל ערוץ שאין לו הגדרה משלו, וגם על הודעות פרטיות ושיחות קבוצתיות."
+    },
+    "mode": {
+      "forever": "שמירה לתמיד",
+      "days": "מחיקה אחרי מספר ימים",
+      "inherit": "שימוש בברירת המחדל של סביבת העבודה"
+    },
+    "daysLabel": "ימים",
+    "daysHint": "{min} עד {max} ימים",
+    "effective": {
+      "forever": "נשמר לתמיד",
+      "days": "{count, plural, one {יום אחד} two {יומיים} other {# ימים}}"
+    },
+    "channels": {
+      "heading": "ערוצים",
+      "columns": {
+        "channel": "ערוץ",
+        "policy": "מדיניות",
+        "effective": "חל"
+      },
+      "legalHold": "השהיה משפטית",
+      "reset": "איפוס לברירת המחדל",
+      "empty": "אין ערוצים"
+    },
+    "save": "שמירה",
+    "saved": "נשמר",
+    "confirm": {
+      "title": "למחוק הודעות ישנות לצמיתות?",
+      "message": "בניקוי הבא, הודעות שישנות מ-{count, plural, one {יום אחד} two {יומיים} other {# ימים}} יימחקו לצמיתות יחד עם הקבצים שלהן. לא ניתן לבטל את הפעולה.",
+      "confirm": "החלת המדיניות"
+    }
+  },
+  "security": {
+    "title": "אימות דו-שלבי",
+    "requireMfa": "דרישת אימות דו-שלבי מכולם",
+    "requireMfaHint": "חברים ללא אימות דו-שלבי יוכלו להגיע רק למסך ההגדרה עד שיפעילו אותו.",
+    "unavailable": "האימות הדו-שלבי כבוי בשרת הזה כי לא הוגדר מפתח הצפנה (TOTP_ENCRYPTION_KEY). הדרישה אינה נאכפת.",
+    "saved": "הגדרות האבטחה נשמרו",
+    "loading": "טוען...",
+    "errors": {
+      "loadFailed": "לא ניתן לטעון את הגדרות האבטחה.",
+      "saveFailed": "לא ניתן לשמור את הגדרות האבטחה."
+    },
+    "allowOAuthApps": "אפשר לחברים לחבר אפליקציות OAuth",
+    "allowOAuthAppsHint": "מאפשר לחברים לחבר אפליקציות כמו Claude דרך תהליך התחברות OAuth. כיבוי האפשרות מנתק מיד את כל האפליקציות."
+  },
+  "dlp": {
+    "title": "מניעת דליפת מידע",
+    "description": "זיהוי דפוסים רגישים, כמו מספרי כרטיסי אשראי, בהודעות. כלל חסימה מונע שמירת ההודעה. כלל אזהרה שומר אותה ומתעד אותה ביומן הביקורת. תוכן ההודעה לעולם אינו נכתב ליומן.",
+    "loadError": "טעינת כללי מניעת דליפת המידע נכשלה",
+    "saveError": "שמירת הכלל נכשלה",
+    "toggleError": "שינוי הכלל נכשל",
+    "deleteError": "מחיקת הכלל נכשלה",
+    "testError": "בדיקת התבנית נכשלה",
+    "builtinBadge": "מובנה",
+    "builtinPattern": "גלאי מובנה",
+    "builtin": {
+      "credit_card": "מספר כרטיס אשראי",
+      "kr_rrn": "מספר זיהוי לאומי קוריאני",
+      "aws_access_key": "מפתח גישה ל-AWS",
+      "private_key": "מפתח פרטי"
+    },
+    "action": {
+      "BLOCK": "חסימה",
+      "WARN": "אזהרה"
+    },
+    "columns": {
+      "name": "כלל",
+      "pattern": "תבנית",
+      "action": "פעולה",
+      "enabled": "סטטוס"
+    },
+    "on": "פעיל",
+    "off": "כבוי",
+    "toggleLabel": "הפעלה או כיבוי של {name}",
+    "edit": "עריכה",
+    "editLabel": "עריכת {name}",
+    "delete": "מחיקה",
+    "deleteLabel": "מחיקת {name}",
+    "form": {
+      "createHeading": "הוספת כלל",
+      "editHeading": "עריכת כלל",
+      "name": "שם",
+      "pattern": "תבנית (ביטוי רגולרי)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "פעולה",
+      "add": "הוספת כלל",
+      "save": "שמירה",
+      "cancel": "ביטול",
+      "hint": "עד {max} תווים. תבניות עם חזרות מקוננות כמו (a+)+, הפניות לאחור וספירות חזרה גדולות מאוד נדחות."
+    },
+    "patternProblem": {
+      "empty": "הזן תבנית.",
+      "tooLong": "התבנית ארוכה מדי.",
+      "invalid": "זהו אינו ביטוי רגולרי תקין.",
+      "backreference": "הפניות לאחור אינן מותרות.",
+      "nestedQuantifier": "חזרות מקוננות יכולות להאט את הבדיקה מאוד, ולכן אינן מותרות.",
+      "repeatTooLarge": "מספר החזרות גדול מדי (עד 200)."
+    },
+    "test": {
+      "heading": "בדיקת תבנית",
+      "hint": "שום דבר לא נשמר. הזן תבנית למעלה או בחר כלל שמור, ואז הקלד טקסט לדוגמה.",
+      "source": "התבנית לבדיקה",
+      "sourceDraft": "התבנית בטופס למעלה",
+      "sample": "טקסט לדוגמה",
+      "run": "בדיקה",
+      "matched": "יש התאמה. הטקסט הזה ייתפס.",
+      "notMatched": "אין התאמה.",
+      "timedOut": "הבדיקה לקחה יותר מדי זמן והופסקה. פשט את התבנית."
+    },
+    "confirmDelete": {
+      "title": "למחוק את הכלל הזה?",
+      "message": "הכלל \"{name}\" יוסר ולא ייבדק יותר."
+    }
+  },
+  "legalHolds": {
+    "description": "שמירה של כל מה שאדם כתב או קיבל, גם כשמדיניות השמירה הייתה מוחקת אותו. מנהלים יכולים לחפש ולייצא את הנתונים השמורים לצורך בדיקה משפטית.",
+    "statusFilter": "הצגה",
+    "status": {
+      "active": "פעיל",
+      "released": "שוחרר",
+      "all": "הכול"
+    },
+    "empty": "אין השהיות משפטיות",
+    "selectHint": "בחר השהיה משפטית כדי לנהל את האנשים בה ולחפש בנתונים שלה.",
+    "loadMore": "טען עוד",
+    "custodianCount": "{count, plural, one {אדם אחד} two {שני אנשים} other {# אנשים}}",
+    "createdOn": "נוצר ב-{date}",
+    "releasedOn": "שוחרר ב-{date}",
+    "createdBy": "נוצר על ידי {name} ב-{date}",
+    "releasedBy": "שוחרר על ידי {name} ב-{date}",
+    "unknownUser": "משתמש לא ידוע",
+    "edit": "עריכה",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "fields": {
+      "name": "שם",
+      "description": "תיאור (אופציונלי)"
+    },
+    "create": {
+      "open": "השהיה חדשה",
+      "submit": "יצירת השהיה",
+      "hint": "אפשר להוסיף אנשים אחרי יצירת ההשהיה."
+    },
+    "custodians": {
+      "heading": "אנשים בהשהיה",
+      "pick": "בחר אדם",
+      "add": "הוספה",
+      "remove": "הסרת {name} מההשהיה הזו",
+      "empty": "עדיין אין אף אחד בהשהיה הזו.",
+      "deactivated": "מושבת"
+    },
+    "release": {
+      "open": "שחרור ההשהיה",
+      "title": "לשחרר את ההשהיה המשפטית הזו?",
+      "message": "\"{name}\" יפסיק לשמור נתונים. אנשים שאינם בהשהיה פעילה אחרת יחזרו למדיניות השמירה הרגילה, וההודעות הישנות שלהם עלולות להימחק בניקוי הבא. ההשהיה ורשימת האנשים שבה יישארו מתועדות. לא ניתן לבטל את הפעולה.",
+      "confirm": "שחרור"
+    },
+    "discovery": {
+      "heading": "חיפוש וייצוא",
+      "hint": "כולל הודעות שכתבו האנשים בהשהיה בכל ערוץ (גם פרטיים), הודעות פרטיות וקבוצתיות שהשתתפו בהן, ופרטי קבצים. הודעות שנמחקו נכללות ומסומנות.",
+      "query": "מילת מפתח",
+      "from": "מתאריך",
+      "to": "עד תאריך",
+      "search": "חיפוש",
+      "export": "ייצוא (JSONL)",
+      "exportHint": "מייצא את תוצאות החיפוש האחרון. כל חיפוש וכל ייצוא נרשמים ביומן הביקורת.",
+      "searchFirst": "חפש קודם עם המסננים האלה. הייצוא משתמש במסננים של החיפוש המוצג למטה.",
+      "kinds": {
+        "channel": "הודעות ערוץ",
+        "dm": "הודעות פרטיות",
+        "file": "קבצים"
+      },
+      "empty": "אין תוצאות",
+      "deleted": "נמחק",
+      "edited": "נערך",
+      "reply": "תגובה בשרשור",
+      "groupDm": "שיחה קבוצתית #{id}",
+      "directMessage": "{from} ← {to}"
+    },
+    "errors": {
+      "load": "טעינת ההשהיות המשפטיות נכשלה",
+      "create": "יצירת ההשהיה המשפטית נכשלה",
+      "update": "עדכון ההשהיה המשפטית נכשל",
+      "custodians": "שינוי האנשים בהשהיה נכשל",
+      "release": "שחרור ההשהיה המשפטית נכשל",
+      "search": "החיפוש נכשל",
+      "export": "הייצוא נכשל"
+    }
+  }
+}

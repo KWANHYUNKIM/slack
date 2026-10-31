@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "send": "إرسال",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "remove": "إزالة",
+    "add": "إضافة",
+    "create": "إنشاء",
+    "retry": "إعادة المحاولة",
+    "search": "بحث",
+    "copy": "نسخ",
+    "done": "تم",
+    "next": "التالي",
+    "more": "المزيد"
+  },
+  "emojiPicker": {
+    "loadFailed": "تعذّر تحميل الرموز التعبيرية. تحقق من الاتصال ثم أعد المحاولة.",
+    "retry": "إعادة المحاولة"
+  },
+  "status": {
+    "loading": "جارٍ التحميل...",
+    "saving": "جارٍ الحفظ...",
+    "deleting": "جارٍ الحذف..."
+  },
+  "dates": {
+    "today": "اليوم",
+    "yesterday": "أمس"
+  },
+  "quickSwitcher": {
+    "title": "المبدّل السريع",
+    "inputLabel": "الانتقال إلى محادثة",
+    "placeholder": "الانتقال إلى قناة أو محادثة",
+    "recent": "الأخيرة",
+    "results": "النتائج",
+    "clearRecent": "مسح الأخيرة",
+    "listLabel": "المحادثات",
+    "noResults": "لا توجد محادثات مطابقة",
+    "starred": "المميزة بنجمة",
+    "unread": "غير مقروءة",
+    "dnd": "عدم الإزعاج",
+    "footer": "⁨{keys}⁩ للفتح. استخدم السهمين لأعلى ولأسفل للتنقل، وEnter للانتقال، وEsc للإغلاق.",
+    "open": "انتقال إلى…",
+    "kind": {
+      "channel": "قناة",
+      "dm": "رسالة مباشرة",
+      "group": "رسالة جماعية"
+    }
+  },
+  "shortcuts": {
+    "title": "اختصارات لوحة المفاتيح",
+    "groups": {
+      "navigation": "التنقل",
+      "general": "عام"
+    },
+    "items": {
+      "switcher": "فتح المبدّل السريع",
+      "prevChannel": "المحادثة السابقة",
+      "nextChannel": "المحادثة التالية",
+      "prevUnread": "المحادثة غير المقروءة السابقة",
+      "nextUnread": "المحادثة غير المقروءة التالية",
+      "help": "عرض اختصارات لوحة المفاتيح",
+      "closeTop": "إغلاق المبدّل السريع أو هذا الحوار"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "مساحة العمل"
+  },
+  "organization": {
+    "defaultName": "المؤسسة"
+  }
+}

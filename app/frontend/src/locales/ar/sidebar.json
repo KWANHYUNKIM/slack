@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "النشاط",
+    "unreads": "غير المقروءة",
+    "later": "لاحقًا",
+    "files": "الملفات",
+    "admin": "المسؤول",
+    "threads": "سلاسل الرسائل"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "رسالة جديدة"
+  },
+  "userMenu": {
+    "profile": "الملف الشخصي",
+    "notificationsBlocked": "الإشعارات محظورة",
+    "disableNotifications": "إيقاف الإشعارات",
+    "enableNotifications": "تفعيل الإشعارات",
+    "signOut": "تسجيل الخروج",
+    "updateStatus": "حدّث حالتك",
+    "pauseNotifications": "إيقاف الإشعارات مؤقتًا",
+    "pausedUntil": "متوقفة حتى {time}",
+    "pausedIndefinitely": "متوقفة حتى تُمسح حالتك",
+    "resumeNotifications": "استئناف الإشعارات",
+    "pause": {
+      "m30": "30 دقيقة",
+      "h1": "ساعة واحدة",
+      "h2": "ساعتان",
+      "tomorrow": "حتى الغد"
+    },
+    "pauseError": "تعذّر تغيير إيقاف الإشعارات. يرجى المحاولة مرة أخرى.",
+    "accessTokens": "رموز الوصول الشخصية",
+    "sessions": "الأجهزة المسجّل الدخول إليها",
+    "twoFactor": "المصادقة الثنائية",
+    "changePassword": "تغيير كلمة المرور",
+    "connectedApps": "التطبيقات المتصلة"
+  },
+  "sections": {
+    "starred": "المميزة بنجمة",
+    "channels": "القنوات",
+    "addChannels": "إضافة قنوات",
+    "directMessages": "الرسائل المباشرة",
+    "addTeammates": "إضافة زملاء",
+    "starredEmpty": "ضع نجمة على قناة أو محادثة لتظهر هنا.",
+    "collapse": "طيّ {section}",
+    "expand": "توسيع {section}"
+  },
+  "teammates": {
+    "title": "رسالة مباشرة",
+    "subtitle": "ابحث عن محادثة أو ابدأ واحدة",
+    "searchPlaceholder": "البحث بالاسم...",
+    "noUsers": "لم يُعثر على مستخدمين",
+    "close": "إغلاق",
+    "pickSubtitle": "اختر حتى {max, plural, zero {لا أحد} one {شخص واحد} two {شخصين} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "select": "اختيار {name}",
+    "selectedCount": "تم اختيار {count} من {max}",
+    "start": "بدء المحادثة",
+    "startGroup": "بدء محادثة جماعية"
+  },
+  "you": "(أنت)",
+  "notifications": {
+    "someone": "شخص ما",
+    "sentAttachment": "أرسل مرفقًا",
+    "threadTitle": "{name} (سلسلة رسائل)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, zero {لا أعضاء} one {عضو واحد} two {عضوان} few {# أعضاء} many {# عضوًا} other {# عضو}}",
+    "createError": "تعذّر بدء المحادثة الجماعية. يرجى المحاولة مرة أخرى."
+  },
+  "statusDialog": {
+    "title": "اضبط حالة",
+    "emojiLabel": "اختر رمزًا تعبيريًا",
+    "textLabel": "ما حالتك؟",
+    "textPlaceholder": "ما حالتك؟",
+    "durationLabel": "تُمسح بعد",
+    "duration": {
+      "never": "عدم المسح",
+      "m30": "30 دقيقة",
+      "h1": "ساعة واحدة",
+      "h4": "4 ساعات",
+      "today": "اليوم",
+      "week": "هذا الأسبوع"
+    },
+    "pauseCheckbox": "إيقاف الإشعارات حتى تُمسح الحالة",
+    "save": "حفظ",
+    "clear": "مسح الحالة",
+    "cancel": "إلغاء",
+    "expiresAt": "تُمسح في {time}",
+    "saveError": "تعذّر حفظ حالتك. يرجى المحاولة مرة أخرى."
+  },
+  "findConversation": "ابحث عن محادثة"
+}

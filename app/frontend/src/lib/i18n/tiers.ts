@@ -4,6 +4,7 @@
 // 3등급: 번역 파일이 없는 로캘. 영어로 대체한다.
 
 export const TIER1_LOCALES = ['en', 'ko'] as const;
+// 2등급 31개 전부 번역 파일이 있다(i18n-5i 완료). 아직 파일이 없는 RTL(ur)만 영어로 대체된다.
 
 /** 2등급 31개 (i18n.md 3절 표 순서). 번역 파일은 이 중 일부만 있을 수 있다. */
 export const TIER2_LOCALES = [
