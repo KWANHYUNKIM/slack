@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Copy, Trash2, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate, formatRelative } from '@/lib/i18n/format';
+import { apiErrorMessage } from '@/lib/apiErrors';
 
 export function AdminWebhooksTab() {
   const { t } = useTranslation('admin');
@@ -10,15 +11,31 @@ export function AdminWebhooksTab() {
   const [name, setName] = useState('');
   const [channelId, setChannelId] = useState('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  // 만들기·삭제 실패 문구. 실패하면 표 위에 번역된 문구를 보여 준다.
+  const [actionError, setActionError] = useState('');
 
   const handleCreate = async () => {
     if (!name || !channelId) return;
-    await createWebhook({
-      name,
-      channelId: parseInt(channelId),
-    });
-    setName('');
-    setChannelId('');
+    setActionError('');
+    try {
+      await createWebhook({
+        name,
+        channelId: parseInt(channelId),
+      });
+      setName('');
+      setChannelId('');
+    } catch (err) {
+      setActionError(apiErrorMessage(err, 'admin:errors.createWebhook'));
+    }
+  };
+
+  const handleDelete = async (webhookId: number) => {
+    setActionError('');
+    try {
+      await deleteWebhook(webhookId);
+    } catch (err) {
+      setActionError(apiErrorMessage(err, 'admin:errors.deleteWebhook'));
+    }
   };
 
   const copyUrl = (token: string, id: number) => {
@@ -85,6 +102,10 @@ export function AdminWebhooksTab() {
         </div>
       </div>
 
+      {actionError && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{actionError}</p>
+      )}
+
       {/* Webhook List */}
       <div className="rounded-lg border border-slack-border overflow-hidden">
         <table className="w-full text-sm">
@@ -144,7 +165,7 @@ export function AdminWebhooksTab() {
                 <td className="px-4 py-2.5 text-slack-secondary">{webhook.creator.name}</td>
                 <td className="px-4 py-2.5 text-end">
                   <button
-                    onClick={() => deleteWebhook(webhook.id)}
+                    onClick={() => handleDelete(webhook.id)}
                     className="text-slack-hint hover:text-red-600"
                     title={t('webhooks.delete')} aria-label={t('webhooks.delete')}
                   >

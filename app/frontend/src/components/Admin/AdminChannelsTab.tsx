@@ -16,6 +16,9 @@ export function AdminChannelsTab() {
   const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState('');
   const [saving, setSaving] = useState(false);
+  // 삭제·보관·보관 해제는 대화상자로 확인한다. 실패하면 대화상자를 닫지 않고 그 안에 번역된 문구를 보여 준다.
+  const [dialogError, setDialogError] = useState('');
+  const [dialogBusy, setDialogBusy] = useState(false);
   // 저장 중 중복 제출을 막고, await 뒤에 편집 행이 같은 채널인지 확인하려고 ref를 함께 둔다.
   const editingRef = useRef<number | null>(null);
   const savingRef = useRef(false);
@@ -62,6 +65,49 @@ export function AdminChannelsTab() {
     }
     setEditError('');
     setEditing(null);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteTarget(null);
+    setDialogError('');
+  };
+
+  const closeArchiveDialog = () => {
+    setArchiveTarget(null);
+    setDialogError('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || dialogBusy) return;
+    setDialogBusy(true);
+    setDialogError('');
+    try {
+      await deleteChannel(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch (err) {
+      setDialogError(apiErrorMessage(err, 'admin:errors.deleteChannel'));
+    } finally {
+      setDialogBusy(false);
+    }
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!archiveTarget || dialogBusy) return;
+    const { id, archived } = archiveTarget;
+    setDialogBusy(true);
+    setDialogError('');
+    try {
+      if (archived) {
+        await unarchiveChannel(id);
+      } else {
+        await archiveChannel(id);
+      }
+      setArchiveTarget(null);
+    } catch (err) {
+      setDialogError(apiErrorMessage(err, archived ? 'admin:errors.unarchiveChannel' : 'admin:errors.archiveChannel'));
+    } finally {
+      setDialogBusy(false);
+    }
   };
 
   const activeChannels = channels.filter((c) => !c.archivedAt);
@@ -230,11 +276,10 @@ export function AdminChannelsTab() {
           title={t('channels.deleteDialog.title')}
           message={t('channels.deleteDialog.message', { name: deleteTarget.name })}
           confirmLabel={t('common:actions.delete')}
-          onConfirm={() => {
-            deleteChannel(deleteTarget.id);
-            setDeleteTarget(null);
-          }}
-          onCancel={() => setDeleteTarget(null)}
+          error={dialogError}
+          busy={dialogBusy}
+          onConfirm={handleDeleteConfirm}
+          onCancel={closeDeleteDialog}
         />
       )}
 
@@ -247,15 +292,10 @@ export function AdminChannelsTab() {
               : t('channels.archiveDialog.message', { name: archiveTarget.name })
           }
           confirmLabel={archiveTarget.archived ? t('channels.unarchiveDialog.confirm') : t('channels.archiveDialog.confirm')}
-          onConfirm={() => {
-            if (archiveTarget.archived) {
-              unarchiveChannel(archiveTarget.id);
-            } else {
-              archiveChannel(archiveTarget.id);
-            }
-            setArchiveTarget(null);
-          }}
-          onCancel={() => setArchiveTarget(null)}
+          error={dialogError}
+          busy={dialogBusy}
+          onConfirm={handleArchiveConfirm}
+          onCancel={closeArchiveDialog}
         />
       )}
     </div>

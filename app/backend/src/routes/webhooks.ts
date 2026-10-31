@@ -200,7 +200,8 @@ router.post('/:token', async (req, res: Response) => {
 
     res.status(201).json({ message: 'Message sent', messageId: finalMessage?.id });
 
-    if (finalMessage) void processNewChannelMessage(finalMessage);
+    // 일반 전송(messages.ts, 소켓)과 같은 푸시 정책을 쓴다(generalPush). 멘션 활동은 서비스가 만든다.
+    if (finalMessage) void processNewChannelMessage(finalMessage, { generalPush: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
