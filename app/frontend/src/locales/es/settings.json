@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Idioma",
+    "pending": "{name} (traducción próximamente)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notificaciones pausadas"
+  },
+  "profile": {
+    "title": "Perfil",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "notFound": "No se encontró el perfil",
+    "uploadPhoto": "Subir foto",
+    "uploading": "Subiendo...",
+    "name": "Nombre",
+    "bio": "Biografía",
+    "bioPlaceholder": "Cuéntale a la gente algo sobre ti",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "status": "Estado",
+    "joined": "Se unió",
+    "message": "Mensaje",
+    "edit": "Editar perfil",
+    "statusValue": {
+      "online": "en línea",
+      "away": "ausente",
+      "offline": "desconectado"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar el perfil.",
+      "saveFailed": "No se pudo guardar el perfil. Inténtalo de nuevo.",
+      "notImage": "Selecciona un archivo de imagen.",
+      "tooLarge": "La imagen debe pesar menos de 5 MB.",
+      "uploadFailed": "No se pudo subir la foto. Inténtalo de nuevo."
+    },
+    "statusUntil": "Hasta las {time}"
+  },
+  "crop": {
+    "title": "Recorta tu foto",
+    "close": "Cerrar",
+    "zoom": "Zoom",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "failed": "No se pudo recortar"
+  },
+  "accessTokens": {
+    "title": "Tokens de acceso personales",
+    "description": "Los tokens permiten que Claude y otros clientes MCP lean y, si lo permites, escriban en tu espacio de trabajo con tus permisos. Trátalos como una contraseña.",
+    "nameLabel": "Nombre del token",
+    "namePlaceholder": "p. ej. Claude Code en mi portátil",
+    "scopesLabel": "Permisos",
+    "scope": {
+      "channelsRead": "Ver la lista de canales",
+      "channelsHistory": "Leer mensajes, hilos y actividad",
+      "usersRead": "Ver personas",
+      "chatWrite": "Publicar, editar y eliminar tus mensajes",
+      "reactionsWrite": "Añadir y quitar tus reacciones",
+      "imRead": "Ver tus mensajes directos y de grupo",
+      "imHistory": "Leer el historial de tus mensajes directos",
+      "imWrite": "Enviar, editar y eliminar tus mensajes directos",
+      "searchRead": "Buscar mensajes, archivos, personas y canales (los resultados de mensajes directos necesitan el historial de mensajes directos)",
+      "filesRead": "Ver la lista de archivos y leer el contenido de archivos de texto"
+    },
+    "expiryLabel": "Caduca",
+    "expiryDays": "{count, plural, one {# día} other {# días}}",
+    "expiryNever": "Sin caducidad",
+    "neverWarning": "Los tokens sin caducidad siguen siendo válidos hasta que los revoques.",
+    "create": "Generar token",
+    "createdNotice": "Copia tu nuevo token ahora. No podrás volver a verlo.",
+    "copy": "Copiar token",
+    "copyCommand": "Copiar comando",
+    "copied": "Copiado al portapapeles",
+    "connectHint": "Conéctate desde Claude Code:",
+    "dismiss": "Listo, ocultar token",
+    "loading": "Cargando...",
+    "empty": "No tienes tokens de acceso personales.",
+    "expires": "Caduca el {date}",
+    "expired": "Caducado",
+    "noExpiry": "Sin caducidad",
+    "lastUsed": "Último uso el {date}",
+    "neverUsed": "Nunca usado",
+    "rename": "Cambiar nombre",
+    "renameLabel": "Cambiar el nombre del token {name}",
+    "revoke": "Revocar",
+    "revokeLabel": "Revocar el token {name}",
+    "revokeConfirm": "Revocar ahora",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "errors": {
+      "loadFailed": "Error al cargar los tokens.",
+      "createFailed": "No se pudo crear el token. Inténtalo de nuevo.",
+      "renameFailed": "No se pudo cambiar el nombre del token.",
+      "revokeFailed": "No se pudo revocar el token.",
+      "copyFailed": "No se pudo copiar. Selecciona el texto y cópialo manualmente.",
+      "limitReached": "Puedes tener hasta {max} tokens activos. Revoca uno que ya no uses e inténtalo de nuevo.",
+      "codeRequired": "Introduce tu código de verificación en dos pasos para crear un token.",
+      "invalidCode": "El código de verificación en dos pasos es incorrecto."
+    },
+    "codeLabel": "Código de verificación en dos pasos",
+    "codeHint": "Introduce un código de tu aplicación de autenticación para crear un token."
+  },
+  "sessions": {
+    "title": "Dispositivos con sesión iniciada",
+    "description": "Estos dispositivos tienen sesión iniciada en tu cuenta. Cierra la sesión de los que no reconozcas o ya no uses.",
+    "loading": "Cargando...",
+    "empty": "No hay dispositivos con sesión iniciada.",
+    "thisDevice": "Este dispositivo",
+    "unknownDevice": "Dispositivo desconocido",
+    "signedInAt": "Sesión iniciada el {date}",
+    "lastActive": "Última actividad el {date}",
+    "signOut": "Cerrar sesión",
+    "signOutLabel": "Cerrar la sesión de {device}",
+    "signOutThisLabel": "Cerrar la sesión de este dispositivo ({device})",
+    "signOutOthers": "Cerrar sesión en todos los demás dispositivos",
+    "signOutOthersConfirm": "{count, plural, one {Cerrar sesión en # otro dispositivo} other {Cerrar sesión en # otros dispositivos}}",
+    "revoked": "Dispositivo con sesión cerrada",
+    "revokedOthers": "Sesión cerrada en todos los demás dispositivos",
+    "errors": {
+      "loadFailed": "Error al cargar los dispositivos.",
+      "revokeFailed": "No se pudo cerrar la sesión. Inténtalo de nuevo."
+    },
+    "device": {
+      "desktop": "Aplicación de escritorio",
+      "desktopOn": "Aplicación de escritorio en {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} en {os}",
+      "unknownOn": "Dispositivo desconocido en {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Cambiar contraseña",
+    "description": "Introduce tu contraseña actual y elige una nueva.",
+    "currentLabel": "Contraseña actual",
+    "newLabel": "Nueva contraseña",
+    "confirmLabel": "Confirmar nueva contraseña",
+    "sessionsNote": "Al cambiar la contraseña, se cerrará la sesión de tus otros dispositivos.",
+    "submit": "Cambiar contraseña",
+    "submitting": "Cambiando...",
+    "cancel": "Cancelar",
+    "successToast": "Tu contraseña se ha cambiado",
+    "errors": {
+      "currentRequired": "Introduce tu contraseña actual.",
+      "failed": "No se pudo cambiar la contraseña. Inténtalo de nuevo."
+    }
+  },
+  "twoFactor": {
+    "title": "Verificación en dos pasos",
+    "description": "Al iniciar sesión, pide un código de tu aplicación de autenticación además de la contraseña.",
+    "loading": "Cargando...",
+    "statusOn": "Activada",
+    "statusOff": "Desactivada",
+    "enabledSince": "Activada el {date}",
+    "recoveryRemaining": "{count, plural, one {# código de recuperación restante} other {# códigos de recuperación restantes}}",
+    "unavailable": "La verificación en dos pasos no está disponible en este servidor. Consulta con tu administrador.",
+    "requiredNotice": "Tu organización exige la verificación en dos pasos.",
+    "close": "Cerrar",
+    "setup": {
+      "start": "Configurar la verificación en dos pasos",
+      "starting": "Preparando...",
+      "step1": "1. Añade esta cuenta a tu aplicación de autenticación. Abre el enlace en el móvil o introduce la clave de configuración a mano.",
+      "uriLabel": "Enlace de configuración",
+      "openInApp": "Abrir en la aplicación de autenticación",
+      "qrLabel": "Código QR para la aplicación de autenticación",
+      "qrHint": "Escanea este código QR con tu aplicación de autenticación, o usa el enlace o la clave de abajo.",
+      "keyLabel": "Clave de configuración",
+      "copyKey": "Copiar clave de configuración",
+      "copyUri": "Copiar enlace de configuración",
+      "copied": "Copiado",
+      "step2": "2. Introduce el código de 6 dígitos que muestra tu aplicación.",
+      "codeLabel": "Código de autenticación",
+      "codePlaceholder": "123456",
+      "verify": "Activar",
+      "verifying": "Comprobando...",
+      "cancel": "Cancelar",
+      "passwordLabel": "3. Introduce tu contraseña actual.",
+      "sessionsNote": "Al activarla, se cerrará la sesión de tus otros dispositivos."
+    },
+    "recovery": {
+      "title": "Guarda tus códigos de recuperación",
+      "description": "Usa un código de recuperación para iniciar sesión si pierdes tu dispositivo. Cada código funciona una sola vez. No se volverán a mostrar.",
+      "download": "Descargar",
+      "copy": "Copiar todo",
+      "fileHeader": "Códigos de recuperación. Cada código funciona una sola vez. Guárdalos en un lugar seguro.",
+      "confirmSaved": "He guardado mis códigos de recuperación",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Contraseña",
+      "codeLabel": "Código de autenticación o de recuperación",
+      "cancel": "Cancelar",
+      "passwordInvalid": "Introduce una contraseña válida.",
+      "codeInvalid": "Introduce un código de autenticación o de recuperación válido."
+    },
+    "regenerate": {
+      "start": "Crear nuevos códigos de recuperación",
+      "title": "Crear nuevos códigos de recuperación",
+      "description": "Los códigos de recuperación anteriores dejarán de funcionar en cuanto crees nuevos. Introduce tu contraseña y un código de tu aplicación de autenticación (o un código de recuperación).",
+      "submit": "Crear nuevos códigos",
+      "submitting": "Creando...",
+      "lowNotice": "{count, plural, one {Solo queda # código de recuperación} other {Solo quedan # códigos de recuperación}}. Crea otros nuevos antes de que se acaben.",
+      "toast": "Los nuevos códigos de recuperación están listos"
+    },
+    "disable": {
+      "title": "Desactivar la verificación en dos pasos",
+      "description": "Introduce tu contraseña y un código de tu aplicación de autenticación (o un código de recuperación).",
+      "start": "Desactivar",
+      "submit": "Desactivar la verificación en dos pasos",
+      "submitting": "Desactivando...",
+      "blockedByPolicy": "Tu organización exige la verificación en dos pasos, así que no puedes desactivarla. Si perdiste tu dispositivo, pide a un administrador que la restablezca."
+    },
+    "enabledToast": "La verificación en dos pasos está activada",
+    "disabledToast": "La verificación en dos pasos está desactivada",
+    "errors": {
+      "loadFailed": "No se pudo cargar la configuración de la verificación en dos pasos.",
+      "setupFailed": "No se pudo iniciar la configuración. Inténtalo de nuevo.",
+      "enableFailed": "No se pudo activar la verificación en dos pasos.",
+      "regenerateFailed": "No se pudieron crear nuevos códigos de recuperación.",
+      "disableFailed": "No se pudo desactivar la verificación en dos pasos.",
+      "copyFailed": "No se pudo copiar al portapapeles."
+    }
+  },
+  "connectedApps": {
+    "title": "Aplicaciones conectadas",
+    "description": "Aplicaciones a las que permitiste usar tu cuenta mediante el flujo de inicio de sesión OAuth. Actúan con tus permisos. Desconecta las que ya no uses.",
+    "loading": "Cargando...",
+    "empty": "No hay aplicaciones conectadas a tu cuenta.",
+    "redirectsTo": "Vuelve a {hosts}",
+    "connectedAt": "Conectada el {date}",
+    "lastUsed": "Último uso el {date}",
+    "neverUsed": "Nunca usada",
+    "disconnect": "Desconectar",
+    "disconnectLabel": "Desconectar {name}",
+    "disconnectConfirm": "Desconectar ahora",
+    "cancel": "Cancelar",
+    "disconnected": "Aplicación desconectada",
+    "close": "Cerrar",
+    "errors": {
+      "loadFailed": "Error al cargar las aplicaciones conectadas.",
+      "disconnectFailed": "No se pudo desconectar la aplicación."
+    },
+    "unnamedApp": "Aplicación sin nombre"
+  }
+}

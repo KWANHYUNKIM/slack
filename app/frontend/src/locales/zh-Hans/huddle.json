@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "（已静音）",
+    "mute": "静音",
+    "unmute": "取消静音",
+    "leave": "离开语音会议"
+  },
+  "button": {
+    "leaveFirstError": "请先离开当前的语音会议",
+    "cancelInviteFirstError": "请先取消当前的邀请",
+    "cancelInvite": "取消邀请",
+    "calling": "正在呼叫...",
+    "inHuddle": "语音会议中",
+    "leaveCurrentFirst": "请先离开当前语音会议",
+    "start": "开始语音会议"
+  },
+  "incoming": {
+    "invite": "语音会议邀请",
+    "secondsLeft": "{count} 秒",
+    "decline": "拒绝",
+    "accept": "接受"
+  },
+  "system": {
+    "youStarted": "您发起了语音会议。",
+    "started": "发起了语音会议。",
+    "ended": "已结束",
+    "youSentInvite": "您发送了语音会议邀请。",
+    "sentInvite": "向您发送了语音会议邀请。",
+    "huddleStarted": "语音会议已开始",
+    "huddleEnded": "语音会议已结束（{duration}）",
+    "durationSeconds": "{seconds} 秒",
+    "durationMinutesSeconds": "{minutes} 分 {seconds} 秒"
+  },
+  "errors": {
+    "leaveFirst": "请先离开当前的语音会议",
+    "cancelInviteFirst": "请先取消当前的邀请",
+    "micDenied": "麦克风访问被拒绝",
+    "busy": "对方正在另一个语音会议中",
+    "declined": "邀请已被拒绝",
+    "expired": "邀请已过期",
+    "rateLimited": "请求过多，请稍后再试",
+    "invalidInvite": "邀请请求无效",
+    "cannotInviteSelf": "不能邀请自己",
+    "userNotFound": "未找到用户",
+    "invalidAccept": "接受请求无效",
+    "inviteNotFound": "未找到邀请，或邀请已过期",
+    "peerOffline": "对方处于离线状态",
+    "generic": "无法开始语音会议，请重试"
+  }
+}

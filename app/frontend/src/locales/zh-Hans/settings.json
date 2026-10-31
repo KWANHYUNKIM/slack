@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "语言",
+    "pending": "{name}（翻译即将推出）",
+    "beta": "测试版",
+    "betaOption": "{name}（测试版）"
+  },
+  "avatar": {
+    "alt": "头像",
+    "dnd": "通知已暂停"
+  },
+  "profile": {
+    "title": "个人资料",
+    "close": "关闭",
+    "loading": "正在加载...",
+    "notFound": "未找到个人资料",
+    "uploadPhoto": "上传照片",
+    "uploading": "正在上传...",
+    "name": "名称",
+    "bio": "简介",
+    "bioPlaceholder": "介绍一下您自己",
+    "cancel": "取消",
+    "save": "保存",
+    "status": "状态",
+    "joined": "加入时间",
+    "message": "消息",
+    "edit": "编辑个人资料",
+    "statusValue": {
+      "online": "在线",
+      "away": "离开",
+      "offline": "离线"
+    },
+    "errors": {
+      "loadFailed": "无法加载个人资料。",
+      "saveFailed": "无法保存个人资料，请重试。",
+      "notImage": "请选择图片文件。",
+      "tooLarge": "图片必须小于 5MB。",
+      "uploadFailed": "无法上传照片，请重试。"
+    },
+    "statusUntil": "直到 {time}"
+  },
+  "crop": {
+    "title": "裁剪照片",
+    "close": "关闭",
+    "zoom": "缩放",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "正在保存...",
+    "failed": "裁剪失败"
+  },
+  "accessTokens": {
+    "title": "个人访问令牌",
+    "description": "令牌允许 Claude 和其他 MCP 客户端以您的权限读取工作区，若您允许，还可以写入。请像对待密码一样妥善保管。",
+    "nameLabel": "令牌名称",
+    "namePlaceholder": "例如 我的笔记本上的 Claude Code",
+    "scopesLabel": "权限",
+    "scope": {
+      "channelsRead": "列出频道",
+      "channelsHistory": "读取消息、线程和动态",
+      "usersRead": "查看成员",
+      "chatWrite": "发布、编辑和删除您的消息",
+      "reactionsWrite": "添加和移除您的反应",
+      "imRead": "列出您的私信和群组私信",
+      "imHistory": "读取您的私信历史",
+      "imWrite": "发送、编辑和删除您的私信",
+      "searchRead": "搜索消息、文件、成员和频道（私信结果需要私信历史权限）",
+      "filesRead": "列出文件并读取文本文件内容"
+    },
+    "expiryLabel": "过期时间",
+    "expiryDays": "{count, plural, other {# 天}}",
+    "expiryNever": "永不过期",
+    "neverWarning": "没有过期时间的令牌会一直有效，直到您撤销它。",
+    "create": "生成令牌",
+    "createdNotice": "请立即复制新令牌，之后将无法再次查看。",
+    "copy": "复制令牌",
+    "copyCommand": "复制命令",
+    "copied": "已复制到剪贴板",
+    "connectHint": "从 Claude Code 连接：",
+    "dismiss": "完成，隐藏令牌",
+    "loading": "正在加载...",
+    "empty": "您没有个人访问令牌。",
+    "expires": "{date} 过期",
+    "expired": "已过期",
+    "noExpiry": "永不过期",
+    "lastUsed": "最后使用于 {date}",
+    "neverUsed": "从未使用",
+    "rename": "重命名",
+    "renameLabel": "重命名令牌 {name}",
+    "revoke": "撤销",
+    "revokeLabel": "撤销令牌 {name}",
+    "revokeConfirm": "立即撤销",
+    "cancel": "取消",
+    "close": "关闭",
+    "errors": {
+      "loadFailed": "无法加载令牌。",
+      "createFailed": "无法创建令牌，请重试。",
+      "renameFailed": "无法重命名令牌。",
+      "revokeFailed": "无法撤销令牌。",
+      "copyFailed": "无法复制。请选中文本并手动复制。",
+      "limitReached": "最多只能有 {max} 个有效令牌。请撤销不再使用的令牌后重试。",
+      "codeRequired": "请输入两步验证码以创建令牌。",
+      "invalidCode": "两步验证码不正确。"
+    },
+    "codeLabel": "两步验证码",
+    "codeHint": "输入验证器应用中的代码以创建令牌。"
+  },
+  "sessions": {
+    "title": "已登录的设备",
+    "description": "以下设备已登录您的账户。请退出您不认识或不再使用的设备。",
+    "loading": "正在加载...",
+    "empty": "没有已登录的设备。",
+    "thisDevice": "此设备",
+    "unknownDevice": "未知设备",
+    "signedInAt": "登录于 {date}",
+    "lastActive": "最后活跃于 {date}",
+    "signOut": "退出登录",
+    "signOutLabel": "退出 {device} 的登录",
+    "signOutThisLabel": "退出此设备（{device}）的登录",
+    "signOutOthers": "退出所有其他设备的登录",
+    "signOutOthersConfirm": "{count, plural, other {退出 # 台其他设备的登录}}",
+    "revoked": "设备已退出登录",
+    "revokedOthers": "已退出所有其他设备的登录",
+    "errors": {
+      "loadFailed": "无法加载设备。",
+      "revokeFailed": "无法退出登录，请重试。"
+    },
+    "device": {
+      "desktop": "桌面应用",
+      "desktopOn": "{os} 上的桌面应用",
+      "browser": "{browser}",
+      "browserOn": "{os} 上的 {browser}",
+      "unknownOn": "{os} 上的未知设备"
+    }
+  },
+  "changePassword": {
+    "title": "更改密码",
+    "description": "输入当前密码，然后设置新密码。",
+    "currentLabel": "当前密码",
+    "newLabel": "新密码",
+    "confirmLabel": "确认新密码",
+    "sessionsNote": "更改密码后，您其他已登录的设备将会退出登录。",
+    "submit": "更改密码",
+    "submitting": "正在更改...",
+    "cancel": "取消",
+    "successToast": "密码已更改",
+    "errors": {
+      "currentRequired": "请输入当前密码。",
+      "failed": "无法更改密码，请重试。"
+    }
+  },
+  "twoFactor": {
+    "title": "两步验证",
+    "description": "登录时，除密码外还需要验证器应用中的代码。",
+    "loading": "正在加载...",
+    "statusOn": "开启",
+    "statusOff": "关闭",
+    "enabledSince": "开启于 {date}",
+    "recoveryRemaining": "{count, plural, other {剩余 # 个恢复代码}}",
+    "unavailable": "此服务器不支持两步验证。请咨询管理员。",
+    "requiredNotice": "您所在的组织要求使用两步验证。",
+    "close": "关闭",
+    "setup": {
+      "start": "设置两步验证",
+      "starting": "正在准备...",
+      "step1": "1. 将此账户添加到您的验证器应用。在手机上打开链接，或手动输入设置密钥。",
+      "uriLabel": "设置链接",
+      "openInApp": "在验证器应用中打开",
+      "qrLabel": "验证器应用的二维码",
+      "qrHint": "用验证器应用扫描此二维码，或使用下方的链接或密钥。",
+      "keyLabel": "设置密钥",
+      "copyKey": "复制设置密钥",
+      "copyUri": "复制设置链接",
+      "copied": "已复制",
+      "step2": "2. 输入验证器应用显示的 6 位数字代码。",
+      "codeLabel": "验证码",
+      "codePlaceholder": "123456",
+      "verify": "开启",
+      "verifying": "正在检查...",
+      "cancel": "取消",
+      "passwordLabel": "3. 输入当前密码。",
+      "sessionsNote": "开启后，您其他已登录的设备将会退出登录。"
+    },
+    "recovery": {
+      "title": "保存您的恢复代码",
+      "description": "如果您丢失了设备，可以使用恢复代码登录。每个代码只能使用一次，且不会再次显示。",
+      "download": "下载",
+      "copy": "全部复制",
+      "fileHeader": "恢复代码。每个代码只能使用一次。请妥善保管。",
+      "confirmSaved": "我已保存恢复代码",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "密码",
+      "codeLabel": "验证码或恢复代码",
+      "cancel": "取消",
+      "passwordInvalid": "请输入有效的密码。",
+      "codeInvalid": "请输入有效的验证码或恢复代码。"
+    },
+    "regenerate": {
+      "start": "生成新的恢复代码",
+      "title": "生成新的恢复代码",
+      "description": "生成新的恢复代码后，旧的恢复代码将立即失效。请输入您的密码以及验证器应用中的代码（或恢复代码）。",
+      "submit": "生成新代码",
+      "submitting": "正在生成...",
+      "lowNotice": "{count, plural, other {仅剩 # 个恢复代码}}。请在用完之前生成新的代码。",
+      "toast": "新的恢复代码已就绪"
+    },
+    "disable": {
+      "title": "关闭两步验证",
+      "description": "输入您的密码以及验证器应用中的代码（或恢复代码）。",
+      "start": "关闭",
+      "submit": "关闭两步验证",
+      "submitting": "正在关闭...",
+      "blockedByPolicy": "您所在的组织要求使用两步验证，因此无法关闭。如果您丢失了设备，请让管理员重置。"
+    },
+    "enabledToast": "两步验证已开启",
+    "disabledToast": "两步验证已关闭",
+    "errors": {
+      "loadFailed": "无法加载两步验证设置。",
+      "setupFailed": "无法开始设置，请重试。",
+      "enableFailed": "无法开启两步验证。",
+      "regenerateFailed": "无法生成新的恢复代码。",
+      "disableFailed": "无法关闭两步验证。",
+      "copyFailed": "无法复制到剪贴板。"
+    }
+  },
+  "connectedApps": {
+    "title": "已连接的应用",
+    "description": "您已通过 OAuth 登录流程允许使用您账户的应用。它们以您的权限运行。请断开您不再使用的应用。",
+    "loading": "正在加载...",
+    "empty": "没有应用连接到您的账户。",
+    "redirectsTo": "返回到 {hosts}",
+    "connectedAt": "连接于 {date}",
+    "lastUsed": "最后使用于 {date}",
+    "neverUsed": "从未使用",
+    "disconnect": "断开连接",
+    "disconnectLabel": "断开 {name} 的连接",
+    "disconnectConfirm": "立即断开",
+    "cancel": "取消",
+    "disconnected": "应用已断开连接",
+    "close": "关闭",
+    "errors": {
+      "loadFailed": "无法加载已连接的应用。",
+      "disconnectFailed": "无法断开应用连接。"
+    },
+    "unnamedApp": "未命名应用"
+  }
+}

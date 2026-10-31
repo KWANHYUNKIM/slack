@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "オンラインのすべてのメンバーに通知",
+    "channelLabel": "@channel",
+    "channelHint": "このチャンネルのすべてのメンバーに通知"
+  },
+  "deleteDialog": {
+    "title": "メッセージを削除",
+    "body": "このメッセージを削除しますか？ 削除すると元に戻せません。"
+  },
+  "editorToolbar": {
+    "attachFile": "ファイルを添付",
+    "emoji": "絵文字",
+    "mention": "メンバーをメンション",
+    "stopRecording": "録音を停止",
+    "recordVoice": "ボイスクリップを録音"
+  },
+  "emojiAutocomplete": {
+    "navigate": "移動",
+    "select": "選択",
+    "dismiss": "閉じる",
+    "escKey": "Esc"
+  },
+  "filePreview": {
+    "remove": "{name}を削除"
+  },
+  "fileModal": {
+    "download": "ダウンロード",
+    "loadFailed": "ファイルの内容を読み込めませんでした",
+    "truncated": "...（省略されています）",
+    "noPreview": "プレビューはありません",
+    "downloadToView": "表示するにはファイルをダウンロードしてください"
+  },
+  "files": {
+    "allFiles": "すべてのファイル",
+    "channelFiles": "チャンネルのファイル",
+    "loadFailed": "ファイルを読み込めませんでした。",
+    "empty": "アップロードされたファイルはまだありません",
+    "download": "ダウンロード",
+    "menu": "メニュー",
+    "unavailable": "ファイルを利用できません",
+    "preparing": "ファイルを準備中"
+  },
+  "format": {
+    "bold": "太字",
+    "italic": "斜体",
+    "strike": "取り消し線",
+    "link": "リンク",
+    "orderedList": "番号付きリスト",
+    "bulletList": "箇条書き",
+    "code": "コード",
+    "codeBlock": "コードブロック",
+    "quote": "引用"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "新しい通知はありません",
+    "unreadCount": "{count, plural, other {未読メッセージ #件}}"
+  },
+  "search": {
+    "placeholder": "検索",
+    "searching": "検索中...",
+    "noResults": "結果が見つかりません",
+    "previewHint": "{count, plural, other {上位#件}} · すべて表示（Enter）",
+    "truncatedNotice": "結果が多すぎます。フィルターを追加して絞り込んでください。",
+    "retry": "再試行",
+    "ignoredChip": "{token}（無視されました）",
+    "ignoredLimitChip": "{token}（無視されました：多すぎます）",
+    "inChannel": "#{channel}内",
+    "title": "検索結果",
+    "resultsFor": "「{query}」の検索結果",
+    "emptyQuery": "検索語を入力するか、from:、in:、has:、before:、after: などのフィルターを使ってください。",
+    "noResultsHint": "別のキーワードを試すか、フィルターを減らしてください。",
+    "clearFilters": "すべてのフィルターを解除",
+    "removeFilter": "フィルター{filter}を削除",
+    "loadFailed": "検索に失敗しました。もう一度お試しください。",
+    "loadMore": "さらに読み込む",
+    "threadReply": "スレッドの返信",
+    "directMessage": "ダイレクトメッセージ",
+    "groupMessage": "グループ会話",
+    "joined": "参加済み",
+    "privateChannel": "非公開",
+    "archivedChannel": "アーカイブ済み",
+    "back": "戻る",
+    "tabs": {
+      "label": "検索結果の種類",
+      "messages": "メッセージ",
+      "files": "ファイル",
+      "people": "メンバー",
+      "channels": "チャンネル"
+    },
+    "sort": {
+      "label": "並び替え",
+      "relevance": "関連度",
+      "recent": "新しい順"
+    }
+  },
+  "headerTabs": {
+    "files": "ファイル",
+    "pins": "ピン留め"
+  },
+  "lightbox": {
+    "close": "閉じる"
+  },
+  "later": {
+    "title": "後で",
+    "saved": "保存済み",
+    "scheduled": "予約済み",
+    "loadFailed": "保存したメッセージを読み込めませんでした。",
+    "empty": "保存したメッセージはまだありません。メッセージのブックマークアイコンをクリックすると保存できます。",
+    "removeSaved": "保存を解除",
+    "menu": "メニュー",
+    "reminders": "リマインダー"
+  },
+  "linkModal": {
+    "title": "リンクを追加",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "表示テキスト",
+    "optional": "（任意）",
+    "textPlaceholder": "リンクのテキスト",
+    "close": "閉じる"
+  },
+  "actionsMenu": {
+    "noActions": "利用できる操作がありません",
+    "markUnread": "未読にする",
+    "pin": "メッセージをピン留め",
+    "unpin": "ピン留めを解除",
+    "edit": "メッセージを編集",
+    "delete": "メッセージを削除",
+    "copyLink": "リンクをコピー",
+    "remind": "このメッセージについてリマインド"
+  },
+  "area": {
+    "selectChannel": "チャンネルを選択してメッセージを送信",
+    "openMenu": "メニューを開く",
+    "placeholder": "#{channel}へメッセージ",
+    "viewing": "現在 <bold>#{channel}</bold> を表示しています",
+    "joinChannel": "チャンネルに参加"
+  },
+  "header": {
+    "menu": "メニュー",
+    "unstar": "スター付きから削除",
+    "star": "スター付きに追加",
+    "members": "メンバー: {count}",
+    "search": "検索",
+    "channelMenu": "チャンネルオプション",
+    "leaveChannel": "チャンネルを退出",
+    "leaveLastMember": "退出できません。あなたが最後のメンバーです。",
+    "dismiss": "閉じる",
+    "addTopic": "トピックを追加",
+    "editDetails": "チャンネルの詳細を編集"
+  },
+  "message": {
+    "edited": "（編集済み）",
+    "pinned": "ピン留め済み",
+    "showMore": "もっと見る",
+    "showLess": "閉じる",
+    "repliedToThread": "スレッドに返信しました：{excerpt}",
+    "deletedPlaceholder": "このメッセージは削除されました。",
+    "sendToChannel": "チャンネルにも送信",
+    "removeFromChannel": "チャンネルから削除"
+  },
+  "input": {
+    "uploading": "アップロード中...",
+    "scheduleMessage": "メッセージを予約",
+    "send": "メッセージを送信",
+    "hint": "<kbd>Enter</kbd>で送信、<kbd>Shift + Enter</kbd>で改行",
+    "scheduledFor": "{time}に送信予定",
+    "scheduleFailed": "メッセージを予約できませんでした。もう一度お試しください。"
+  },
+  "list": {
+    "loading": "メッセージを読み込み中...",
+    "empty": "まだメッセージはありません",
+    "emptyReadOnly": "このチャンネルにはメッセージがありません。",
+    "emptyFirst": "最初のメッセージを送信しましょう！"
+  },
+  "reactions": {
+    "tooltip": "{names}が{emoji}でリアクションしました",
+    "add": "リアクションを追加",
+    "you": "あなた"
+  },
+  "toolbar": {
+    "addReaction": "リアクションを追加",
+    "replyInThread": "スレッドで返信",
+    "removeBookmark": "ブックマークを解除",
+    "bookmark": "このメッセージをブックマーク",
+    "moreActions": "その他の操作"
+  },
+  "mobileSearch": {
+    "placeholder": "メッセージを検索...",
+    "hint": "すべてのチャンネルと会話からメッセージを検索",
+    "close": "検索を閉じる"
+  },
+  "pins": {
+    "title": "ピン留めしたメッセージ",
+    "loadFailed": "ピン留めしたメッセージを読み込めませんでした。",
+    "empty": "ピン留めしたメッセージはまだありません"
+  },
+  "schedule": {
+    "menuTitle": "メッセージを予約",
+    "in20": "20分後",
+    "in1h": "1時間後",
+    "in3h": "3時間後",
+    "tomorrow9": "明日の9:00",
+    "custom": "日時を指定...",
+    "modalTitle": "メッセージを予約",
+    "dateTime": "日付と時刻",
+    "pickFuture": "未来の日時を選んでください。",
+    "submit": "予約",
+    "submitting": "予約中...",
+    "close": "閉じる"
+  },
+  "scheduled": {
+    "loadFailed": "予約メッセージを読み込めませんでした。",
+    "cancelFailed": "メッセージの予約を取り消せませんでした。",
+    "sendFailed": "メッセージを送信できませんでした。",
+    "saveFailed": "変更を保存できませんでした。",
+    "empty": "予約メッセージはありません。メッセージ入力欄の時計アイコンから予約できます。",
+    "sendAt": "送信日時：",
+    "edit": "編集",
+    "sendNow": "今すぐ送信",
+    "cancel": "キャンセル",
+    "failedDlp": "このメッセージはデータ保護ルール（{rule}）に一致したため送信されませんでした。削除して書き直してください。"
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {返信#件}}"
+  },
+  "unreads": {
+    "title": "未読",
+    "loadFailed": "未読メッセージを読み込めませんでした。",
+    "empty": "未読メッセージはありません。すべて確認済みです！ 🎉",
+    "menu": "メニュー"
+  },
+  "threadPanel": {
+    "title": "スレッド",
+    "replyPlaceholder": "返信...",
+    "loadFailed": "スレッドを読み込めませんでした。もう一度お試しください。",
+    "loading": "スレッドを読み込み中...",
+    "replyFailed": "返信を送信できませんでした。もう一度お試しください。",
+    "joinToReply": "スレッドで返信するにはチャンネルに参加してください",
+    "alsoSendToChannel": "チャンネルにも送信"
+  },
+  "errors": {
+    "messageEmpty": "メッセージを空にすることはできません。",
+    "pasteUploadFailed": "貼り付けた画像をアップロードできませんでした。もう一度お試しください。",
+    "dropUploadFailed": "ドロップしたファイルをアップロードできませんでした。もう一度お試しください。",
+    "uploadFailed": "ファイルをアップロードできませんでした。もう一度お試しください。",
+    "voiceUploadFailed": "ボイスメッセージをアップロードできませんでした。",
+    "micDenied": "マイクへのアクセスが拒否されました。マイクへのアクセスを許可してください。",
+    "loadFailed": "メッセージを読み込めませんでした。",
+    "sendTimeout": "メッセージの送信がタイムアウトしました。もう一度お試しください。",
+    "sendFailed": "メッセージを送信できませんでした。もう一度お試しください。",
+    "pushNotConfigured": "サーバーでプッシュ通知が設定されていません",
+    "serviceWorkerUnavailable": "サービスワーカーを利用できません",
+    "subscribeFailed": "購読の登録に失敗しました",
+    "editFailed": "編集を保存できませんでした。もう一度お試しください。"
+  },
+  "details": {
+    "title": "チャンネルの詳細",
+    "name": "名前",
+    "topic": "トピック",
+    "topicPlaceholder": "このチャンネルの目的は？",
+    "description": "説明",
+    "descriptionPlaceholder": "説明を追加",
+    "createdBy": "作成者: {name}",
+    "readOnly": "この詳細を編集できるのは、チャンネルのオーナー、モデレーター、ワークスペース管理者だけです。",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "saveFailed": "チャンネルの詳細を保存できませんでした。"
+  },
+  "intro": {
+    "title": "#{name}へようこそ",
+    "noDescription": "まだ説明がありません。",
+    "editDescription": "説明を編集"
+  },
+  "threads": {
+    "title": "スレッド",
+    "menu": "メニュー",
+    "loadFailed": "スレッドを読み込めませんでした。",
+    "empty": "スレッドはまだありません",
+    "emptyHint": "開始したスレッドや返信したスレッドがここに表示されます。",
+    "newReplies": "{count, plural, other {新しい返信#件}}",
+    "replyCount": "{count, plural, other {返信#件}}",
+    "olderReplies": "スレッドを開くと以前の返信を確認できます",
+    "replyPlaceholder": "返信...",
+    "send": "送信",
+    "replyFailed": "返信を送信できませんでした。もう一度お試しください。",
+    "alsoSendToChannel": "チャンネルにも送信",
+    "openThread": "スレッドを開く",
+    "loadMore": "さらに読み込む",
+    "loading": "読み込み中..."
+  },
+  "permalink": {
+    "copied": "リンクをコピーしました",
+    "notFound": "このメッセージが見つからないか、表示する権限がありません",
+    "goHome": "ホームへ",
+    "copyManually": "自動でコピーできませんでした。このリンクをコピーしてください：{url}"
+  },
+  "unread": {
+    "divider": "新着",
+    "newMessagesBar": "{count, plural, other {新しいメッセージ#件}}",
+    "newMessagesBarAtLeast": "{count, plural, other {新しいメッセージ#件以上}}",
+    "markRead": "既読にする",
+    "jumpFailed": "未読の位置を読み込めませんでした"
+  },
+  "reminder": {
+    "set": "リマインダーを設定",
+    "customLabel": "リマインダーの日時",
+    "preset": {
+      "in20": "20分後",
+      "in1h": "1時間後",
+      "in3h": "3時間後",
+      "tomorrow": "明日",
+      "nextWeek": "来週",
+      "custom": "指定..."
+    },
+    "status": {
+      "pending": "予定",
+      "done": "完了"
+    },
+    "snooze": {
+      "m10": "10分",
+      "h1": "1時間",
+      "tomorrow": "明日"
+    },
+    "loadFailed": "リマインダーを読み込めませんでした。",
+    "empty": "リマインダーはありません。メッセージの「その他の操作」メニューか /remind で追加できます。",
+    "emptyDone": "完了したリマインダーはありません。",
+    "dueAt": "期限：{time}",
+    "firedAt": "期限は{time}でした",
+    "completedAt": "完了：{time}",
+    "messageDeleted": "削除されたメッセージ",
+    "complete": "完了にする",
+    "reopen": "未完了にする",
+    "delete": "リマインダーを削除",
+    "toast": {
+      "created": "リマインダーを設定しました",
+      "due": "リマインダー：{text}",
+      "createFailed": "リマインダーを設定できませんでした。もう一度お試しください。"
+    },
+    "command": {
+      "syntax": "使い方: /remind me [テキスト] in [数字] [minutes|hours|days]",
+      "tooShort": "リマインダーは1分以上先に設定してください。",
+      "tooLong": "リマインダーは1年以内に設定してください。",
+      "created": "{time}にリマインダーを設定しました"
+    },
+    "pastTime": "未来の日時を選んでください。",
+    "loadMore": "さらに読み込む"
+  }
+}

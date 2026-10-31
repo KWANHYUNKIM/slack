@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Panel de administración",
+    "openSidebar": "Abrir barra lateral",
+    "tabs": {
+      "members": "Miembros",
+      "invites": "Invitaciones",
+      "channels": "Canales",
+      "webhooks": "Webhooks",
+      "audit": "Registro de auditoría",
+      "retention": "Retención de datos",
+      "security": "Seguridad",
+      "dlp": "DLP",
+      "legalHolds": "Retenciones legales"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Canal",
+      "members": "Miembros",
+      "messages": "Mensajes",
+      "created": "Creado"
+    },
+    "actions": {
+      "rename": "Cambiar nombre del canal",
+      "archive": "Archivar canal",
+      "delete": "Eliminar canal",
+      "unarchive": "Desarchivar canal",
+      "deletePermanently": "Eliminar de forma permanente"
+    },
+    "emptyActive": "No hay canales activos",
+    "archivedHeading": "Canales archivados ({count})",
+    "archivedOn": "archivado el {date}",
+    "messageCount": "{count, plural, one {# mensaje} other {# mensajes}}",
+    "deleteDialog": {
+      "title": "Eliminar canal",
+      "message": "¿Seguro que quieres eliminar de forma permanente #{name}? Se perderán todos los mensajes. No se puede deshacer."
+    },
+    "archiveDialog": {
+      "title": "Archivar canal",
+      "confirm": "Archivar",
+      "message": "¿Archivar #{name}? Se ocultará de la barra lateral, pero los mensajes se conservarán. Podrás desarchivarlo más tarde."
+    },
+    "unarchiveDialog": {
+      "title": "Desarchivar canal",
+      "confirm": "Desarchivar",
+      "message": "¿Desarchivar #{name}? Volverá a aparecer en la barra lateral de todos los miembros."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Buscar miembros...",
+    "columns": {
+      "user": "Usuario",
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "you": "(tú)",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro",
+      "guest": "Invitado"
+    },
+    "status": {
+      "active": "Activo",
+      "deactivated": "Desactivado"
+    },
+    "actions": {
+      "transfer": "Transferir la propiedad",
+      "reactivate": "Reactivar",
+      "deactivate": "Desactivar",
+      "forceLogout": "Forzar cierre de sesión",
+      "resetMfa": "Restablecer verificación en dos pasos"
+    },
+    "empty": "No se encontraron usuarios",
+    "dialogs": {
+      "transfer": {
+        "title": "Transferir la propiedad del espacio de trabajo",
+        "confirm": "Transferir",
+        "message": "¿Seguro que quieres transferir la propiedad del espacio de trabajo a {name}? Pasarás a ser administrador."
+      },
+      "deactivate": {
+        "title": "Desactivar usuario",
+        "confirm": "Desactivar",
+        "message": "¿Seguro que quieres desactivar a {name}? Se cerrará su sesión de inmediato y no podrá iniciar sesión."
+      },
+      "reactivate": {
+        "title": "Reactivar usuario",
+        "confirm": "Reactivar",
+        "message": "¿Seguro que quieres reactivar a {name}? Podrá volver a iniciar sesión."
+      },
+      "forceLogout": {
+        "title": "Forzar cierre de sesión",
+        "confirm": "Cerrar sesión",
+        "message": "¿Cerrar la sesión de {name} en todos los dispositivos ahora? Su cuenta seguirá activa y podrá volver a iniciar sesión."
+      },
+      "resetMfa": {
+        "title": "Restablecer la verificación en dos pasos",
+        "confirm": "Restablecer",
+        "message": "¿Quitar la verificación en dos pasos de {name}? Se cerrará su sesión en todos los dispositivos y podrá iniciar sesión solo con su contraseña."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "La verificación en dos pasos está activada"
+    }
+  },
+  "invites": {
+    "createHeading": "Crear enlace de invitación",
+    "fields": {
+      "role": "Rol",
+      "maxUses": "Usos máximos",
+      "expiresIn": "Caduca en"
+    },
+    "unlimited": "Ilimitados",
+    "expiry": {
+      "1d": "1 día",
+      "7d": "7 días",
+      "30d": "30 días",
+      "never": "Nunca"
+    },
+    "expired": "Caducada",
+    "columns": {
+      "url": "URL de invitación",
+      "uses": "Usos",
+      "expires": "Caduca",
+      "createdBy": "Creada por"
+    },
+    "copyUrl": "Copiar URL de invitación",
+    "full": "(completa)",
+    "delete": "Eliminar invitación",
+    "empty": "Todavía no hay enlaces de invitación"
+  },
+  "webhooks": {
+    "createHeading": "Crear webhook",
+    "fields": {
+      "name": "Nombre del webhook",
+      "channel": "Canal"
+    },
+    "namePlaceholder": "Mi integración",
+    "selectChannel": "Selecciona un canal...",
+    "columns": {
+      "name": "Nombre",
+      "url": "URL del webhook",
+      "lastUsed": "Último uso"
+    },
+    "never": "Nunca",
+    "justNow": "Justo ahora",
+    "inactive": "Inactivo",
+    "copyUrl": "Copiar URL del webhook",
+    "delete": "Eliminar webhook",
+    "empty": "Todavía no hay webhooks configurados"
+  },
+  "audit": {
+    "empty": "No hay entradas del registro de auditoría que coincidan. Las acciones registradas aparecen aquí.",
+    "loadMore": "Cargar más",
+    "targets": {
+      "user": "Usuario",
+      "channel": "Canal",
+      "invite": "Invitación",
+      "webhook": "Webhook",
+      "message": "Mensaje",
+      "directMessage": "Mensaje directo",
+      "token": "Token de acceso",
+      "auditLog": "Registro de auditoría",
+      "mcpTool": "Herramienta MCP",
+      "workspace": "Espacio de trabajo",
+      "file": "Archivo",
+      "dlpRule": "Regla DLP",
+      "legalHold": "Retención legal"
+    },
+    "action": {
+      "authLogin": "Inicio de sesión",
+      "authLoginFailed": "Error al iniciar sesión",
+      "authLogout": "Cierre de sesión",
+      "authPasswordChanged": "Contraseña cambiada",
+      "userRoleChanged": "Rol cambiado",
+      "userDeactivated": "Desactivado",
+      "userForceLogout": "Cierre de sesión forzado",
+      "userReactivated": "Reactivado",
+      "ownershipTransferred": "Propiedad transferida",
+      "ownerBootstrapped": "Propietario creado",
+      "channelCreated": "Canal creado",
+      "channelEdited": "Canal editado",
+      "channelArchived": "Canal archivado",
+      "channelUnarchived": "Canal desarchivado",
+      "channelDeleted": "Canal eliminado",
+      "channelMemberAdded": "Miembro añadido",
+      "channelMemberRemoved": "Miembro eliminado",
+      "inviteCreated": "Invitación creada",
+      "inviteDeleted": "Invitación eliminada",
+      "webhookCreated": "Webhook creado",
+      "webhookDeleted": "Webhook eliminado",
+      "tokenCreate": "Token creado",
+      "tokenRevoke": "Token revocado",
+      "mcpToolCall": "Llamada a herramienta MCP",
+      "auditExported": "Registro de auditoría exportado",
+      "authLoginLocked": "Cuenta bloqueada",
+      "sessionRevoked": "Dispositivo con sesión cerrada",
+      "sessionRevokedAll": "Todos los dispositivos con sesión cerrada",
+      "retentionPurged": "Datos caducados eliminados",
+      "retentionWorkspaceUpdated": "Política de retención cambiada",
+      "retentionChannelUpdated": "Retención del canal cambiada",
+      "retentionChannelCleared": "Retención del canal restablecida",
+      "mfaEnabled": "Verificación en dos pasos activada",
+      "mfaDisabled": "Verificación en dos pasos desactivada",
+      "mfaRecoveryUsed": "Código de recuperación usado",
+      "mfaRecoveryRegenerated": "Códigos de recuperación regenerados",
+      "mfaResetByAdmin": "Verificación en dos pasos restablecida por un administrador",
+      "mfaPolicyChanged": "Requisito de verificación en dos pasos cambiado",
+      "dlpBlocked": "Mensaje bloqueado por DLP",
+      "dlpWarned": "Aviso de DLP",
+      "dlpRuleCreated": "Regla DLP creada",
+      "dlpRuleUpdated": "Regla DLP cambiada",
+      "dlpRuleDeleted": "Regla DLP eliminada",
+      "dlpRuleTimeout": "Tiempo de espera de regla DLP agotado",
+      "dlpRuleAutoDisabled": "Regla DLP desactivada automáticamente",
+      "legalHoldCreated": "Retención legal creada",
+      "legalHoldUpdated": "Retención legal editada",
+      "legalHoldCustodianAdded": "Persona añadida a la retención legal",
+      "legalHoldCustodianRemoved": "Persona quitada de la retención legal",
+      "legalHoldReleased": "Retención legal liberada",
+      "ediscoverySearched": "Búsqueda de eDiscovery",
+      "ediscoveryExportRequested": "Exportación de eDiscovery solicitada",
+      "ediscoveryExported": "eDiscovery exportado"
+    },
+    "filters": {
+      "allActions": "Todas las acciones",
+      "actionsSelected": "{count, plural, one {# acción} other {# acciones}}",
+      "actor": "Autor",
+      "allActors": "Todos los autores",
+      "targetType": "Tipo de objetivo",
+      "allTargets": "Todos los objetivos",
+      "from": "Desde",
+      "to": "Hasta",
+      "apply": "Aplicar",
+      "reset": "Restablecer"
+    },
+    "export": {
+      "csv": "Exportar CSV",
+      "json": "Exportar JSON"
+    },
+    "unknownActor": "Desconocido"
+  },
+  "errors": {
+    "archiveChannel": "No se pudo archivar el canal",
+    "createInvite": "No se pudo crear la invitación",
+    "createWebhook": "No se pudo crear el webhook",
+    "deactivateUser": "No se pudo desactivar al usuario",
+    "deleteChannel": "No se pudo eliminar el canal",
+    "deleteInvite": "No se pudo eliminar la invitación",
+    "deleteWebhook": "No se pudo eliminar el webhook",
+    "editChannel": "No se pudo editar el canal",
+    "exportAuditLog": "No se pudo exportar el registro de auditoría",
+    "fetchAuditLog": "No se pudo cargar el registro de auditoría",
+    "fetchChannels": "No se pudieron cargar los canales",
+    "fetchInvites": "No se pudieron cargar las invitaciones",
+    "fetchUsers": "No se pudieron cargar los usuarios",
+    "fetchWebhooks": "No se pudieron cargar los webhooks",
+    "forceLogout": "No se pudo cerrar la sesión del usuario",
+    "reactivateUser": "No se pudo reactivar al usuario",
+    "removeChannelMember": "No se pudo quitar al miembro del canal",
+    "transferOwnership": "No se pudo transferir la propiedad",
+    "unarchiveChannel": "No se pudo desarchivar el canal",
+    "updateRole": "No se pudo actualizar el rol",
+    "resetMfa": "No se pudo restablecer la verificación en dos pasos"
+  },
+  "retention": {
+    "title": "Retención de datos",
+    "description": "Elimina automáticamente los mensajes tras un número de días determinado. Los archivos se eliminan junto con sus mensajes. La limpieza se ejecuta una vez al día. Los recordatorios se conservan y muestran «mensaje eliminado».",
+    "loadError": "No se pudo cargar la política de retención",
+    "saveError": "No se pudo guardar la política de retención",
+    "resetError": "No se pudo restablecer la política del canal",
+    "workspace": {
+      "heading": "Valor predeterminado del espacio de trabajo",
+      "hint": "Se aplica a todos los canales sin configuración propia, así como a los mensajes directos y a los mensajes de grupo."
+    },
+    "mode": {
+      "forever": "Conservar siempre",
+      "days": "Eliminar tras un número de días",
+      "inherit": "Usar el valor predeterminado del espacio de trabajo"
+    },
+    "daysLabel": "Días",
+    "daysHint": "De {min} a {max} días",
+    "effective": {
+      "forever": "Se conserva siempre",
+      "days": "{count, plural, one {# día} other {# días}}"
+    },
+    "channels": {
+      "heading": "Canales",
+      "columns": {
+        "channel": "Canal",
+        "policy": "Política",
+        "effective": "Se aplica"
+      },
+      "legalHold": "Retención legal",
+      "reset": "Restablecer al valor predeterminado",
+      "empty": "No hay canales"
+    },
+    "save": "Guardar",
+    "saved": "Guardado",
+    "confirm": {
+      "title": "¿Eliminar de forma permanente los mensajes antiguos?",
+      "message": "En la próxima limpieza, los mensajes con más de {count, plural, one {# día} other {# días}} se eliminarán de forma permanente junto con sus archivos. No se puede deshacer.",
+      "confirm": "Aplicar política"
+    }
+  },
+  "security": {
+    "title": "Verificación en dos pasos",
+    "requireMfa": "Exigir la verificación en dos pasos a todos",
+    "requireMfaHint": "Los miembros sin verificación en dos pasos solo podrán acceder a la pantalla de configuración hasta que la activen.",
+    "unavailable": "La verificación en dos pasos está desactivada en este servidor porque no hay una clave de cifrado configurada (TOTP_ENCRYPTION_KEY). El requisito no se aplica.",
+    "saved": "Configuración de seguridad guardada",
+    "loading": "Cargando...",
+    "errors": {
+      "loadFailed": "No se pudo cargar la configuración de seguridad.",
+      "saveFailed": "No se pudo guardar la configuración de seguridad."
+    },
+    "allowOAuthApps": "Permitir que los miembros conecten aplicaciones OAuth",
+    "allowOAuthAppsHint": "Permite que los miembros conecten aplicaciones como Claude mediante el flujo de inicio de sesión OAuth. Si lo desactivas, se desconectarán de inmediato todas las aplicaciones."
+  },
+  "dlp": {
+    "title": "Prevención de pérdida de datos",
+    "description": "Detecta patrones sensibles en los mensajes, como números de tarjeta. Una regla de bloqueo impide que el mensaje se guarde. Una regla de aviso guarda el mensaje y lo registra en el registro de auditoría. El texto de los mensajes nunca se escribe en el registro.",
+    "loadError": "No se pudieron cargar las reglas de DLP",
+    "saveError": "No se pudo guardar la regla",
+    "toggleError": "No se pudo cambiar la regla",
+    "deleteError": "No se pudo eliminar la regla",
+    "testError": "No se pudo probar el patrón",
+    "builtinBadge": "Integrada",
+    "builtinPattern": "Detector integrado",
+    "builtin": {
+      "credit_card": "Número de tarjeta de crédito",
+      "kr_rrn": "Número de registro de residente coreano",
+      "aws_access_key": "Clave de acceso de AWS",
+      "private_key": "Clave privada"
+    },
+    "action": {
+      "BLOCK": "Bloquear",
+      "WARN": "Avisar"
+    },
+    "columns": {
+      "name": "Regla",
+      "pattern": "Patrón",
+      "action": "Acción",
+      "enabled": "Estado"
+    },
+    "on": "Activada",
+    "off": "Desactivada",
+    "toggleLabel": "Activar o desactivar {name}",
+    "edit": "Editar",
+    "editLabel": "Editar {name}",
+    "delete": "Eliminar",
+    "deleteLabel": "Eliminar {name}",
+    "form": {
+      "createHeading": "Añadir una regla",
+      "editHeading": "Editar regla",
+      "name": "Nombre",
+      "pattern": "Patrón (expresión regular)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Acción",
+      "add": "Añadir regla",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "hint": "Hasta {max} caracteres. Se rechazan las repeticiones anidadas como (a+)+, las referencias hacia atrás y los recuentos de repetición muy grandes."
+    },
+    "patternProblem": {
+      "empty": "Introduce un patrón.",
+      "tooLong": "El patrón es demasiado largo.",
+      "invalid": "Esta no es una expresión regular válida.",
+      "backreference": "No se permiten las referencias hacia atrás.",
+      "nestedQuantifier": "Las repeticiones anidadas pueden hacer que la comprobación sea muy lenta, por lo que no se permiten.",
+      "repeatTooLarge": "El número de repeticiones es demasiado alto (200 como máximo)."
+    },
+    "test": {
+      "heading": "Probar un patrón",
+      "hint": "No se guarda nada. Introduce un patrón arriba o elige una regla guardada, y después escribe un texto de muestra.",
+      "source": "Patrón a probar",
+      "sourceDraft": "Patrón del formulario de arriba",
+      "sample": "Texto de muestra",
+      "run": "Probar",
+      "matched": "Coincide. Este texto sería detectado.",
+      "notMatched": "No coincide.",
+      "timedOut": "La comprobación tardó demasiado y se detuvo. Simplifica el patrón."
+    },
+    "confirmDelete": {
+      "title": "¿Eliminar esta regla?",
+      "message": "Se eliminará la regla «{name}» y ya no se comprobará."
+    }
+  },
+  "legalHolds": {
+    "description": "Conserva todo lo que una persona ha escrito o recibido, aunque la retención de datos lo eliminaría. Los administradores pueden buscar y exportar los datos conservados para la revisión legal.",
+    "statusFilter": "Mostrar",
+    "status": {
+      "active": "Activas",
+      "released": "Liberadas",
+      "all": "Todas"
+    },
+    "empty": "No hay retenciones legales",
+    "selectHint": "Selecciona una retención legal para gestionar a sus personas y buscar en sus datos.",
+    "loadMore": "Cargar más",
+    "custodianCount": "{count, plural, one {# persona} other {# personas}}",
+    "createdOn": "Creada el {date}",
+    "releasedOn": "Liberada el {date}",
+    "createdBy": "Creada por {name} el {date}",
+    "releasedBy": "Liberada por {name} el {date}",
+    "unknownUser": "Usuario desconocido",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción (opcional)"
+    },
+    "create": {
+      "open": "Nueva retención",
+      "submit": "Crear retención",
+      "hint": "Podrás añadir personas después de crear la retención."
+    },
+    "custodians": {
+      "heading": "Personas en la retención",
+      "pick": "Elige una persona",
+      "add": "Añadir",
+      "remove": "Quitar a {name} de esta retención",
+      "empty": "Todavía no hay nadie en esta retención.",
+      "deactivated": "Desactivado"
+    },
+    "release": {
+      "open": "Liberar retención",
+      "title": "¿Liberar esta retención legal?",
+      "message": "«{name}» dejará de conservar datos. Las personas que no estén en otra retención activa volverán a la política de retención normal, y sus mensajes antiguos podrían eliminarse en la próxima limpieza. La retención y su lista de personas quedarán registradas. No se puede deshacer.",
+      "confirm": "Liberar"
+    },
+    "discovery": {
+      "heading": "Búsqueda y exportación",
+      "hint": "Incluye los mensajes que escribieron las personas de la retención en cualquier canal (también privados), los mensajes directos y de grupo en los que participaron y los detalles de los archivos. Los mensajes eliminados se incluyen y se marcan.",
+      "query": "Palabra clave",
+      "from": "Desde",
+      "to": "Hasta",
+      "search": "Buscar",
+      "export": "Exportar (JSONL)",
+      "exportHint": "Exporta los resultados de la última búsqueda. Cada búsqueda y exportación se registra en el registro de auditoría.",
+      "searchFirst": "Busca primero con estos filtros. La exportación usa los filtros de la búsqueda que aparece abajo.",
+      "kinds": {
+        "channel": "Mensajes de canales",
+        "dm": "Mensajes directos",
+        "file": "Archivos"
+      },
+      "empty": "No hay resultados",
+      "deleted": "Eliminado",
+      "edited": "Editado",
+      "reply": "Respuesta en un hilo",
+      "groupDm": "Mensaje de grupo #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "No se pudieron cargar las retenciones legales",
+      "create": "No se pudo crear la retención legal",
+      "update": "No se pudo actualizar la retención legal",
+      "custodians": "No se pudieron cambiar las personas de la retención",
+      "release": "No se pudo liberar la retención legal",
+      "search": "La búsqueda falló",
+      "export": "La exportación falló"
+    }
+  }
+}

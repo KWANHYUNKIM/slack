@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "send": "发送",
+    "confirm": "确认",
+    "back": "返回",
+    "remove": "移除",
+    "add": "添加",
+    "create": "创建",
+    "retry": "重试",
+    "search": "搜索",
+    "copy": "复制",
+    "done": "完成",
+    "next": "下一步",
+    "more": "更多"
+  },
+  "emojiPicker": {
+    "loadFailed": "无法加载表情符号。请检查网络连接后重试。",
+    "retry": "重试"
+  },
+  "status": {
+    "loading": "正在加载...",
+    "saving": "正在保存...",
+    "deleting": "正在删除..."
+  },
+  "dates": {
+    "today": "今天",
+    "yesterday": "昨天"
+  },
+  "quickSwitcher": {
+    "title": "快速切换",
+    "inputLabel": "跳转到会话",
+    "placeholder": "跳转到频道或会话",
+    "recent": "最近",
+    "results": "结果",
+    "clearRecent": "清除最近记录",
+    "listLabel": "会话",
+    "noResults": "没有匹配的会话",
+    "starred": "已加星标",
+    "unread": "未读",
+    "dnd": "勿扰模式",
+    "footer": "按 {keys} 打开。上下键移动，Enter 进入，Esc 关闭。",
+    "open": "跳转到…",
+    "kind": {
+      "channel": "频道",
+      "dm": "私信",
+      "group": "群组消息"
+    }
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "groups": {
+      "navigation": "导航",
+      "general": "常规"
+    },
+    "items": {
+      "switcher": "打开快速切换",
+      "prevChannel": "上一个会话",
+      "nextChannel": "下一个会话",
+      "prevUnread": "上一个未读会话",
+      "nextUnread": "下一个未读会话",
+      "help": "显示键盘快捷键",
+      "closeTop": "关闭快速切换或此对话框"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  }
+}

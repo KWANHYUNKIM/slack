@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "动态",
+    "unreads": "未读",
+    "later": "稍后处理",
+    "files": "文件",
+    "admin": "管理",
+    "threads": "线程"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "新消息"
+  },
+  "userMenu": {
+    "profile": "个人资料",
+    "notificationsBlocked": "通知已被阻止",
+    "disableNotifications": "关闭通知",
+    "enableNotifications": "开启通知",
+    "signOut": "退出登录",
+    "updateStatus": "更新您的状态",
+    "pauseNotifications": "暂停通知",
+    "pausedUntil": "暂停至 {time}",
+    "pausedIndefinitely": "暂停，直到清除您的状态",
+    "resumeNotifications": "恢复通知",
+    "pause": {
+      "m30": "30 分钟",
+      "h1": "1 小时",
+      "h2": "2 小时",
+      "tomorrow": "直到明天"
+    },
+    "pauseError": "无法更改通知暂停设置，请重试。",
+    "accessTokens": "个人访问令牌",
+    "sessions": "已登录的设备",
+    "twoFactor": "两步验证",
+    "changePassword": "更改密码",
+    "connectedApps": "已连接的应用"
+  },
+  "sections": {
+    "starred": "已加星标",
+    "channels": "频道",
+    "addChannels": "添加频道",
+    "directMessages": "私信",
+    "addTeammates": "添加同事",
+    "starredEmpty": "为频道或会话加星标后，会显示在这里。",
+    "collapse": "收起{section}",
+    "expand": "展开{section}"
+  },
+  "teammates": {
+    "title": "私信",
+    "subtitle": "查找或开始会话",
+    "searchPlaceholder": "按姓名搜索...",
+    "noUsers": "未找到用户",
+    "close": "关闭",
+    "pickSubtitle": "最多选择 {max} 人",
+    "select": "选择{name}",
+    "selectedCount": "已选 {count}/{max}",
+    "start": "开始会话",
+    "startGroup": "开始群组会话"
+  },
+  "you": "（您）",
+  "notifications": {
+    "someone": "某人",
+    "sentAttachment": "发送了一个附件",
+    "threadTitle": "{name}（线程）"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# 位成员}}",
+    "createError": "无法开始群组会话，请重试。"
+  },
+  "statusDialog": {
+    "title": "设置状态",
+    "emojiLabel": "选择表情符号",
+    "textLabel": "您的状态是什么？",
+    "textPlaceholder": "您的状态是什么？",
+    "durationLabel": "在此之后清除",
+    "duration": {
+      "never": "不清除",
+      "m30": "30 分钟",
+      "h1": "1 小时",
+      "h4": "4 小时",
+      "today": "今天",
+      "week": "本周"
+    },
+    "pauseCheckbox": "暂停通知，直到状态被清除",
+    "save": "保存",
+    "clear": "清除状态",
+    "cancel": "取消",
+    "expiresAt": "将于 {time} 清除",
+    "saveError": "无法保存您的状态，请重试。"
+  },
+  "findConversation": "查找会话"
+}

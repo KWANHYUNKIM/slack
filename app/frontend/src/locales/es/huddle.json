@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(silenciado)",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "leave": "Salir del huddle"
+  },
+  "button": {
+    "leaveFirstError": "Sal primero de tu huddle actual",
+    "cancelInviteFirstError": "Cancela primero tu invitación actual",
+    "cancelInvite": "Cancelar invitación",
+    "calling": "Llamando...",
+    "inHuddle": "En un huddle",
+    "leaveCurrentFirst": "Sal primero del huddle actual",
+    "start": "Iniciar huddle"
+  },
+  "incoming": {
+    "invite": "Invitación a un huddle",
+    "secondsLeft": "{count} s",
+    "decline": "Rechazar",
+    "accept": "Aceptar"
+  },
+  "system": {
+    "youStarted": "Iniciaste un huddle.",
+    "started": "Inició un huddle.",
+    "ended": "Terminado",
+    "youSentInvite": "Enviaste una invitación a un huddle.",
+    "sentInvite": "Te envió una invitación a un huddle.",
+    "huddleStarted": "Huddle iniciado",
+    "huddleEnded": "Huddle terminado ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Sal primero de tu huddle actual",
+    "cancelInviteFirst": "Cancela primero tu invitación actual",
+    "micDenied": "Acceso al micrófono denegado",
+    "busy": "Están en otro huddle",
+    "declined": "La invitación fue rechazada",
+    "expired": "La invitación caducó",
+    "rateLimited": "Demasiadas solicitudes. Inténtalo de nuevo en un momento",
+    "invalidInvite": "La solicitud de invitación no es válida",
+    "cannotInviteSelf": "No puedes invitarte a ti mismo",
+    "userNotFound": "Usuario no encontrado",
+    "invalidAccept": "La solicitud de aceptación no es válida",
+    "inviteNotFound": "Invitación no encontrada o caducada",
+    "peerOffline": "Está desconectado",
+    "generic": "No se pudo iniciar el huddle. Inténtalo de nuevo"
+  }
+}

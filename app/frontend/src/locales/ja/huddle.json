@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "（ミュート中）",
+    "mute": "ミュート",
+    "unmute": "ミュート解除",
+    "leave": "ハドルを退出"
+  },
+  "button": {
+    "leaveFirstError": "先に現在のハドルを退出してください",
+    "cancelInviteFirstError": "先に現在の招待を取り消してください",
+    "cancelInvite": "招待を取り消す",
+    "calling": "発信中...",
+    "inHuddle": "ハドル中",
+    "leaveCurrentFirst": "先に現在のハドルを退出",
+    "start": "ハドルを開始"
+  },
+  "incoming": {
+    "invite": "ハドルへの招待",
+    "secondsLeft": "{count}秒",
+    "decline": "拒否",
+    "accept": "承諾"
+  },
+  "system": {
+    "youStarted": "ハドルを開始しました。",
+    "started": "ハドルを開始しました。",
+    "ended": "終了",
+    "youSentInvite": "ハドルへの招待を送信しました。",
+    "sentInvite": "ハドルへの招待を送信しました。",
+    "huddleStarted": "ハドルが開始しました",
+    "huddleEnded": "ハドルが終了しました（{duration}）",
+    "durationSeconds": "{seconds}秒",
+    "durationMinutesSeconds": "{minutes}分{seconds}秒"
+  },
+  "errors": {
+    "leaveFirst": "先に現在のハドルを退出してください",
+    "cancelInviteFirst": "先に現在の招待を取り消してください",
+    "micDenied": "マイクへのアクセスが拒否されました",
+    "busy": "相手は別のハドルに参加中です",
+    "declined": "招待が拒否されました",
+    "expired": "招待の期限が切れました",
+    "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください",
+    "invalidInvite": "招待リクエストが不正です",
+    "cannotInviteSelf": "自分を招待することはできません",
+    "userNotFound": "ユーザーが見つかりません",
+    "invalidAccept": "承諾リクエストが不正です",
+    "inviteNotFound": "招待が見つからないか、期限が切れています",
+    "peerOffline": "相手はオフラインです",
+    "generic": "ハドルを開始できませんでした。もう一度お試しください"
+  }
+}

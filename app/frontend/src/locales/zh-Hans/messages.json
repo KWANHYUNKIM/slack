@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "通知所有在线成员",
+    "channelLabel": "@channel",
+    "channelHint": "通知此频道中的所有成员"
+  },
+  "deleteDialog": {
+    "title": "删除消息",
+    "body": "确定要删除此消息吗？删除后无法恢复。"
+  },
+  "editorToolbar": {
+    "attachFile": "添加文件",
+    "emoji": "表情符号",
+    "mention": "提及某人",
+    "stopRecording": "停止录音",
+    "recordVoice": "录制语音片段"
+  },
+  "emojiAutocomplete": {
+    "navigate": "移动",
+    "select": "选择",
+    "dismiss": "关闭",
+    "escKey": "Esc"
+  },
+  "filePreview": {
+    "remove": "移除{name}"
+  },
+  "fileModal": {
+    "download": "下载",
+    "loadFailed": "无法加载文件内容",
+    "truncated": "...（已截断）",
+    "noPreview": "没有可用的预览",
+    "downloadToView": "下载文件以查看"
+  },
+  "files": {
+    "allFiles": "所有文件",
+    "channelFiles": "频道文件",
+    "loadFailed": "无法加载文件。",
+    "empty": "还没有上传文件",
+    "download": "下载",
+    "menu": "菜单",
+    "unavailable": "文件不可用",
+    "preparing": "正在准备文件"
+  },
+  "format": {
+    "bold": "粗体",
+    "italic": "斜体",
+    "strike": "删除线",
+    "link": "链接",
+    "orderedList": "有序列表",
+    "bulletList": "无序列表",
+    "code": "代码",
+    "codeBlock": "代码块",
+    "quote": "引用"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "没有新通知",
+    "unreadCount": "{count, plural, other {# 条未读消息}}"
+  },
+  "search": {
+    "placeholder": "搜索",
+    "searching": "正在搜索...",
+    "noResults": "未找到结果",
+    "previewHint": "{count, plural, other {前 # 条结果}} · 查看全部（Enter）",
+    "truncatedNotice": "结果很多。请添加筛选条件以缩小范围。",
+    "retry": "重试",
+    "ignoredChip": "{token}（已忽略）",
+    "ignoredLimitChip": "{token}（已忽略：过多）",
+    "inChannel": "在 #{channel} 中",
+    "title": "搜索结果",
+    "resultsFor": "“{query}”的结果",
+    "emptyQuery": "请输入搜索词，或使用 from:、in:、has:、before:、after: 等筛选条件。",
+    "noResultsHint": "请尝试其他关键词或移除部分筛选条件。",
+    "clearFilters": "清除所有筛选条件",
+    "removeFilter": "移除筛选条件 {filter}",
+    "loadFailed": "搜索失败，请重试。",
+    "loadMore": "加载更多",
+    "threadReply": "线程回复",
+    "directMessage": "私信",
+    "groupMessage": "群组会话",
+    "joined": "已加入",
+    "privateChannel": "私有",
+    "archivedChannel": "已归档",
+    "back": "返回",
+    "tabs": {
+      "label": "搜索结果类型",
+      "messages": "消息",
+      "files": "文件",
+      "people": "成员",
+      "channels": "频道"
+    },
+    "sort": {
+      "label": "排序方式",
+      "relevance": "相关性",
+      "recent": "最新"
+    }
+  },
+  "headerTabs": {
+    "files": "文件",
+    "pins": "置顶"
+  },
+  "lightbox": {
+    "close": "关闭"
+  },
+  "later": {
+    "title": "稍后处理",
+    "saved": "已保存",
+    "scheduled": "已计划",
+    "loadFailed": "无法加载已保存的消息。",
+    "empty": "还没有已保存的消息。点击任意消息上的书签图标即可保存。",
+    "removeSaved": "从已保存中移除",
+    "menu": "菜单",
+    "reminders": "提醒"
+  },
+  "linkModal": {
+    "title": "添加链接",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "显示文本",
+    "optional": "（可选）",
+    "textPlaceholder": "链接文本",
+    "close": "关闭"
+  },
+  "actionsMenu": {
+    "noActions": "没有可用的操作",
+    "markUnread": "标记为未读",
+    "pin": "置顶消息",
+    "unpin": "取消置顶",
+    "edit": "编辑消息",
+    "delete": "删除消息",
+    "copyLink": "复制链接",
+    "remind": "提醒我此消息"
+  },
+  "area": {
+    "selectChannel": "选择一个频道开始发消息",
+    "openMenu": "打开菜单",
+    "placeholder": "给 #{channel} 发消息",
+    "viewing": "您正在查看 <bold>#{channel}</bold>",
+    "joinChannel": "加入频道"
+  },
+  "header": {
+    "menu": "菜单",
+    "unstar": "从已加星标中移除",
+    "star": "添加到已加星标",
+    "members": "成员：{count}",
+    "search": "搜索",
+    "channelMenu": "频道选项",
+    "leaveChannel": "退出频道",
+    "leaveLastMember": "无法退出频道，您是最后一位成员。",
+    "dismiss": "关闭",
+    "addTopic": "添加主题",
+    "editDetails": "编辑频道详情"
+  },
+  "message": {
+    "edited": "（已编辑）",
+    "pinned": "已置顶",
+    "showMore": "展开",
+    "showLess": "收起",
+    "repliedToThread": "已回复线程：{excerpt}",
+    "deletedPlaceholder": "此消息已被删除。",
+    "sendToChannel": "同时发送到频道",
+    "removeFromChannel": "从频道中移除"
+  },
+  "input": {
+    "uploading": "正在上传...",
+    "scheduleMessage": "定时发送消息",
+    "send": "发送消息",
+    "hint": "按 <kbd>Enter</kbd> 发送，按 <kbd>Shift + Enter</kbd> 换行",
+    "scheduledFor": "计划于 {time} 发送",
+    "scheduleFailed": "无法定时发送消息，请重试。"
+  },
+  "list": {
+    "loading": "正在加载消息...",
+    "empty": "还没有消息",
+    "emptyReadOnly": "此频道没有消息。",
+    "emptyFirst": "来发送第一条消息吧！"
+  },
+  "reactions": {
+    "tooltip": "{names}对此做出了 {emoji} 反应",
+    "add": "添加反应",
+    "you": "您"
+  },
+  "toolbar": {
+    "addReaction": "添加反应",
+    "replyInThread": "在线程中回复",
+    "removeBookmark": "取消书签",
+    "bookmark": "为此消息添加书签",
+    "moreActions": "更多操作"
+  },
+  "mobileSearch": {
+    "placeholder": "搜索消息...",
+    "hint": "在所有频道和会话中搜索消息",
+    "close": "关闭搜索"
+  },
+  "pins": {
+    "title": "置顶消息",
+    "loadFailed": "无法加载置顶消息。",
+    "empty": "还没有置顶消息"
+  },
+  "schedule": {
+    "menuTitle": "定时发送消息",
+    "in20": "20 分钟后",
+    "in1h": "1 小时后",
+    "in3h": "3 小时后",
+    "tomorrow9": "明天 9:00",
+    "custom": "自定义时间...",
+    "modalTitle": "定时发送消息",
+    "dateTime": "日期和时间",
+    "pickFuture": "请选择一个将来的时间。",
+    "submit": "定时发送",
+    "submitting": "正在设置定时...",
+    "close": "关闭"
+  },
+  "scheduled": {
+    "loadFailed": "无法加载定时消息。",
+    "cancelFailed": "无法取消消息。",
+    "sendFailed": "无法发送消息。",
+    "saveFailed": "无法保存更改。",
+    "empty": "没有定时消息。在消息输入框中使用时钟图标即可设置定时发送。",
+    "sendAt": "发送时间：",
+    "edit": "编辑",
+    "sendNow": "立即发送",
+    "cancel": "取消",
+    "failedDlp": "此消息因匹配数据保护规则（{rule}）而未发送。请删除后重新编写。"
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {# 条回复}}"
+  },
+  "unreads": {
+    "title": "未读",
+    "loadFailed": "无法加载未读消息。",
+    "empty": "没有未读消息。您已全部查看！ 🎉",
+    "menu": "菜单"
+  },
+  "threadPanel": {
+    "title": "线程",
+    "replyPlaceholder": "回复...",
+    "loadFailed": "无法加载线程，请重试。",
+    "loading": "正在加载线程...",
+    "replyFailed": "无法发送回复，请重试。",
+    "joinToReply": "加入频道后才能在线程中回复",
+    "alsoSendToChannel": "同时发送到频道"
+  },
+  "errors": {
+    "messageEmpty": "消息不能为空。",
+    "pasteUploadFailed": "无法上传粘贴的图片，请重试。",
+    "dropUploadFailed": "无法上传拖放的文件，请重试。",
+    "uploadFailed": "无法上传文件，请重试。",
+    "voiceUploadFailed": "无法上传语音消息。",
+    "micDenied": "麦克风访问被拒绝。请允许访问麦克风。",
+    "loadFailed": "无法加载消息。",
+    "sendTimeout": "消息发送超时，请重试。",
+    "sendFailed": "消息发送失败，请重试。",
+    "pushNotConfigured": "服务器未设置推送通知",
+    "serviceWorkerUnavailable": "Service Worker 不可用",
+    "subscribeFailed": "无法注册订阅",
+    "editFailed": "无法保存编辑，请重试。"
+  },
+  "details": {
+    "title": "频道详情",
+    "name": "名称",
+    "topic": "主题",
+    "topicPlaceholder": "此频道是关于什么的？",
+    "description": "描述",
+    "descriptionPlaceholder": "添加描述",
+    "createdBy": "创建者：{name}",
+    "readOnly": "只有频道所有者、版主和工作区管理员可以编辑这些详情。",
+    "save": "保存",
+    "cancel": "取消",
+    "saveFailed": "无法保存频道详情。"
+  },
+  "intro": {
+    "title": "欢迎来到 #{name}",
+    "noDescription": "还没有描述。",
+    "editDescription": "编辑描述"
+  },
+  "threads": {
+    "title": "线程",
+    "menu": "菜单",
+    "loadFailed": "无法加载线程。",
+    "empty": "还没有线程",
+    "emptyHint": "您发起或回复的线程会显示在这里。",
+    "newReplies": "{count, plural, other {# 条新回复}}",
+    "replyCount": "{count, plural, other {# 条回复}}",
+    "olderReplies": "打开线程以查看更早的回复",
+    "replyPlaceholder": "回复...",
+    "send": "发送",
+    "replyFailed": "无法发送回复，请重试。",
+    "alsoSendToChannel": "同时发送到频道",
+    "openThread": "打开线程",
+    "loadMore": "加载更多",
+    "loading": "正在加载..."
+  },
+  "permalink": {
+    "copied": "链接已复制",
+    "notFound": "找不到此消息，或您没有查看权限",
+    "goHome": "返回首页",
+    "copyManually": "无法自动复制。请复制此链接：{url}"
+  },
+  "unread": {
+    "divider": "新",
+    "newMessagesBar": "{count, plural, other {# 条新消息}}",
+    "newMessagesBarAtLeast": "{count, plural, other {# 条或更多新消息}}",
+    "markRead": "标记为已读",
+    "jumpFailed": "无法加载未读位置"
+  },
+  "reminder": {
+    "set": "设置提醒",
+    "customLabel": "提醒的日期和时间",
+    "preset": {
+      "in20": "20 分钟后",
+      "in1h": "1 小时后",
+      "in3h": "3 小时后",
+      "tomorrow": "明天",
+      "nextWeek": "下周",
+      "custom": "自定义..."
+    },
+    "status": {
+      "pending": "即将到来",
+      "done": "已完成"
+    },
+    "snooze": {
+      "m10": "10 分钟",
+      "h1": "1 小时",
+      "tomorrow": "明天"
+    },
+    "loadFailed": "无法加载提醒。",
+    "empty": "没有提醒。在消息的更多操作菜单中使用，或输入 /remind 添加。",
+    "emptyDone": "没有已完成的提醒。",
+    "dueAt": "截止 {time}",
+    "firedAt": "已于 {time} 到期",
+    "completedAt": "完成于 {time}",
+    "messageDeleted": "已删除的消息",
+    "complete": "标记为已完成",
+    "reopen": "标记为未完成",
+    "delete": "删除提醒",
+    "toast": {
+      "created": "已设置提醒",
+      "due": "提醒：{text}",
+      "createFailed": "无法设置提醒，请重试。"
+    },
+    "command": {
+      "syntax": "用法：/remind me [文本] in [数字] [minutes|hours|days]",
+      "tooShort": "提醒时间必须至少在 1 分钟之后。",
+      "tooLong": "提醒时间必须在一年之内。",
+      "created": "已设置 {time} 的提醒"
+    },
+    "pastTime": "请选择一个将来的时间。",
+    "loadMore": "加载更多"
+  }
+}

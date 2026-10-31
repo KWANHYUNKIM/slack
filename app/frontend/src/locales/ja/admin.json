@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "管理パネル",
+    "openSidebar": "サイドバーを開く",
+    "tabs": {
+      "members": "メンバー",
+      "invites": "招待",
+      "channels": "チャンネル",
+      "webhooks": "Webhook",
+      "audit": "監査ログ",
+      "retention": "データ保持",
+      "security": "セキュリティ",
+      "dlp": "DLP",
+      "legalHolds": "法的保留"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "チャンネル",
+      "members": "メンバー",
+      "messages": "メッセージ",
+      "created": "作成日"
+    },
+    "actions": {
+      "rename": "チャンネル名を変更",
+      "archive": "チャンネルをアーカイブ",
+      "delete": "チャンネルを削除",
+      "unarchive": "アーカイブを解除",
+      "deletePermanently": "完全に削除"
+    },
+    "emptyActive": "有効なチャンネルはありません",
+    "archivedHeading": "アーカイブ済みチャンネル（{count}）",
+    "archivedOn": "{date}にアーカイブ",
+    "messageCount": "{count, plural, other {メッセージ# 件}}",
+    "deleteDialog": {
+      "title": "チャンネルを削除",
+      "message": "#{name}を完全に削除しますか？ すべてのメッセージが失われ、元に戻せません。"
+    },
+    "archiveDialog": {
+      "title": "チャンネルをアーカイブ",
+      "confirm": "アーカイブ",
+      "message": "#{name}をアーカイブしますか？ サイドバーからは非表示になりますが、メッセージは残ります。後でアーカイブを解除できます。"
+    },
+    "unarchiveDialog": {
+      "title": "アーカイブを解除",
+      "confirm": "アーカイブを解除",
+      "message": "#{name}のアーカイブを解除しますか？ すべてのメンバーのサイドバーに再度表示されます。"
+    }
+  },
+  "members": {
+    "searchPlaceholder": "メンバーを検索...",
+    "columns": {
+      "user": "ユーザー",
+      "email": "メールアドレス",
+      "role": "役割",
+      "status": "状態",
+      "actions": "操作"
+    },
+    "you": "（あなた）",
+    "roles": {
+      "owner": "オーナー",
+      "admin": "管理者",
+      "member": "メンバー",
+      "guest": "ゲスト"
+    },
+    "status": {
+      "active": "有効",
+      "deactivated": "無効化済み"
+    },
+    "actions": {
+      "transfer": "オーナー権限を譲渡",
+      "reactivate": "再有効化",
+      "deactivate": "無効化",
+      "forceLogout": "強制サインアウト",
+      "resetMfa": "2要素認証をリセット"
+    },
+    "empty": "ユーザーが見つかりません",
+    "dialogs": {
+      "transfer": {
+        "title": "ワークスペースのオーナー権限を譲渡",
+        "confirm": "譲渡",
+        "message": "ワークスペースのオーナー権限を{name}さんに譲渡しますか？ あなたは管理者になります。"
+      },
+      "deactivate": {
+        "title": "ユーザーを無効化",
+        "confirm": "無効化",
+        "message": "{name}さんを無効化しますか？ すぐにサインアウトされ、サインインできなくなります。"
+      },
+      "reactivate": {
+        "title": "ユーザーを再有効化",
+        "confirm": "再有効化",
+        "message": "{name}さんを再有効化しますか？ 再びサインインできるようになります。"
+      },
+      "forceLogout": {
+        "title": "強制サインアウト",
+        "confirm": "サインアウト",
+        "message": "{name}さんをすべてのデバイスからサインアウトしますか？ アカウントは有効のままで、再びサインインできます。"
+      },
+      "resetMfa": {
+        "title": "2要素認証をリセット",
+        "confirm": "リセット",
+        "message": "{name}さんの2要素認証を解除しますか？ すべてのデバイスからサインアウトされ、パスワードだけでサインインできるようになります。"
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "2要素認証が有効です"
+    }
+  },
+  "invites": {
+    "createHeading": "招待リンクを作成",
+    "fields": {
+      "role": "役割",
+      "maxUses": "最大使用回数",
+      "expiresIn": "有効期限"
+    },
+    "unlimited": "無制限",
+    "expiry": {
+      "1d": "1日",
+      "7d": "7日",
+      "30d": "30日",
+      "never": "無期限"
+    },
+    "expired": "期限切れ",
+    "columns": {
+      "url": "招待URL",
+      "uses": "使用回数",
+      "expires": "有効期限",
+      "createdBy": "作成者"
+    },
+    "copyUrl": "招待URLをコピー",
+    "full": "（上限に達しました）",
+    "delete": "招待を削除",
+    "empty": "招待リンクはまだありません"
+  },
+  "webhooks": {
+    "createHeading": "Webhookを作成",
+    "fields": {
+      "name": "Webhook名",
+      "channel": "チャンネル"
+    },
+    "namePlaceholder": "マイ連携",
+    "selectChannel": "チャンネルを選択...",
+    "columns": {
+      "name": "名前",
+      "url": "Webhook URL",
+      "lastUsed": "最終使用日時"
+    },
+    "never": "なし",
+    "justNow": "たった今",
+    "inactive": "無効",
+    "copyUrl": "Webhook URLをコピー",
+    "delete": "Webhookを削除",
+    "empty": "Webhookはまだ設定されていません"
+  },
+  "audit": {
+    "empty": "一致する監査ログはありません。記録された操作はここに表示されます。",
+    "loadMore": "さらに読み込む",
+    "targets": {
+      "user": "ユーザー",
+      "channel": "チャンネル",
+      "invite": "招待",
+      "webhook": "Webhook",
+      "message": "メッセージ",
+      "directMessage": "ダイレクトメッセージ",
+      "token": "アクセストークン",
+      "auditLog": "監査ログ",
+      "mcpTool": "MCPツール",
+      "workspace": "ワークスペース",
+      "file": "ファイル",
+      "dlpRule": "DLPルール",
+      "legalHold": "法的保留"
+    },
+    "action": {
+      "authLogin": "サインイン",
+      "authLoginFailed": "サインインに失敗",
+      "authLogout": "サインアウト",
+      "authPasswordChanged": "パスワードを変更",
+      "userRoleChanged": "役割を変更",
+      "userDeactivated": "無効化",
+      "userForceLogout": "強制サインアウト",
+      "userReactivated": "再有効化",
+      "ownershipTransferred": "オーナー権限を譲渡",
+      "ownerBootstrapped": "オーナーを作成",
+      "channelCreated": "チャンネルを作成",
+      "channelEdited": "チャンネルを編集",
+      "channelArchived": "チャンネルをアーカイブ",
+      "channelUnarchived": "チャンネルのアーカイブを解除",
+      "channelDeleted": "チャンネルを削除",
+      "channelMemberAdded": "メンバーを追加",
+      "channelMemberRemoved": "メンバーを削除",
+      "inviteCreated": "招待を作成",
+      "inviteDeleted": "招待を削除",
+      "webhookCreated": "Webhookを作成",
+      "webhookDeleted": "Webhookを削除",
+      "tokenCreate": "トークンを作成",
+      "tokenRevoke": "トークンを取り消し",
+      "mcpToolCall": "MCPツールの呼び出し",
+      "auditExported": "監査ログを書き出し",
+      "authLoginLocked": "アカウントをロック",
+      "sessionRevoked": "デバイスをサインアウト",
+      "sessionRevokedAll": "すべてのデバイスをサインアウト",
+      "retentionPurged": "期限切れのデータを削除",
+      "retentionWorkspaceUpdated": "保持ポリシーを変更",
+      "retentionChannelUpdated": "チャンネルの保持設定を変更",
+      "retentionChannelCleared": "チャンネルの保持設定をリセット",
+      "mfaEnabled": "2要素認証をオン",
+      "mfaDisabled": "2要素認証をオフ",
+      "mfaRecoveryUsed": "リカバリーコードを使用",
+      "mfaRecoveryRegenerated": "リカバリーコードを再生成",
+      "mfaResetByAdmin": "管理者が2要素認証をリセット",
+      "mfaPolicyChanged": "2要素認証の要件を変更",
+      "dlpBlocked": "DLPによりメッセージをブロック",
+      "dlpWarned": "DLPの警告",
+      "dlpRuleCreated": "DLPルールを作成",
+      "dlpRuleUpdated": "DLPルールを変更",
+      "dlpRuleDeleted": "DLPルールを削除",
+      "dlpRuleTimeout": "DLPルールがタイムアウト",
+      "dlpRuleAutoDisabled": "DLPルールを自動でオフ",
+      "legalHoldCreated": "法的保留を作成",
+      "legalHoldUpdated": "法的保留を編集",
+      "legalHoldCustodianAdded": "法的保留に対象者を追加",
+      "legalHoldCustodianRemoved": "法的保留から対象者を削除",
+      "legalHoldReleased": "法的保留を解除",
+      "ediscoverySearched": "eDiscoveryの検索",
+      "ediscoveryExportRequested": "eDiscoveryの書き出しを要求",
+      "ediscoveryExported": "eDiscoveryを書き出し"
+    },
+    "filters": {
+      "allActions": "すべての操作",
+      "actionsSelected": "{count, plural, other {# 件の操作}}",
+      "actor": "実行者",
+      "allActors": "すべての実行者",
+      "targetType": "対象の種類",
+      "allTargets": "すべての対象",
+      "from": "開始日",
+      "to": "終了日",
+      "apply": "適用",
+      "reset": "リセット"
+    },
+    "export": {
+      "csv": "CSVを書き出し",
+      "json": "JSONを書き出し"
+    },
+    "unknownActor": "不明"
+  },
+  "errors": {
+    "archiveChannel": "チャンネルをアーカイブできませんでした",
+    "createInvite": "招待を作成できませんでした",
+    "createWebhook": "Webhookを作成できませんでした",
+    "deactivateUser": "ユーザーを無効化できませんでした",
+    "deleteChannel": "チャンネルを削除できませんでした",
+    "deleteInvite": "招待を削除できませんでした",
+    "deleteWebhook": "Webhookを削除できませんでした",
+    "editChannel": "チャンネルを編集できませんでした",
+    "exportAuditLog": "監査ログを書き出せませんでした",
+    "fetchAuditLog": "監査ログを取得できませんでした",
+    "fetchChannels": "チャンネルを取得できませんでした",
+    "fetchInvites": "招待を取得できませんでした",
+    "fetchUsers": "ユーザーを取得できませんでした",
+    "fetchWebhooks": "Webhookを取得できませんでした",
+    "forceLogout": "ユーザーをサインアウトできませんでした",
+    "reactivateUser": "ユーザーを再有効化できませんでした",
+    "removeChannelMember": "チャンネルのメンバーを削除できませんでした",
+    "transferOwnership": "オーナー権限を譲渡できませんでした",
+    "unarchiveChannel": "チャンネルのアーカイブを解除できませんでした",
+    "updateRole": "役割を変更できませんでした",
+    "resetMfa": "2要素認証をリセットできませんでした"
+  },
+  "retention": {
+    "title": "データ保持",
+    "description": "設定した日数が経過したメッセージを自動で削除します。ファイルはメッセージと一緒に削除されます。クリーンアップは1日1回実行されます。リマインダーは残り、「削除されたメッセージ」と表示されます。",
+    "loadError": "保持ポリシーを読み込めませんでした",
+    "saveError": "保持ポリシーを保存できませんでした",
+    "resetError": "チャンネルのポリシーをリセットできませんでした",
+    "workspace": {
+      "heading": "ワークスペースの既定値",
+      "hint": "個別の設定がないすべてのチャンネルと、ダイレクトメッセージおよびグループDMに適用されます。"
+    },
+    "mode": {
+      "forever": "無期限に保持",
+      "days": "日数を過ぎたら削除",
+      "inherit": "ワークスペースの既定値を使う"
+    },
+    "daysLabel": "日数",
+    "daysHint": "{min}〜{max}日",
+    "effective": {
+      "forever": "無期限に保持",
+      "days": "{count, plural, other {# 日}}"
+    },
+    "channels": {
+      "heading": "チャンネル",
+      "columns": {
+        "channel": "チャンネル",
+        "policy": "ポリシー",
+        "effective": "適用内容"
+      },
+      "legalHold": "法的保留",
+      "reset": "既定値に戻す",
+      "empty": "チャンネルはありません"
+    },
+    "save": "保存",
+    "saved": "保存しました",
+    "confirm": {
+      "title": "古いメッセージを完全に削除しますか？",
+      "message": "次回のクリーンアップで、{count, plural, other {# 日}}より古いメッセージがファイルとともに完全に削除されます。元に戻せません。",
+      "confirm": "ポリシーを適用"
+    }
+  },
+  "security": {
+    "title": "2要素認証",
+    "requireMfa": "全メンバーに2要素認証を必須にする",
+    "requireMfaHint": "2要素認証を設定していないメンバーは、設定を完了するまで設定画面しか利用できません。",
+    "unavailable": "このサーバーでは暗号化キー（TOTP_ENCRYPTION_KEY）が設定されていないため、2要素認証はオフになっています。この要件は適用されていません。",
+    "saved": "セキュリティ設定を保存しました",
+    "loading": "読み込み中...",
+    "errors": {
+      "loadFailed": "セキュリティ設定を読み込めませんでした。",
+      "saveFailed": "セキュリティ設定を保存できませんでした。"
+    },
+    "allowOAuthApps": "メンバーによるOAuthアプリの接続を許可",
+    "allowOAuthAppsHint": "Claudeなどのアプリを、OAuthサインインの流れでメンバーが接続できるようにします。オフにすると、接続中のアプリはすべてすぐに切断されます。"
+  },
+  "dlp": {
+    "title": "データ損失防止",
+    "description": "メッセージ内のカード番号などの機密パターンを検出します。ブロックルールに一致したメッセージは保存されません。警告ルールに一致したメッセージは保存され、監査ログに記録されます。メッセージ本文はログに書き込まれません。",
+    "loadError": "DLPルールを読み込めませんでした",
+    "saveError": "ルールを保存できませんでした",
+    "toggleError": "ルールを変更できませんでした",
+    "deleteError": "ルールを削除できませんでした",
+    "testError": "パターンをテストできませんでした",
+    "builtinBadge": "組み込み",
+    "builtinPattern": "組み込みの検出",
+    "builtin": {
+      "credit_card": "クレジットカード番号",
+      "kr_rrn": "韓国の住民登録番号",
+      "aws_access_key": "AWSアクセスキー",
+      "private_key": "秘密鍵"
+    },
+    "action": {
+      "BLOCK": "ブロック",
+      "WARN": "警告"
+    },
+    "columns": {
+      "name": "ルール",
+      "pattern": "パターン",
+      "action": "操作",
+      "enabled": "状態"
+    },
+    "on": "オン",
+    "off": "オフ",
+    "toggleLabel": "{name}のオン・オフを切り替え",
+    "edit": "編集",
+    "editLabel": "{name}を編集",
+    "delete": "削除",
+    "deleteLabel": "{name}を削除",
+    "form": {
+      "createHeading": "ルールを追加",
+      "editHeading": "ルールを編集",
+      "name": "名前",
+      "pattern": "パターン（正規表現）",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "操作",
+      "add": "ルールを追加",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "hint": "最大{max}文字。(a+)+ のような入れ子の繰り返し、後方参照、非常に大きな繰り返し回数は拒否されます。"
+    },
+    "patternProblem": {
+      "empty": "パターンを入力してください。",
+      "tooLong": "パターンが長すぎます。",
+      "invalid": "正しい正規表現ではありません。",
+      "backreference": "後方参照は使用できません。",
+      "nestedQuantifier": "入れ子の繰り返しは確認に非常に時間がかかるため、使用できません。",
+      "repeatTooLarge": "繰り返し回数が大きすぎます（最大200）。"
+    },
+    "test": {
+      "heading": "パターンをテスト",
+      "hint": "何も保存されません。上にパターンを入力するか保存済みのルールを選び、サンプルテキストを入力してください。",
+      "source": "テストするパターン",
+      "sourceDraft": "上のフォームのパターン",
+      "sample": "サンプルテキスト",
+      "run": "テスト",
+      "matched": "一致しました。このテキストは検出されます。",
+      "notMatched": "一致しません。",
+      "timedOut": "確認に時間がかかりすぎたため中止しました。パターンを簡単にしてください。"
+    },
+    "confirmDelete": {
+      "title": "このルールを削除しますか？",
+      "message": "ルール「{name}」を削除し、以後チェックされなくなります。"
+    }
+  },
+  "legalHolds": {
+    "description": "データ保持ポリシーで削除される場合でも、ユーザーが書いたり受け取ったりした内容をすべて保存します。管理者は、法的審査のために保存されたデータを検索して書き出せます。",
+    "statusFilter": "表示",
+    "status": {
+      "active": "有効",
+      "released": "解除済み",
+      "all": "すべて"
+    },
+    "empty": "法的保留はありません",
+    "selectHint": "法的保留を選ぶと、対象者の管理やデータの検索ができます。",
+    "loadMore": "さらに読み込む",
+    "custodianCount": "{count, plural, other {# 人}}",
+    "createdOn": "{date}作成",
+    "releasedOn": "{date}解除",
+    "createdBy": "{date}に{name}が作成",
+    "releasedBy": "{date}に{name}が解除",
+    "unknownUser": "不明なユーザー",
+    "edit": "編集",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "fields": {
+      "name": "名前",
+      "description": "説明（任意）"
+    },
+    "create": {
+      "open": "新しい保留",
+      "submit": "保留を作成",
+      "hint": "保留を作成した後で対象者を追加できます。"
+    },
+    "custodians": {
+      "heading": "保留の対象者",
+      "pick": "対象者を選択",
+      "add": "追加",
+      "remove": "{name}をこの保留から削除",
+      "empty": "この保留の対象者はまだいません。",
+      "deactivated": "無効化済み"
+    },
+    "release": {
+      "open": "保留を解除",
+      "title": "この法的保留を解除しますか？",
+      "message": "「{name}」によるデータの保存を停止します。他の有効な保留に含まれない対象者は通常の保持ポリシーに戻り、古いメッセージは次回のクリーンアップで削除される場合があります。保留と対象者の一覧は記録に残ります。この操作は元に戻せません。",
+      "confirm": "解除"
+    },
+    "discovery": {
+      "heading": "検索と書き出し",
+      "hint": "保留の対象者が、どのチャンネル（非公開を含む）で書いたメッセージ、参加したダイレクトメッセージやグループDM、ファイルの詳細が対象です。削除されたメッセージも含まれ、削除済みと表示されます。",
+      "query": "キーワード",
+      "from": "開始日",
+      "to": "終了日",
+      "search": "検索",
+      "export": "書き出し（JSONL）",
+      "exportHint": "直前の検索結果を書き出します。すべての検索と書き出しは監査ログに記録されます。",
+      "searchFirst": "まずこれらのフィルターで検索してください。書き出しには下に表示された検索のフィルターが使われます。",
+      "kinds": {
+        "channel": "チャンネルのメッセージ",
+        "dm": "ダイレクトメッセージ",
+        "file": "ファイル"
+      },
+      "empty": "結果はありません",
+      "deleted": "削除済み",
+      "edited": "編集済み",
+      "reply": "スレッドの返信",
+      "groupDm": "グループDM #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "法的保留を読み込めませんでした",
+      "create": "法的保留を作成できませんでした",
+      "update": "法的保留を更新できませんでした",
+      "custodians": "保留の対象者を変更できませんでした",
+      "release": "法的保留を解除できませんでした",
+      "search": "検索に失敗しました",
+      "export": "書き出しに失敗しました"
+    }
+  }
+}

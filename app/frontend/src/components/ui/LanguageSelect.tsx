@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { SELECTABLE_LOCALES, changeLocale } from '@/lib/i18n';
+import { SELECTABLE_LOCALES, changeLocale, isBetaLocale } from '@/lib/i18n';
 
 /** 로캘 코드의 자기 언어 이름(ar → العربية). 못 구하면 코드를 그대로 쓴다. */
 function languageName(code: string): string {
@@ -18,11 +18,20 @@ export function LanguageSelect({ className }: { className?: string }) {
   // 사용자가 en이나 ko를 골랐을 때 change가 발생하고 빠져나올 수 있다.
   const current = listed ? i18n.language : i18n.language || 'en';
   const pendingName = listed ? '' : languageName(i18n.language);
+  const currentIsBeta = isBetaLocale(current);
 
   return (
     <label className={className}>
       <span className="block text-[13px] font-bold text-slack-text mb-1">
         {t('language.label')}
+        {currentIsBeta && (
+          <span
+            data-testid="language-beta-badge"
+            className="ms-2 rounded border border-slack-border px-1 text-[11px] font-normal text-slack-text"
+          >
+            {t('language.beta')}
+          </span>
+        )}
       </span>
       <select
         value={current}
@@ -38,7 +47,7 @@ export function LanguageSelect({ className }: { className?: string }) {
         )}
         {SELECTABLE_LOCALES.map((l) => (
           <option key={l.code} value={l.code} lang={l.code}>
-            {l.name}
+            {isBetaLocale(l.code) ? t('language.betaOption', { name: l.name }) : l.name}
           </option>
         ))}
       </select>

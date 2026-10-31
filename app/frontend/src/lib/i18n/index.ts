@@ -2,31 +2,21 @@ import i18n from 'i18next';
 import ICU from 'i18next-icu';
 import { pickLocale } from './pickLocale';
 import { initReactI18next } from 'react-i18next';
+import {
+  FALLBACK_LOCALE,
+  LOCALE_STORAGE_KEY,
+  NAMESPACES,
+  createI18nInitOptions,
+} from './config';
 
-/** 네임스페이스 목록 (docs/conventions/i18n.md 1절) */
-export const NAMESPACES = [
-  'common',
-  'auth',
-  'sidebar',
-  'messages',
-  'channels',
-  'activity',
-  'admin',
-  'settings',
-  'huddle',
-  'errors',
-  'desktop',
-] as const;
-export type Namespace = (typeof NAMESPACES)[number];
-
-export const LOCALE_STORAGE_KEY = 'locale';
-export const FALLBACK_LOCALE = 'en';
-
-/** 언어 선택 UI에 보이는 로캘. 이름은 항상 그 언어로 쓴다. 2등급 언어는 i18n-5에서 추가한다. */
-export const SELECTABLE_LOCALES = [
-  { code: 'ko', name: '한국어' },
-  { code: 'en', name: 'English' },
-] as const;
+export {
+  FALLBACK_LOCALE,
+  LOCALE_STORAGE_KEY,
+  NAMESPACES,
+  SELECTABLE_LOCALES,
+  type Namespace,
+} from './config';
+export { isBetaLocale } from './tiers';
 
 /** 오른쪽에서 왼쪽으로 쓰는 언어 */
 const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur']);
@@ -165,17 +155,7 @@ async function initInner() {
     await i18n
       .use(ICU)
       .use(initReactI18next)
-      .init({
-        lng: locale,
-        fallbackLng: FALLBACK_LOCALE,
-        supportedLngs: false,
-        ns: [...NAMESPACES],
-        defaultNS: 'common',
-        resources: {},
-        partialBundledLanguages: true,
-        interpolation: { escapeValue: false },
-        returnNull: false,
-      });
+      .init({ ...createI18nInitOptions(), lng: locale });
     await Promise.all([loadNamespaces(FALLBACK_LOCALE), loadNamespaces(locale)]);
     // 번역을 읽은 뒤 이벤트를 다시 보내 구독 중인 컴포넌트가 새로 그리게 한다
     await i18n.changeLanguage(locale);
