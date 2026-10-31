@@ -10,6 +10,7 @@ import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useActivityStore } from '@/stores/useActivityStore';
 import type { ActivityFilter, ApiActivity } from '@/lib/api';
+import { reminderOpenPath } from '@/lib/remind';
 
 const TAB_ORDER: ActivityFilter[] = ['all', 'mentions', 'threads', 'reactions'];
 const LOAD_MORE_THRESHOLD_PX = 200;
@@ -23,6 +24,7 @@ function describeActivity(item: ApiActivity, t: TFunction<'activity'>): string {
     case 'HERE_MENTION': return t('describe.hereMention', { actor, where });
     case 'THREAD_REPLY': return t('describe.threadReply', { actor, where });
     case 'REACTION': return t('describe.reaction', { actor, emoji: item.emoji ?? '', where });
+    case 'REMINDER': return t('describe.reminder');
   }
 }
 
@@ -54,6 +56,16 @@ export function ActivityPage() {
   const handleOpen = (item: ApiActivity) => {
     void useActivityStore.getState().markRead([item.id]);
     // Jump to the thread parent when the activity is a reply, otherwise to the message itself
+    if (item.type === 'REMINDER') {
+      // 리마인더는 배우가 본인이라 1:1 DM 상대를 따로 받는다. 퍼말링크로 메시지까지 가고, 대상이 없으면 목록으로 간다.
+      navigate(reminderOpenPath({
+        channelId: item.channelId,
+        dmGroupId: item.dmGroupId,
+        dmUserId: item.dmUserId,
+        target: item.message ? { id: item.messageId ?? item.dmId ?? item.message.id, threadId: item.threadId } : null,
+      }));
+      return;
+    }
     const targetId = item.threadId ?? item.messageId ?? item.dmId;
     const state = targetId ? { scrollToMessageId: targetId } : undefined;
     if (item.dmGroupId) {
@@ -136,7 +148,10 @@ export function ActivityPage() {
                         {formatDateTime(item.createdAt)}
                       </span>
                     </div>
-                    <div className="line-clamp-2 break-words text-[14px] text-slack-primary">{renderMessageContent(item.message.excerpt)}</div>
+                    <div className="line-clamp-2 break-words text-[14px] text-slack-primary">
+                      {item.reminder?.text && <div>{item.reminder.text}</div>}
+                      {item.message ? renderMessageContent(item.message.excerpt) : !item.reminder?.text && t('page.messageDeleted')}
+                    </div>
                   </div>
                   {item.readAt === null && (
                     <span aria-label={t('page.unread')} className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-red-500" />

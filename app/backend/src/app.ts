@@ -28,6 +28,7 @@ import adminRoutes from './routes/admin.js';
 import pushRoutes from './routes/push.js';
 import activityRoutes from './routes/activity.js';
 import huddleRoutes from './routes/huddles.js';
+import reminderRoutes from './routes/reminders.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitKey } from './middleware/rateLimitKey.js';
@@ -137,6 +138,7 @@ app.use('/admin', apiLimiter, adminRoutes);
 app.use('/push', apiLimiter, pushRoutes);
 app.use('/activity', apiLimiter, activityRoutes);
 app.use('/huddles', apiLimiter, huddleRoutes);
+app.use('/reminders', apiLimiter, reminderRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

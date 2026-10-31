@@ -53,6 +53,16 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 |---|---|---|---|---|
 | `user:status` | 서버 -> 클라이언트 | 본인(모든 탭)과, 같은 채널·DM·그룹 DM을 쓰는 사용자 각자의 `user:<id>` | `{ userId, customStatus: { emoji, text, expiresAt } \| null, dnd: { active, until } }` | `PUT/DELETE /users/me/custom-status`, `PUT/POST/DELETE /users/me/dnd`, 스케줄러가 만료된 상태·DND를 정리했을 때. 만료된 값은 null/꺼짐으로 계산해 보낸다. 타인에게는 `dnd`가 `{ active, until }`뿐이고, 본인의 모든 탭에는 `dnd.withStatus`(상태에 묶인 방해금지인지)가 더 붙는다. `PUT /users/me/custom-status`에서 `expiresAt`을 빼면 기존 만료를 유지하고 `null`이면 만료를 없앤다 |
 
+## 리마인더 - 파트 09
+
+모두 서버 -> 클라이언트, 대상은 `user:<본인>`(모든 탭)뿐이다. payload의 `reminder`는 `GET /reminders` 항목과 같은 모양이다(`message`는 본인이 볼 수 있을 때만, 아니면 null이고 `messageDeleted: true`).
+
+| 이벤트 | payload | 시점 |
+|---|---|---|
+| `reminder:due` | `{ reminder }` | 스케줄러(30초 틱)가 시각이 지난 리마인더를 발송했을 때. 같은 때 `activity:new`(type `REMINDER`)도 간다 |
+| `reminder:updated` | `{ reminder }` | `POST /reminders`, `PATCH /reminders/:id`(스누즈, 완료, 되돌리기) |
+| `reminder:removed` | `{ id }` | `DELETE /reminders/:id` |
+
 ## 기존 이벤트 (slawk에서 이어받음)
 
 | 이벤트 | 방향 | 비고 |

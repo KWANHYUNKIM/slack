@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bookmark, Hash, Menu, Clock } from 'lucide-react';
+import { Bookmark, Hash, Menu, Clock, AlarmClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/lib/i18n/format';
 import { getBookmarks } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { ScheduledMessagesTab } from './ScheduledMessagesTab';
+import { RemindersTab } from './RemindersTab';
 import { cn } from '@/lib/utils';
 
 interface BookmarkedMessage {
@@ -23,16 +24,26 @@ interface BookmarkedMessage {
   };
 }
 
-type Tab = 'saved' | 'scheduled';
+type Tab = 'saved' | 'scheduled' | 'reminders';
 
 export function LaterPage() {
   const { t } = useTranslation('messages');
-  const [activeTab, setActiveTab] = useState<Tab>('saved');
+  // /later?tab=reminders 로 열면 리마인더 탭부터 보인다(활동에서 대상이 없는 리마인더를 눌렀을 때)
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<Tab>(
+    initialTab === 'reminders' || initialTab === 'scheduled' ? initialTab : 'saved',
+  );
   const [bookmarks, setBookmarks] = useState<BookmarkedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const toggle = useBookmarkStore((s) => s.toggle);
   const navigate = useNavigate();
+
+  // 이미 /later에 있을 때 쿼리만 바뀌어도 탭을 따라간다
+  useEffect(() => {
+    if (initialTab === 'reminders' || initialTab === 'scheduled') setActiveTab(initialTab);
+  }, [initialTab]);
 
   const fetchBookmarks = useCallback(() => {
     setIsLoading(true);
@@ -102,12 +113,27 @@ export function LaterPage() {
             <Clock className="h-3.5 w-3.5" />
             {t('later.scheduled')}
           </button>
+          <button
+            data-testid="later-tab-reminders"
+            onClick={() => setActiveTab('reminders')}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors',
+              activeTab === 'reminders'
+                ? 'bg-slack-active-tab text-slack-primary'
+                : 'text-slack-secondary hover:bg-slack-hover'
+            )}
+          >
+            <AlarmClock className="h-3.5 w-3.5" />
+            {t('later.reminders')}
+          </button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         {activeTab === 'scheduled' ? (
           <ScheduledMessagesTab />
+        ) : activeTab === 'reminders' ? (
+          <RemindersTab />
         ) : isLoading ? (
           <div className="text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (

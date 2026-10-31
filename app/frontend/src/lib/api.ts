@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import i18n, { t } from '@/lib/i18n';
 import type { CustomStatus, Dnd } from '@/lib/types';
 
 /**
@@ -326,7 +326,7 @@ export interface ApiReaction {
 
 // ---- Activity ----
 
-export type ActivityType = 'MENTION' | 'CHANNEL_MENTION' | 'HERE_MENTION' | 'THREAD_REPLY' | 'REACTION';
+export type ActivityType = 'MENTION' | 'CHANNEL_MENTION' | 'HERE_MENTION' | 'THREAD_REPLY' | 'REACTION' | 'REMINDER';
 export type ActivityFilter = 'all' | 'mentions' | 'threads' | 'reactions';
 
 export interface ApiActivity {
@@ -339,8 +339,12 @@ export interface ApiActivity {
   dmId: number | null;
   /** 그룹 DM 활동이면 그룹 id */
   dmGroupId?: number | null;
+  /** 1:1 DM 활동의 상대 userId(리마인더 활동에서 이동용) */
+  dmUserId?: number | null;
   threadId: number | null;
-  message: { id: number; content: string; excerpt: string };
+  /** 리마인더 활동은 대상이 없거나 지워졌을 수 있어 null */
+  message: { id: number; content: string; excerpt: string } | null;
+  reminder?: { id: number; text: string | null } | null;
   emoji: string | null;
   readAt: string | null;
   createdAt: string;
@@ -983,6 +987,48 @@ export function addBookmark(messageId: number) {
 
 export function removeBookmark(messageId: number) {
   return request<{ message: string }>(`/messages/${messageId}/bookmark`, { method: 'DELETE' });
+}
+
+// ---- Reminders ----
+
+export interface ApiReminder {
+  id: number;
+  messageId: number | null;
+  dmId: number | null;
+  channelId: number | null;
+  text: string | null;
+  remindAt: string;
+  firedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  channel: { id: number; name: string } | null;
+  messageDeleted: boolean;
+  message: { id: number; excerpt: string; user: { id: number; name: string }; threadId: number | null } | null;
+  dmUserId: number | null;
+  dmGroupId: number | null;
+}
+
+export function getReminders(status: 'pending' | 'done', cursor?: number) {
+  const params = new URLSearchParams({ status });
+  if (cursor) params.set('cursor', String(cursor));
+  return request<{ items: ApiReminder[]; nextCursor: number | null }>(`/reminders?${params}`);
+}
+
+export function createReminder(body: { messageId?: number; dmId?: number; text?: string; remindAt: string }) {
+  // 푸시 문구 언어를 정하도록 앱 언어를 Accept-Language로 알린다
+  return request<ApiReminder>('/reminders', {
+    method: 'POST',
+    headers: { 'Accept-Language': i18n.language || 'ko' },
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateReminder(id: number, body: { remindAt: string } | { completed: boolean }) {
+  return request<ApiReminder>(`/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export function deleteReminder(id: number) {
+  return request<{ message: string }>(`/reminders/${id}`, { method: 'DELETE' });
 }
 
 // ---- Unreads ----

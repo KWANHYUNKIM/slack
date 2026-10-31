@@ -108,7 +108,8 @@
     "loadFailed": "Failed to load saved messages.",
     "empty": "No saved messages yet. Click the bookmark icon on any message to save it.",
     "removeSaved": "Remove from Saved",
-    "menu": "Menu"
+    "menu": "Menu",
+    "reminders": "Reminders"
   },
   "linkModal": {
     "title": "Add link",
@@ -126,7 +127,8 @@
     "unpin": "Unpin message",
     "edit": "Edit message",
     "delete": "Delete message",
-    "copyLink": "Copy link"
+    "copyLink": "Copy link",
+    "remind": "Remind me about this"
   },
   "area": {
     "selectChannel": "Select a channel to start messaging",
@@ -298,5 +300,49 @@
     "newMessagesBarAtLeast": "{count, plural, one {# or more new message} other {# or more new messages}}",
     "markRead": "Mark as read",
     "jumpFailed": "Could not load the unread position"
+  },
+  "reminder": {
+    "set": "Set reminder",
+    "customLabel": "Reminder date and time",
+    "preset": {
+      "in20": "In 20 minutes",
+      "in1h": "In 1 hour",
+      "in3h": "In 3 hours",
+      "tomorrow": "Tomorrow",
+      "nextWeek": "Next week",
+      "custom": "Custom..."
+    },
+    "status": {
+      "pending": "Upcoming",
+      "done": "Completed"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 hour",
+      "tomorrow": "Tomorrow"
+    },
+    "loadFailed": "Failed to load reminders.",
+    "empty": "No reminders. Use the more actions menu on a message or type /remind to add one.",
+    "emptyDone": "No completed reminders.",
+    "dueAt": "Due {time}",
+    "firedAt": "Was due {time}",
+    "completedAt": "Completed {time}",
+    "messageDeleted": "Deleted message",
+    "complete": "Mark as complete",
+    "reopen": "Mark as not complete",
+    "delete": "Delete reminder",
+    "toast": {
+      "created": "Reminder set",
+      "due": "Reminder: {text}",
+      "createFailed": "Failed to set reminder. Please try again."
+    },
+    "command": {
+      "syntax": "Usage: /remind me [text] in [number] [minutes|hours|days]",
+      "tooShort": "The reminder must be at least 1 minute away.",
+      "tooLong": "The reminder must be within one year.",
+      "created": "Reminder set for {time}"
+    },
+    "pastTime": "Pick a time in the future.",
+    "loadMore": "Load more"
   }
 }
