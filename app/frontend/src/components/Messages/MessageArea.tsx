@@ -61,9 +61,10 @@ export function MessageArea() {
   );
 
   // Memoize placeholder to prevent MessageInput re-renders
+  const activeChannelName = activeChannel?.name;
   const placeholder = useMemo(
-    () => (activeChannel ? `Message #${activeChannel.name}` : ''),
-    [activeChannel?.name]
+    () => (activeChannelName ? `Message #${activeChannelName}` : ''),
+    [activeChannelName]
   );
 
   // Show DM conversation if a DM is active
@@ -147,18 +148,21 @@ export function MessageArea() {
       </div>
       {showMembers && (
         <MembersPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowMembers(false)}
         />
       )}
       {showPins && (
         <PinsPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowPins(false)}
         />
       )}
       {showFiles && (
         <FilesPanel
+          key={activeChannelId}
           channelId={activeChannelId!}
           onClose={() => setShowFiles(false)}
         />

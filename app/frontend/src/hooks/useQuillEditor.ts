@@ -1,13 +1,14 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import Quill, { Delta } from 'quill';
+import Quill, { Delta, type Range } from 'quill';
+import Embed from 'quill/blots/embed';
 import 'quill/dist/quill.snow.css';
-import { uploadFile, getUsers, type ApiFile, type AuthUser } from '@/lib/api';
+import { uploadFile, getUsers, type ApiFile } from '@/lib/api';
+import type { MentionUser } from '@/lib/types';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import emojiData from '@emoji-mart/data';
 import type { EmojiOption } from '@/components/Messages/EmojiAutocomplete';
 
 // Register a custom mention embed blot so @mentions are distinct from plain text
-const Embed = Quill.import('blots/embed') as any;
 class MentionBlot extends Embed {
   static blotName = 'mention';
   static tagName = 'span';
@@ -35,12 +36,17 @@ class MentionBlot extends Embed {
 }
 Quill.register(MentionBlot);
 
+// Shape of the emoji-mart data we read (the package ships no usable types)
+interface EmojiMartData {
+  emojis: Record<string, { name: string; skins?: { native?: string }[] }>;
+  aliases?: Record<string, string>;
+}
+
 // Build searchable emoji list from emoji-mart data
 function buildEmojiIndex(): EmojiOption[] {
-  const emojis = (emojiData as any).emojis;
-  const aliases = (emojiData as any).aliases || {};
+  const { emojis, aliases = {} } = emojiData as EmojiMartData;
   const results: EmojiOption[] = [];
-  for (const [id, entry] of Object.entries(emojis) as any[]) {
+  for (const [id, entry] of Object.entries(emojis)) {
     const native = entry.skins?.[0]?.native;
     if (!native) continue;
     results.push({ id, native, name: entry.name });
@@ -86,7 +92,7 @@ export function useQuillEditor({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showMentionDropdown, setShowMentionDropdown] = useState(false);
-  const [mentionUsers, setMentionUsers] = useState<AuthUser[]>([]);
+  const [mentionUsers, setMentionUsers] = useState<MentionUser[]>([]);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionStartIndex, setMentionStartIndex] = useState<number | null>(null);
   const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
@@ -141,7 +147,7 @@ export function useQuillEditor({
   filteredEmojisRef.current = filteredEmojis;
   const emojiSelectedIndexRef = useRef(emojiSelectedIndex);
   emojiSelectedIndexRef.current = emojiSelectedIndex;
-  const insertMentionRef = useRef<(user: AuthUser) => void>(() => {});
+  const insertMentionRef = useRef<(user: MentionUser) => void>(() => {});
   const insertEmojiAutocompleteRef = useRef<(emoji: EmojiOption) => void>(() => {});
 
   // Quill initialization
@@ -154,7 +160,7 @@ export function useQuillEditor({
         toolbar: false,
         clipboard: {
           matchers: [
-            ['img', (_node: HTMLElement, delta: any) => { delta.ops = []; return delta; }],
+            ['img', (_node: HTMLElement, delta: Delta) => { delta.ops = []; return delta; }],
           ],
         },
         keyboard: {
@@ -198,7 +204,7 @@ export function useQuillEditor({
             },
             arrowUp: {
               key: 'ArrowUp',
-              handler: (range: any) => {
+              handler: (range: Range) => {
                 if (emojiActiveRef.current) {
                   setEmojiSelectedIndex((prev) =>
                     prev > 0 ? prev - 1 : filteredEmojisRef.current.length - 1
@@ -227,7 +233,7 @@ export function useQuillEditor({
             },
             arrowDown: {
               key: 'ArrowDown',
-              handler: (range: any) => {
+              handler: (range: Range) => {
                 if (emojiActiveRef.current) {
                   setEmojiSelectedIndex((prev) =>
                     prev < filteredEmojisRef.current.length - 1 ? prev + 1 : 0
@@ -257,7 +263,7 @@ export function useQuillEditor({
             },
             escapeCodeBlockLeft: {
               key: 'ArrowLeft',
-              handler: (range: any) => {
+              handler: (range: Range) => {
                 const q = quillRef.current;
                 if (!q || range.length !== 0 || range.index !== 0) return true;
                 const fmt = q.getFormat(0);
@@ -272,7 +278,7 @@ export function useQuillEditor({
             },
             escapeCodeRight: {
               key: 'ArrowRight',
-              handler: (range: any) => {
+              handler: (range: Range) => {
                 const q = quillRef.current;
                 if (!q || range.length !== 0) return true;
                 const len = q.getLength();
@@ -314,7 +320,7 @@ export function useQuillEditor({
       placeholder,
     });
 
-    quill.on('selection-change', (range: any) => {
+    quill.on('selection-change', (range: Range | null) => {
       if (!range) return;
       lastSelectionRef.current = range;
       // Clear sticky inline code format when cursor is not adjacent to any code characters
@@ -332,7 +338,7 @@ export function useQuillEditor({
       }
     });
 
-    quill.on('text-change', (_delta: any, _oldDelta: any, source: string) => {
+    quill.on('text-change', (_delta: Delta, _oldDelta: Delta, source: string) => {
       setCanSend(quill.getText().trim().length > 0);
       onTextChange?.();
 
@@ -463,8 +469,8 @@ export function useQuillEditor({
               const uploaded = await uploadFile(file);
               setPendingFiles((prev) => [...prev, uploaded]);
             }
-          } catch (err: any) {
-            const msg = err?.message || 'Failed to upload pasted image. Please try again.';
+          } catch (err) {
+            const msg = (err instanceof Error && err.message) || 'Failed to upload pasted image. Please try again.';
             setUploadError(msg);
             setTimeout(() => setUploadError(null), 5000);
           } finally {
@@ -500,8 +506,8 @@ export function useQuillEditor({
             const uploaded = await uploadFile(file);
             setPendingFiles((prev) => [...prev, uploaded]);
           }
-        } catch (err: any) {
-          const msg = err?.message || 'Failed to upload dropped file. Please try again.';
+        } catch (err) {
+          const msg = (err instanceof Error && err.message) || 'Failed to upload dropped file. Please try again.';
           setUploadError(msg);
           setTimeout(() => setUploadError(null), 5000);
         } finally {
@@ -510,8 +516,8 @@ export function useQuillEditor({
       })();
     };
 
-    quill.root.addEventListener('dragover', handleDragOver as any);
-    quill.root.addEventListener('drop', handleDrop as any);
+    quill.root.addEventListener('dragover', handleDragOver);
+    quill.root.addEventListener('drop', handleDrop);
 
     quillRef.current = quill;
   }, [placeholder, testId, enableInlineCode]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -547,7 +553,7 @@ export function useQuillEditor({
             ? users.filter((u) => dmParticipantIds.includes(u.id))
             : users;
           // Add @here special option (filtered by query) — only in channels, not DMs
-          const hereOption: AuthUser = { id: -1, name: 'here', avatar: null };
+          const hereOption: MentionUser = { id: -1, name: 'here', avatar: null };
           const q = mentionQuery.toLowerCase();
           const showHere = !dmParticipantIds && (!q || 'here'.startsWith(q));
           const withHere = showHere ? [hereOption, ...filtered] : filtered;
@@ -570,7 +576,7 @@ export function useQuillEditor({
   }, [showMentionDropdown, mentionQuery, dmParticipantIds]);
 
   const insertMention = useCallback(
-    (user: AuthUser) => {
+    (user: MentionUser) => {
       const quill = quillRef.current;
       // Read from ref so we always get the latest value even if React batched the state update
       const startIndex = mentionStartIndexRef.current;
@@ -671,8 +677,8 @@ export function useQuillEditor({
         const uploaded = await uploadFile(file);
         setPendingFiles((prev) => [...prev, uploaded]);
       }
-    } catch (err: any) {
-      const msg = err?.message || 'Failed to upload file. Please try again.';
+    } catch (err) {
+      const msg = (err instanceof Error && err.message) || 'Failed to upload file. Please try again.';
       setUploadError(msg);
       setTimeout(() => setUploadError(null), 5000);
     } finally {

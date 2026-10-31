@@ -16,7 +16,8 @@ export function useMessageEdit({ onSave }: UseMessageEditOptions) {
   useEffect(() => {
     if (editingId !== null && editInputRef.current) {
       editInputRef.current.focus();
-      editInputRef.current.setSelectionRange(editContent.length, editContent.length);
+      const length = editInputRef.current.value.length;
+      editInputRef.current.setSelectionRange(length, length);
     }
   }, [editingId]);
 

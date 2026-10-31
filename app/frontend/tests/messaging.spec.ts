@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { sendMessage, waitForMessage, uniqueEmail, register, clickChannel, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Messaging', () => {
   test.beforeEach(async ({ page }) => {

@@ -31,7 +31,9 @@ export function MessageActionsMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose;
+  });
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   // Initial position measurement

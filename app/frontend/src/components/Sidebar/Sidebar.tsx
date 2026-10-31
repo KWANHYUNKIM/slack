@@ -35,7 +35,7 @@ import { useMobileStore } from '@/stores/useMobileStore';
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { channels, directMessages, activeChannelId, activeDMId, startDM, createChannel, joinChannel, fetchChannels } =
+  const { channels, directMessages, activeChannelId, activeDMId, startDM, createChannel, joinChannel } =
     useChannelStore();
   const { user, logout } = useAuthStore();
   const { openProfile } = useProfileStore();
@@ -263,7 +263,7 @@ export function Sidebar() {
                     Notifications blocked
                   </Button>
                 ) : (
-                  <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); isSubscribed ? unsubscribe() : subscribe(); }}>
+                  <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); if (isSubscribed) unsubscribe(); else subscribe(); }}>
                     {isSubscribed ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
                     {isSubscribed ? 'Disable notifications' : 'Enable notifications'}
                   </Button>

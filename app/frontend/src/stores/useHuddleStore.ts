@@ -228,8 +228,6 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
   },
 
   onHuddleConnected: (data) => {
-    const state = get();
-
     // If we had an outgoing invite, clear it (we're now connected)
     set({
       huddleId: data.huddleId,
@@ -248,7 +246,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
         .then((stream) => {
           useHuddleStore.setState({ localStream: stream });
           if (data.isInitiator) {
-            setupPeerConnection(data.huddleId, data.peer.userId, true);
+            setupPeerConnection(data.huddleId, true);
           }
         })
         .catch(() => {
@@ -262,7 +260,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
     }
 
     if (data.isInitiator) {
-      setupPeerConnection(data.huddleId, data.peer.userId, true);
+      setupPeerConnection(data.huddleId, true);
     }
     // Non-initiator waits for the offer signal
   },
@@ -275,7 +273,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
 
     if (signal.type === 'offer') {
       // We're the non-initiator, set up peer connection and answer
-      const pc = setupPeerConnection(data.huddleId, data.fromUserId, false);
+      const pc = setupPeerConnection(data.huddleId, false);
       if (!pc) return;
 
       const sdpDesc = new RTCSessionDescription({ type: 'offer', sdp: signal.sdp! });
@@ -359,7 +357,7 @@ export const useHuddleStore = create<HuddleState>((set, get) => ({
 
 // ── WebRTC Peer Connection Setup ─────────────────────────────────────
 
-function setupPeerConnection(huddleId: string, remoteUserId: number, isInitiator: boolean): RTCPeerConnection | null {
+function setupPeerConnection(huddleId: string, isInitiator: boolean): RTCPeerConnection | null {
   const state = useHuddleStore.getState();
   const { localStream } = state;
   if (!localStream) return null;

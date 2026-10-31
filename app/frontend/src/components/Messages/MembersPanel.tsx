@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { getChannelMembers, getUsers, addChannelMember, getChannel, type ChannelMember, type AuthUser } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
-import { Button } from '@/components/ui/button';
 import { ProfileModal } from '@/components/ProfileModal';
 import { PanelHeader } from './PanelHeader';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -29,30 +28,40 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   const [confirmRemove, setConfirmRemove] = useState<{ userId: number; userName: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  const fetchMembers = () => {
-    setIsLoading(true);
+  // isStale lets an effect drop responses that arrive after the channel changed
+  const loadMembers = useCallback((isStale: () => boolean = () => false) => {
     getChannelMembers(channelId)
       .then((data) => {
+        if (isStale()) return;
         setMembers(data);
         setLoadError(null);
         // Sync badge count with actual member list
         useChannelStore.getState().updateMemberCount(channelId, data.length);
       })
-      .catch(() => setLoadError('Failed to load members.'))
-      .finally(() => setIsLoading(false));
-  };
+      .catch(() => {
+        if (!isStale()) setLoadError('Failed to load members.');
+      })
+      .finally(() => {
+        if (!isStale()) setIsLoading(false);
+      });
+  }, [channelId]);
 
   useEffect(() => {
-    fetchMembers();
+    let cancelled = false;
+    loadMembers(() => cancelled);
     // Fetch channel details to get creator and current user's role
     getChannel(channelId).then((channel) => {
+      if (cancelled) return;
       setChannelCreatorId(channel.createdBy ?? null);
       const currentMember = channel.members.find((m) => m.userId === currentUser?.id);
       setCurrentUserChannelRole(currentMember?.role ?? null);
     }).catch(() => {
       // Ignore error, user may not have access
     });
-  }, [channelId, currentUser?.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [channelId, currentUser?.id, loadMembers]);
 
   // Listen for real-time presence updates
   useEffect(() => {
@@ -89,7 +98,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
 
     const handleMemberLeft = (data: { channelId: number; userId: number; memberCount: number }) => {
       if (data.channelId === channelId) {
-        fetchMembers(); // Refresh the member list
+        loadMembers(); // Refresh the member list
       }
     };
 
@@ -97,7 +106,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
     return () => {
       socket.off('channel:member-left', handleMemberLeft);
     };
-  }, [channelId]);
+  }, [channelId, loadMembers]);
 
   const handleRemoveMember = async (userId: number, userName: string) => {
     setConfirmRemove({ userId, userName });
@@ -116,8 +125,8 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
       }
       setConfirmRemove(null);
       // Member list will refresh via WebSocket channel:member-left event
-    } catch (error: any) {
-      alert(error.message || 'Failed to remove member');
+    } catch (error) {
+      alert((error instanceof Error && error.message) || 'Failed to remove member');
     } finally {
       setRemoving(false);
     }
@@ -180,7 +189,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
             memberUserIds={memberUserIds}
             onAdded={() => {
               setShowAddForm(false);
-              fetchMembers();
+              loadMembers();
             }}
             onCancel={() => setShowAddForm(false)}
           />
@@ -280,10 +289,7 @@ function AddPeopleForm({
   }, []);
 
   useEffect(() => {
-    if (query.length < 1) {
-      setResults([]);
-      return;
-    }
+    if (query.length < 1) return;
     const timer = setTimeout(async () => {
       try {
         const users = await getUsers(query);
@@ -309,7 +315,10 @@ function AddPeopleForm({
         ref={inputRef}
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (e.target.value.length < 1) setResults([]);
+        }}
         placeholder="Search by name..."
         className="w-full rounded border border-slack-border px-2 py-1 text-[13px] outline-none focus:border-slack-link"
       />

@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
 import { ImageLightbox } from './ImageLightbox';
 import { PanelHeader } from './PanelHeader';
-import { formatBytes, FileIcon } from '@/lib/fileUtils';
+import { formatBytes } from '@/lib/fileUtils';
+import { FileIcon } from './FileIcon';
 
 interface FilesPanelProps {
   channelId?: number;
@@ -20,21 +21,25 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
 
-  const fetchFiles = useCallback(() => {
-    setIsLoading(true);
+  useEffect(() => {
+    let cancelled = false;
     const fetchFn = channelId ? getChannelFiles(channelId) : getUserFiles();
     Promise.all([fetchFn, refreshDownloadToken()])
       .then(([data]) => {
+        if (cancelled) return;
         setFiles(data);
         setLoadError(null);
       })
-      .catch(() => setLoadError('Failed to load files.'))
-      .finally(() => setIsLoading(false));
+      .catch(() => {
+        if (!cancelled) setLoadError('Failed to load files.');
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [channelId]);
-
-  useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles]);
 
   const panelTitle = title ?? (channelId ? 'Channel files' : 'All files');
 

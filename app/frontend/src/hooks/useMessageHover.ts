@@ -13,16 +13,18 @@ let activeInstance: object | null = null;
  */
 export function useMessageHover() {
   const [isHovered, setIsHovered] = useState(false);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout>>();
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isTouchRef = useRef(false);
   const instanceRef = useRef({});
 
   // Stable dismiss function for this instance (always references current refs)
   const dismissRef = useRef<() => void>(() => {});
-  dismissRef.current = () => {
-    clearTimeout(leaveTimer.current);
-    setIsHovered(false);
-  };
+  useEffect(() => {
+    dismissRef.current = () => {
+      clearTimeout(leaveTimer.current);
+      setIsHovered(false);
+    };
+  }, []);
 
   // Clean up module-level reference on unmount
   useEffect(() => {

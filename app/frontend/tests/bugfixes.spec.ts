@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, sendMessage, waitForMessage, clickChannel, expectChannelInSidebar, waitForChannelReady , TEST_PASSWORD } from './helpers';
 
 test.describe('Bug #1: No console errors for non-member channels', () => {
   test('page loads without "must be a member" errors', async ({ page }) => {

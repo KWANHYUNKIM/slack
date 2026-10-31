@@ -30,7 +30,7 @@ export function AdminMembersTab() {
       u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getRoleOptions = (userRole: string) => {
+  const getRoleOptions = () => {
     if (isOwner) {
       return ['ADMIN', 'MEMBER', 'GUEST'] as const;
     }
@@ -99,7 +99,7 @@ export function AdminMembersTab() {
                         onChange={(e) => updateUserRole(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
                         className="rounded border border-slack-border px-2 py-1 text-xs focus:border-slack-focus focus:outline-none"
                       >
-                        {getRoleOptions(user.role).map((r) => (
+                        {getRoleOptions().map((r) => (
                           <option key={r} value={r}>{ROLE_BADGE[r].label}</option>
                         ))}
                       </select>

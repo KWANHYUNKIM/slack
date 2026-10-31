@@ -17,7 +17,7 @@ async function getUserId(page: Page, targetName: string): Promise<number> {
     const token = localStorage.getItem('token');
     const res = await fetch('/users', { headers: { Authorization: `Bearer ${token}` } });
     const users = await res.json();
-    const user = users.find((u: any) => u.name === name);
+    const user = users.find((u: { id: number; name: string }) => u.name === name);
     return user?.id;
   }, targetName);
 }
