@@ -17,8 +17,8 @@ echo "Cloning ${REPO_URL} (main)..."
 git clone --depth 1 --branch main "${REPO_URL}" "${CLONE_DIR}"
 
 CONTEXT_DIR=$(mktemp -d)
-cp "${CLONE_DIR}/Dockerfile.base" "${CONTEXT_DIR}/"
-cp "${CLONE_DIR}/cloudbuild.base.yaml" "${CONTEXT_DIR}/"
+cp "${CLONE_DIR}/deploy/gcp/Dockerfile.base" "${CONTEXT_DIR}/"
+cp "${CLONE_DIR}/deploy/gcp/cloudbuild.base.yaml" "${CONTEXT_DIR}/"
 mkdir -p "${CONTEXT_DIR}/frontend" "${CONTEXT_DIR}/backend/prisma"
 cp "${CLONE_DIR}/frontend/package.json" "${CLONE_DIR}/frontend/package-lock.json" "${CONTEXT_DIR}/frontend/"
 cp "${CLONE_DIR}/backend/package.json" "${CLONE_DIR}/backend/package-lock.json" "${CONTEXT_DIR}/backend/"

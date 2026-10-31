@@ -77,7 +77,7 @@ echo ""
 IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/slawk"
 
 gcloud builds submit "${DEPLOY_DIR}" \
-  --config="${DEPLOY_DIR}/cloudbuild.yaml" \
+  --config="${DEPLOY_DIR}/deploy/gcp/cloudbuild.yaml" \
   --project "${GCP_PROJECT_ID}" \
   --substitutions="_IMAGE=${IMAGE},_CLOUD_SQL=${CLOUD_SQL_INSTANCE},_DATABASE_URL=${DATABASE_URL},_JWT_SECRET=${JWT_SECRET},_GCS_BUCKET=${GCS_BUCKET_NAME},_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY},_VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY},_VAPID_SUBJECT=${VAPID_SUBJECT},_RUN_SEED=${RUN_SEED}"
 

@@ -27,6 +27,12 @@ slack/
 - 로컬 M2 Mac에서 Windows exe를 직접 빌드하지 않는다(wine이 필요하고 메모리를 많이 씀). CI에서 빌드한다.
 - 보안 설정은 `docs/security/nodejs-security.md` 9절을 따른다.
 
+### 웹 배포: 빌드와 실행
+- 이미지: `app/Dockerfile`은 공개 이미지 `node:24-slim`만 쓰는 4단계 멀티스테이지다(프런트 빌드, 백엔드 운영 의존성, 백엔드 tsc 빌드, 런타임). 사설 base 이미지와 GCP 의존은 없다. 런타임은 비 root(`node`), `NODE_ENV=production`, dev 의존성 제외, `/health` HEALTHCHECK를 갖고, 시작 시 `prisma migrate deploy`(DB 준비 전이면 재시도) 후 서버를 띄운다. 프런트 dist는 `public/`에 넣어 백엔드가 서빙한다.
+- 빌드: `docker build -t slackclone ./app`
+- 실행: `cd app && cp .env.example .env`(JWT_SECRET, POSTGRES_PASSWORD 채우기, 생성: `openssl rand -hex 32`) 후 `docker compose up -d --build`. 접속은 `http://localhost:8080`. 업로드와 DB는 named volume(`uploads`, `pgdata`)에 저장된다.
+- 시드(tsx, dev 의존성)는 이미지에 포함하지 않는다. 가입은 초대 코드가 필요해서, 빈 DB의 첫 OWNER 부트스트랩 경로는 별도 파트에서 해결해야 한다(남은 이슈). 원작자의 GCP 배포 스크립트는 `app/deploy/gcp/`에 선택 사항으로 남겼다.
+
 ## 3. 엔터프라이즈 기능 (Slack Enterprise Grid를 참고해 직접 설계)
 slawk에는 이미 역할(OWNER/ADMIN/MEMBER/GUEST), 감사 로그(AuditLog), 초대 링크, 관리자 패널이 있다. 그 위에 쌓는다.
 
