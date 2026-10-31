@@ -66,7 +66,7 @@
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`를 켠다. preload는 `contextBridge`로 꼭 필요한 함수만 노출한다.
 - 앱 안 탐색은 우리 서버 origin으로 제한하고(`will-navigate`, `setWindowOpenHandler`), 외부 링크는 `shell.openExternal`로 브라우저에서 열되 `http`/`https`만 허용한다.
 - 딥링크(`teammessenger://`) 인자는 화이트리스트로 검증한다.
-- 자동 업데이트는 서명을 검증하는 electron-updater + GitHub Releases로 한다. 코드 서명 인증서가 없으면 Windows SmartScreen 경고가 뜬다는 점을 릴리스 노트에 적는다.
+- 자동 업데이트(electron-updater)는 현재 쓰지 않는다. 업데이트 피드가 실행 중 외부 https 의존이라 규칙 17 예외가 아니기 때문이다(docs/ops/release.md). 재도입하면 서명 검증을 필수로 한다. 코드 서명 인증서가 없으면 Windows SmartScreen·macOS Gatekeeper 경고가 뜬다는 점을 릴리스 노트에 적는다.
 - Electron은 최신 안정 버전을 유지한다. 크로미움 취약점 패치를 바로 따라간다.
 
 ## 10. 루프마다 할 점검 (총괄)
