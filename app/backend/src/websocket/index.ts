@@ -39,6 +39,16 @@ interface FocusedView {
 }
 const userFocusedView = new Map<number, FocusedView | null>();
 
+// 사용자별 온라인/오프라인 DB 기록을 순서대로 실행한다(연결 핸들러가 기다리지 않으므로 순서가 뒤집히지 않게).
+const presenceWrites = new Map<number, Promise<void>>();
+function queuePresenceWrite(userId: number, write: () => Promise<void>): void {
+  const next = (presenceWrites.get(userId) ?? Promise.resolve()).then(write);
+  presenceWrites.set(userId, next);
+  void next.finally(() => {
+    if (presenceWrites.get(userId) === next) presenceWrites.delete(userId);
+  });
+}
+
 export function isUserViewingChannel(userId: number, channelId: number): boolean {
   const view = userFocusedView.get(userId);
   return view?.type === 'channel' && view.id === channelId;
@@ -246,6 +256,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
     }
 
     // Track user presence
+    // 여기서 await하면 그동안 들어온 이벤트(연결 직후 보낸 message:send, 곧바로 끊긴 disconnect)는
+    // 아래 리스너가 아직 없어 버려진다. 리스너를 먼저 달고, 온라인 기록은 기다리지 않는다.
     if (socket.user) {
       const userId = socket.user.userId;
 
@@ -257,23 +269,25 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
       // If this is the first connection, mark user online and broadcast
       if (onlineUsers.get(userId)!.size === 1) {
-        try {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { status: 'online' },
-          });
-
-          // Broadcast presence to shared users
-          const sharedUsers = await getSharedUsers(userId);
-          for (const sharedUserId of sharedUsers) {
-            io.to(`user:${sharedUserId}`).emit('presence:update', {
-              userId,
-              status: 'online',
+        queuePresenceWrite(userId, async () => {
+          try {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { status: 'online' },
             });
+
+            // Broadcast presence to shared users
+            const sharedUsers = await getSharedUsers(userId);
+            for (const sharedUserId of sharedUsers) {
+              io.to(`user:${sharedUserId}`).emit('presence:update', {
+                userId,
+                status: 'online',
+              });
+            }
+          } catch (err) {
+            logError('Failed to update user presence', err);
           }
-        } catch (err) {
-          logError('Failed to update user presence', err);
-        }
+        });
       }
     }
 
@@ -804,27 +818,30 @@ export function initializeWebSocket(httpServer: HttpServer) {
             onlineUsers.delete(userId);
             userFocusedView.delete(userId);
 
-            try {
-              await prisma.user.update({
-                where: { id: userId },
-                data: {
-                  status: 'offline',
-                  lastSeen: new Date(),
-                },
-              });
-
-              // Broadcast presence to shared users
-              const sharedUsers = await getSharedUsers(userId);
-              for (const sharedUserId of sharedUsers) {
-                io.to(`user:${sharedUserId}`).emit('presence:update', {
-                  userId,
-                  status: 'offline',
-                  lastSeen: new Date(),
+            // 온라인 기록이 아직 진행 중이면 그 뒤에 쓴다(오프라인이 온라인에 덮이지 않게)
+            queuePresenceWrite(userId, async () => {
+              try {
+                await prisma.user.update({
+                  where: { id: userId },
+                  data: {
+                    status: 'offline',
+                    lastSeen: new Date(),
+                  },
                 });
+
+                // Broadcast presence to shared users
+                const sharedUsers = await getSharedUsers(userId);
+                for (const sharedUserId of sharedUsers) {
+                  io.to(`user:${sharedUserId}`).emit('presence:update', {
+                    userId,
+                    status: 'offline',
+                    lastSeen: new Date(),
+                  });
+                }
+              } catch (err) {
+                logError('Failed to update user presence on disconnect', err);
               }
-            } catch (err) {
-              logError('Failed to update user presence on disconnect', err);
-            }
+            });
           }
         }
       }

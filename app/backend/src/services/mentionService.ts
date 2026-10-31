@@ -51,6 +51,34 @@ export async function settleBackgroundWork(): Promise<void> {
   while (pending.size > 0) await Promise.allSettled([...pending]);
 }
 
+// 같은 메시지(또는 DM)의 활동 작업은 들어온 순서대로 하나씩 돌린다. 생성 후처리가 끝나기 전에
+// 편집·삭제가 오면(소켓은 이벤트를 동시에 처리한다) 삭제 정리 뒤에 생성·편집 insert가 끝나
+// 지운 메시지의 활동이 남거나, 생성 때 멘션이 편집 결과를 덮어쓴다.
+const chains = new Map<string, Promise<unknown>>();
+function serialize<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const next = (chains.get(key) ?? Promise.resolve()).then(fn, fn);
+  chains.set(key, next);
+  void next.catch(() => undefined).then(() => {
+    if (chains.get(key) === next) chains.delete(key);
+  });
+  return next;
+}
+const messageKey = (id: number) => `m:${id}`;
+const dmKey = (id: number) => `d:${id}`;
+
+/** 차례가 왔을 때 대상이 이미 지워졌으면 활동을 만들지 않는다(삭제 정리가 먼저 끝난 경우). */
+async function targetDeleted(t: { messageId?: number | null; dmId?: number | null }): Promise<boolean> {
+  if (t.messageId) {
+    const m = await prisma.message.findUnique({ where: { id: t.messageId }, select: { deletedAt: true } });
+    return !m || m.deletedAt !== null;
+  }
+  if (t.dmId) {
+    const d = await prisma.directMessage.findUnique({ where: { id: t.dmId }, select: { deletedAt: true } });
+    return !d || d.deletedAt !== null;
+  }
+  return false;
+}
+
 // ── 직렬화와 이벤트 ──────────────────────────────────────────────────
 
 export interface ActivityView {
@@ -316,6 +344,7 @@ async function notifyChannelActivities(
  */
 async function processNewChannelMessageImpl(msg: ChannelMessageLike, opts: { generalPush?: boolean } = {}): Promise<Activity[]> {
   try {
+    if (await targetDeleted({ messageId: msg.id })) return [];
     const { created: mentions } = await syncChannelMentions(msg, 'create');
     const replies = await createThreadReplyActivities(msg, new Set(mentions.map((a) => a.userId)));
     const created = [...mentions, ...replies];
@@ -330,6 +359,7 @@ async function processNewChannelMessageImpl(msg: ChannelMessageLike, opts: { gen
 /** 채널 메시지 편집 후 호출: 바뀐 멘션을 동기화한다(추가분만 알림). 응답 뒤에 await 없이 부른다. */
 async function syncActivitiesOnEditImpl(msg: ChannelMessageLike): Promise<Activity[]> {
   try {
+    if (await targetDeleted({ messageId: msg.id })) return [];
     const { created, removedUserIds } = await syncChannelMentions(msg, 'edit');
     const all = [...created];
     if (msg.threadId) {
@@ -355,7 +385,7 @@ async function syncActivitiesOnEditImpl(msg: ChannelMessageLike): Promise<Activi
 }
 
 /** 메시지(채널 또는 스레드 답글)가 지워질 때 그 메시지와 연결된 Activity를 정리한다. */
-export async function deleteActivitiesForMessage(messageId: number): Promise<void> {
+async function deleteActivitiesForMessageImpl(messageId: number): Promise<void> {
   try {
     await removeRows(await prisma.activity.findMany({ where: { messageId }, select: { id: true, userId: true } }));
   } catch (err) {
@@ -404,6 +434,7 @@ async function notifyDmActivities(dm: DmLike, created: Activity[]): Promise<void
 /** DM 전송·답글 직후 호출. 응답 뒤에 await 없이 부른다. */
 async function createActivitiesForDmImpl(dm: DmLike): Promise<Activity[]> {
   try {
+    if (await targetDeleted({ dmId: dm.id })) return [];
     const created = await syncDmActivities(dm);
     await notifyDmActivities(dm, created);
     return created;
@@ -413,8 +444,7 @@ async function createActivitiesForDmImpl(dm: DmLike): Promise<Activity[]> {
   }
 }
 
-
-export async function deleteActivitiesForDm(dmId: number): Promise<void> {
+async function deleteActivitiesForDmImpl(dmId: number): Promise<void> {
   try {
     await removeRows(await prisma.activity.findMany({ where: { dmId }, select: { id: true, userId: true } }));
   } catch (err) {
@@ -446,6 +476,7 @@ async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity |
       });
       if (!member) return null;
     }
+    if (await targetDeleted(t)) return null;
     const where = {
       userId: t.targetUserId,
       actorId: t.actorId,
@@ -465,7 +496,7 @@ async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity |
 }
 
 /** 리액션을 지우면 그 리액션이 만든 활동도 지운다. */
-export async function removeReactionActivity(t: Pick<ReactionTarget, 'actorId' | 'emoji' | 'messageId' | 'dmId'>): Promise<void> {
+async function removeReactionActivityImpl(t: Pick<ReactionTarget, 'actorId' | 'emoji' | 'messageId' | 'dmId'>): Promise<void> {
   try {
     const rows = await prisma.activity.findMany({
       where: { type: 'REACTION', actorId: t.actorId, emoji: t.emoji, messageId: t.messageId ?? null, dmId: t.dmId ?? null },
@@ -552,9 +583,21 @@ export async function getMentionCountsByDmPartner(userId: number): Promise<Map<n
 
 // ── 공개 진입점(백그라운드 추적 포함) ────────────────────────────────
 
-export const processNewChannelMessage = (...a: Parameters<typeof processNewChannelMessageImpl>) => track(processNewChannelMessageImpl(...a));
-export const syncActivitiesOnEdit = (...a: Parameters<typeof syncActivitiesOnEditImpl>) => track(syncActivitiesOnEditImpl(...a));
-export const createActivitiesForDm = (...a: Parameters<typeof createActivitiesForDmImpl>) => track(createActivitiesForDmImpl(...a));
+// 같은 대상의 생성·편집·삭제·리액션은 serialize로 순서를 지킨다.
+const reactionKey = (t: { messageId?: number; dmId?: number }) => (t.messageId ? messageKey(t.messageId) : dmKey(t.dmId ?? 0));
+
+export const processNewChannelMessage = (...a: Parameters<typeof processNewChannelMessageImpl>) =>
+  track(serialize(messageKey(a[0].id), () => processNewChannelMessageImpl(...a)));
+export const syncActivitiesOnEdit = (...a: Parameters<typeof syncActivitiesOnEditImpl>) =>
+  track(serialize(messageKey(a[0].id), () => syncActivitiesOnEditImpl(...a)));
+export const deleteActivitiesForMessage = (messageId: number) =>
+  track(serialize(messageKey(messageId), () => deleteActivitiesForMessageImpl(messageId)));
+export const createActivitiesForDm = (...a: Parameters<typeof createActivitiesForDmImpl>) =>
+  track(serialize(dmKey(a[0].id), () => createActivitiesForDmImpl(...a)));
 export const syncActivitiesOnDmEdit = createActivitiesForDm;
-export const createReactionActivity = (...a: Parameters<typeof createReactionActivityImpl>) => track(createReactionActivityImpl(...a));
+export const deleteActivitiesForDm = (dmId: number) => track(serialize(dmKey(dmId), () => deleteActivitiesForDmImpl(dmId)));
+export const createReactionActivity = (...a: Parameters<typeof createReactionActivityImpl>) =>
+  track(serialize(reactionKey(a[0]), () => createReactionActivityImpl(...a)));
+export const removeReactionActivity = (...a: Parameters<typeof removeReactionActivityImpl>) =>
+  track(serialize(reactionKey(a[0]), () => removeReactionActivityImpl(...a)));
 export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => track(markThreadMentionsReadImpl(...a));
