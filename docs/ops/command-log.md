@@ -256,3 +256,15 @@
 | 2026-11-01 02:40 | dev-1 검토: 리베이스 후 channels 14·channel-create-errors 2·channel-meta-star 17, tsc, i18n → PR #94, /code-review low 지적 0 → 머지 |
 | 2026-11-01 02:42 | 배정: dev-1 E6 법적 보존·eDiscovery(opus, 060000), dev-5 E10 DLP(sonnet, 070000). 둘 다 worktree·전용 DB·설치 금지 |
 | 2026-11-01 02:43 | PR #89 재리뷰 10건 → dev-4에 9건: 여러 탭 토큰 교체(storage 이벤트, 같은 토큰일 때만 삭제), PAT 상한 먼저·복구 코드 되돌리기, 맞는 코드가 잠금 만들지 않게, 키 없음은 503, 초기화 kick 사유, 정책 시 끄기 버튼 숨김, 키 파싱 캐시, base32Decode 정리, 복구 코드 파일명 번역 키. 미반영: PAT용 TOTP의 같은 창 재사용 차단(의도) |
+| 2026-11-01 02:48 | E7b 재리뷰 반영 검토: 리베이스 충돌 0, mfa 29·auth 25·channels 14, backend/frontend tsc, lint, i18n, sessionend 4/4, 물리 방향 173, 외부 URL → 푸시·머지(PR #89, ec9e580). 20261101050000_add_mfa를 slackclone, slackclone_dev, dev2, dev3에 적용. dev1·dev5는 E6·E10 진행 중이라 PR 검토 때 적용 |
+| 2026-11-01 02:49 | 배정: dev-4 refactor/api-401-by-code(sonnet, worktree, dev4 DB). 진행 3명(dev-1 E6, dev-5 E10, dev-4) |
+| 2026-11-01 02:54 | E10 검토: main(E7b 포함) 리베이스 충돌 7파일(관리자 탭·번역·스키마)을 총괄이 양쪽 보존으로 해결, dev5 DB에 050000 적용, dlp 42·mfa 29·admin 48·audit-logs 24·messages 33, tsc, lint, i18n, 물리 방향 174, 외부 URL → PR #96, /code-review medium |
+| 2026-11-01 02:56 | dev-4 검토: auth-401-codes 12, files 41, tsc, autherrors 4/4, i18n → PR #97, /code-review low 지적 0 → 머지 |
+| 2026-11-01 02:58 | 배정: dev-4 feat/account-password-ui + E7c 복구 코드 재발급(sonnet, worktree, dev4 DB). QR은 대기 |
+| 2026-11-01 02:58 | PR #96 리뷰 10건 → dev-5: 사용자 정의 패턴은 worker_threads 워커와 시간 상한(초과 3회 자동 끄기), 카드 번호 부분열 검사, 조각 분할 제거, 내장 규칙 시작 시 보장·이름 충돌 409, 예약 메시지 차단 시 실패 표시(같은 마이그레이션에 컬럼)와 알림, 예약 UI DLP 문구, 테스트 결과 초기화, GET upsert 생략, DM 답글 서비스 이전, 캐시 로딩 경쟁. 다중 인스턴스 TTL 30초는 수용. E6은 #96 머지 후 리베이스 |
+| 2026-11-01 03:02 | E6 순서 변경: E10 리뷰 반영이 길어 E6 먼저. main 리베이스 충돌 6파일(E7b) 양쪽 보존, dev1 DB에 050000·060000 적용, legal-holds 8·ediscovery 8·retention 20·mfa 29·admin 48, tsc, lint, i18n, 물리 방향 177, 외부 URL → PR #98, /code-review high. E10은 E6 머지 후 리베이스 |
+| 2026-11-01 03:04 | dev-4 검토: PR #97과 충돌 2파일 해결(테스트 분리), mfa 31·sessions 28·auth-401-codes 12·auth 25, tsc, lint, autherrors 8, i18n → PR #99, /code-review medium |
+| 2026-11-01 03:06 | PR #98 리뷰 10건 → dev-1 9건: 검색 UI 요청 세대 관리, 분리 첨부 연결 컬럼(060000에 detachedFrom*), 보존 정리가 활성 보존 관계를 삭제 문장 조건으로 직접 사용(플래그 OR 관계), 폼≠검색이면 내보내기 비활성, 목록 필터 경쟁, 감사 createMany, 중복 조회·건수 생략, meta 끝 시각. 그룹 탈퇴자 이력은 별도 파트(feat/group-membership-history) |
+| 2026-11-01 03:06 | PR #99 리뷰 10건 → dev-4 9건: rotateSessions 공용화와 sid 없는 소켓 즉시 끊기, 재발급 행 잠금, 새 코드 표시 중 닫기 방지, 상태 즉시 갱신, ReauthForm·reauthenticate 공용화, maxLength, 주석. 현재 기기 소켓 옛 sid는 수용 |
+| 2026-11-01 03:09 | E10 리뷰 반영 검토: dlp 56·dms 27·mentions-scheduled-webhook 9, tsc, lint, i18n, 물리 방향 174, 외부 URL → 푸시·머지(PR #96, 5739954). 070000을 slackclone, slackclone_dev, dev2, dev3에 적용(dev1·dev4·dev5는 각 PR 검토 때) |
+| 2026-11-01 03:11 | 자원 정상(스왑 88%, 디스크 11GB). 배정: dev-5 E7c-QR(sonnet, worktree, 외부 의존 없이 로컬 인코더). 진행 3명(dev-1 E6 리뷰 반영, dev-4 PR #99 리뷰 반영, dev-5) |
