@@ -172,7 +172,8 @@
       "tokenCreate": "토큰 발급",
       "tokenRevoke": "토큰 폐기",
       "mcpToolCall": "MCP 도구 호출",
-      "auditExported": "감사 로그 내보내기"
+      "auditExported": "감사 로그 내보내기",
+      "authLoginLocked": "계정 잠김"
     },
     "filters": {
       "allActions": "모든 작업",

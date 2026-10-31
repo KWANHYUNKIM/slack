@@ -172,7 +172,8 @@
       "tokenCreate": "Token created",
       "tokenRevoke": "Token revoked",
       "mcpToolCall": "MCP tool call",
-      "auditExported": "Audit log exported"
+      "auditExported": "Audit log exported",
+      "authLoginLocked": "Account locked"
     },
     "filters": {
       "allActions": "All actions",
