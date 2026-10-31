@@ -1,0 +1,302 @@
+import { Prisma } from '@prisma/client';
+import { z } from 'zod';
+import prisma from '../db.js';
+import { auditFilterSchema } from './auditLogService.js';
+
+// eDiscovery(E6). 보존 건의 대상자(custodian)를 기준으로 채널 메시지·DM·파일 메타데이터를 찾고 내보낸다.
+//
+// 범위
+// - 채널 메시지: 대상자가 쓴 것(공개·비공개 채널 모두, 스레드 답글 포함)
+// - DM: 대상자가 보냈거나 받은 1:1 DM, 대상자가 지금 구성원인 그룹 DM의 모든 메시지
+// - 파일: 대상자가 올린 파일과, 위 DM에 붙은 파일의 메타데이터(본문은 담지 않는다)
+// 소프트 삭제된 메시지도 넣고 deletedAt으로 표시한다. 수정 이력 테이블은 없으므로 editedAt(마지막 수정 시각)만 담는다.
+// 일반 API의 멤버십 검사를 건너뛰므로 관리자 라우트(/admin/ediscovery)에서만 부른다.
+
+export const SEARCH_KINDS = ['channel', 'dm', 'file'] as const;
+export type SearchKind = (typeof SEARCH_KINDS)[number];
+
+const QUERY_MAX = 200;
+const EXPORT_BATCH = 500;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export const discoveryFilterSchema = z.object({
+  holdId: z.coerce.number().int().positive(),
+  q: z.string().trim().max(QUERY_MAX).optional().transform((v) => v || undefined),
+  from: auditFilterSchema.shape.from,
+  to: auditFilterSchema.shape.to,
+});
+
+export type DiscoveryFilter = z.infer<typeof discoveryFilterSchema>;
+
+/** 감사 로그 내보내기와 같은 규칙: from은 그 시각부터, to가 날짜만이면 그 날 끝까지 */
+export function createdAtRange(f: DiscoveryFilter): { gte?: Date; lt?: Date; lte?: Date } | undefined {
+  if (!f.from && !f.to) return undefined;
+  return {
+    ...(f.from ? { gte: f.from } : {}),
+    ...(f.to ? (f.to.dateOnly ? { lt: new Date(f.to.date.getTime() + DAY_MS) } : { lte: f.to.date }) : {}),
+  };
+}
+
+const contains = (q: string) => ({ contains: q, mode: 'insensitive' as const });
+
+export async function custodianIds(holdId: number): Promise<number[] | null> {
+  const hold = await prisma.legalHold.findUnique({ where: { id: holdId }, select: { custodians: { select: { userId: true } } } });
+  return hold ? hold.custodians.map((c) => c.userId) : null;
+}
+
+/** 내보내기 머리 줄용: 보존 건과 대상자를 한 번에 읽는다 */
+export async function holdWithCustodians(holdId: number) {
+  const hold = await prisma.legalHold.findUnique({
+    where: { id: holdId },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      createdAt: true,
+      releasedAt: true,
+      custodians: { select: { user: PERSON }, orderBy: { userId: 'asc' } },
+    },
+  });
+  if (!hold) return null;
+  const { custodians, ...rest } = hold;
+  return { hold: rest, custodians: custodians.map((c) => c.user) };
+}
+
+// ---- 검색 감사·건수 생략 ----
+// 같은 관리자가 같은 보존 건·필터로 탭만 바꾸면 건수(count 3개)를 다시 세지 않고 감사 로그도 다시 남기지 않는다.
+// 서버가 마지막 필터를 기억해서 판단하므로 클라이언트가 감사 로그를 건너뛰게 만들 수 없다(새 필터의 첫 검색은 항상 남는다).
+const SEARCH_MEMO_TTL_MS = 10 * 60 * 1000;
+const SEARCH_MEMO_MAX = 1000;
+const lastSearch = new Map<number, { binding: string; at: number }>();
+
+/** 이 관리자에게 새 필터(또는 기억이 만료된 필터)면 true를 돌려주고 기억한다 */
+export function isNewSearchFilter(userId: number, f: DiscoveryFilter, now = Date.now()): boolean {
+  const binding = discoveryBinding(f);
+  const prev = lastSearch.get(userId);
+  const fresh = !prev || prev.binding !== binding || now - prev.at > SEARCH_MEMO_TTL_MS;
+  if (!fresh) return false;
+  if (!lastSearch.has(userId) && lastSearch.size >= SEARCH_MEMO_MAX) lastSearch.clear();
+  lastSearch.set(userId, { binding, at: now });
+  return true;
+}
+
+/** 테스트용 */
+export function resetSearchMemo(): void {
+  lastSearch.clear();
+}
+
+function dmScope(ids: number[]): Prisma.DirectMessageWhereInput {
+  return {
+    OR: [{ fromUserId: { in: ids } }, { toUserId: { in: ids } }, { group: { members: { some: { userId: { in: ids } } } } }],
+  };
+}
+
+function channelWhere(ids: number[], f: DiscoveryFilter): Prisma.MessageWhereInput {
+  const createdAt = createdAtRange(f);
+  return { userId: { in: ids }, ...(createdAt ? { createdAt } : {}), ...(f.q ? { content: contains(f.q) } : {}) };
+}
+
+function dmWhere(ids: number[], f: DiscoveryFilter): Prisma.DirectMessageWhereInput {
+  const createdAt = createdAtRange(f);
+  return { AND: [dmScope(ids), { ...(createdAt ? { createdAt } : {}), ...(f.q ? { content: contains(f.q) } : {}) }] };
+}
+
+function fileWhere(ids: number[], f: DiscoveryFilter): Prisma.FileWhereInput {
+  const createdAt = createdAtRange(f);
+  return {
+    AND: [
+      { OR: [{ userId: { in: ids } }, { dm: dmScope(ids) }] },
+      { ...(createdAt ? { createdAt } : {}), ...(f.q ? { originalName: contains(f.q) } : {}) },
+    ],
+  };
+}
+
+const PERSON = { select: { id: true, name: true, email: true } } as const;
+const FILE_META = { select: { id: true, originalName: true, mimetype: true, size: true, createdAt: true, userId: true } } as const;
+
+const CHANNEL_SELECT = {
+  id: true,
+  content: true,
+  threadId: true,
+  createdAt: true,
+  editedAt: true,
+  deletedAt: true,
+  user: PERSON,
+  channel: { select: { id: true, name: true, isPrivate: true } },
+  files: FILE_META,
+} as const;
+
+const DM_SELECT = {
+  id: true,
+  content: true,
+  threadId: true,
+  createdAt: true,
+  editedAt: true,
+  deletedAt: true,
+  fromUser: PERSON,
+  toUser: PERSON,
+  group: { select: { id: true, name: true } },
+  files: FILE_META,
+} as const;
+
+const FILE_SELECT = {
+  id: true,
+  originalName: true,
+  mimetype: true,
+  size: true,
+  createdAt: true,
+  messageId: true,
+  dmId: true,
+  detachedFromMessageId: true,
+  detachedFromDmId: true,
+  user: PERSON,
+  message: { select: { channel: { select: { id: true, name: true, isPrivate: true } }, deletedAt: true } },
+  dm: { select: { deletedAt: true, groupId: true } },
+} as const;
+
+type FileMeta = Prisma.FileGetPayload<typeof FILE_META>;
+type ChannelRef = { id: number; name: string; isPrivate: boolean };
+
+type ChannelRow = Prisma.MessageGetPayload<{ select: typeof CHANNEL_SELECT }>;
+type DmRow = Prisma.DirectMessageGetPayload<{ select: typeof DM_SELECT }>;
+type FileRow = Prisma.FileGetPayload<{ select: typeof FILE_SELECT }>;
+
+// 소프트 삭제된 메시지는 첨부가 분리돼(messageId=null) files 관계로 보이지 않는다. 분리 때 남긴 detachedFrom*로 되찾는다.
+const channelRecord = (m: ChannelRow, detached: FileMeta[] = []) => ({
+  kind: 'channel' as const,
+  id: m.id,
+  createdAt: m.createdAt,
+  editedAt: m.editedAt,
+  deletedAt: m.deletedAt,
+  deleted: m.deletedAt !== null,
+  threadId: m.threadId,
+  channel: m.channel,
+  author: m.user,
+  content: m.content,
+  files: [...m.files, ...detached],
+});
+
+const dmRecord = (m: DmRow, detached: FileMeta[] = []) => ({
+  kind: 'dm' as const,
+  id: m.id,
+  createdAt: m.createdAt,
+  editedAt: m.editedAt,
+  deletedAt: m.deletedAt,
+  deleted: m.deletedAt !== null,
+  threadId: m.threadId,
+  from: m.fromUser,
+  to: m.toUser,
+  group: m.group,
+  content: m.content,
+  files: [...m.files, ...detached],
+});
+
+const fileRecord = (f: FileRow, detachedChannel: ChannelRef | null = null) => ({
+  kind: 'file' as const,
+  id: f.id,
+  createdAt: f.createdAt,
+  originalName: f.originalName,
+  mimetype: f.mimetype,
+  size: f.size,
+  uploader: f.user,
+  messageId: f.messageId,
+  dmId: f.dmId,
+  detachedFromMessageId: f.detachedFromMessageId,
+  detachedFromDmId: f.detachedFromDmId,
+  channel: f.message?.channel ?? detachedChannel,
+  groupId: f.dm?.groupId ?? null,
+  // 붙어 있던 메시지가 소프트 삭제됐거나(그대로 붙어 있는 DM) 삭제되면서 분리됐으면(채널 메시지) 표시한다
+  attachedToDeleted: Boolean(f.message?.deletedAt ?? f.dm?.deletedAt) || f.detachedFromMessageId !== null || f.detachedFromDmId !== null,
+});
+
+function groupBy<T>(rows: T[], key: (r: T) => number | null): Map<number, T[]> {
+  const map = new Map<number, T[]>();
+  for (const r of rows) {
+    const k = key(r);
+    if (k === null) continue;
+    map.set(k, [...(map.get(k) ?? []), r]);
+  }
+  return map;
+}
+
+const DETACHED_META = { ...FILE_META.select, detachedFromMessageId: true, detachedFromDmId: true } as const;
+const stripDetached = ({ detachedFromMessageId: _m, detachedFromDmId: _d, ...meta }: FileMeta & { detachedFromMessageId: number | null; detachedFromDmId: number | null }): FileMeta => meta;
+
+export type DiscoveryRecord = ReturnType<typeof channelRecord> | ReturnType<typeof dmRecord> | ReturnType<typeof fileRecord>;
+
+/** 한 종류의 배치를 읽는다. order가 desc면 cursor보다 작은 id, asc면 큰 id부터. */
+async function fetchBatch(kind: SearchKind, ids: number[], f: DiscoveryFilter, opts: { cursor?: number; take: number; order: 'asc' | 'desc' }): Promise<DiscoveryRecord[]> {
+  const idCond = opts.cursor ? { id: opts.order === 'desc' ? { lt: opts.cursor } : { gt: opts.cursor } } : {};
+  const base = { orderBy: { id: opts.order }, take: opts.take };
+  if (kind === 'channel') {
+    const rows = await prisma.message.findMany({ ...base, where: { AND: [channelWhere(ids, f), idCond] }, select: CHANNEL_SELECT });
+    const deletedIds = rows.filter((m) => m.deletedAt).map((m) => m.id);
+    const detached = deletedIds.length
+      ? groupBy(await prisma.file.findMany({ where: { detachedFromMessageId: { in: deletedIds } }, select: DETACHED_META, orderBy: { id: 'asc' } }), (x) => x.detachedFromMessageId)
+      : new Map();
+    return rows.map((m) => channelRecord(m, (detached.get(m.id) ?? []).map(stripDetached)));
+  }
+  if (kind === 'dm') {
+    const rows = await prisma.directMessage.findMany({ ...base, where: { AND: [dmWhere(ids, f), idCond] }, select: DM_SELECT });
+    const deletedIds = rows.filter((m) => m.deletedAt).map((m) => m.id);
+    const detached = deletedIds.length
+      ? groupBy(await prisma.file.findMany({ where: { detachedFromDmId: { in: deletedIds } }, select: DETACHED_META, orderBy: { id: 'asc' } }), (x) => x.detachedFromDmId)
+      : new Map();
+    return rows.map((m) => dmRecord(m, (detached.get(m.id) ?? []).map(stripDetached)));
+  }
+  const rows = await prisma.file.findMany({ ...base, where: { AND: [fileWhere(ids, f), idCond] }, select: FILE_SELECT });
+  // 분리된 첨부는 원래 메시지의 채널을 따로 읽는다(보존 정리로 메시지가 하드 삭제됐으면 null)
+  const sourceIds = [...new Set(rows.flatMap((r) => (r.detachedFromMessageId !== null ? [r.detachedFromMessageId] : [])))];
+  const sources = sourceIds.length
+    ? new Map((await prisma.message.findMany({ where: { id: { in: sourceIds } }, select: { id: true, channel: { select: { id: true, name: true, isPrivate: true } } } })).map((m) => [m.id, m.channel]))
+    : new Map<number, ChannelRef>();
+  return rows.map((r) => fileRecord(r, r.detachedFromMessageId !== null ? (sources.get(r.detachedFromMessageId) ?? null) : null));
+}
+
+export async function countAll(ids: number[], f: DiscoveryFilter): Promise<Record<SearchKind, number>> {
+  if (ids.length === 0) return { channel: 0, dm: 0, file: 0 };
+  const [channel, dm, file] = await Promise.all([
+    prisma.message.count({ where: channelWhere(ids, f) }),
+    prisma.directMessage.count({ where: dmWhere(ids, f) }),
+    prisma.file.count({ where: fileWhere(ids, f) }),
+  ]);
+  return { channel, dm, file };
+}
+
+/** 최신순 커서 페이지 */
+export async function search(kind: SearchKind, ids: number[], f: DiscoveryFilter, limit: number, cursor: number | undefined) {
+  if (ids.length === 0) return { items: [], nextCursor: null };
+  const rows = await fetchBatch(kind, ids, f, { cursor, take: limit + 1, order: 'desc' });
+  const hasMore = rows.length > limit;
+  const items = hasMore ? rows.slice(0, limit) : rows;
+  return { items, nextCursor: hasMore ? items[items.length - 1].id : null };
+}
+
+/** 내보내기용: 종류별로 오래된 것부터 배치로 읽어 넘긴다. 메모리에는 한 배치만 올린다. */
+export async function* iterateRecords(ids: number[], f: DiscoveryFilter): AsyncGenerator<DiscoveryRecord> {
+  if (ids.length === 0) return;
+  for (const kind of SEARCH_KINDS) {
+    let cursor: number | undefined;
+    for (;;) {
+      const rows = await fetchBatch(kind, ids, f, { cursor, take: EXPORT_BATCH, order: 'asc' });
+      for (const row of rows) yield row;
+      if (rows.length < EXPORT_BATCH) break;
+      cursor = rows[rows.length - 1].id;
+    }
+  }
+}
+
+/** 내보내기 토큰이 묶이는 값. 발급 때와 받을 때 같아야 한다. 감사 로그 내보내기 토큰과 섞이지 않게 접두어를 붙인다. */
+export function discoveryBinding(f: DiscoveryFilter): string {
+  return `ediscovery:${JSON.stringify({
+    holdId: f.holdId,
+    q: f.q ?? null,
+    from: f.from?.toISOString() ?? null,
+    to: f.to ? `${f.to.date.toISOString()}${f.to.dateOnly ? ':day' : ''}` : null,
+  })}`;
+}
+
+/** 감사 로그 details. 검색어 원문은 남기지 않는다(민감할 수 있다). */
+export function filterSummary(f: DiscoveryFilter): string {
+  return `query=${f.q ? 'yes' : 'no'}; from=${f.from?.toISOString() ?? '-'}; to=${f.to?.date.toISOString() ?? '-'}`;
+}

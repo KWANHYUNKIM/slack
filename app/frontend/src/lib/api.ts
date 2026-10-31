@@ -1468,6 +1468,180 @@ export function adminTestDlpRule(data: { pattern?: string; ruleId?: number; samp
   return request<{ matched: boolean; timedOut?: boolean }>('/admin/dlp-rules/test', { method: 'POST', body: JSON.stringify(data) });
 }
 
+// 법적 보존과 eDiscovery(E6)
+export interface LegalHoldPerson {
+  id: number;
+  name: string;
+}
+
+export interface LegalHold {
+  id: number;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  releasedAt: string | null;
+  creator: LegalHoldPerson | null;
+  releaser: LegalHoldPerson | null;
+  custodianCount: number;
+}
+
+export interface LegalHoldCustodian {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string | null;
+  deactivatedAt: string | null;
+  addedAt: string;
+}
+
+export interface LegalHoldDetail extends LegalHold {
+  custodians: LegalHoldCustodian[];
+}
+
+export type LegalHoldStatus = 'active' | 'released' | 'all';
+
+export function adminListLegalHolds(status: LegalHoldStatus, cursor?: number | null) {
+  const q = new URLSearchParams({ status });
+  if (cursor) q.set('cursor', String(cursor));
+  return request<{ items: LegalHold[]; nextCursor: number | null }>(`/admin/legal-holds?${q.toString()}`);
+}
+
+export function adminGetLegalHold(id: number) {
+  return request<LegalHoldDetail>(`/admin/legal-holds/${id}`);
+}
+
+export function adminCreateLegalHold(data: { name: string; description?: string | null; userIds?: number[] }) {
+  return request<LegalHoldDetail>('/admin/legal-holds', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function adminUpdateLegalHold(id: number, data: { name?: string; description?: string | null }) {
+  return request<LegalHoldDetail>(`/admin/legal-holds/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export function adminAddLegalHoldCustodians(id: number, userIds: number[]) {
+  return request<LegalHoldDetail>(`/admin/legal-holds/${id}/custodians`, { method: 'POST', body: JSON.stringify({ userIds }) });
+}
+
+export function adminRemoveLegalHoldCustodian(id: number, userId: number) {
+  return request<LegalHoldDetail>(`/admin/legal-holds/${id}/custodians/${userId}`, { method: 'DELETE' });
+}
+
+export function adminReleaseLegalHold(id: number) {
+  return request<LegalHoldDetail>(`/admin/legal-holds/${id}/release`, { method: 'POST' });
+}
+
+export type DiscoveryKind = 'channel' | 'dm' | 'file';
+
+export interface DiscoveryFilter {
+  holdId: number;
+  q?: string;
+  from?: string;
+  to?: string;
+}
+
+interface DiscoveryPerson {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface DiscoveryFileMeta {
+  id: number;
+  originalName: string;
+  mimetype: string;
+  size: number;
+  createdAt: string;
+}
+
+export type DiscoveryRecord =
+  | {
+      kind: 'channel';
+      id: number;
+      createdAt: string;
+      editedAt: string | null;
+      deleted: boolean;
+      threadId: number | null;
+      channel: { id: number; name: string; isPrivate: boolean };
+      author: DiscoveryPerson;
+      content: string;
+      files: DiscoveryFileMeta[];
+    }
+  | {
+      kind: 'dm';
+      id: number;
+      createdAt: string;
+      editedAt: string | null;
+      deleted: boolean;
+      threadId: number | null;
+      from: DiscoveryPerson;
+      to: DiscoveryPerson | null;
+      group: { id: number; name: string | null } | null;
+      content: string;
+      files: DiscoveryFileMeta[];
+    }
+  | {
+      kind: 'file';
+      id: number;
+      createdAt: string;
+      originalName: string;
+      mimetype: string;
+      size: number;
+      uploader: DiscoveryPerson;
+      channel: { id: number; name: string; isPrivate: boolean } | null;
+      groupId: number | null;
+      dmId: number | null;
+      detachedFromMessageId: number | null;
+      detachedFromDmId: number | null;
+      attachedToDeleted: boolean;
+    };
+
+export interface DiscoveryPage {
+  items: DiscoveryRecord[];
+  nextCursor: number | null;
+  counts?: Record<DiscoveryKind, number>;
+}
+
+function discoveryQuery(filter: DiscoveryFilter): URLSearchParams {
+  const q = new URLSearchParams({ holdId: String(filter.holdId) });
+  if (filter.q) q.set('q', filter.q);
+  if (filter.from) q.set('from', filter.from);
+  if (filter.to) q.set('to', filter.to);
+  return q;
+}
+
+/**
+ * 서버는 필터가 바뀐 첫 페이지에만 종류별 건수(counts)를 준다. wantCounts면 같은 필터라도 건수를 받는다(화면이 건수를 잃었을 때).
+ * signal로 이전 요청을 끊는다.
+ */
+export function adminDiscoverySearch(
+  filter: DiscoveryFilter,
+  kind: DiscoveryKind,
+  opts: { cursor?: number | null; wantCounts?: boolean; signal?: AbortSignal } = {},
+) {
+  const q = discoveryQuery(filter);
+  q.set('kind', kind);
+  if (opts.cursor) q.set('cursor', String(opts.cursor));
+  if (opts.wantCounts) q.set('counts', '1');
+  return request<DiscoveryPage>(`/admin/ediscovery/search?${q.toString()}`, { signal: opts.signal });
+}
+
+/** 두 필터가 같은 검색인지(내보내기 버튼을 켤지 정할 때 쓴다) */
+export function sameDiscoveryFilter(a: DiscoveryFilter, b: DiscoveryFilter): boolean {
+  return discoveryQuery(a).toString() === discoveryQuery(b).toString();
+}
+
+/** 감사 로그 내보내기와 같이 60초짜리 1회용 토큰을 받아 주소를 만든다. 브라우저가 JSONL 파일을 디스크로 바로 받는다. */
+export async function adminDiscoveryExportUrl(filter: DiscoveryFilter): Promise<string> {
+  const { token } = await request<{ token: string }>('/admin/ediscovery/export-token', {
+    method: 'POST',
+    body: JSON.stringify(filter),
+  });
+  const q = discoveryQuery(filter);
+  q.set('token', token);
+  return `/admin/ediscovery/export?${q.toString()}`;
+}
+
 export function adminGetInvites() {
   return request<AdminInvite[]>('/admin/invites');
 }

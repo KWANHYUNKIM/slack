@@ -10,7 +10,8 @@
       "audit": "Audit Log",
       "retention": "Data retention",
       "security": "Security",
-      "dlp": "DLP"
+      "dlp": "DLP",
+      "legalHolds": "Legal holds"
     }
   },
   "channels": {
@@ -167,7 +168,8 @@
       "mcpTool": "MCP tool",
       "workspace": "Workspace",
       "file": "File",
-      "dlpRule": "DLP rule"
+      "dlpRule": "DLP rule",
+      "legalHold": "Legal hold"
     },
     "action": {
       "authLogin": "Signed in",
@@ -214,7 +216,15 @@
       "dlpRuleUpdated": "DLP rule changed",
       "dlpRuleDeleted": "DLP rule deleted",
       "dlpRuleTimeout": "DLP rule timed out",
-      "dlpRuleAutoDisabled": "DLP rule turned off automatically"
+      "dlpRuleAutoDisabled": "DLP rule turned off automatically",
+      "legalHoldCreated": "Legal hold created",
+      "legalHoldUpdated": "Legal hold edited",
+      "legalHoldCustodianAdded": "Person added to legal hold",
+      "legalHoldCustodianRemoved": "Person removed from legal hold",
+      "legalHoldReleased": "Legal hold released",
+      "ediscoverySearched": "eDiscovery search",
+      "ediscoveryExportRequested": "eDiscovery export requested",
+      "ediscoveryExported": "eDiscovery exported"
     },
     "filters": {
       "allActions": "All actions",
@@ -376,6 +386,81 @@
     "confirmDelete": {
       "title": "Delete this rule?",
       "message": "The rule \"{name}\" will be removed and no longer checked."
+    }
+  },
+  "legalHolds": {
+    "description": "Preserve everything a person has written or received, even when data retention would delete it. Admins can search and export the preserved data for legal review.",
+    "statusFilter": "Show",
+    "status": {
+      "active": "Active",
+      "released": "Released",
+      "all": "All"
+    },
+    "empty": "No legal holds",
+    "selectHint": "Select a legal hold to manage its people and search its data.",
+    "loadMore": "Load more",
+    "custodianCount": "{count, plural, one {# person} other {# people}}",
+    "createdOn": "Created {date}",
+    "releasedOn": "Released {date}",
+    "createdBy": "Created by {name} on {date}",
+    "releasedBy": "Released by {name} on {date}",
+    "unknownUser": "Unknown user",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "fields": {
+      "name": "Name",
+      "description": "Description (optional)"
+    },
+    "create": {
+      "open": "New hold",
+      "submit": "Create hold",
+      "hint": "You can add people after creating the hold."
+    },
+    "custodians": {
+      "heading": "People on hold",
+      "pick": "Choose a person",
+      "add": "Add",
+      "remove": "Remove {name} from this hold",
+      "empty": "No one is on this hold yet.",
+      "deactivated": "Deactivated"
+    },
+    "release": {
+      "open": "Release hold",
+      "title": "Release this legal hold?",
+      "message": "\"{name}\" will stop preserving data. People who aren't on another active hold go back under the normal retention policy, and their old messages may be deleted at the next cleanup. The hold and its list of people stay on record. This can't be undone.",
+      "confirm": "Release"
+    },
+    "discovery": {
+      "heading": "Search and export",
+      "hint": "Covers messages the people on hold wrote in any channel (including private ones), direct and group messages they took part in, and file details. Deleted messages are included and marked.",
+      "query": "Keyword",
+      "from": "From",
+      "to": "To",
+      "search": "Search",
+      "export": "Export (JSONL)",
+      "exportHint": "Exports the results of the last search. Every search and export is recorded in the audit log.",
+      "searchFirst": "Search with these filters first. Export uses the filters of the search shown below.",
+      "kinds": {
+        "channel": "Channel messages",
+        "dm": "Direct messages",
+        "file": "Files"
+      },
+      "empty": "No results",
+      "deleted": "Deleted",
+      "edited": "Edited",
+      "reply": "Thread reply",
+      "groupDm": "Group DM #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Failed to load legal holds",
+      "create": "Failed to create the legal hold",
+      "update": "Failed to update the legal hold",
+      "custodians": "Failed to change the people on hold",
+      "release": "Failed to release the legal hold",
+      "search": "Search failed",
+      "export": "Export failed"
     }
   }
 }

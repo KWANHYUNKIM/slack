@@ -167,10 +167,10 @@ export async function deleteChannelMessage(userId: number, message: Message) {
   if (message.userId !== userId) throw new ServiceError(403, 'You can only delete your own messages');
   await assertChannelNotArchived(message.channelId);
 
-  // Soft-delete message and detach its files so they don't become orphaned
+  // 소프트 삭제하고 첨부를 떼어 낸다. 떼어 낸 첨부에는 원래 메시지 id를 남긴다(eDiscovery가 삭제된 메시지의 첨부를 찾는다)
   await prisma.$transaction([
     prisma.message.update({ where: { id: message.id }, data: { deletedAt: new Date() } }),
-    prisma.file.updateMany({ where: { messageId: message.id }, data: { messageId: null } }),
+    prisma.file.updateMany({ where: { messageId: message.id }, data: { messageId: null, detachedFromMessageId: message.id } }),
   ]);
 
   void deleteActivitiesForMessage(message.id);

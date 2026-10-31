@@ -10,7 +10,8 @@
       "audit": "감사 로그",
       "retention": "데이터 보존",
       "security": "보안",
-      "dlp": "DLP"
+      "dlp": "DLP",
+      "legalHolds": "법적 보존"
     }
   },
   "channels": {
@@ -167,7 +168,8 @@
       "mcpTool": "MCP 도구",
       "workspace": "워크스페이스",
       "file": "파일",
-      "dlpRule": "DLP 규칙"
+      "dlpRule": "DLP 규칙",
+      "legalHold": "법적 보존"
     },
     "action": {
       "authLogin": "로그인",
@@ -214,7 +216,15 @@
       "dlpRuleUpdated": "DLP 규칙 변경",
       "dlpRuleDeleted": "DLP 규칙 삭제",
       "dlpRuleTimeout": "DLP 규칙 시간 초과",
-      "dlpRuleAutoDisabled": "DLP 규칙 자동 꺼짐"
+      "dlpRuleAutoDisabled": "DLP 규칙 자동 꺼짐",
+      "legalHoldCreated": "법적 보존 생성",
+      "legalHoldUpdated": "법적 보존 수정",
+      "legalHoldCustodianAdded": "법적 보존 대상자 추가",
+      "legalHoldCustodianRemoved": "법적 보존 대상자 제외",
+      "legalHoldReleased": "법적 보존 해제",
+      "ediscoverySearched": "eDiscovery 검색",
+      "ediscoveryExportRequested": "eDiscovery 내보내기 요청",
+      "ediscoveryExported": "eDiscovery 내보내기"
     },
     "filters": {
       "allActions": "모든 작업",
@@ -376,6 +386,81 @@
     "confirmDelete": {
       "title": "이 규칙을 삭제할까요?",
       "message": "\"{name}\" 규칙이 삭제되어 더 이상 검사하지 않습니다."
+    }
+  },
+  "legalHolds": {
+    "description": "데이터 보존 정책으로 지워질 메시지라도 지정한 사람이 쓰거나 받은 데이터는 모두 보존합니다. 관리자는 보존된 데이터를 검색하고 내보내 법적 검토에 쓸 수 있습니다.",
+    "statusFilter": "보기",
+    "status": {
+      "active": "진행 중",
+      "released": "해제됨",
+      "all": "전체"
+    },
+    "empty": "법적 보존 건이 없습니다",
+    "selectHint": "법적 보존 건을 골라 대상자를 관리하고 데이터를 검색하세요.",
+    "loadMore": "더 보기",
+    "custodianCount": "{count}명",
+    "createdOn": "{date} 생성",
+    "releasedOn": "{date} 해제",
+    "createdBy": "{name} 님이 {date}에 생성",
+    "releasedBy": "{name} 님이 {date}에 해제",
+    "unknownUser": "알 수 없는 사용자",
+    "edit": "수정",
+    "save": "저장",
+    "cancel": "취소",
+    "fields": {
+      "name": "이름",
+      "description": "설명(선택)"
+    },
+    "create": {
+      "open": "새 보존 건",
+      "submit": "보존 건 만들기",
+      "hint": "보존 건을 만든 뒤 대상자를 추가할 수 있습니다."
+    },
+    "custodians": {
+      "heading": "보존 대상자",
+      "pick": "대상자 선택",
+      "add": "추가",
+      "remove": "{name} 님을 이 보존 건에서 제외",
+      "empty": "아직 대상자가 없습니다.",
+      "deactivated": "비활성"
+    },
+    "release": {
+      "open": "보존 해제",
+      "title": "이 법적 보존을 해제할까요?",
+      "message": "\"{name}\"의 데이터 보존이 끝납니다. 다른 진행 중인 보존 건에 없는 대상자는 일반 보존 정책을 다시 따르므로, 다음 정리 때 오래된 메시지가 삭제될 수 있습니다. 보존 건과 대상자 목록은 기록으로 남습니다. 되돌릴 수 없습니다.",
+      "confirm": "해제"
+    },
+    "discovery": {
+      "heading": "검색과 내보내기",
+      "hint": "대상자가 모든 채널(비공개 채널 포함)에 쓴 메시지, 대상자가 참여한 DM과 그룹 DM, 파일 정보를 다룹니다. 삭제된 메시지도 포함하며 삭제 표시를 붙입니다.",
+      "query": "키워드",
+      "from": "시작일",
+      "to": "종료일",
+      "search": "검색",
+      "export": "내보내기(JSONL)",
+      "exportHint": "마지막 검색 결과를 내보냅니다. 모든 검색과 내보내기는 감사 로그에 남습니다.",
+      "searchFirst": "이 조건으로 먼저 검색해야 내보낼 수 있습니다. 내보내기는 아래에 보이는 검색의 조건을 씁니다.",
+      "kinds": {
+        "channel": "채널 메시지",
+        "dm": "다이렉트 메시지",
+        "file": "파일"
+      },
+      "empty": "결과가 없습니다",
+      "deleted": "삭제됨",
+      "edited": "수정됨",
+      "reply": "스레드 답글",
+      "groupDm": "그룹 DM #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "법적 보존 건을 불러오지 못했습니다",
+      "create": "법적 보존 건을 만들지 못했습니다",
+      "update": "법적 보존 건을 수정하지 못했습니다",
+      "custodians": "보존 대상자를 바꾸지 못했습니다",
+      "release": "법적 보존을 해제하지 못했습니다",
+      "search": "검색하지 못했습니다",
+      "export": "내보내지 못했습니다"
     }
   }
 }

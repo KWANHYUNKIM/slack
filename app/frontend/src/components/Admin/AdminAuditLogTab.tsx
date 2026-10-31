@@ -59,6 +59,14 @@ const ACTION_KEYS: Record<string, string> = {
   'dlp.rule_deleted': 'dlpRuleDeleted',
   'dlp.rule_timeout': 'dlpRuleTimeout',
   'dlp.rule_auto_disabled': 'dlpRuleAutoDisabled',
+  'legal_hold.created': 'legalHoldCreated',
+  'legal_hold.updated': 'legalHoldUpdated',
+  'legal_hold.custodian_added': 'legalHoldCustodianAdded',
+  'legal_hold.custodian_removed': 'legalHoldCustodianRemoved',
+  'legal_hold.released': 'legalHoldReleased',
+  'ediscovery.searched': 'ediscoverySearched',
+  'ediscovery.export_requested': 'ediscoveryExportRequested',
+  'ediscovery.exported': 'ediscoveryExported',
 };
 
 const TARGET_KEYS: Record<string, string> = {
@@ -74,10 +82,11 @@ const TARGET_KEYS: Record<string, string> = {
   workspace: 'workspace',
   file: 'file',
   dlp_rule: 'dlpRule',
+  legal_hold: 'legalHold',
 };
 
 function actionColor(action: string): string {
-  if (/failed|delet|revoke|deactivat|force_logout/.test(action)) return 'bg-red-100 text-red-700';
+  if (/failed|delet|revoke|deactivat|force_logout|custodian_removed|hold\.released/.test(action)) return 'bg-red-100 text-red-700';
   if (/creat|reactivat|added|login$/.test(action)) return 'bg-green-100 text-green-700';
   if (/archiv|exported|ownership/.test(action)) return 'bg-amber-100 text-amber-700';
   return 'bg-blue-100 text-blue-700';
