@@ -565,6 +565,29 @@ describe('2단계 인증 API (E7b)', () => {
     expect(off.body.code).toBe('MFA_NOT_ENABLED');
   });
 
+  it('복구 코드 다시 만들기: 동시에 두 번 요청해도 유효한 코드는 10개뿐이다', async () => {
+    const email = 'regen-race-mfa@example.com';
+    const { id, token } = await register(email);
+    const { recoveryCodes, token: t1 } = await enroll(token);
+    const url = '/users/me/2fa/recovery-codes';
+    // 서로 다른 복구 코드로 재확인해 TOTP 재사용 거부에 걸리지 않게 한다
+    const [a, b] = await Promise.all([
+      request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: recoveryCodes[0] }),
+      request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: recoveryCodes[1] }),
+    ]);
+    expect([a.status, b.status]).toEqual([200, 200]);
+    secretsSeen.push(...a.body.recoveryCodes, ...b.body.recoveryCodes);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id } })).toBe(10);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(10);
+    // 나중에 끝난 쪽의 세트만 유효하다: 두 세트 중 정확히 하나로만 로그인된다
+    const statuses: number[] = [];
+    for (const set of [a.body.recoveryCodes, b.body.recoveryCodes] as string[][]) {
+      const s = await passwordStep(email);
+      statuses.push((await request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: set[0] })).status);
+    }
+    expect(statuses.sort()).toEqual([200, 401]);
+  });
+
   it('복구 코드 다시 만들기: 시도 제한은 다른 재확인과 공유한다 (잠금 429, 맞는 입력도 거부)', async () => {
     const { token } = await register('regen-lock-mfa@example.com');
     const { secret, token: t1 } = await enroll(token);

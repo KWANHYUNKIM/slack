@@ -482,6 +482,20 @@ describe('세션 관리 (E7)', () => {
       expect(again.connected).toBe(true);
     });
 
+    it('sid 없는 옛 토큰의 소켓도 비밀번호를 바꾸면 바로 끊긴다', async () => {
+      await request(app).post('/auth/register').send({ email: 'erin-sess@example.com', password: TEST_PASSWORD, name: 'Erin' }).expect(201);
+      const t = await login('erin-sess@example.com');
+      const user = await prisma.user.findUniqueOrThrow({ where: { email: 'erin-sess@example.com' } });
+      const legacy = jwt.sign({ userId: user.id, tokenVersion: user.tokenVersion }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '1h' });
+      const legacySocket = await connect(legacy);
+      const mine = await connect(t);
+      await request(app)
+        .post('/auth/change-password').set(auth(t))
+        .send({ currentPassword: TEST_PASSWORD, newPassword: `${TEST_PASSWORD}-New3!` }).expect(200);
+      await waitDisconnect(legacySocket);
+      expect(mine.connected).toBe(true);
+    });
+
     it('개인 액세스 토큰(MCP)은 세션 폐기와 무관하게 동작한다', async () => {
       const t = await login('alice-sess@example.com');
       const pat = await request(app).post('/tokens').set(auth(t)).send({ name: 'claude' }).expect(201);

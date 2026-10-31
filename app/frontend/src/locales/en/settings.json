@@ -185,15 +185,19 @@
       "confirmSaved": "I saved my recovery codes",
       "fileName": "recovery-codes.txt"
     },
+    "reauth": {
+      "passwordLabel": "Password",
+      "codeLabel": "Authentication or recovery code",
+      "cancel": "Cancel",
+      "passwordInvalid": "Enter a valid password.",
+      "codeInvalid": "Enter a valid authentication or recovery code."
+    },
     "regenerate": {
       "start": "Make new recovery codes",
       "title": "Make new recovery codes",
       "description": "Your old recovery codes stop working as soon as you make new ones. Enter your password and a code from your authenticator app (or a recovery code).",
-      "passwordLabel": "Password",
-      "codeLabel": "Authentication or recovery code",
       "submit": "Make new codes",
       "submitting": "Making...",
-      "cancel": "Cancel",
       "lowNotice": "{count, plural, one {Only # recovery code is left} other {Only # recovery codes are left}}. Make new ones before you run out.",
       "toast": "New recovery codes are ready"
     },
@@ -201,11 +205,8 @@
       "title": "Turn off two-factor authentication",
       "description": "Enter your password and a code from your authenticator app (or a recovery code).",
       "start": "Turn off",
-      "passwordLabel": "Password",
-      "codeLabel": "Authentication or recovery code",
       "submit": "Turn off two-factor authentication",
       "submitting": "Turning off...",
-      "cancel": "Cancel",
       "blockedByPolicy": "Your organization requires two-factor authentication, so you cannot turn it off. If you lost your device, ask an administrator to reset it."
     },
     "enabledToast": "Two-factor authentication is on",

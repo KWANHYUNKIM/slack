@@ -154,11 +154,13 @@ export async function enableMfa(userId: number, code: string, now = Date.now()):
 
 /**
  * 복구 코드를 새로 만든다(E7c). 기존 코드는 쓴 것과 안 쓴 것 모두 지우고 새 10개로 바꾼다. 원문은 여기서만 한 번 돌려준다.
- * 2FA가 켜져 있을 때만 바꾸고, 지우기와 만들기는 한 트랜잭션이라 중간에 코드가 0개인 상태가 보이지 않는다.
+ * 2FA가 켜져 있을 때만 바꾸고, 지우기와 만들기는 사용자 행을 잠근 한 트랜잭션이라 중간 상태가 보이지 않고 동시 요청도 하나씩 처리된다.
  */
 export async function regenerateRecoveryCodes(userId: number): Promise<string[] | null> {
   const codes = Array.from({ length: RECOVERY_CODE_COUNT }, generateRecoveryCode);
   const done = await prisma.$transaction(async (tx) => {
+    // 사용자 행을 잠가 동시 재발급을 줄 세운다(잠그지 않으면 둘 다 지우고 둘 다 넣어 유효 코드가 20개가 된다)
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
     const user = await tx.user.findUnique({ where: { id: userId }, select: { mfaEnabledAt: true } });
     if (!user?.mfaEnabledAt) return false;
     await tx.mfaRecoveryCode.deleteMany({ where: { userId } });

@@ -816,8 +816,8 @@ export function kickSession(userId: number, sid: string): void {
 }
 
 /**
- * 사용자의 소켓 중 keepSid 세션만 남기고 끊는다(2FA를 켜고 끌 때, E7b). 이 기기는 새 토큰으로 프런트가 다시 붙는다.
- * keepSid가 없으면(세션 도입 전 토큰) 지금 기기를 가려낼 수 없어 sid 있는 소켓만 끊는다. 나머지는 tokenVersion 재검증이 끊는다.
+ * 사용자의 소켓 중 keepSid 세션의 것만 남기고 모두 끊는다(비밀번호 변경, 2FA 켜기·끄기). 이 기기는 새 토큰으로 프런트가 다시 붙는다.
+ * sid 없는 소켓(세션 도입 전 토큰)도 끊는다. keepSid가 없으면 전부 끊는다.
  */
 export function kickUserExcept(userId: number, keepSid: string | undefined): void {
   const io = getIO();
@@ -826,11 +826,11 @@ export function kickUserExcept(userId: number, keepSid: string | undefined): voi
   if (!userSockets) return;
   for (const socketId of [...userSockets]) {
     const socket = io.sockets.sockets.get(socketId);
-    const sid = (socket as AuthenticatedSocket | undefined)?.user?.sid;
-    if (socket && sid !== keepSid && sid !== undefined) {
-      socket.emit('error', { message: 'Session revoked' });
-      socket.disconnect(true);
-    }
+    if (!socket) continue;
+    const sid = (socket as AuthenticatedSocket).user?.sid;
+    if (keepSid !== undefined && sid === keepSid) continue;
+    socket.emit('error', { message: 'Session revoked' });
+    socket.disconnect(true);
   }
 }
 

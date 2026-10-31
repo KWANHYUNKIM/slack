@@ -2,13 +2,12 @@ import { Router, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import prisma from '../db.js';
-import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
 import { writeAuditLog } from '../utils/auditLog.js';
-import { kickUserExcept } from '../websocket/index.js';
-import { revokeUserSessions, createSessionToken } from '../services/sessionService.js';
+import { rotateSessions } from '../services/sessionRotation.js';
 import {
   isMfaAvailable, getMfaStatus, startMfaSetup, enableMfa, clearMfa, verifySecondFactor, getRequireMfa,
   isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures, isMfaPolicyEnforced, regenerateRecoveryCodes,
@@ -21,27 +20,35 @@ router.use(authMiddleware);
 
 const TOO_MANY = { error: 'Too many failed attempts. Try again later.', code: ERR.AUTH_TOO_MANY_ATTEMPTS };
 const UNAVAILABLE = { error: 'Two-factor authentication is not available on this server', code: ERR.MFA_UNAVAILABLE };
-// 틀린 코드는 401이 아니라 400으로 답한다(로그인된 화면에서 401은 로그아웃으로 처리된다).
+// 틀린 코드는 401이 아니라 403으로 답한다(로그인된 화면에서 401은 로그아웃으로 처리된다).
 const INVALID_CODE = { error: 'Invalid authentication code', code: ERR.MFA_INVALID_CODE };
 
 const codeSchema = z.string().trim().min(1).max(32);
 
 /**
- * 2FA를 켜거나 끈 뒤: tokenVersion을 올려 sid 없는 옛 토큰까지 막고, 세션을 모두 폐기한 뒤 이 기기에만 새 세션 토큰을 준다.
- * 다른 기기의 소켓은 끊고, 이 기기의 소켓은 프런트가 새 토큰으로 다시 붙는다(끊으면 프런트가 로그아웃으로 처리한다).
+ * 비밀번호와 2단계 코드(TOTP 또는 복구 코드)를 다시 확인한다(끄기, 복구 코드 재발급).
+ * 틀린 입력은 모두 실패로 세고(다른 재확인과 같은 limiter), 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 헛되이 쓰지 않게).
+ * 성공하면 실패 횟수를 비운다. 실패면 보낼 응답을 돌려준다.
  */
-async function rotateSessions(req: AuthRequest, userId: number): Promise<{ token: string; revokedOthers: number }> {
-  const currentSid = req.user!.sid;
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: { tokenVersion: { increment: 1 } },
-    select: { id: true, tokenVersion: true },
-  });
-  const revoked = await revokeUserSessions(userId);
-  invalidateTokenCache(userId);
-  kickUserExcept(userId, currentSid);
-  const { token } = await createSessionToken(updated, req);
-  return { token, revokedOthers: revoked.filter((sid) => sid !== currentSid).length };
+async function reauthenticate(
+  userId: number,
+  passwordHash: string,
+  password: string,
+  code: string,
+): Promise<{ ok: true; method: 'totp' | 'recovery' } | { ok: false; status: number; body: { error: string; code: string } }> {
+  if (!(await bcrypt.compare(password, passwordHash))) {
+    recordMfaVerifyFailure(userId);
+    return { ok: false, status: 403, body: { error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT } };
+  }
+  const result = await verifySecondFactor(userId, code);
+  if (!result.ok) {
+    // 키가 없어 TOTP를 확인할 수 없는 것은 사용자의 실패로 세지 않는다
+    if (result.reason === 'unavailable') return { ok: false, status: 503, body: UNAVAILABLE };
+    recordMfaVerifyFailure(userId);
+    return { ok: false, status: 403, body: INVALID_CODE };
+  }
+  clearMfaVerifyFailures(userId);
+  return { ok: true, method: result.method };
 }
 
 // GET /users/me/2fa - 내 2FA 상태. available은 서버에 암호화 키가 있는지, required는 조직 정책이다.
@@ -123,7 +130,7 @@ router.post('/enable', async (req: AuthRequest, res: Response) => {
       }
     }
     clearMfaVerifyFailures(userId);
-    const { token, revokedOthers } = await rotateSessions(req, userId);
+    const { token, revokedOthers } = await rotateSessions(req, userId, req.user!.sid);
     await writeAuditLog({ action: 'mfa.enabled', actorId: userId, targetType: 'user', targetId: userId, details: `revokedSessions=${revokedOthers}` });
     res.setHeader('Cache-Control', 'no-store');
     res.json({ enabled: true, recoveryCodes: result.recoveryCodes, revokedSessions: revokedOthers, token });
@@ -156,29 +163,17 @@ router.post('/disable', async (req: AuthRequest, res: Response) => {
       res.status(403).json({ error: 'Two-factor authentication is required by your organization', code: ERR.MFA_REQUIRED_BY_POLICY });
       return;
     }
-    // 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 헛되이 쓰지 않게)
-    if (!(await bcrypt.compare(password, user.password))) {
-      recordMfaVerifyFailure(userId);
-      res.status(403).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
+    const re = await reauthenticate(userId, user.password, password, code);
+    if (!re.ok) {
+      res.status(re.status).json(re.body);
       return;
     }
-    const result = await verifySecondFactor(userId, code);
-    if (!result.ok) {
-      // 키가 없어 TOTP를 확인할 수 없는 것은 사용자의 실패로 세지 않는다
-      if (result.reason === 'unavailable') {
-        res.status(503).json(UNAVAILABLE);
-        return;
-      }
-      recordMfaVerifyFailure(userId);
-      res.status(403).json(INVALID_CODE);
-      return;
-    }
-    clearMfaVerifyFailures(userId);
+
     await clearMfa(userId);
-    const { token, revokedOthers } = await rotateSessions(req, userId);
+    const { token, revokedOthers } = await rotateSessions(req, userId, req.user!.sid);
     await writeAuditLog({
       action: 'mfa.disabled', actorId: userId, targetType: 'user', targetId: userId,
-      details: `method=${result.method}; revokedSessions=${revokedOthers}`,
+      details: `method=${re.method}; revokedSessions=${revokedOthers}`,
     });
     res.setHeader('Cache-Control', 'no-store');
     res.json({ enabled: false, revokedSessions: revokedOthers, token });
@@ -207,30 +202,19 @@ router.post('/recovery-codes', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
       return;
     }
-    // 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 헛되이 쓰지 않게)
-    if (!(await bcrypt.compare(password, user.password))) {
-      recordMfaVerifyFailure(userId);
-      res.status(403).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
+    const re = await reauthenticate(userId, user.password, password, code);
+    if (!re.ok) {
+      res.status(re.status).json(re.body);
       return;
     }
-    const result = await verifySecondFactor(userId, code);
-    if (!result.ok) {
-      if (result.reason === 'unavailable') {
-        res.status(503).json(UNAVAILABLE);
-        return;
-      }
-      recordMfaVerifyFailure(userId);
-      res.status(403).json(INVALID_CODE);
-      return;
-    }
-    clearMfaVerifyFailures(userId);
+
     const recoveryCodes = await regenerateRecoveryCodes(userId);
     if (!recoveryCodes) {
       res.status(400).json({ error: 'Two-factor authentication is not enabled', code: ERR.MFA_NOT_ENABLED });
       return;
     }
     // 코드 원문은 감사 로그에 남기지 않는다
-    await writeAuditLog({ action: 'mfa.recovery_regenerated', actorId: userId, targetType: 'user', targetId: userId, details: `method=${result.method}` });
+    await writeAuditLog({ action: 'mfa.recovery_regenerated', actorId: userId, targetType: 'user', targetId: userId, details: `method=${re.method}` });
     res.setHeader('Cache-Control', 'no-store');
     res.json({ recoveryCodes, recoveryCodesRemaining: recoveryCodes.length });
   } catch (error) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { changePasswordInputErrorKey, changePasswordFieldErrorKey, registerInputErrorKey } from '../src/lib/authErrors.ts';
+import { changePasswordInputErrorKey, changePasswordFieldErrorKey, registerInputErrorKey, reauthFieldErrorKey } from '../src/lib/authErrors.ts';
 
 test('change password: current password is required', () => {
   assert.equal(changePasswordInputErrorKey('', 'newpass1', 'newpass1'), 'settings:changePassword.errors.currentRequired');
@@ -27,4 +27,11 @@ test('server field errors map to translation keys', () => {
   assert.equal(changePasswordFieldErrorKey([{ path: 'currentPassword', reason: 'too_small' }]), 'settings:changePassword.errors.currentRequired');
   assert.equal(changePasswordFieldErrorKey([{ path: 'other', reason: 'x' }]), null);
   assert.equal(changePasswordFieldErrorKey(undefined), null);
+});
+
+test("reauth form: server field errors map to specific keys", () => {
+  assert.equal(reauthFieldErrorKey([{ path: "password", reason: "too_big" }]), "settings:twoFactor.reauth.passwordInvalid");
+  assert.equal(reauthFieldErrorKey([{ path: "code", reason: "too_small" }]), "settings:twoFactor.reauth.codeInvalid");
+  assert.equal(reauthFieldErrorKey([{ path: "x", reason: "y" }]), null);
+  assert.equal(reauthFieldErrorKey(undefined), null);
 });

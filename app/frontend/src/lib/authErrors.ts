@@ -70,3 +70,12 @@ export function changePasswordFieldErrorKey(fields: FieldError[] | undefined): s
   }
   return null;
 }
+
+/** 비밀번호 + 2단계 코드 재확인(2FA 끄기, 복구 코드 다시 만들기)에서 VALIDATION_FAILED fields로 구체 문구 키를 고른다. 알 수 없으면 null. */
+export function reauthFieldErrorKey(fields: FieldError[] | undefined): string | null {
+  for (const f of fields ?? []) {
+    if (f.path === 'password') return 'settings:twoFactor.reauth.passwordInvalid';
+    if (f.path === 'code') return 'settings:twoFactor.reauth.codeInvalid';
+  }
+  return null;
+}
