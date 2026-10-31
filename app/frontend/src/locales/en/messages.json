@@ -38,7 +38,9 @@
     "loadFailed": "Failed to load files.",
     "empty": "No files uploaded yet",
     "download": "Download",
-    "menu": "Menu"
+    "menu": "Menu",
+    "unavailable": "File unavailable",
+    "preparing": "Preparing file"
   },
   "format": {
     "bold": "Bold",

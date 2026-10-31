@@ -95,6 +95,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       // Discard stale response if the user already switched to another channel
       if (get().loadedChannelId !== channelId) return;
       const messages = data.messages.map(transformApiMessage);
+      // 첨부 파일 토큰을 그리기 전에 한 번에 받아 둔다
+      api.prefetchFileTokens(messages.flatMap((m) => m.files.map((f) => f.id)));
       // API returns desc order (or chronological for around), reverse if not around
       if (!around) messages.reverse();
       set({ messages, isLoading: false, loadedChannelId: channelId });

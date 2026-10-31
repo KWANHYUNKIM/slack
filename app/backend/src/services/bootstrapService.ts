@@ -2,14 +2,19 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import prisma from '../db.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
+import { joinDefaultChannels } from './defaultChannelService.js';
 
 // 빈 DB에 첫 OWNER를 만드는 경로. 가입은 초대 코드가 필요하고 초대는 기존 사용자가 만들어야 하므로,
 // 운영 이미지에서는 이 서비스(scripts/create-owner.ts)로만 첫 계정을 만든다.
 
-export const bootstrapOwnerSchema = z.object({
+// CLI가 비밀번호를 묻기 전에 이메일과 이름을 먼저 검증할 수 있게 나눠 둔다.
+export const bootstrapIdentitySchema = z.object({
   email: emailSchema,
-  password: newPasswordSchema,
   name: displayNameSchema,
+});
+
+export const bootstrapOwnerSchema = bootstrapIdentitySchema.extend({
+  password: newPasswordSchema,
 });
 
 export type BootstrapOwnerInput = z.input<typeof bootstrapOwnerSchema>;
@@ -20,8 +25,6 @@ export class BootstrapRejectedError extends Error {
     this.name = 'BootstrapRejectedError';
   }
 }
-
-const DEFAULT_CHANNELS = ['general', 'random'];
 
 export async function createInitialOwner(input: BootstrapOwnerInput) {
   const { email, password, name } = bootstrapOwnerSchema.parse(input);
@@ -44,17 +47,8 @@ export async function createInitialOwner(input: BootstrapOwnerInput) {
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
 
-    // 가입과 같이 기본 채널에 넣어 둔다. 첫 OWNER는 워크스페이스를 바로 쓸 수 있어야 한다.
-    for (const channelName of DEFAULT_CHANNELS) {
-      const channel = await tx.channel.upsert({
-        where: { name: channelName },
-        update: {},
-        create: { name: channelName, isPrivate: false, createdBy: owner.id },
-      });
-      await tx.channelMember.create({
-        data: { userId: owner.id, channelId: channel.id },
-      });
-    }
+    // 가입과 같은 규칙으로 기본 채널에 넣는다. 첫 OWNER는 워크스페이스를 바로 쓸 수 있어야 한다.
+    await joinDefaultChannels(tx, owner.id);
 
     // 감사 로그는 같은 트랜잭션에 넣는다. 기록 없이 OWNER만 생기는 일이 없게 한다(이메일·비밀번호는 남기지 않는다).
     await tx.auditLog.create({

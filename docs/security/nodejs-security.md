@@ -48,6 +48,8 @@
 - MIME은 `file-type`으로 실제 내용을 보고 판정한다. 다운로드 응답에 `Content-Disposition: attachment`와 `X-Content-Type-Options: nosniff`를 붙인다.
 - `sharp`에 `limitInputPixels`를 걸고, multer `limits.fileSize`를 둔다(`MAX_FILE_SIZE_MB`).
 - 파일을 서빙하는 경로는 `path.resolve` 후 업로드 루트 안에 있는지 확인한다.
+- 다운로드 토큰(`<img>`, `<a>`처럼 헤더를 못 붙이는 경로용): 파일 하나에 묶인(`fileId`) `purpose=file-download` JWT, 수명 5분. 범위 없는 토큰은 거부한다. 서버는 `tokenVersion`과 비활성 여부도 다시 확인한다. 클라이언트는 발급 3분 30초 뒤에 갱신하고 토큰이 없으면 URL을 만들지 않는다. 응답은 `Referrer-Policy: no-referrer`다. 요청 로거나 프록시를 추가하면 `token` 쿼리를 마스킹한다.
+- 파일 캐시: 응답에 `ETag`(id·크기·생성 시각)와 `Cache-Control: private, no-cache`를 붙이고, 토큰·권한 검증을 마친 뒤에만 `If-None-Match`에 304를 준다. 채널을 나간 사용자는 같은 토큰·ETag여도 404다. 토큰이 URL에 있어 갱신하면 브라우저 캐시 키가 바뀌므로 효과는 같은 토큰 수명(약 3분 30초) 안의 재요청에 한정된다. 이를 늘리려고 토큰 수명이나 `max-age`를 키우지 않는다(접근 취소가 늦어진다).
 
 ## 7. 서비스 거부와 SSRF
 - Express body 제한(`100kb`)을 유지한다. 소켓 payload에도 `maxHttpBufferSize`를 둔다.

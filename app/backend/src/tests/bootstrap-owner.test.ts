@@ -1,12 +1,16 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import { spawn } from 'child_process';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { PassThrough, Readable } from 'stream';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
 import { BootstrapRejectedError, createInitialOwner } from '../services/bootstrapService.js';
 import {
-  EXIT_INVALID, EXIT_OK, EXIT_REJECTED, runCreateOwner,
-} from '../scripts/create-owner.js';
+  CliIo, EXIT_INTERRUPTED, EXIT_INVALID, EXIT_OK, EXIT_REJECTED, runCreateOwner,
+} from '../scripts/createOwnerCli.js';
 
 const OWNER_EMAIL = 'bootstrap-owner@example.com';
 
@@ -19,23 +23,56 @@ async function resetDb() {
   await prisma.user.deleteMany();
 }
 
-// CLI를 프로세스 없이 돌린다. stdin은 파이프(TTY 아님)로 비밀번호 한 줄을 넘긴다.
-async function runCli(args: string[], opts: { stdin?: string; env?: NodeJS.ProcessEnv } = {}) {
+// CLI를 프로세스 없이 돌린다. 기본 stdin은 파이프(TTY 아님)로 비밀번호 한 줄을 넘기고 닫힌다.
+async function runCli(
+  args: string[],
+  opts: {
+    stdin?: string;
+    stdinStream?: CliIo['stdin'];
+    env?: NodeJS.ProcessEnv;
+    stdinTimeoutMs?: number;
+    onStdout?: (text: string) => void;
+  } = {},
+) {
   const stdout = new PassThrough();
   const stderr = new PassThrough();
   let out = '';
   let err = '';
-  stdout.on('data', (c) => { out += c.toString(); });
+  stdout.on('data', (c) => { out += c.toString(); opts.onStdout?.(c.toString()); });
   stderr.on('data', (c) => { err += c.toString(); });
   const code = await runCreateOwner({
     argv: args,
     env: opts.env ?? {},
-    stdin: Readable.from(opts.stdin !== undefined ? [opts.stdin] : []),
+    stdin: opts.stdinStream ?? Readable.from(opts.stdin !== undefined ? [opts.stdin] : []),
     stdout,
     stderr,
+    stdinTimeoutMs: opts.stdinTimeoutMs,
   });
   return { code, out, err };
 }
+
+// 읽히면 표시가 남는 stdin. "비밀번호를 묻기 전에 실패했는지"를 확인하는 데 쓴다.
+function untouchedStdin(isTTY: boolean) {
+  const state = { read: false };
+  const stream = new Readable({ read() { state.read = true; } }) as Readable & { isTTY?: boolean };
+  stream.isTTY = isTTY;
+  return { stream, state };
+}
+
+// 터미널처럼 보이는 stdin. 프롬프트가 뜰 때마다 keys에서 하나씩 입력한다.
+function fakeTty(keys: string[]) {
+  const stream = new PassThrough() as PassThrough & { isTTY?: boolean };
+  stream.isTTY = true;
+  const onStdout = (text: string) => {
+    if (/password: $/i.test(text) && keys.length > 0) {
+      const next = keys.shift()!;
+      setImmediate(() => stream.write(next));
+    }
+  };
+  return { stream, onStdout };
+}
+
+const IDENTITY = ['--email', OWNER_EMAIL, '--name', 'Owner'];
 
 function login(email: string, password: string) {
   return request(app).post('/auth/login').send({ email, password });
@@ -239,5 +276,155 @@ describe('Bootstrap first OWNER (scripts/create-owner)', () => {
     expect(afterDelete.status).toBe(400);
 
     expect(await prisma.user.count({ where: { role: 'OWNER' } })).toBe(1);
+  });
+
+  describe('password input', () => {
+    it('times out (exit 2) when stdin stays open without input', async () => {
+      const stdin = new PassThrough() as PassThrough & { isTTY?: boolean };
+      const started = Date.now();
+      const res = await runCli(IDENTITY, { stdinStream: stdin, stdinTimeoutMs: 300 });
+      expect(res.code).toBe(EXIT_INVALID);
+      expect(res.err).toMatch(/Timed out waiting for the password/);
+      expect(Date.now() - started).toBeLessThan(5000);
+      expect(await prisma.user.count()).toBe(0);
+    });
+
+    it('prefers stdin over BOOTSTRAP_OWNER_PASSWORD and warns that env was ignored', async () => {
+      const envPassword = `${TEST_PASSWORD}-env`;
+      const res = await runCli(IDENTITY, {
+        stdin: `${TEST_PASSWORD}\n`,
+        env: { BOOTSTRAP_OWNER_PASSWORD: envPassword },
+      });
+      expect(res.code).toBe(EXIT_OK);
+      expect(res.err).toMatch(/BOOTSTRAP_OWNER_PASSWORD is set but ignored; using the password from stdin/);
+      expect(res.out + res.err).not.toContain(TEST_PASSWORD);
+
+      expect((await login(OWNER_EMAIL, TEST_PASSWORD)).status).toBe(200);
+      expect((await login(OWNER_EMAIL, envPassword)).status).toBe(401);
+    });
+
+    it('fails with exit 2 when there is no password anywhere', async () => {
+      const res = await runCli(IDENTITY, { stdin: undefined });
+      expect(res.code).toBe(EXIT_INVALID);
+      expect(res.err).toMatch(/No password given/);
+      expect(await prisma.user.count()).toBe(0);
+    });
+
+    it('rejects an invalid email or name before asking for a password', async () => {
+      const piped = untouchedStdin(false);
+      const badEmail = await runCli(['--email', 'not-an-email', '--name', 'Owner'], { stdinStream: piped.stream });
+      expect(badEmail.code).toBe(EXIT_INVALID);
+      expect(badEmail.err).toMatch(/Invalid email/);
+      expect(piped.state.read).toBe(false);
+
+      const tty = untouchedStdin(true);
+      const badName = await runCli(['--email', OWNER_EMAIL, '--name', 'x'.repeat(101)], { stdinStream: tty.stream });
+      expect(badName.code).toBe(EXIT_INVALID);
+      expect(badName.err).toMatch(/Invalid name/);
+      expect(badName.out).not.toMatch(/Password:/);
+      expect(tty.state.read).toBe(false);
+    });
+
+    it('reads the password from a hidden TTY prompt with confirmation', async () => {
+      const tty = fakeTty([`${TEST_PASSWORD}\r`, `${TEST_PASSWORD}\r`]);
+      const res = await runCli(IDENTITY, { stdinStream: tty.stream, onStdout: tty.onStdout });
+      expect(res.code).toBe(EXIT_OK);
+      // 입력한 글자가 화면에 되울리지 않는다
+      expect(res.out).not.toContain(TEST_PASSWORD);
+      expect((await login(OWNER_EMAIL, TEST_PASSWORD)).status).toBe(200);
+    });
+
+    it('rejects mismatched TTY confirmation', async () => {
+      const tty = fakeTty([`${TEST_PASSWORD}\r`, `${TEST_PASSWORD}x\r`]);
+      const res = await runCli(IDENTITY, { stdinStream: tty.stream, onStdout: tty.onStdout });
+      expect(res.code).toBe(EXIT_INVALID);
+      expect(res.err).toMatch(/Passwords do not match/);
+      expect(await prisma.user.count()).toBe(0);
+    });
+
+    it('exits 130 on Ctrl+C at the TTY prompt without creating anyone', async () => {
+      const tty = fakeTty(['\x03']);
+      const res = await runCli(IDENTITY, { stdinStream: tty.stream, onStdout: tty.onStdout });
+      expect(res.code).toBe(EXIT_INTERRUPTED);
+      expect(res.err).toMatch(/Aborted/);
+      expect(await prisma.user.count()).toBe(0);
+    });
+  });
+
+  describe('default channels', () => {
+    it('does not join an archived general or a private random; creates nothing in their place', async () => {
+      const general = await prisma.channel.create({ data: { name: 'general', archivedAt: new Date() } });
+      const random = await prisma.channel.create({ data: { name: 'random', isPrivate: true } });
+
+      const owner = await createInitialOwner({ email: OWNER_EMAIL, name: 'Owner', password: TEST_PASSWORD });
+      expect(await prisma.channelMember.count({ where: { userId: owner.id } })).toBe(0);
+      expect(await prisma.channel.count()).toBe(2);
+      expect((await prisma.channel.findUnique({ where: { id: general.id } }))?.archivedAt).not.toBeNull();
+      expect((await prisma.channel.findUnique({ where: { id: random.id } }))?.isPrivate).toBe(true);
+    });
+
+    it('joins an existing public general and creates a missing random (bootstrap)', async () => {
+      const general = await prisma.channel.create({ data: { name: 'general' } });
+      const owner = await createInitialOwner({ email: OWNER_EMAIL, name: 'Owner', password: TEST_PASSWORD });
+
+      const memberships = await prisma.channelMember.findMany({
+        where: { userId: owner.id },
+        include: { channel: { select: { id: true, name: true, isPrivate: true, createdBy: true } } },
+      });
+      expect(memberships.map((m) => m.channel.name).sort()).toEqual(['general', 'random']);
+      expect(memberships.find((m) => m.channel.name === 'general')!.channel.id).toBe(general.id);
+      const random = memberships.find((m) => m.channel.name === 'random')!.channel;
+      expect(random.isPrivate).toBe(false);
+      expect(random.createdBy).toBeNull();
+    });
+
+    it('registration uses the same rule: skips an archived general', async () => {
+      await prisma.channel.create({ data: { name: 'general', archivedAt: new Date() } });
+      const reg = await request(app).post('/auth/register').send({
+        email: 'member@example.com', password: TEST_PASSWORD, name: 'Member',
+      });
+      expect(reg.status).toBe(201);
+      const memberships = await prisma.channelMember.findMany({
+        where: { userId: reg.body.user.id },
+        include: { channel: { select: { name: true } } },
+      });
+      expect(memberships.map((m) => m.channel.name)).toEqual(['random']);
+    });
+  });
+
+  // 실제 프로세스로 진입 파일을 symlink 경로에서 실행한다(메인 모듈 판정이 symlink에서 조용히 건너뛰지 않는지).
+  it('runs through a symlinked entry file as a real process', async () => {
+    const entry = path.join(process.cwd(), 'src', 'scripts', 'create-owner.ts');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'create-owner-'));
+    const link = path.join(dir, 'create-owner-link.ts');
+    fs.symlinkSync(entry, link);
+    try {
+      const run = (args: string[], input: string) => new Promise<{ code: number | null; out: string; err: string }>((resolve) => {
+        const child = spawn(process.execPath, ['--import', 'tsx', link, ...args], {
+          cwd: process.cwd(),
+          env: { ...process.env, NODE_OPTIONS: '' },
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
+        let out = '';
+        let err = '';
+        child.stdout.on('data', (c) => { out += c.toString(); });
+        child.stderr.on('data', (c) => { err += c.toString(); });
+        child.on('close', (code) => resolve({ code, out, err }));
+        child.stdin.end(input);
+      });
+
+      const first = await run(IDENTITY, `${TEST_PASSWORD}\n`);
+      expect(first.err).toBe('');
+      expect(first.code).toBe(EXIT_OK);
+      // dotenv 안내 같은 다른 출력이 섞이지 않는다
+      expect(first.out).toMatch(/^Created OWNER account \(id=\d+\)\. Sign in with the email you provided\.\n$/);
+      expect((await login(OWNER_EMAIL, TEST_PASSWORD)).status).toBe(200);
+
+      const second = await run(['--email', 'late@example.com', '--name', 'Late'], `${TEST_PASSWORD}\n`);
+      expect(second.code).toBe(EXIT_REJECTED);
+      expect(second.out).toBe('');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

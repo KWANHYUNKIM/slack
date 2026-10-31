@@ -124,6 +124,61 @@ export async function verifyFileAccess(
 }
 
 /**
+ * verifyFileAccess와 같은 규칙을 여러 파일에 한 번에 적용한다(파일·메시지·멤버십을 묶어서 조회).
+ * 접근할 수 있는 파일 id 집합을 돌려준다. 규칙을 바꾸면 두 함수를 같이 고치고 테스트로 비교한다.
+ */
+export async function verifyFilesAccess(userId: number, fileIds: number[]): Promise<Set<number>> {
+  const allowed = new Set<number>();
+  const ids = [...new Set(fileIds)];
+  if (ids.length === 0) return allowed;
+
+  const files = await prisma.file.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, userId: true, messageId: true, dmId: true },
+  });
+
+  const messageIds = files.flatMap((f) => (f.messageId ? [f.messageId] : []));
+  const dmIds = files.flatMap((f) => (!f.messageId && f.dmId ? [f.dmId] : []));
+
+  const messages = messageIds.length
+    ? await prisma.message.findMany({ where: { id: { in: messageIds }, deletedAt: null }, select: { id: true, channelId: true } })
+    : [];
+  const channelIds = [...new Set(messages.map((m) => m.channelId))];
+  const memberships = channelIds.length
+    ? await prisma.channelMember.findMany({ where: { userId, channelId: { in: channelIds } }, select: { channelId: true } })
+    : [];
+  const memberChannels = new Set(memberships.map((m) => m.channelId));
+  const accessibleMessages = new Set(messages.filter((m) => memberChannels.has(m.channelId)).map((m) => m.id));
+
+  const dms = dmIds.length
+    ? await prisma.directMessage.findMany({ where: { id: { in: dmIds }, deletedAt: null } })
+    : [];
+  const accessibleDms = new Set<number>();
+  const groupCache = new Map<number, boolean>();
+  for (const dm of dms) {
+    let ok: boolean;
+    if (dm.groupId !== null) {
+      if (!groupCache.has(dm.groupId)) groupCache.set(dm.groupId, await canAccessDm(dm, userId));
+      ok = groupCache.get(dm.groupId)!;
+    } else {
+      ok = await canAccessDm(dm, userId);
+    }
+    if (ok) accessibleDms.add(dm.id);
+  }
+
+  for (const f of files) {
+    if (f.messageId) {
+      if (accessibleMessages.has(f.messageId)) allowed.add(f.id);
+    } else if (f.dmId) {
+      if (accessibleDms.has(f.dmId)) allowed.add(f.id);
+    } else if (f.userId === userId) {
+      allowed.add(f.id);
+    }
+  }
+  return allowed;
+}
+
+/**
  * Express middleware that requires the authenticated user to have access
  * to the file specified by req.params.id. Attaches req.file on success.
  * Returns 404 for all unauthorized/missing files to prevent enumeration.

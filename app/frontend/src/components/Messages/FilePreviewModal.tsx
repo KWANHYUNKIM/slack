@@ -1,9 +1,10 @@
 import { t as translate } from '@/lib/i18n';
+import { useFileUrl } from '@/hooks/useFileTokens';
+import { AuthFileLink } from './AuthFile';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatFileSize } from '@/lib/i18n/format';
 import { X, Download, FileText } from 'lucide-react';
-import { getFileUrl, getAuthFileUrl } from '@/lib/api';
 
 interface FilePreviewModalProps {
   fileId: number;
@@ -43,8 +44,10 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
   const [loading, setLoading] = useState(isText);
   const [error, setError] = useState<string | null>(null);
 
-  const fileUrl = getFileUrl(fileId);
-  const downloadUrl = getAuthFileUrl(`/files/${fileId}/download`, { download: true });
+  // 토큰이 갱신돼도 PDF 프레임과 텍스트 본문을 다시 불러오지 않도록 처음 받은 URL을 고정한다
+  const { url: liveUrl } = useFileUrl(fileId);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  if (liveUrl && !fileUrl) setFileUrl(liveUrl);
   const isPdfFile = isPdf(mimetype);
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
   }, [onClose]);
 
   useEffect(() => {
-    if (!isText) return;
+    if (!isText || !fileUrl) return;
     fetch(fileUrl)
       .then((res) => {
         if (!res.ok) throw new Error('load failed');
@@ -90,15 +93,16 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
             <span className="text-[12px] text-slack-disabled flex-shrink-0">{formatFileSize(fileSize)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href={downloadUrl}
+            <AuthFileLink
+              fileId={fileId}
+              forceDownload
               download={fileName.replace(/[/\\:\0]/g, '_')}
               rel="noopener"
               className="flex items-center gap-1 rounded px-2 py-1 text-[13px] text-slack-secondary hover:bg-slack-hover"
             >
               <Download className="h-4 w-4" />
               {t('messages:fileModal.download')}
-            </a>
+            </AuthFileLink>
             <button
               onClick={onClose}
               className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-hover text-slack-secondary"
@@ -113,7 +117,7 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
         <div className="flex-1 overflow-auto min-h-[200px]">
           {isPdfFile && (
             <iframe
-              src={fileUrl}
+              src={fileUrl ?? undefined}
               className="w-full h-[80vh] border-0"
               title={fileName}
             />

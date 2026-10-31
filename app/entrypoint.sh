@@ -1,45 +1,35 @@
 #!/bin/sh
+# DATABASE_URL을 준비하고 마이그레이션을 적용한 뒤 서버를 시작한다.
+# - DATABASE_URL이 없으면 PGHOST, PGUSER, PGPASSWORD, PGDATABASE(, PGPORT)로 조합한다(특수문자는 인코딩).
+# - DB 연결 실패(P1001 등)만 재시도하고, 마이그레이션 오류는 즉시 상태를 출력하고 종료한다.
 set -e
 
-if [ -n "$K_SERVICE" ]; then
-  # Cloud Run: wait for Cloud SQL proxy socket
-  SOCKET_DIR=$(echo "$DATABASE_URL" | sed 's/.*host=\(\/cloudsql\/[^&]*\).*/\1/')
-  echo "Waiting for Cloud SQL proxy at ${SOCKET_DIR}..."
-  for i in $(seq 1 30); do
-    if [ -S "${SOCKET_DIR}/.s.PGSQL.5432" ]; then
-      echo "Cloud SQL proxy is ready."
-      break
-    fi
-    sleep 1
-  done
-else
-  # Docker Compose: wait for Postgres via TCP
-  echo "Waiting for database to be ready..."
-  i=0
-  until pg_isready -h db -p 5432 -U postgres > /dev/null 2>&1; do
-    i=$((i + 1))
-    if [ "$i" -ge 30 ]; then
-      echo "Database did not become ready in time. Exiting."
-      exit 1
-    fi
-    echo "Database not ready, retrying in 2s... ($i/30)"
-    sleep 2
-  done
-  echo "Database is ready."
-fi
-
-echo "Running database migrations..."
-timeout 60 npx prisma migrate deploy || {
-  echo "Migration failed or timed out, checking status..."
-  npx prisma migrate status
+if ! DATABASE_URL=$(node dist/ops/cli.js database-url); then
   exit 1
-}
-
-if [ "$RUN_SEED" = "true" ]; then
-  echo "Seeding database..."
-  npx tsx prisma/seed.ts
 fi
+export DATABASE_URL
+
+MIGRATE_LOG=$(mktemp)
+echo "Running database migrations..."
+i=0
+while true; do
+  if timeout 60 npx prisma migrate deploy > "$MIGRATE_LOG" 2>&1; then
+    cat "$MIGRATE_LOG"
+    break
+  fi
+  cat "$MIGRATE_LOG"
+  outcome=$(node dist/ops/cli.js classify-migrate < "$MIGRATE_LOG" || echo fatal)
+  i=$((i + 1))
+  if [ "$outcome" != "retry" ] || [ "$i" -ge 15 ]; then
+    echo "Migration failed ($outcome, attempt $i). Migration status:"
+    npx prisma migrate status || true
+    rm -f "$MIGRATE_LOG"
+    exit 1
+  fi
+  echo "Database not reachable yet, retrying in 3s... ($i/15)"
+  sleep 3
+done
+rm -f "$MIGRATE_LOG"
 
 echo "Starting server..."
-mkdir -p /app/uploads/avatars /app/uploads/files
 exec node dist/index.js

@@ -38,7 +38,9 @@
     "loadFailed": "파일을 불러오지 못했습니다.",
     "empty": "업로드된 파일이 없습니다",
     "download": "다운로드",
-    "menu": "메뉴"
+    "menu": "메뉴",
+    "unavailable": "접근할 수 없는 파일입니다",
+    "preparing": "파일을 준비하는 중"
   },
   "format": {
     "bold": "굵게",
