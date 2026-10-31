@@ -11,6 +11,7 @@ import { getAuditRetentionDays } from './config.js';
 import { purgeOldAuditLogs } from './utils/auditLog.js';
 import { purgeSessions } from './services/sessionService.js';
 import { purgeMfaChallenges } from './services/mfaService.js';
+import { purgeOAuth } from './services/oauthService.js';
 import { purgeExpiredMessages, type PurgeCounts } from './services/retentionService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
@@ -232,12 +233,23 @@ export async function purgeMfaChallengesIfDue(now: number = Date.now()): Promise
   return purgeMfaChallenges(new Date(now));
 }
 
+const OAUTH_PURGE_INTERVAL_MS = 60 * 60 * 1000;
+let nextOAuthPurgeAt = 0;
+
+/** 틱마다 불러도 1시간에 한 번만 OAuth 정리(mcp-4)를 한다: 수명이 지난 토큰 행, 오래된 코드, 토큰을 한 번도 받지 않은 30일 지난 등록. */
+export async function purgeOAuthIfDue(now: number = Date.now()): Promise<{ tokens: number; codes: number; clients: number } | null> {
+  if (now < nextOAuthPurgeAt) return null;
+  nextOAuthPurgeAt = now + OAUTH_PURGE_INTERVAL_MS;
+  return purgeOAuth(new Date(now));
+}
+
 export function startScheduler(): NodeJS.Timeout {
   console.log('Scheduler started — checking every 30s for due messages');
 
   const handle = setInterval(() => {
     void purgeSessionsIfDue().catch((err) => logError('Scheduler: purgeSessions failed', err));
     void purgeMfaChallengesIfDue().catch((err) => logError('Scheduler: purgeMfaChallenges failed', err));
+    void purgeOAuthIfDue().catch((err) => logError('Scheduler: purgeOAuth failed', err));
     void purgeAuditLogsIfDue().catch((err) => logError('Scheduler: purgeAuditLogs failed', err));
     void purgeRetentionIfDue().catch((err) => logError('Scheduler: purgeRetention failed', err));
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.

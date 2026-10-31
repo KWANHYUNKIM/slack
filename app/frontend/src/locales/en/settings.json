@@ -240,6 +240,7 @@
     "errors": {
       "loadFailed": "Failed to load connected apps.",
       "disconnectFailed": "Failed to disconnect the app."
-    }
+    },
+    "unnamedApp": "Unnamed app"
   }
 }

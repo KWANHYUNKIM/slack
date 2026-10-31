@@ -75,7 +75,7 @@ export function OAuthConsentPage() {
         ) : (
           <>
             <h1 className="text-xl font-bold text-slack-primary">
-              {t('oauthConsent.title', { name: details.client.name })}
+              {t('oauthConsent.title', { name: details.client.name || t('oauthConsent.unnamedApp') })}
             </h1>
             {user && <p className="mt-1 text-sm text-slack-secondary">{t('oauthConsent.signedInAs', { name: user.name })}</p>}
 

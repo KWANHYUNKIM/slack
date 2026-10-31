@@ -3,6 +3,7 @@ import type { Request } from 'express';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { shouldWriteLastUsed } from '../utils/lastUsed.js';
 import { ALLOWED_SCOPES, READ_SCOPES, hashSecret } from './accessTokenService.js';
 import { isMfaPolicyEnforced } from './mfaService.js';
 
@@ -26,8 +27,9 @@ export const CODE_TTL_MS = 10 * 60 * 1000;
 const CLIENT_NAME_MAX = 100;
 const REDIRECT_URI_MAX = 2000;
 const MAX_REDIRECT_URIS = 10;
-// lastUsedAt 쓰기는 PAT와 같이 1분 간격으로만 한다
-const LAST_USED_WRITE_INTERVAL_MS = 60_000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// 토큰을 한 번도 받지 않은 등록은 이 기간이 지나면 정리한다
+const UNUSED_CLIENT_TTL_MS = 30 * DAY_MS;
 
 export const AUTH_METHODS = ['none', 'client_secret_basic', 'client_secret_post'] as const;
 export type AuthMethod = (typeof AUTH_METHODS)[number];
@@ -129,7 +131,11 @@ export async function setAllowOAuthApps(allow: boolean): Promise<number> {
   });
   policyCache = null;
   if (allow) return 0;
-  const { count } = await prisma.oAuthToken.updateMany({ where: { revokedAt: null }, data: { revokedAt: new Date() } });
+  // 아직 교환하지 않은 인가 코드도 지운다(끈 뒤에 토큰으로 바꾸지 못하게)
+  const [{ count }] = await prisma.$transaction([
+    prisma.oAuthToken.updateMany({ where: { revokedAt: null }, data: { revokedAt: new Date() } }),
+    prisma.oAuthAuthorizationCode.deleteMany({ where: { usedAt: null } }),
+  ]);
   return count;
 }
 
@@ -193,8 +199,8 @@ export async function registerClient(input: RegistrationInput) {
   }
   let name = typeof input.client_name === 'string' ? input.client_name.trim() : '';
   if (CONTROL_CHARS.test(name)) throw new OAuthError('invalid_client_metadata', 'client_name cannot contain control characters');
+  // 이름이 없으면 빈 값으로 둔다. 화면이 번역된 "이름 없는 앱"으로 바꿔 보여 준다(서버가 언어를 정하지 않게).
   name = [...name].slice(0, CLIENT_NAME_MAX).join('');
-  if (!name) name = 'Unnamed app';
 
   const clientId = `${CLIENT_ID_PREFIX}${crypto.randomBytes(16).toString('hex')}`;
   const secret = method === 'none' ? null : `${CLIENT_SECRET_PREFIX}${randomSecret()}`;
@@ -208,14 +214,14 @@ export async function registerClient(input: RegistrationInput) {
     },
   });
   void writeAuditLog({
-    action: 'oauth.client_registered', targetType: 'oauth_client', targetId: row.id, targetName: row.clientName,
+    action: 'oauth.client_registered', targetType: 'oauth_client', targetId: row.id, targetName: row.clientName || undefined,
     details: JSON.stringify({ authMethod: method, redirectHosts: [...new Set(row.redirectUris.map((u) => new URL(u).host))] }),
   });
   return {
     client_id: row.clientId,
     ...(secret ? { client_secret: secret, client_secret_expires_at: 0 } : {}),
     client_id_issued_at: Math.floor(row.createdAt.getTime() / 1000),
-    client_name: row.clientName,
+    ...(row.clientName ? { client_name: row.clientName } : {}),
     redirect_uris: row.redirectUris,
     token_endpoint_auth_method: method,
     grant_types: ['authorization_code', 'refresh_token'],
@@ -296,15 +302,17 @@ export function buildRedirect(redirectUri: string, params: Record<string, string
   return url.toString();
 }
 
-/** 동의하면 1회용 코드를 만든다. 오래된 코드는 이때 함께 지운다. */
+/**
+ * 동의하면 1회용 코드를 만든다. 동의 시점의 사용자 tokenVersion을 함께 둔다(교환 전에 비밀번호를 바꾸면 거부).
+ * 오래된 코드는 스케줄러의 purgeOAuth가 지운다.
+ */
 export async function issueAuthorizationCode(input: {
   clientId: number; userId: number; redirectUri: string; scopes: string[]; resource: string; codeChallenge: string;
 }): Promise<string> {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: input.userId }, select: { tokenVersion: true } });
   const code = randomSecret();
-  const now = Date.now();
-  await prisma.oAuthAuthorizationCode.deleteMany({ where: { expiresAt: { lt: new Date(now - 24 * 60 * 60 * 1000) } } });
   await prisma.oAuthAuthorizationCode.create({
-    data: { ...input, codeHash: sha256(code), expiresAt: new Date(now + CODE_TTL_MS) },
+    data: { ...input, tokenVersion: user.tokenVersion, codeHash: sha256(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) },
   });
   return code;
 }
@@ -318,26 +326,36 @@ function safeEqualHex(expectedHex: string | null, actual: string): boolean {
 }
 
 /**
+ * 요청에서 클라이언트 자격 증명을 꺼낸다(RFC 6749 2.3.1). Basic 헤더는 각 부분이 URL 인코딩돼 있다.
+ * Basic 헤더가 깨졌으면 null. 인증(authenticateClient)과 rate limit 키(라우트)가 같은 파서를 쓴다.
+ */
+export function parseClientCredentials(
+  authorization: string | undefined, body: Record<string, unknown>,
+): { clientId?: string; secret?: string } | null {
+  if (authorization?.startsWith('Basic ')) {
+    const decoded = Buffer.from(authorization.slice(6).trim(), 'base64').toString('utf8');
+    const idx = decoded.indexOf(':');
+    if (idx < 0) return null;
+    try {
+      return { clientId: decodeURIComponent(decoded.slice(0, idx)), secret: decodeURIComponent(decoded.slice(idx + 1)) };
+    } catch {
+      return null;
+    }
+  }
+  return {
+    clientId: typeof body.client_id === 'string' ? body.client_id : undefined,
+    secret: typeof body.client_secret === 'string' ? body.client_secret : undefined,
+  };
+}
+
+/**
  * Authorization: Basic 또는 본문(client_id, client_secret)으로 클라이언트를 확인한다.
  * 공개 클라이언트(none)는 client_id만, 기밀 클라이언트는 비밀이 맞아야 한다. 실패는 모두 invalid_client(401).
  */
 export async function authenticateClient(authorization: string | undefined, body: Record<string, unknown>) {
-  let clientId: string | undefined;
-  let secret: string | undefined;
-  if (authorization?.startsWith('Basic ')) {
-    const decoded = Buffer.from(authorization.slice(6).trim(), 'base64').toString('utf8');
-    const idx = decoded.indexOf(':');
-    if (idx < 0) throw new OAuthError('invalid_client', 'Client authentication failed', 401);
-    try {
-      clientId = decodeURIComponent(decoded.slice(0, idx));
-      secret = decodeURIComponent(decoded.slice(idx + 1));
-    } catch {
-      throw new OAuthError('invalid_client', 'Client authentication failed', 401);
-    }
-  } else {
-    clientId = typeof body.client_id === 'string' ? body.client_id : undefined;
-    secret = typeof body.client_secret === 'string' ? body.client_secret : undefined;
-  }
+  const creds = parseClientCredentials(authorization, body);
+  if (!creds) throw new OAuthError('invalid_client', 'Client authentication failed', 401);
+  const { clientId, secret } = creds;
   if (!clientId || clientId.length > 64) throw new OAuthError('invalid_client', 'Client authentication failed', 401);
   const client = await prisma.oAuthClient.findUnique({ where: { clientId } });
   if (!client) throw new OAuthError('invalid_client', 'Client authentication failed', 401);
@@ -354,13 +372,14 @@ export async function authenticateClient(authorization: string | undefined, body
 // ---- 토큰 발급 ----
 
 interface IssueInput {
-  familyId: string; clientId: number; userId: number; scopes: string[]; resource: string; tokenVersion: number;
+  familyId: string; familyCreatedAt: Date; clientId: number; userId: number; scopes: string[]; resource: string; tokenVersion: number;
 }
 
-async function issueTokenPair(tx: Pick<typeof prisma, 'oAuthToken'>, input: IssueInput) {
+async function issueTokenPair(tx: Pick<typeof prisma, 'oAuthToken' | 'oAuthClient'>, input: IssueInput) {
   const accessToken = `${ACCESS_TOKEN_PREFIX}${randomSecret()}`;
   const refreshToken = `${REFRESH_TOKEN_PREFIX}${randomSecret()}`;
   const now = Date.now();
+  await tx.oAuthClient.update({ where: { id: input.clientId }, data: { lastIssuedAt: new Date(now) } });
   await tx.oAuthToken.create({
     data: {
       ...input,
@@ -403,6 +422,19 @@ function pkceMatches(verifier: string, challenge: string): boolean {
   return computed.length === expected.length && crypto.timingSafeEqual(computed, expected);
 }
 
+/** 이미 쓴 코드가 다시 왔다: 가로챈 코드일 수 있으니 그 코드로 만든 토큰 계열을 모두 폐기한다. */
+async function handleCodeReuse(codeId: number): Promise<void> {
+  // 승자의 claim과 토큰 삽입은 한 트랜잭션이다. 여기 오는 것은 승자가 커밋한 뒤(행 잠금이 풀린 뒤 조건이 거짓이 된 경우)이므로
+  // 승자의 familyId와 토큰이 이미 보이고, 폐기에서 빠지지 않는다.
+  const row = await prisma.oAuthAuthorizationCode.findUnique({ where: { id: codeId }, select: { familyId: true, userId: true, clientId: true } });
+  if (!row) return; // 연결 해제나 정책 끄기로 지워진 코드
+  const revoked = row.familyId ? await revokeFamily(row.familyId) : 0;
+  void writeAuditLog({
+    action: 'oauth.code_reuse_detected', actorId: row.userId, targetType: 'oauth_client', targetId: row.clientId,
+    details: JSON.stringify({ revoked }),
+  });
+}
+
 export async function exchangeAuthorizationCode(
   client: { id: number }, body: Record<string, unknown>, origin: string,
 ) {
@@ -415,35 +447,43 @@ export async function exchangeAuthorizationCode(
   const row = await prisma.oAuthAuthorizationCode.findUnique({ where: { codeHash: sha256(code) } });
   if (!row || row.clientId !== client.id) throw new OAuthError('invalid_grant', 'Invalid authorization code');
 
-  // 1회용: 먼저 사용 표시를 해서 동시에 두 번 오면 하나만 통과한다
-  const familyId = crypto.randomBytes(16).toString('hex');
-  const claimed = await prisma.oAuthAuthorizationCode.updateMany({
-    where: { id: row.id, usedAt: null }, data: { usedAt: new Date(), familyId },
-  });
-  if (claimed.count === 0) {
-    // 이미 쓴 코드가 다시 왔다: 가로챈 코드일 수 있으니 그 코드로 만든 토큰을 모두 폐기한다
-    const again = await prisma.oAuthAuthorizationCode.findUnique({ where: { id: row.id }, select: { familyId: true } });
-    const revoked = again?.familyId ? await revokeFamily(again.familyId) : 0;
-    void writeAuditLog({
-      action: 'oauth.code_reuse_detected', actorId: row.userId, targetType: 'oauth_client', targetId: row.clientId,
-      details: JSON.stringify({ revoked }),
-    });
-    throw new OAuthError('invalid_grant', 'Invalid authorization code');
-  }
-  if (row.expiresAt.getTime() <= Date.now()) throw new OAuthError('invalid_grant', 'Authorization code expired');
+  // 검증을 먼저 한다. 코드는 소모하지 않으므로 검증자(code_verifier)를 모르는 쪽은 코드를 태우거나
+  // 재사용 탐지(계열 폐기)를 일으킬 수 없다.
+  if (!pkceMatches(verifier, row.codeChallenge)) throw new OAuthError('invalid_grant', 'PKCE verification failed');
   // 보냈으면 인가 요청 때와 같아야 한다. 생략은 PKCE가 코드를 묶어 주므로 받는다(OAuth 2.1)
   if (redirectUri !== undefined && redirectUri !== row.redirectUri) throw new OAuthError('invalid_grant', 'redirect_uri does not match');
-  if (!pkceMatches(verifier, row.codeChallenge)) throw new OAuthError('invalid_grant', 'PKCE verification failed');
   if (body.resource !== undefined) {
     const resource = typeof body.resource === 'string' ? normalizeResource(body.resource, origin) : null;
     if (resource !== row.resource) throw new OAuthError('invalid_target', 'resource does not match the authorization request');
   }
+  if (row.usedAt) {
+    await handleCodeReuse(row.id);
+    throw new OAuthError('invalid_grant', 'Invalid authorization code');
+  }
+  if (row.expiresAt.getTime() <= Date.now()) throw new OAuthError('invalid_grant', 'Authorization code expired');
 
   const user = await loadEligibleUser(row.userId);
-  if (!user) throw new OAuthError('invalid_grant', 'The authorization is no longer valid');
-  return issueTokenPair(prisma, {
-    familyId, clientId: client.id, userId: user.id, scopes: row.scopes, resource: row.resource, tokenVersion: user.tokenVersion,
+  // 동의한 뒤 비밀번호 변경·2FA 변경·강제 로그아웃이 있었으면 그 동의로 토큰을 주지 않는다
+  if (!user || user.tokenVersion !== row.tokenVersion) throw new OAuthError('invalid_grant', 'The authorization is no longer valid');
+
+  // 1회용: 조건부 claim(usedAt null)과 토큰 삽입을 한 트랜잭션으로. 동시에 두 번 오면 하나만 통과한다.
+  const familyId = crypto.randomBytes(16).toString('hex');
+  const familyCreatedAt = new Date();
+  const result = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.oAuthAuthorizationCode.updateMany({
+      where: { id: row.id, usedAt: null }, data: { usedAt: familyCreatedAt, familyId },
+    });
+    if (claimed.count === 0) return null;
+    return issueTokenPair(tx, {
+      familyId, familyCreatedAt, clientId: client.id, userId: user.id, scopes: row.scopes, resource: row.resource,
+      tokenVersion: user.tokenVersion,
+    });
   });
+  if (!result) {
+    await handleCodeReuse(row.id);
+    throw new OAuthError('invalid_grant', 'Invalid authorization code');
+  }
+  return result;
 }
 
 export async function refreshAccessToken(client: { id: number }, body: Record<string, unknown>, origin: string) {
@@ -487,7 +527,8 @@ export async function refreshAccessToken(client: { id: number }, body: Record<st
     const claimed = await tx.oAuthToken.updateMany({ where: { id: row.id, rotatedAt: null, revokedAt: null }, data: { rotatedAt: new Date() } });
     if (claimed.count === 0) return null;
     return issueTokenPair(tx, {
-      familyId: row.familyId, clientId: client.id, userId: user.id, scopes, resource: row.resource, tokenVersion: user.tokenVersion,
+      familyId: row.familyId, familyCreatedAt: row.familyCreatedAt, clientId: client.id, userId: user.id, scopes,
+      resource: row.resource, tokenVersion: user.tokenVersion,
     });
   });
   if (!result) throw await reuse();
@@ -526,33 +567,46 @@ export interface VerifiedOAuthToken {
 
 export const looksLikeOAuthAccessToken = (token: string) => token.startsWith(ACCESS_TOKEN_PREFIX);
 
+/** 실패 중 unknown은 형식이 틀리거나 DB에 없는 토큰(추측 시도)이다. 만료·폐기·회전된 알려진 토큰과 구분해 IP 실패 횟수에만 쓴다. */
+export type OAuthTokenCheck = { ok: true; token: VerifiedOAuthToken } | { ok: false; unknown: boolean };
+
 /**
- * 액세스 토큰 확인. 형식, 없음, 폐기, 만료, 리소스 불일치, 비활성 사용자, tokenVersion 변경, 조직 정책 꺼짐은 모두 null로 같게 돌려준다.
- * 2FA 필수 정책은 호출한 쪽이 mfaEnabled로 따로 판단한다(PAT와 같은 403 응답을 주려고).
+ * 액세스 토큰 확인. 폐기, 회전(리프레시로 바뀜), 만료, 리소스 불일치, 비활성 사용자, tokenVersion 변경, 조직 정책 꺼짐은 모두 실패다.
+ * 실패 이유는 밖으로 알리지 않는다. 2FA 필수 정책은 호출한 쪽이 mfaEnabled로 따로 판단한다(PAT와 같은 403 응답을 주려고).
  */
-export async function verifyOAuthAccessToken(token: string, expectedResource: string): Promise<VerifiedOAuthToken | null> {
-  if (!looksLikeOAuthAccessToken(token) || !SECRET_PATTERN.test(token.slice(ACCESS_TOKEN_PREFIX.length))) return null;
+export async function checkOAuthAccessToken(token: string, expectedResource: string): Promise<OAuthTokenCheck> {
+  if (!looksLikeOAuthAccessToken(token) || !SECRET_PATTERN.test(token.slice(ACCESS_TOKEN_PREFIX.length))) return { ok: false, unknown: true };
   const row = await prisma.oAuthToken.findUnique({
     where: { accessTokenHash: sha256(token) },
     include: { user: { select: { role: true, deactivatedAt: true, mfaEnabledAt: true, tokenVersion: true } } },
   });
-  if (!row) return null;
+  if (!row) return { ok: false, unknown: true };
+  const fail = { ok: false, unknown: false } as const;
   const now = Date.now();
-  if (row.revokedAt || row.accessExpiresAt.getTime() <= now) return null;
+  // 리프레시하면 옛 액세스 토큰은 바로 쓸 수 없다
+  if (row.revokedAt || row.rotatedAt || row.accessExpiresAt.getTime() <= now) return fail;
   // audience 확인: 이 서버의 /mcp용으로 발급한 토큰만 받는다(다른 리소스용 토큰을 넘겨받아 쓰는 것을 막는다)
-  if (row.resource !== expectedResource) return null;
-  if (row.user.deactivatedAt || row.user.tokenVersion !== row.tokenVersion) return null;
-  if (!(await getAllowOAuthApps())) return null;
+  if (row.resource !== expectedResource) return fail;
+  if (row.user.deactivatedAt || row.user.tokenVersion !== row.tokenVersion) return fail;
+  if (!(await getAllowOAuthApps())) return fail;
 
-  if (!row.lastUsedAt || now - row.lastUsedAt.getTime() > LAST_USED_WRITE_INTERVAL_MS) {
+  if (shouldWriteLastUsed(row.lastUsedAt, now)) {
     await prisma.oAuthToken
       .update({ where: { id: row.id }, data: { lastUsedAt: new Date(now) } })
       .catch((err) => logError('Update OAuth token lastUsedAt failed', err));
   }
   return {
-    tokenId: row.id, familyId: row.familyId, clientId: row.clientId, userId: row.userId, role: row.user.role,
-    scopes: row.scopes, mfaEnabled: row.user.mfaEnabledAt !== null,
+    ok: true,
+    token: {
+      tokenId: row.id, familyId: row.familyId, clientId: row.clientId, userId: row.userId, role: row.user.role,
+      scopes: row.scopes, mfaEnabled: row.user.mfaEnabledAt !== null,
+    },
   };
+}
+
+export async function verifyOAuthAccessToken(token: string, expectedResource: string): Promise<VerifiedOAuthToken | null> {
+  const result = await checkOAuthAccessToken(token, expectedResource);
+  return result.ok ? result.token : null;
 }
 
 // ---- 사용자 설정: 연결된 앱 ----
@@ -568,13 +622,6 @@ export async function listConnectedApps(userId: number) {
     include: { client: { select: { id: true, clientName: true, redirectUris: true } } },
     orderBy: { id: 'desc' },
   });
-  // 같은 계열의 첫 발급 시각(연결한 때)
-  const families = [...new Set(rows.map((r) => r.familyId))];
-  const firsts = families.length === 0 ? [] : await prisma.oAuthToken.groupBy({
-    by: ['familyId'], where: { familyId: { in: families } }, _min: { createdAt: true },
-  });
-  const connectedAt = new Map(firsts.map((f) => [f.familyId, f._min.createdAt]));
-
   const byClient = new Map<number, {
     id: number; name: string; redirectHosts: string[]; scopes: Set<string>; connectedAt: Date | null; lastUsedAt: Date | null;
   }>();
@@ -588,8 +635,8 @@ export async function listConnectedApps(userId: number) {
       byClient.set(r.clientId, entry);
     }
     r.scopes.forEach((s) => entry!.scopes.add(s));
-    const first = connectedAt.get(r.familyId) ?? r.createdAt;
-    if (!entry.connectedAt || first < entry.connectedAt) entry.connectedAt = first;
+    // 연결한 때: 계열 첫 발급 시각(행마다 복사돼 있어 옛 행을 지워도 남는다)
+    if (!entry.connectedAt || r.familyCreatedAt < entry.connectedAt) entry.connectedAt = r.familyCreatedAt;
     if (r.lastUsedAt && (!entry.lastUsedAt || r.lastUsedAt > entry.lastUsedAt)) entry.lastUsedAt = r.lastUsedAt;
   }
   return [...byClient.values()].map((e) => ({
@@ -598,8 +645,37 @@ export async function listConnectedApps(userId: number) {
   }));
 }
 
-/** 이 사용자가 이 클라이언트에 준 모든 연결을 끊는다. 끊은 행 수(0이면 연결이 없었다). */
+/** 이 사용자가 이 클라이언트에 준 모든 연결을 끊는다. 아직 교환하지 않은 코드도 지운다. 끊은 토큰 행 수(0이면 연결이 없었다). */
 export async function disconnectApp(userId: number, clientId: number): Promise<number> {
-  const { count } = await prisma.oAuthToken.updateMany({ where: { userId, clientId, revokedAt: null }, data: { revokedAt: new Date() } });
+  const [{ count }] = await prisma.$transaction([
+    prisma.oAuthToken.updateMany({ where: { userId, clientId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    prisma.oAuthAuthorizationCode.deleteMany({ where: { userId, clientId, usedAt: null } }),
+  ]);
   return count;
+}
+
+// ---- 정리(스케줄러) ----
+
+/**
+ * 더 이상 쓸 일이 없는 행을 지운다.
+ * - 토큰: 리프레시 수명이 지난 행(회전·폐기 여부와 상관없이), 폐기된 지 하루 지난 행. 회전됐지만 수명이 남은 행은 재사용 탐지에 필요해 둔다.
+ * - 코드: 만료된 지 하루 지난 행(쓴 코드는 만료 전까지 재사용 탐지에 필요하다).
+ * - 클라이언트: 토큰을 한 번도 받지 않았고 등록한 지 30일 지난 행.
+ */
+export async function purgeOAuth(now: Date = new Date()): Promise<{ tokens: number; codes: number; clients: number }> {
+  const dayAgo = new Date(now.getTime() - DAY_MS);
+  const tokens = await prisma.oAuthToken.deleteMany({
+    where: {
+      OR: [
+        { refreshExpiresAt: { lt: now } },
+        { refreshExpiresAt: null, accessExpiresAt: { lt: now } },
+        { revokedAt: { lt: dayAgo } },
+      ],
+    },
+  });
+  const codes = await prisma.oAuthAuthorizationCode.deleteMany({ where: { expiresAt: { lt: dayAgo } } });
+  const clients = await prisma.oAuthClient.deleteMany({
+    where: { createdAt: { lt: new Date(now.getTime() - UNUSED_CLIENT_TTL_MS) }, lastIssuedAt: null, tokens: { none: {} } },
+  });
+  return { tokens: tokens.count, codes: codes.count, clients: clients.count };
 }

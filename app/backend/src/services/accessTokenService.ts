@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
+import { shouldWriteLastUsed } from '../utils/lastUsed.js';
 
 // 개인 액세스 토큰(PAT, mcp-1). 형식: `scpat_<publicId>_<secret>`
 // - publicId(12자 hex)는 DB 조회 키라 비밀이 아니다. 목록 화면에 접두사로 보여 준다.
@@ -23,8 +24,6 @@ export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[nu
 
 export const MAX_ACTIVE_TOKENS = 20;
 
-// 요청마다 lastUsedAt을 쓰면 DB 쓰기가 늘어나므로 1분 간격으로만 갱신한다.
-const LAST_USED_WRITE_INTERVAL_MS = 60_000;
 
 export function hashSecret(secret: string): string {
   return crypto.createHash('sha256').update(secret, 'utf8').digest('hex');
@@ -68,13 +67,16 @@ export interface VerifiedAccessToken {
   mfaEnabled: boolean;
 }
 
+/** 실패 중 unknown은 형식이 틀리거나 DB에 없는(해시 불일치 포함) 토큰이다. /mcp 인증 실패 횟수는 이것만 센다. */
+export type AccessTokenCheck = { ok: true; token: VerifiedAccessToken } | { ok: false; unknown: boolean };
+
 /**
- * 토큰 원문을 검증한다. 형식 오류, 없음, 해시 불일치, 폐기, 만료, 비활성 사용자는 모두 null로
- * 같게 돌려준다(어느 단계에서 실패했는지 밖에서 알 수 없게).
+ * 토큰 원문을 검증한다. 형식 오류, 없음, 해시 불일치, 폐기, 만료, 비활성 사용자는 모두 실패로
+ * 같게 응답한다(어느 단계에서 실패했는지 밖에서 알 수 없게). unknown은 rate limit 판단에만 쓴다.
  */
-export async function verifyAccessToken(token: string): Promise<VerifiedAccessToken | null> {
+export async function checkAccessToken(token: string): Promise<AccessTokenCheck> {
   const match = TOKEN_PATTERN.exec(token);
-  if (!match) return null;
+  if (!match) return { ok: false, unknown: true };
   const [, publicId, secret] = match;
 
   const row = await prisma.personalAccessToken.findUnique({
@@ -85,14 +87,15 @@ export async function verifyAccessToken(token: string): Promise<VerifiedAccessTo
   const expected = Buffer.from(row?.tokenHash ?? '0'.repeat(64), 'hex');
   const actual = Buffer.from(hashSecret(secret), 'hex');
   const hashOk = crypto.timingSafeEqual(expected, actual);
-  if (!row || !hashOk) return null;
+  if (!row || !hashOk) return { ok: false, unknown: true };
 
   const now = Date.now();
-  if (row.revokedAt) return null;
-  if (row.expiresAt && row.expiresAt.getTime() <= now) return null;
-  if (row.user.deactivatedAt) return null;
+  const fail = { ok: false, unknown: false } as const;
+  if (row.revokedAt) return fail;
+  if (row.expiresAt && row.expiresAt.getTime() <= now) return fail;
+  if (row.user.deactivatedAt) return fail;
 
-  if (!row.lastUsedAt || now - row.lastUsedAt.getTime() > LAST_USED_WRITE_INTERVAL_MS) {
+  if (shouldWriteLastUsed(row.lastUsedAt, now)) {
     // 기다려서 처리한다: 응답 뒤에 남은 쓰기가 테스트 정리나 사용자 삭제와 겹치지 않게
     await prisma.personalAccessToken
       .update({ where: { id: row.id }, data: { lastUsedAt: new Date(now) } })
@@ -100,7 +103,15 @@ export async function verifyAccessToken(token: string): Promise<VerifiedAccessTo
   }
 
   return {
-    tokenId: row.id, userId: row.userId, role: row.user.role, scopes: row.scopes, expiresAt: row.expiresAt,
-    mfaEnabled: row.user.mfaEnabledAt !== null,
+    ok: true,
+    token: {
+      tokenId: row.id, userId: row.userId, role: row.user.role, scopes: row.scopes, expiresAt: row.expiresAt,
+      mfaEnabled: row.user.mfaEnabledAt !== null,
+    },
   };
+}
+
+export async function verifyAccessToken(token: string): Promise<VerifiedAccessToken | null> {
+  const result = await checkAccessToken(token);
+  return result.ok ? result.token : null;
 }

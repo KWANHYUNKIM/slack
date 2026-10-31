@@ -83,7 +83,7 @@ export function ConnectedAppsDialog({ onClose }: ConnectedAppsDialogProps) {
               {apps.map((app) => (
                 <li key={app.id} data-testid="connected-app-row" className="flex items-start justify-between gap-3 border-b border-slack-border-light py-3">
                   <div className="min-w-0 flex-1">
-                    <p dir="auto" className="truncate text-[14px] font-medium text-slack-primary">{app.name}</p>
+                    <p dir="auto" className="truncate text-[14px] font-medium text-slack-primary">{app.name || t('connectedApps.unnamedApp')}</p>
                     <p className="mt-0.5 text-[12px] text-slack-secondary">
                       {t('connectedApps.redirectsTo', { hosts: formatList(app.redirectHosts) })}
                     </p>
@@ -121,7 +121,7 @@ export function ConnectedAppsDialog({ onClose }: ConnectedAppsDialogProps) {
                       type="button"
                       data-testid="connected-app-disconnect"
                       disabled={busy}
-                      aria-label={t('connectedApps.disconnectLabel', { name: app.name })}
+                      aria-label={t('connectedApps.disconnectLabel', { name: app.name || t('connectedApps.unnamedApp') })}
                       onClick={() => setConfirmId(app.id)}
                       className="shrink-0 rounded-md border border-red-300 px-3 py-1 text-[13px] text-red-600 hover:bg-red-50 disabled:opacity-50"
                     >

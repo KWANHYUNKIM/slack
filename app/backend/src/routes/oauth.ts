@@ -7,6 +7,7 @@ import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { ERR } from '../utils/errorCodes.js';
+import { rateLimitKey } from '../middleware/rateLimitKey.js';
 import {
   OAuthError,
   authenticateClient,
@@ -15,6 +16,7 @@ import {
   exchangeAuthorizationCode,
   getAllowOAuthApps,
   issueAuthorizationCode,
+  parseClientCredentials,
   pickAuthorizeParams,
   publicOrigin,
   refreshAccessToken,
@@ -52,26 +54,40 @@ const registerLimiter = isTest ? passThrough : rateLimit({
   keyGenerator: (req: Request) => (req.ip ? ipKeyGenerator(req.ip) : 'unknown'),
 });
 
-// 토큰·폐기는 여러 사용자가 같은 서버(IP)에서 부를 수 있어(claude.ai 커넥터) client_id 단위로 센다
-function clientKey(req: Request): string {
-  const auth = req.headers.authorization;
-  if (auth?.startsWith('Basic ')) {
-    const decoded = Buffer.from(auth.slice(6).trim(), 'base64').toString('utf8');
-    return `oauth-client:${decoded.split(':')[0].slice(0, 64)}`;
-  }
-  const id = (req.body as Record<string, unknown> | undefined)?.client_id;
-  if (typeof id === 'string') return `oauth-client:${id.slice(0, 64)}`;
-  return req.ip ? ipKeyGenerator(req.ip) : 'unknown';
+const body = (req: Request) => (req.body && typeof req.body === 'object' ? req.body as Record<string, unknown> : {});
+const ipKey = (req: Request) => (req.ip ? ipKeyGenerator(req.ip) : 'unknown');
+const SLOW_DOWN = { error: 'slow_down', error_description: 'Too many requests, please try again later' };
+
+/**
+ * 토큰·폐기 엔드포인트 제한. 두 겹으로 센다.
+ * 1) IP + client_id: 여러 사용자가 같은 서버(IP)에서 부르는 경우(claude.ai 커넥터) 앱마다 따로 센다.
+ * 2) IP 단독 상한: client_id를 무작위로 바꿔 1)을 우회하면서 인증 전 조회(클라이언트·코드·토큰 해시)를 퍼붓는 것을 막는다.
+ * client_id는 인증과 같은 파서(parseClientCredentials)로 꺼낸다.
+ */
+export function createOAuthTokenLimiters(perClientMax = 300, perIpMax = 1200) {
+  const windowMs = 15 * 60 * 1000;
+  const perIp = rateLimit({ windowMs, max: perIpMax, standardHeaders: true, legacyHeaders: false, message: SLOW_DOWN, keyGenerator: ipKey });
+  const perClient = rateLimit({
+    windowMs, max: perClientMax, standardHeaders: true, legacyHeaders: false, message: SLOW_DOWN,
+    keyGenerator: (req: Request) => {
+      const creds = parseClientCredentials(req.headers.authorization, body(req));
+      return `${ipKey(req)}|${(creds?.clientId ?? '').slice(0, 64)}`;
+    },
+  });
+  return [perIp, perClient];
 }
 
-const tokenLimiter = isTest ? passThrough : rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 300,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'slow_down', error_description: 'Too many requests, please try again later' },
-  keyGenerator: clientKey,
-});
+/** 브라우저가 부르는 authorize, details, decision 제한. 로그인 JWT가 있으면 사용자 단위, 없으면 IP 단위(rateLimitKey). */
+export function createOAuthBrowserLimiter(max = 60) {
+  return rateLimit({
+    windowMs: 60 * 1000, max, standardHeaders: true, legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later', code: ERR.RATE_LIMITED },
+    keyGenerator: rateLimitKey,
+  });
+}
+
+const tokenLimiter = isTest ? [passThrough] : createOAuthTokenLimiters();
+const browserLimiter = isTest ? passThrough : createOAuthBrowserLimiter();
 
 function sendOAuthError(res: Response, err: OAuthError): void {
   if (err.status === 401) res.setHeader('WWW-Authenticate', 'Basic realm="oauth"');
@@ -87,7 +103,6 @@ function handleOAuthFailure(res: Response, error: unknown, what: string): void {
   res.status(500).json({ error: 'server_error', error_description: 'Internal server error' });
 }
 
-const body = (req: Request) => (req.body && typeof req.body === 'object' ? req.body as Record<string, unknown> : {});
 
 // POST /oauth/register - 동적 클라이언트 등록(RFC 7591)
 router.post('/register', registerLimiter, async (req: Request, res: Response) => {
@@ -110,7 +125,7 @@ function errorRedirect(check: Extract<AuthorizeCheck, { redirect: true }>, issue
 
 // GET /oauth/authorize - 브라우저가 처음 오는 곳. 요청을 확인하고 프런트 동의 화면(/oauth-consent)으로 넘긴다.
 // 클라이언트나 redirect_uri가 틀리면 그 주소로 돌려보내지 않는다(오픈 리다이렉트 방지).
-router.get('/authorize', async (req: Request, res: Response) => {
+router.get('/authorize', browserLimiter, async (req: Request, res: Response) => {
   try {
     const origin = publicOrigin(req);
     const params = pickAuthorizeParams(req.query as Record<string, unknown>);
@@ -169,7 +184,7 @@ function invalidRequest(res: Response, check: Extract<AuthorizeCheck, { ok: fals
 }
 
 // GET /oauth/authorize/details - 동의 화면에 보여 줄 클라이언트 이름, redirect 호스트, 범위
-router.get('/authorize/details', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/authorize/details', browserLimiter, authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const origin = publicOrigin(req);
     const check = await checkAuthorizeRequest(pickAuthorizeParams(req.query as Record<string, unknown>), origin);
@@ -193,7 +208,7 @@ const decisionSchema = z.object({
 
 // POST /oauth/authorize/decision - 허용하면 1회용 코드를, 거부하면 access_denied를 붙인 redirect 주소를 돌려준다.
 // 프런트는 받은 redirectTo로 이동만 한다(주소는 서버가 등록된 redirect_uri로만 만든다).
-router.post('/authorize/decision', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/authorize/decision', browserLimiter, authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { params, approve, code } = decisionSchema.parse(req.body);
     const origin = publicOrigin(req);
@@ -262,7 +277,7 @@ router.post('/authorize/decision', authMiddleware, async (req: AuthRequest, res:
 });
 
 // POST /oauth/token - authorization_code(+PKCE)와 refresh_token(회전)
-router.post('/token', tokenLimiter, async (req: Request, res: Response) => {
+router.post('/token', ...tokenLimiter, async (req: Request, res: Response) => {
   try {
     const b = body(req);
     const client = await authenticateClient(req.headers.authorization, b);
@@ -280,7 +295,7 @@ router.post('/token', tokenLimiter, async (req: Request, res: Response) => {
 });
 
 // POST /oauth/revoke - RFC 7009. 없는 토큰이어도 200으로 답한다.
-router.post('/revoke', tokenLimiter, async (req: Request, res: Response) => {
+router.post('/revoke', ...tokenLimiter, async (req: Request, res: Response) => {
   try {
     const b = body(req);
     const client = await authenticateClient(req.headers.authorization, b);

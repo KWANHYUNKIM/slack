@@ -661,6 +661,8 @@ model OAuthClient {
   tokenEndpointAuthMethod String    @db.VarChar(32)
   clientName              String    @db.VarChar(100)
   redirectUris            String[]
+  // 마지막으로 토큰을 발급한 때. 한 번도 없고 30일 지난 등록은 정리 작업이 지운다.
+  lastIssuedAt            DateTime?
   createdAt               DateTime  @default(now())
 
   codes  OAuthAuthorizationCode[]
@@ -680,6 +682,8 @@ model OAuthAuthorizationCode {
   scopes        String[]
   resource      String    @db.VarChar(500)
   codeChallenge String    @db.VarChar(128)
+  // 동의 시점 사용자 tokenVersion. 교환 때 달라졌으면(비밀번호 변경 등) 거부한다.
+  tokenVersion  Int
   expiresAt     DateTime
   usedAt        DateTime?
   familyId      String?   @db.VarChar(32)
@@ -698,6 +702,8 @@ model OAuthAuthorizationCode {
 model OAuthToken {
   id               Int       @id @default(autoincrement())
   familyId         String    @db.VarChar(32)
+  // 계열 첫 발급 시각(연결한 때). 회전할 때 그대로 복사해 옛 행을 지워도 남는다.
+  familyCreatedAt  DateTime
   clientId         Int
   userId           Int
   accessTokenHash  String    @unique @db.Char(64)
@@ -718,4 +724,5 @@ model OAuthToken {
   @@index([familyId])
   @@index([userId, revokedAt])
   @@index([clientId])
+  @@index([refreshExpiresAt])
 }

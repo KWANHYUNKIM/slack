@@ -9,6 +9,7 @@ CREATE TABLE "OAuthClient" (
     "tokenEndpointAuthMethod" VARCHAR(32) NOT NULL,
     "clientName" VARCHAR(100) NOT NULL,
     "redirectUris" TEXT[],
+    "lastIssuedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "OAuthClient_pkey" PRIMARY KEY ("id")
@@ -24,6 +25,7 @@ CREATE TABLE "OAuthAuthorizationCode" (
     "scopes" TEXT[],
     "resource" VARCHAR(500) NOT NULL,
     "codeChallenge" VARCHAR(128) NOT NULL,
+    "tokenVersion" INTEGER NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "usedAt" TIMESTAMP(3),
     "familyId" VARCHAR(32),
@@ -36,6 +38,7 @@ CREATE TABLE "OAuthAuthorizationCode" (
 CREATE TABLE "OAuthToken" (
     "id" SERIAL NOT NULL,
     "familyId" VARCHAR(32) NOT NULL,
+    "familyCreatedAt" TIMESTAMP(3) NOT NULL,
     "clientId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
     "accessTokenHash" CHAR(64) NOT NULL,
@@ -82,6 +85,9 @@ CREATE INDEX "OAuthToken_userId_revokedAt_idx" ON "OAuthToken"("userId", "revoke
 
 -- CreateIndex
 CREATE INDEX "OAuthToken_clientId_idx" ON "OAuthToken"("clientId");
+
+-- CreateIndex
+CREATE INDEX "OAuthToken_refreshExpiresAt_idx" ON "OAuthToken"("refreshExpiresAt");
 
 -- AddForeignKey
 ALTER TABLE "OAuthAuthorizationCode" ADD CONSTRAINT "OAuthAuthorizationCode_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "OAuthClient"("id") ON DELETE CASCADE ON UPDATE CASCADE;
