@@ -33,3 +33,5 @@
 | 2026-10-31 11:20 | dev-4 | sonnet | PR #10 리뷰 반영 (누적) | 115,452 |
 | 2026-10-31 12:19 | dev-3 | opus | 간헐 실패 조사 test/flaky-activity | 199,152 |
 | 2026-10-31 12:31 | dev-5 | sonnet | feat/channel-name-unicode | 80,497 |
+| 2026-10-31 14:27 | code-review | (리뷰) | PR #12 medium | 58,926 |
+| 2026-10-31 14:39 | dev-1 | sonnet | test/suite-flaky-rest (재투입분) | 127,904 |
