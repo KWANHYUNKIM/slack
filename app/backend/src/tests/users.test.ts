@@ -2,6 +2,7 @@ import { TEST_PASSWORD } from './test-constants.js';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
+import sharp from 'sharp';
 
 describe('User Profiles', () => {
   let authToken: string;
@@ -93,6 +94,76 @@ describe('User Profiles', () => {
         .send({ status: 'invalid-status' });
 
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /users/me/avatar', () => {
+    const makeImage = (format: 'png' | 'jpeg', width: number, height: number) =>
+      sharp({ create: { width, height, channels: 3, background: { r: 200, g: 30, b: 30 } } })
+        [format]()
+        .toBuffer();
+
+    it.each([['png', 'image/png'], ['jpeg', 'image/jpeg']] as const)(
+      'should accept %s, resize to 512x512 PNG, then read, replace and keep serving',
+      async (format, contentType) => {
+        const buf = await makeImage(format, 300, 200);
+        const res = await request(app)
+          .post('/users/me/avatar')
+          .set('Authorization', `Bearer ${authToken}`)
+          .attach('avatar', buf, { filename: `a.${format}`, contentType });
+        expect(res.status).toBe(200);
+        expect(res.body.avatar).toMatch(/^\/users\/me\/avatar\/.+\.png$/);
+
+        // Read: served file is a 512x512 PNG
+        const served = await request(app).get(res.body.avatar).buffer(true).parse((r, cb) => {
+          const chunks: Buffer[] = [];
+          r.on('data', (c: Buffer) => chunks.push(c));
+          r.on('end', () => cb(null, Buffer.concat(chunks)));
+        });
+        expect(served.status).toBe(200);
+        const meta = await sharp(served.body as Buffer).metadata();
+        expect(meta.format).toBe('png');
+        expect(meta.width).toBe(512);
+        expect(meta.height).toBe(512);
+
+        // Update: a new upload replaces the old file
+        const second = await request(app)
+          .post('/users/me/avatar')
+          .set('Authorization', `Bearer ${authToken}`)
+          .attach('avatar', buf, { filename: `b.${format}`, contentType });
+        expect(second.status).toBe(200);
+        expect(second.body.avatar).not.toBe(res.body.avatar);
+        const old = await request(app).get(res.body.avatar);
+        expect(old.status).toBe(404);
+      }
+    );
+
+    it('should reject an image over the pixel limit', async () => {
+      // 4097 x 4097 > 4096 * 4096; a flat image compresses to a tiny file
+      const big = await makeImage('png', 4097, 4097);
+      const res = await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('avatar', big, { filename: 'big.png', contentType: 'image/png' });
+      expect(res.status).toBe(400);
+
+      const me = await request(app).get('/users/me').set('Authorization', `Bearer ${authToken}`);
+      expect(me.body.avatar).toBeNull();
+    });
+
+    it('should reject a non-image file claiming to be an image', async () => {
+      const res = await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('avatar', Buffer.from('not an image at all'), { filename: 'x.png', contentType: 'image/png' });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('File is not a valid image');
+    });
+
+    it('should require authentication', async () => {
+      const buf = await makeImage('png', 10, 10);
+      const res = await request(app).post('/users/me/avatar').attach('avatar', buf, { filename: 'a.png', contentType: 'image/png' });
+      expect(res.status).toBe(401);
     });
   });
 
