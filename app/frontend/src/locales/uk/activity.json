@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Активність",
+    "markAllRead": "Позначити все як прочитане",
+    "loading": "Завантаження...",
+    "loadingMore": "Завантаження інших...",
+    "loadFailed": "Не вдалося завантажити активність.",
+    "empty": "Поки що немає активності.",
+    "unread": "Не прочитано",
+    "menu": "Меню",
+    "someone": "Хтось",
+    "directMessage": "особисте повідомлення",
+    "messageDeleted": "Повідомлення видалено"
+  },
+  "tabs": {
+    "all": "Усі",
+    "mentions": "Згадки",
+    "threads": "Треди",
+    "reactions": "Реакції"
+  },
+  "describe": {
+    "mention": "{actor} згадав вас у {where}",
+    "channelMention": "{actor} згадав @channel у {where}",
+    "hereMention": "{actor} згадав @here у {where}",
+    "threadReply": "{actor} відповів у треді в {where}",
+    "reaction": "{actor} відреагував {emoji} на ваше повідомлення в {where}",
+    "reminder": "Нагадування"
+  }
+}

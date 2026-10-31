@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Utwórz kanał",
+    "tabBrowse": "Przeglądaj kanały",
+    "nameLabel": "Nazwa kanału",
+    "namePlaceholder": "np. plan-budzetu",
+    "visibility": "Widoczność",
+    "public": "Publiczny",
+    "private": "Prywatny",
+    "publicHint": "Każdy w przestrzeni roboczej może znaleźć ten kanał i do niego dołączyć.",
+    "privateHint": "Ten kanał mogą znaleźć i do niego dołączyć tylko zaproszone osoby.",
+    "cancel": "Anuluj",
+    "create": "Utwórz",
+    "noChannels": "Brak kanałów, do których można dołączyć",
+    "memberCount": "{count, plural, one {# członek} few {# członkowie} many {# członków} other {# członka}}",
+    "joined": "Dołączono",
+    "join": "Dołącz",
+    "close": "Zamknij",
+    "errors": {
+      "createFailed": "Nie udało się utworzyć kanału"
+    }
+  },
+  "errors": {
+    "loadConversations": "Nie udało się wczytać rozmów.",
+    "loadChannels": "Nie udało się wczytać kanałów."
+  },
+  "membersPanel": {
+    "title": "Członkowie",
+    "addPeople": "Dodaj osoby",
+    "loadError": "Nie udało się wczytać członków.",
+    "removeError": "Nie udało się usunąć członka",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Usunąć członka?",
+      "message": "Usunąć <bold>{name}</bold> z tego kanału?"
+    },
+    "removing": "Usuwanie...",
+    "searchByName": "Szukaj po nazwie...",
+    "noUsers": "Nie znaleziono użytkowników",
+    "roles": {
+      "owner": "Właściciel",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Usuń członka"
+  },
+  "dm": {
+    "messagePlaceholder": "Wiadomość do {name}",
+    "you": "(Ty)",
+    "star": "Dodaj do Oznaczonych",
+    "unstar": "Usuń z Oznaczonych",
+    "loadingMessages": "Ładowanie wiadomości...",
+    "selfSpace": "To Twoja przestrzeń. Pisz wersje robocze, twórz listy zadań albo trzymaj pod ręką linki i pliki.",
+    "conversationStart": "Początek Twojej rozmowy z {name}",
+    "sendToBegin": "Wyślij wiadomość, aby zacząć.",
+    "edited": "(edytowano)",
+    "pinnedMessages": "Przypięte wiadomości",
+    "noPins": "Brak przypiętych wiadomości",
+    "files": "Pliki",
+    "noFiles": "Nie udostępniono jeszcze plików",
+    "loadError": "Nie udało się wczytać wiadomości.",
+    "sendError": "Nie udało się wysłać wiadomości. Spróbuj ponownie."
+  },
+  "nameRules": {
+    "required": "Wpisz nazwę kanału.",
+    "tooLong": "Nazwa kanału może mieć najwyżej {max} znaków.",
+    "invalidChars": "Nazwy kanałów mogą zawierać tylko litery, cyfry, myślniki i podkreślenia oraz muszą zaczynać się od litery lub cyfry.",
+    "tooManyMarks": "W nazwie kanału nie może być więcej niż 4 znaki diakrytyczne z rzędu.",
+    "mixedScripts": "W nazwie kanału nie można mieszać podobnie wyglądających alfabetów (np. łaciny z cyrylicą lub greką) ani cyfr z innego systemu liczbowego.",
+    "taken": "Kanał o tej nazwie już istnieje."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# członek} few {# członkowie} many {# członków} other {# członka}}",
+    "nameLabel": "Nazwa rozmowy",
+    "namePlaceholder": "Dodaj nazwę",
+    "noName": "Brak nazwy (wyświetlane są nazwy członków)",
+    "rename": "Zmień nazwę rozmowy",
+    "addPeople": "Dodaj osoby",
+    "add": "Dodaj",
+    "createWith": "Rozpocznij rozmowę grupową",
+    "leave": "Opuść rozmowę",
+    "leaveConfirm": "Opuścić tę rozmowę? Nie będziesz już widzieć jej wiadomości.",
+    "conversationStart": "Początek Twojej rozmowy z {names}",
+    "addError": "Nie udało się dodać osób. Spróbuj ponownie.",
+    "renameError": "Nie udało się zmienić nazwy rozmowy. Spróbuj ponownie.",
+    "leaveError": "Nie udało się opuścić rozmowy. Spróbuj ponownie."
+  }
+}

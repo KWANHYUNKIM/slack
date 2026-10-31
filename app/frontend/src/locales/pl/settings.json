@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Język",
+    "pending": "{name} (tłumaczenie wkrótce)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Awatar",
+    "dnd": "Powiadomienia wstrzymane"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Zamknij",
+    "loading": "Ładowanie...",
+    "notFound": "Nie znaleziono profilu",
+    "uploadPhoto": "Prześlij zdjęcie",
+    "uploading": "Przesyłanie...",
+    "name": "Imię",
+    "bio": "O mnie",
+    "bioPlaceholder": "Napisz coś o sobie",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "status": "Status",
+    "joined": "Dołączył(a)",
+    "message": "Wiadomość",
+    "edit": "Edytuj profil",
+    "statusValue": {
+      "online": "online",
+      "away": "nieobecny",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Nie udało się wczytać profilu.",
+      "saveFailed": "Nie udało się zapisać profilu. Spróbuj ponownie.",
+      "notImage": "Wybierz plik obrazu.",
+      "tooLarge": "Obraz musi mieć mniej niż 5 MB.",
+      "uploadFailed": "Nie udało się przesłać zdjęcia. Spróbuj ponownie."
+    },
+    "statusUntil": "Do {time}"
+  },
+  "crop": {
+    "title": "Przytnij zdjęcie",
+    "close": "Zamknij",
+    "zoom": "Powiększenie",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "failed": "Nie udało się przyciąć"
+  },
+  "accessTokens": {
+    "title": "Osobiste tokeny dostępu",
+    "description": "Tokeny pozwalają Claude i innym klientom MCP czytać Twoją przestrzeń roboczą oraz, jeśli na to zezwolisz, pisać w niej z Twoimi uprawnieniami. Traktuj je jak hasło.",
+    "nameLabel": "Nazwa tokena",
+    "namePlaceholder": "np. Claude Code na moim laptopie",
+    "scopesLabel": "Uprawnienia",
+    "scope": {
+      "channelsRead": "Wyświetlanie listy kanałów",
+      "channelsHistory": "Odczyt wiadomości, wątków i aktywności",
+      "usersRead": "Przeglądanie osób",
+      "chatWrite": "Publikowanie, edytowanie i usuwanie Twoich wiadomości",
+      "reactionsWrite": "Dodawanie i usuwanie Twoich reakcji",
+      "imRead": "Wyświetlanie Twoich wiadomości prywatnych i grupowych",
+      "imHistory": "Odczyt historii Twoich wiadomości prywatnych",
+      "imWrite": "Wysyłanie, edytowanie i usuwanie Twoich wiadomości prywatnych",
+      "searchRead": "Wyszukiwanie wiadomości, plików, osób i kanałów (wyniki z wiadomości prywatnych wymagają ich historii)",
+      "filesRead": "Wyświetlanie listy plików i odczyt zawartości plików tekstowych"
+    },
+    "expiryLabel": "Wygasa",
+    "expiryDays": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}",
+    "expiryNever": "Bez wygaśnięcia",
+    "neverWarning": "Tokeny bez daty wygaśnięcia pozostają ważne, dopóki ich nie unieważnisz.",
+    "create": "Wygeneruj token",
+    "createdNotice": "Skopiuj nowy token teraz. Nie będzie można go zobaczyć ponownie.",
+    "copy": "Kopiuj token",
+    "copyCommand": "Kopiuj polecenie",
+    "copied": "Skopiowano do schowka",
+    "connectHint": "Połącz się z Claude Code:",
+    "dismiss": "Gotowe, ukryj token",
+    "loading": "Ładowanie...",
+    "empty": "Nie masz osobistych tokenów dostępu.",
+    "expires": "Wygasa {date}",
+    "expired": "Wygasł",
+    "noExpiry": "Bez wygaśnięcia",
+    "lastUsed": "Ostatnio użyty {date}",
+    "neverUsed": "Nigdy nie użyty",
+    "rename": "Zmień nazwę",
+    "renameLabel": "Zmień nazwę tokena {name}",
+    "revoke": "Unieważnij",
+    "revokeLabel": "Unieważnij token {name}",
+    "revokeConfirm": "Unieważnij teraz",
+    "cancel": "Anuluj",
+    "close": "Zamknij",
+    "errors": {
+      "loadFailed": "Nie udało się wczytać tokenów.",
+      "createFailed": "Nie udało się utworzyć tokena. Spróbuj ponownie.",
+      "renameFailed": "Nie udało się zmienić nazwy tokena.",
+      "revokeFailed": "Nie udało się unieważnić tokena.",
+      "copyFailed": "Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie.",
+      "limitReached": "Możesz mieć najwyżej {max} aktywnych tokenów. Unieważnij te, których już nie używasz, i spróbuj ponownie.",
+      "codeRequired": "Wpisz kod dwuskładnikowy, aby utworzyć token.",
+      "invalidCode": "Kod dwuskładnikowy jest nieprawidłowy."
+    },
+    "codeLabel": "Kod dwuskładnikowy",
+    "codeHint": "Wpisz kod z aplikacji uwierzytelniającej, aby utworzyć token."
+  },
+  "sessions": {
+    "title": "Urządzenia zalogowane",
+    "description": "Te urządzenia są zalogowane do Twojego konta. Wyloguj te, których nie rozpoznajesz lub już nie używasz.",
+    "loading": "Ładowanie...",
+    "empty": "Brak zalogowanych urządzeń.",
+    "thisDevice": "To urządzenie",
+    "unknownDevice": "Nieznane urządzenie",
+    "signedInAt": "Zalogowano {date}",
+    "lastActive": "Ostatnia aktywność: {date}",
+    "signOut": "Wyloguj",
+    "signOutLabel": "Wyloguj urządzenie {device}",
+    "signOutThisLabel": "Wyloguj to urządzenie ({device})",
+    "signOutOthers": "Wyloguj ze wszystkich innych urządzeń",
+    "signOutOthersConfirm": "{count, plural, one {Wyloguj # inne urządzenie} few {Wyloguj # inne urządzenia} many {Wyloguj # innych urządzeń} other {Wyloguj # innego urządzenia}}",
+    "revoked": "Urządzenie wylogowane",
+    "revokedOthers": "Wylogowano ze wszystkich innych urządzeń",
+    "errors": {
+      "loadFailed": "Nie udało się wczytać urządzeń.",
+      "revokeFailed": "Nie udało się wylogować. Spróbuj ponownie."
+    },
+    "device": {
+      "desktop": "Aplikacja desktopowa",
+      "desktopOn": "Aplikacja desktopowa na {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} na {os}",
+      "unknownOn": "Nieznane urządzenie na {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Zmień hasło",
+    "description": "Wpisz obecne hasło i wybierz nowe.",
+    "currentLabel": "Obecne hasło",
+    "newLabel": "Nowe hasło",
+    "confirmLabel": "Potwierdź nowe hasło",
+    "sessionsNote": "Po zmianie hasła pozostałe zalogowane urządzenia zostaną wylogowane.",
+    "submit": "Zmień hasło",
+    "submitting": "Zmienianie...",
+    "cancel": "Anuluj",
+    "successToast": "Twoje hasło zostało zmienione",
+    "errors": {
+      "currentRequired": "Wpisz obecne hasło.",
+      "failed": "Nie udało się zmienić hasła. Spróbuj ponownie."
+    }
+  },
+  "twoFactor": {
+    "title": "Uwierzytelnianie dwuskładnikowe",
+    "description": "Przy logowaniu proś o kod z aplikacji uwierzytelniającej oprócz hasła.",
+    "loading": "Ładowanie...",
+    "statusOn": "Wł.",
+    "statusOff": "Wył.",
+    "enabledSince": "Włączono {date}",
+    "recoveryRemaining": "{count, plural, one {Pozostał # kod odzyskiwania} few {Pozostały # kody odzyskiwania} many {Pozostało # kodów odzyskiwania} other {Pozostało # kodu odzyskiwania}}",
+    "unavailable": "Uwierzytelnianie dwuskładnikowe jest niedostępne na tym serwerze. Zapytaj administratora.",
+    "requiredNotice": "Twoja organizacja wymaga uwierzytelniania dwuskładnikowego.",
+    "close": "Zamknij",
+    "setup": {
+      "start": "Skonfiguruj uwierzytelnianie dwuskładnikowe",
+      "starting": "Przygotowywanie...",
+      "step1": "1. Dodaj to konto do aplikacji uwierzytelniającej. Otwórz link na telefonie albo wpisz klucz konfiguracji ręcznie.",
+      "uriLabel": "Link konfiguracyjny",
+      "openInApp": "Otwórz w aplikacji uwierzytelniającej",
+      "qrLabel": "Kod QR dla aplikacji uwierzytelniającej",
+      "qrHint": "Zeskanuj ten kod QR aplikacją uwierzytelniającą albo użyj linku lub klucza poniżej.",
+      "keyLabel": "Klucz konfiguracyjny",
+      "copyKey": "Kopiuj klucz konfiguracyjny",
+      "copyUri": "Kopiuj link konfiguracyjny",
+      "copied": "Skopiowano",
+      "step2": "2. Wpisz 6-cyfrowy kod, który pokazuje aplikacja.",
+      "codeLabel": "Kod uwierzytelniający",
+      "codePlaceholder": "123456",
+      "verify": "Włącz",
+      "verifying": "Sprawdzanie...",
+      "cancel": "Anuluj",
+      "passwordLabel": "3. Wpisz obecne hasło.",
+      "sessionsNote": "Po włączeniu tej opcji pozostałe zalogowane urządzenia zostaną wylogowane."
+    },
+    "recovery": {
+      "title": "Zapisz kody odzyskiwania",
+      "description": "Jeśli zgubisz urządzenie, użyj kodu odzyskiwania, aby się zalogować. Każdy kod działa jeden raz. Nie zostaną pokazane ponownie.",
+      "download": "Pobierz",
+      "copy": "Kopiuj wszystkie",
+      "fileHeader": "Kody odzyskiwania. Każdy kod działa jeden raz. Przechowuj je w bezpiecznym miejscu.",
+      "confirmSaved": "Zapisałem kody odzyskiwania",
+      "fileName": "kody-odzyskiwania.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Hasło",
+      "codeLabel": "Kod uwierzytelniający lub odzyskiwania",
+      "cancel": "Anuluj",
+      "passwordInvalid": "Wpisz prawidłowe hasło.",
+      "codeInvalid": "Wpisz prawidłowy kod uwierzytelniający lub odzyskiwania."
+    },
+    "regenerate": {
+      "start": "Wygeneruj nowe kody odzyskiwania",
+      "title": "Wygeneruj nowe kody odzyskiwania",
+      "description": "Stare kody odzyskiwania przestaną działać, gdy tylko wygenerujesz nowe. Wpisz hasło i kod z aplikacji uwierzytelniającej (lub kod odzyskiwania).",
+      "submit": "Wygeneruj nowe kody",
+      "submitting": "Generowanie...",
+      "lowNotice": "{count, plural, one {Pozostał tylko # kod odzyskiwania} few {Pozostały tylko # kody odzyskiwania} many {Pozostało tylko # kodów odzyskiwania} other {Pozostało tylko # kodu odzyskiwania}}. Wygeneruj nowe, zanim się skończą.",
+      "toast": "Nowe kody odzyskiwania są gotowe"
+    },
+    "disable": {
+      "title": "Wyłącz uwierzytelnianie dwuskładnikowe",
+      "description": "Wpisz hasło i kod z aplikacji uwierzytelniającej (lub kod odzyskiwania).",
+      "start": "Wyłącz",
+      "submit": "Wyłącz uwierzytelnianie dwuskładnikowe",
+      "submitting": "Wyłączanie...",
+      "blockedByPolicy": "Twoja organizacja wymaga uwierzytelniania dwuskładnikowego, więc nie możesz go wyłączyć. Jeśli zgubiłeś urządzenie, poproś administratora o reset."
+    },
+    "enabledToast": "Uwierzytelnianie dwuskładnikowe jest włączone",
+    "disabledToast": "Uwierzytelnianie dwuskładnikowe jest wyłączone",
+    "errors": {
+      "loadFailed": "Nie udało się wczytać ustawień dwuskładnikowych.",
+      "setupFailed": "Nie udało się rozpocząć konfiguracji. Spróbuj ponownie.",
+      "enableFailed": "Nie udało się włączyć uwierzytelniania dwuskładnikowego.",
+      "regenerateFailed": "Nie udało się wygenerować nowych kodów odzyskiwania.",
+      "disableFailed": "Nie udało się wyłączyć uwierzytelniania dwuskładnikowego.",
+      "copyFailed": "Nie udało się skopiować do schowka."
+    }
+  },
+  "connectedApps": {
+    "title": "Połączone aplikacje",
+    "description": "Aplikacje, którym zezwoliłeś korzystać z Twojego konta przez logowanie OAuth. Działają z Twoimi uprawnieniami. Odłącz aplikacje, których już nie używasz.",
+    "loading": "Ładowanie...",
+    "empty": "Do Twojego konta nie są połączone żadne aplikacje.",
+    "redirectsTo": "Przekierowuje do {hosts}",
+    "connectedAt": "Połączono {date}",
+    "lastUsed": "Ostatnio użyta {date}",
+    "neverUsed": "Nigdy nie użyta",
+    "disconnect": "Odłącz",
+    "disconnectLabel": "Odłącz {name}",
+    "disconnectConfirm": "Odłącz teraz",
+    "cancel": "Anuluj",
+    "disconnected": "Aplikacja została odłączona",
+    "close": "Zamknij",
+    "errors": {
+      "loadFailed": "Nie udało się wczytać połączonych aplikacji.",
+      "disconnectFailed": "Nie udało się odłączyć aplikacji."
+    },
+    "unnamedApp": "Aplikacja bez nazwy"
+  }
+}

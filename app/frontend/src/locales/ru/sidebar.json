@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Активность",
+    "unreads": "Непрочитанные",
+    "later": "Позже",
+    "files": "Файлы",
+    "admin": "Администрирование",
+    "threads": "Треды"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Новое сообщение"
+  },
+  "userMenu": {
+    "profile": "Профиль",
+    "notificationsBlocked": "Уведомления заблокированы",
+    "disableNotifications": "Отключить уведомления",
+    "enableNotifications": "Включить уведомления",
+    "signOut": "Выйти",
+    "updateStatus": "Обновить статус",
+    "pauseNotifications": "Приостановить уведомления",
+    "pausedUntil": "Приостановлено до {time}",
+    "pausedIndefinitely": "Приостановлено, пока статус не будет очищен",
+    "resumeNotifications": "Возобновить уведомления",
+    "pause": {
+      "m30": "30 минут",
+      "h1": "1 час",
+      "h2": "2 часа",
+      "tomorrow": "До завтра"
+    },
+    "pauseError": "Не удалось изменить паузу уведомлений. Попробуйте ещё раз.",
+    "accessTokens": "Личные токены доступа",
+    "sessions": "Устройства с входом",
+    "twoFactor": "Двухфакторная аутентификация",
+    "changePassword": "Сменить пароль",
+    "connectedApps": "Подключённые приложения"
+  },
+  "sections": {
+    "starred": "Избранное",
+    "channels": "Каналы",
+    "addChannels": "Добавить каналы",
+    "directMessages": "Личные сообщения",
+    "addTeammates": "Добавить коллег",
+    "starredEmpty": "Добавьте канал или беседу в избранное, чтобы они отображались здесь.",
+    "collapse": "Свернуть раздел «{section}»",
+    "expand": "Развернуть раздел «{section}»"
+  },
+  "teammates": {
+    "title": "Личное сообщение",
+    "subtitle": "Найдите или начните беседу",
+    "searchPlaceholder": "Поиск по имени...",
+    "noUsers": "Пользователи не найдены",
+    "close": "Закрыть",
+    "pickSubtitle": "Можно выбрать до {max, plural, one {# человека} few {# человек} many {# человек} other {# человека}}",
+    "select": "Выбрать {name}",
+    "selectedCount": "Выбрано: {count} из {max}",
+    "start": "Начать беседу",
+    "startGroup": "Начать групповую беседу"
+  },
+  "you": "(вы)",
+  "notifications": {
+    "someone": "Кто-то",
+    "sentAttachment": "Отправил вложение",
+    "threadTitle": "{name} (тред)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участника}}",
+    "createError": "Не удалось начать групповую беседу. Попробуйте ещё раз."
+  },
+  "statusDialog": {
+    "title": "Установить статус",
+    "emojiLabel": "Выберите эмодзи",
+    "textLabel": "Какой у вас статус?",
+    "textPlaceholder": "Какой у вас статус?",
+    "durationLabel": "Очистить через",
+    "duration": {
+      "never": "Не очищать",
+      "m30": "30 минут",
+      "h1": "1 час",
+      "h4": "4 часа",
+      "today": "Сегодня",
+      "week": "На этой неделе"
+    },
+    "pauseCheckbox": "Приостановить уведомления до очистки статуса",
+    "save": "Сохранить",
+    "clear": "Очистить статус",
+    "cancel": "Отмена",
+    "expiresAt": "Очистится в {time}",
+    "saveError": "Не удалось сохранить статус. Попробуйте ещё раз."
+  },
+  "findConversation": "Найти беседу"
+}

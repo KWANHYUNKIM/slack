@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(мікрофон вимкнено)",
+    "mute": "Вимкнути мікрофон",
+    "unmute": "Увімкнути мікрофон",
+    "leave": "Покинути хадл"
+  },
+  "button": {
+    "leaveFirstError": "Спочатку покиньте поточний хадл",
+    "cancelInviteFirstError": "Спочатку скасуйте поточне запрошення",
+    "cancelInvite": "Скасувати запрошення",
+    "calling": "Виклик...",
+    "inHuddle": "У хадлі",
+    "leaveCurrentFirst": "Спочатку покиньте поточний хадл",
+    "start": "Почати хадл"
+  },
+  "incoming": {
+    "invite": "Запрошення до хадлу",
+    "secondsLeft": "{count} с",
+    "decline": "Відхилити",
+    "accept": "Прийняти"
+  },
+  "system": {
+    "youStarted": "Ви почали хадл.",
+    "started": "Почав хадл.",
+    "ended": "Завершено",
+    "youSentInvite": "Ви надіслали запрошення до хадлу.",
+    "sentInvite": "Надіслав вам запрошення до хадлу.",
+    "huddleStarted": "Хадл почався",
+    "huddleEnded": "Хадл завершено ({duration})",
+    "durationSeconds": "{seconds} с",
+    "durationMinutesSeconds": "{minutes} хв {seconds} с"
+  },
+  "errors": {
+    "leaveFirst": "Спочатку покиньте поточний хадл",
+    "cancelInviteFirst": "Спочатку скасуйте поточне запрошення",
+    "micDenied": "Доступ до мікрофона заборонено",
+    "busy": "Ця особа вже в іншому хадлі",
+    "declined": "Запрошення відхилено",
+    "expired": "Термін запрошення минув",
+    "rateLimited": "Забагато запитів. Спробуйте за хвилину",
+    "invalidInvite": "Запит на запрошення був недійсним",
+    "cannotInviteSelf": "Не можна запросити самого себе",
+    "userNotFound": "Користувача не знайдено",
+    "invalidAccept": "Запит на прийняття був недійсним",
+    "inviteNotFound": "Запрошення не знайдено або термін минув",
+    "peerOffline": "Не в мережі",
+    "generic": "Не вдалося почати хадл. Спробуйте ще раз"
+  }
+}

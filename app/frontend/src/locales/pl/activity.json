@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktywność",
+    "markAllRead": "Oznacz wszystko jako przeczytane",
+    "loading": "Ładowanie...",
+    "loadingMore": "Ładowanie kolejnych...",
+    "loadFailed": "Nie udało się załadować aktywności.",
+    "empty": "Brak aktywności.",
+    "unread": "Nieprzeczytane",
+    "menu": "Menu",
+    "someone": "Ktoś",
+    "directMessage": "wiadomość prywatna",
+    "messageDeleted": "Usunięta wiadomość"
+  },
+  "tabs": {
+    "all": "Wszystkie",
+    "mentions": "Wzmianki",
+    "threads": "Wątki",
+    "reactions": "Reakcje"
+  },
+  "describe": {
+    "mention": "{actor} wspomniał(a) o Tobie w {where}",
+    "channelMention": "{actor} wspomniał(a) o @channel w {where}",
+    "hereMention": "{actor} wspomniał(a) o @here w {where}",
+    "threadReply": "{actor} odpowiedział(a) w wątku w {where}",
+    "reaction": "{actor} zareagował(a) {emoji} na Twoją wiadomość w {where}",
+    "reminder": "Przypomnienie"
+  }
+}

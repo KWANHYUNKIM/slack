@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Lingua",
+    "pending": "{name} (traduzione in arrivo)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notifiche in pausa"
+  },
+  "profile": {
+    "title": "Profilo",
+    "close": "Chiudi",
+    "loading": "Caricamento...",
+    "notFound": "Profilo non trovato",
+    "uploadPhoto": "Carica foto",
+    "uploading": "Caricamento...",
+    "name": "Nome",
+    "bio": "Biografia",
+    "bioPlaceholder": "Racconta qualcosa di te",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "status": "Stato",
+    "joined": "Iscritto",
+    "message": "Messaggio",
+    "edit": "Modifica profilo",
+    "statusValue": {
+      "online": "online",
+      "away": "assente",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Impossibile caricare il profilo.",
+      "saveFailed": "Impossibile salvare il profilo. Riprova.",
+      "notImage": "Seleziona un file immagine.",
+      "tooLarge": "L'immagine deve essere inferiore a 5 MB.",
+      "uploadFailed": "Impossibile caricare la foto. Riprova."
+    },
+    "statusUntil": "Fino alle {time}"
+  },
+  "crop": {
+    "title": "Ritaglia la tua foto",
+    "close": "Chiudi",
+    "zoom": "Zoom",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "failed": "Impossibile ritagliare"
+  },
+  "accessTokens": {
+    "title": "Token di accesso personali",
+    "description": "I token permettono a Claude e ad altri client MCP di leggere e, se lo consenti, scrivere nel tuo spazio di lavoro con i tuoi permessi. Trattali come una password.",
+    "nameLabel": "Nome del token",
+    "namePlaceholder": "es. Claude Code sul mio portatile",
+    "scopesLabel": "Permessi",
+    "scope": {
+      "channelsRead": "Elenca i canali",
+      "channelsHistory": "Leggi messaggi, thread e attività",
+      "usersRead": "Visualizza le persone",
+      "chatWrite": "Pubblica, modifica ed elimina i tuoi messaggi",
+      "reactionsWrite": "Aggiungi e rimuovi le tue reazioni",
+      "imRead": "Elenca i tuoi messaggi diretti e i DM di gruppo",
+      "imHistory": "Leggi la cronologia dei tuoi messaggi diretti",
+      "imWrite": "Invia, modifica ed elimina i tuoi messaggi diretti",
+      "searchRead": "Cerca messaggi, file, persone e canali (i risultati dei DM richiedono la cronologia dei DM)",
+      "filesRead": "Elenca i file e leggi il contenuto dei file di testo"
+    },
+    "expiryLabel": "Scade",
+    "expiryDays": "{count, plural, one {# giorno} other {# giorni}}",
+    "expiryNever": "Nessuna scadenza",
+    "neverWarning": "I token senza scadenza restano validi finché non li revochi.",
+    "create": "Genera token",
+    "createdNotice": "Copia subito il nuovo token. Non potrai vederlo di nuovo.",
+    "copy": "Copia token",
+    "copyCommand": "Copia comando",
+    "copied": "Copiato negli appunti",
+    "connectHint": "Collegati da Claude Code:",
+    "dismiss": "Fatto, nascondi token",
+    "loading": "Caricamento...",
+    "empty": "Non hai token di accesso personali.",
+    "expires": "Scade il {date}",
+    "expired": "Scaduto",
+    "noExpiry": "Nessuna scadenza",
+    "lastUsed": "Ultimo utilizzo il {date}",
+    "neverUsed": "Mai utilizzato",
+    "rename": "Rinomina",
+    "renameLabel": "Rinomina il token {name}",
+    "revoke": "Revoca",
+    "revokeLabel": "Revoca il token {name}",
+    "revokeConfirm": "Revoca ora",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "errors": {
+      "loadFailed": "Impossibile caricare i token.",
+      "createFailed": "Impossibile creare il token. Riprova.",
+      "renameFailed": "Impossibile rinominare il token.",
+      "revokeFailed": "Impossibile revocare il token.",
+      "copyFailed": "Impossibile copiare. Seleziona il testo e copialo manualmente.",
+      "limitReached": "Puoi avere al massimo {max} token attivi. Revoca quelli che non usi più e riprova.",
+      "codeRequired": "Inserisci il codice a due fattori per creare un token.",
+      "invalidCode": "Il codice a due fattori non è corretto."
+    },
+    "codeLabel": "Codice a due fattori",
+    "codeHint": "Inserisci un codice dall'app di autenticazione per creare un token."
+  },
+  "sessions": {
+    "title": "Dispositivi con accesso",
+    "description": "Questi dispositivi hanno accesso al tuo account. Disconnetti quelli che non riconosci o non usi più.",
+    "loading": "Caricamento...",
+    "empty": "Nessun dispositivo con accesso.",
+    "thisDevice": "Questo dispositivo",
+    "unknownDevice": "Dispositivo sconosciuto",
+    "signedInAt": "Accesso il {date}",
+    "lastActive": "Ultima attività il {date}",
+    "signOut": "Esci",
+    "signOutLabel": "Disconnetti {device}",
+    "signOutThisLabel": "Disconnetti questo dispositivo ({device})",
+    "signOutOthers": "Disconnetti da tutti gli altri dispositivi",
+    "signOutOthersConfirm": "{count, plural, one {Disconnetti # altro dispositivo} other {Disconnetti # altri dispositivi}}",
+    "revoked": "Dispositivo disconnesso",
+    "revokedOthers": "Disconnesso da tutti gli altri dispositivi",
+    "errors": {
+      "loadFailed": "Impossibile caricare i dispositivi.",
+      "revokeFailed": "Impossibile disconnettersi. Riprova."
+    },
+    "device": {
+      "desktop": "App desktop",
+      "desktopOn": "App desktop su {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} su {os}",
+      "unknownOn": "Dispositivo sconosciuto su {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Cambia password",
+    "description": "Inserisci la password attuale e scegline una nuova.",
+    "currentLabel": "Password attuale",
+    "newLabel": "Nuova password",
+    "confirmLabel": "Conferma nuova password",
+    "sessionsNote": "Quando cambi la password, gli altri dispositivi con accesso vengono disconnessi.",
+    "submit": "Cambia password",
+    "submitting": "Modifica in corso...",
+    "cancel": "Annulla",
+    "successToast": "La tua password è stata cambiata",
+    "errors": {
+      "currentRequired": "Inserisci la password attuale.",
+      "failed": "Impossibile cambiare la password. Riprova."
+    }
+  },
+  "twoFactor": {
+    "title": "Autenticazione a due fattori",
+    "description": "Quando accedi, chiedi oltre alla password un codice dall'app di autenticazione.",
+    "loading": "Caricamento...",
+    "statusOn": "Attiva",
+    "statusOff": "Disattivata",
+    "enabledSince": "Attivata il {date}",
+    "recoveryRemaining": "{count, plural, one {# codice di recupero rimasto} other {# codici di recupero rimasti}}",
+    "unavailable": "L'autenticazione a due fattori non è disponibile su questo server. Chiedi all'amministratore.",
+    "requiredNotice": "La tua organizzazione richiede l'autenticazione a due fattori.",
+    "close": "Chiudi",
+    "setup": {
+      "start": "Configura l'autenticazione a due fattori",
+      "starting": "Preparazione...",
+      "step1": "1. Aggiungi questo account alla tua app di autenticazione. Apri il link sul telefono oppure inserisci a mano la chiave di configurazione.",
+      "uriLabel": "Link di configurazione",
+      "openInApp": "Apri nell'app di autenticazione",
+      "qrLabel": "Codice QR per l'app di autenticazione",
+      "qrHint": "Scansiona questo codice QR con l'app di autenticazione, oppure usa il link o la chiave qui sotto.",
+      "keyLabel": "Chiave di configurazione",
+      "copyKey": "Copia chiave di configurazione",
+      "copyUri": "Copia link di configurazione",
+      "copied": "Copiato",
+      "step2": "2. Inserisci il codice di 6 cifre mostrato dall'app.",
+      "codeLabel": "Codice di autenticazione",
+      "codePlaceholder": "123456",
+      "verify": "Attiva",
+      "verifying": "Verifica...",
+      "cancel": "Annulla",
+      "passwordLabel": "3. Inserisci la password attuale.",
+      "sessionsNote": "Quando attivi questa opzione, gli altri dispositivi con accesso vengono disconnessi."
+    },
+    "recovery": {
+      "title": "Salva i codici di recupero",
+      "description": "Usa un codice di recupero per accedere se perdi il dispositivo. Ogni codice funziona una sola volta. Non verranno mostrati di nuovo.",
+      "download": "Scarica",
+      "copy": "Copia tutti",
+      "fileHeader": "Codici di recupero. Ogni codice funziona una sola volta. Conservali in un posto sicuro.",
+      "confirmSaved": "Ho salvato i miei codici di recupero",
+      "fileName": "codici-recupero.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Password",
+      "codeLabel": "Codice di autenticazione o di recupero",
+      "cancel": "Annulla",
+      "passwordInvalid": "Inserisci una password valida.",
+      "codeInvalid": "Inserisci un codice di autenticazione o di recupero valido."
+    },
+    "regenerate": {
+      "start": "Genera nuovi codici di recupero",
+      "title": "Genera nuovi codici di recupero",
+      "description": "I vecchi codici di recupero smettono di funzionare non appena ne generi di nuovi. Inserisci la password e un codice dall'app di autenticazione (oppure un codice di recupero).",
+      "submit": "Genera nuovi codici",
+      "submitting": "Generazione...",
+      "lowNotice": "{count, plural, one {Resta solo # codice di recupero} other {Restano solo # codici di recupero}}. Generane di nuovi prima di esaurirli.",
+      "toast": "I nuovi codici di recupero sono pronti"
+    },
+    "disable": {
+      "title": "Disattiva l'autenticazione a due fattori",
+      "description": "Inserisci la password e un codice dall'app di autenticazione (oppure un codice di recupero).",
+      "start": "Disattiva",
+      "submit": "Disattiva l'autenticazione a due fattori",
+      "submitting": "Disattivazione...",
+      "blockedByPolicy": "La tua organizzazione richiede l'autenticazione a due fattori, quindi non puoi disattivarla. Se hai perso il dispositivo, chiedi a un amministratore di reimpostarla."
+    },
+    "enabledToast": "L'autenticazione a due fattori è attiva",
+    "disabledToast": "L'autenticazione a due fattori è disattivata",
+    "errors": {
+      "loadFailed": "Impossibile caricare le impostazioni dei due fattori.",
+      "setupFailed": "Impossibile avviare la configurazione. Riprova.",
+      "enableFailed": "Impossibile attivare l'autenticazione a due fattori.",
+      "regenerateFailed": "Impossibile generare nuovi codici di recupero.",
+      "disableFailed": "Impossibile disattivare l'autenticazione a due fattori.",
+      "copyFailed": "Impossibile copiare negli appunti."
+    }
+  },
+  "connectedApps": {
+    "title": "App collegate",
+    "description": "App che hai autorizzato a usare il tuo account tramite il flusso di accesso OAuth. Agiscono con i tuoi permessi. Scollega le app che non usi più.",
+    "loading": "Caricamento...",
+    "empty": "Nessuna app è collegata al tuo account.",
+    "redirectsTo": "Torna a {hosts}",
+    "connectedAt": "Collegata il {date}",
+    "lastUsed": "Ultimo utilizzo il {date}",
+    "neverUsed": "Mai utilizzata",
+    "disconnect": "Scollega",
+    "disconnectLabel": "Scollega {name}",
+    "disconnectConfirm": "Scollega ora",
+    "cancel": "Annulla",
+    "disconnected": "App scollegata",
+    "close": "Chiudi",
+    "errors": {
+      "loadFailed": "Impossibile caricare le app collegate.",
+      "disconnectFailed": "Impossibile scollegare l'app."
+    },
+    "unnamedApp": "App senza nome"
+  }
+}

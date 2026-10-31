@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "send": "Invia",
+    "confirm": "Conferma",
+    "back": "Indietro",
+    "remove": "Rimuovi",
+    "add": "Aggiungi",
+    "create": "Crea",
+    "retry": "Riprova",
+    "search": "Cerca",
+    "copy": "Copia",
+    "done": "Fatto",
+    "next": "Avanti",
+    "more": "Altro"
+  },
+  "emojiPicker": {
+    "loadFailed": "Impossibile caricare le emoji. Controlla la connessione e riprova.",
+    "retry": "Riprova"
+  },
+  "status": {
+    "loading": "Caricamento...",
+    "saving": "Salvataggio...",
+    "deleting": "Eliminazione..."
+  },
+  "dates": {
+    "today": "Oggi",
+    "yesterday": "Ieri"
+  },
+  "quickSwitcher": {
+    "title": "Passaggio rapido",
+    "inputLabel": "Vai a una conversazione",
+    "placeholder": "Vai a un canale o una conversazione",
+    "recent": "Recenti",
+    "results": "Risultati",
+    "clearRecent": "Cancella recenti",
+    "listLabel": "Conversazioni",
+    "noResults": "Nessuna conversazione corrispondente",
+    "starred": "Preferiti",
+    "unread": "Non letti",
+    "dnd": "Non disturbare",
+    "footer": "{keys} per aprire. Su e Giù per spostarsi, Invio per andare, Esc per chiudere.",
+    "open": "Vai a…",
+    "kind": {
+      "channel": "Canale",
+      "dm": "Messaggio diretto",
+      "group": "Messaggio di gruppo"
+    }
+  },
+  "shortcuts": {
+    "title": "Scorciatoie da tastiera",
+    "groups": {
+      "navigation": "Navigazione",
+      "general": "Generali"
+    },
+    "items": {
+      "switcher": "Apri il passaggio rapido",
+      "prevChannel": "Conversazione precedente",
+      "nextChannel": "Conversazione successiva",
+      "prevUnread": "Conversazione non letta precedente",
+      "nextUnread": "Conversazione non letta successiva",
+      "help": "Mostra le scorciatoie da tastiera",
+      "closeTop": "Chiudi il passaggio rapido o questa finestra"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Maiusc",
+      "esc": "Esc",
+      "enter": "Invio"
+    }
+  }
+}

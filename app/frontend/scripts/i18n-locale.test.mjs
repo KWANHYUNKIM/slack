@@ -15,7 +15,7 @@ import {
 import { TIER1_LOCALES, TIER2_LOCALES, isBetaLocale } from '../src/lib/i18n/tiers.ts';
 
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales');
-const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR'];
+const WALK = ['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl'];
 
 function loadLocale(locale) {
   const dir = join(LOCALES_DIR, locale);
@@ -43,7 +43,7 @@ async function makeI18n(resources = RESOURCES) {
 const SAMPLES = [
   {
     key: 'common:actions.save',
-    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar' },
+    values: { en: 'Save', ko: '저장', ja: '保存', 'zh-Hans': '保存', 'zh-Hant': '儲存', es: 'Guardar', fr: 'Enregistrer', de: 'Speichern', 'pt-BR': 'Salvar', it: 'Salva', ru: 'Сохранить', uk: 'Зберегти', pl: 'Zapisz' },
   },
   {
     key: 'auth:login.submit',
@@ -57,11 +57,15 @@ const SAMPLES = [
       fr: "Se connecter avec l'e-mail",
       de: 'Mit E-Mail anmelden',
       'pt-BR': 'Entrar com e-mail',
+      it: 'Accedi con email',
+      ru: 'Войти по эл. почте',
+      uk: 'Увійти через ел. пошту',
+      pl: 'Zaloguj się adresem e-mail',
     },
   },
   {
     key: 'sidebar:nav.activity',
-    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade' },
+    values: { en: 'Activity', ko: '활동', ja: 'アクティビティ', 'zh-Hans': '动态', 'zh-Hant': '動態', es: 'Actividad', fr: 'Activité', de: 'Aktivität', 'pt-BR': 'Atividade', it: 'Attività', ru: 'Активность', uk: 'Активність', pl: 'Aktywność' },
   },
   {
     key: 'messages:input.send',
@@ -75,6 +79,10 @@ const SAMPLES = [
       fr: 'Envoyer le message',
       de: 'Nachricht senden',
       'pt-BR': 'Enviar mensagem',
+      it: 'Invia messaggio',
+      ru: 'Отправить сообщение',
+      uk: 'Надіслати повідомлення',
+      pl: 'Wyślij wiadomość',
     },
   },
   {
@@ -90,6 +98,10 @@ const SAMPLES = [
       fr: '2 membres',
       de: '2 Mitglieder',
       'pt-BR': '2 membros',
+      it: '2 membri',
+      ru: '2 участника',
+      uk: '2 учасники',
+      pl: '2 członkowie',
     },
   },
   {
@@ -104,11 +116,15 @@ const SAMPLES = [
       fr: "L'élément est introuvable.",
       de: 'Das Element wurde nicht gefunden.',
       'pt-BR': 'O item não foi encontrado.',
+      it: 'Elemento non trovato.',
+      ru: 'Объект не найден.',
+      uk: "Об'єкт не знайдено.",
+      pl: 'Nie znaleziono elementu.',
     },
   },
   {
     key: 'settings:language.label',
-    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma' },
+    values: { en: 'Language', ko: '언어', ja: '言語', 'zh-Hans': '语言', 'zh-Hant': '語言', es: 'Idioma', fr: 'Langue', de: 'Sprache', 'pt-BR': 'Idioma', it: 'Lingua', ru: 'Язык', uk: 'Мова', pl: 'Język' },
   },
   {
     key: 'sidebar:userMenu.pausedUntil',
@@ -123,13 +139,52 @@ const SAMPLES = [
       fr: "Suspendues jusqu'à 9:00",
       de: 'Pausiert bis 9:00',
       'pt-BR': 'Pausadas até 9:00',
+      it: 'In pausa fino alle 9:00',
+      ru: 'Приостановлено до 9:00',
+      uk: 'Призупинено до 9:00',
+      pl: 'Wstrzymano do 9:00',
     },
   },
 ];
 
-test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
+// 복수형 경계 값(1, 2, 5, 0, 11, 12, 21, 22, 111)으로 CLDR 분기가 맞게 고르는지 확인한다.
+// ru·uk·pl은 one/few/many/other를 모두 쓰고, it은 one/other만 쓴다.
+const PLURAL_CASES = [
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'ru',
+    cases: { 0: '0 участников', 1: '1 участник', 2: '2 участника', 5: '5 участников', 11: '11 участников', 21: '21 участник', 22: '22 участника', 111: '111 участников' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'uk',
+    cases: { 0: '0 учасників', 1: '1 учасник', 2: '2 учасники', 5: '5 учасників', 11: '11 учасників', 21: '21 учасник', 22: '22 учасники', 111: '111 учасників' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'pl',
+    cases: { 0: '0 członków', 1: '1 członek', 2: '2 członkowie', 5: '5 członków', 12: '12 członków', 21: '21 członków', 22: '22 członkowie', 111: '111 członków' },
+  },
+  {
+    key: 'channels:dialog.memberCount',
+    lng: 'it',
+    cases: { 0: '0 membri', 1: '1 membro', 2: '2 membri', 5: '5 membri', 21: '21 membri' },
+  },
+  {
+    key: 'messages:thread.replyCount',
+    lng: 'ru',
+    cases: { 1: '1 ответ', 2: '2 ответа', 5: '5 ответов', 11: '11 ответов', 21: '21 ответ' },
+  },
+  {
+    key: 'messages:thread.replyCount',
+    lng: 'pl',
+    cases: { 1: '1 odpowiedź', 2: '2 odpowiedzi', 5: '5 odpowiedzi', 12: '12 odpowiedzi', 22: '22 odpowiedzi' },
+  },
+];
+
+test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→it→ru→uk→pl→ko→en 순서로 바꿔도 주요 화면 문자열이 그 언어로 나온다', async () => {
   const i18n = await makeI18n();
-  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'ko', 'en']) {
+  for (const lng of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de', 'pt-BR', 'it', 'ru', 'uk', 'pl', 'ko', 'en']) {
     await i18n.changeLanguage(lng);
     for (const sample of SAMPLES) {
       assert.equal(i18n.t(sample.key, sample.options), sample.values[lng], `${lng} ${sample.key}`);
@@ -140,9 +195,19 @@ test('en→ja→zh-Hans→zh-Hant→es→fr→de→pt-BR→ko→en 순서로 바
 test('같은 키를 여러 번 바꿔 읽어도 값이 흔들리지 않는다(반복 확인)', async () => {
   const i18n = await makeI18n();
   for (let round = 0; round < 3; round += 1) {
-    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'ko', 'zh-Hans', 'en']) {
+    for (const lng of ['ja', 'es', 'fr', 'de', 'pt-BR', 'zh-Hant', 'it', 'ru', 'uk', 'pl', 'ko', 'zh-Hans', 'en']) {
       await i18n.changeLanguage(lng);
       assert.equal(i18n.t('settings:language.label'), SAMPLES[6].values[lng]);
+    }
+  }
+});
+
+test('복수형 경계 값(0, 1, 2, 5, 11, 12, 21, 22, 111)에서 언어별 CLDR 분기가 맞게 나온다', async () => {
+  const i18n = await makeI18n();
+  for (const { key, lng, cases } of PLURAL_CASES) {
+    await i18n.changeLanguage(lng);
+    for (const [count, expected] of Object.entries(cases)) {
+      assert.equal(i18n.t(key, { count: Number(count) }), expected, `${lng} ${key} count=${count}`);
     }
   }
 });
@@ -200,6 +265,42 @@ test('번역 리소스 CRUD: 읽기, 수정, 삭제(영어 대체), 다시 만�
   // Create: 다시 추가하면 번역이 돌아온다
   setBundle(bundle());
   assert.equal(i18n.t('sidebar:nav.later'), '後で');
+});
+
+test('신규 4개 언어(it, ru, uk, pl)도 번역 리소스 CRUD가 같게 동작한다', async () => {
+  const i18n = await makeI18n();
+  for (const [lng, later] of [
+    ['it', 'Più tardi'],
+    ['ru', 'Позже'],
+    ['uk', 'Пізніше'],
+    ['pl', 'Później'],
+  ]) {
+    await i18n.changeLanguage(lng);
+    const bundle = () => structuredClone(RESOURCES[lng].sidebar);
+    const setBundle = (value) => {
+      i18n.removeResourceBundle(lng, 'sidebar');
+      i18n.addResourceBundle(lng, 'sidebar', value, true, true);
+    };
+
+    // Read
+    assert.equal(i18n.t('sidebar:nav.later'), later, `${lng} read`);
+
+    // Update
+    const updated = bundle();
+    updated.nav.later = 'TEST';
+    setBundle(updated);
+    assert.equal(i18n.t('sidebar:nav.later'), 'TEST', `${lng} update`);
+
+    // Delete: 키를 지우면 영어 원문으로 대체된다
+    const removed = bundle();
+    delete removed.nav.later;
+    setBundle(removed);
+    assert.equal(i18n.t('sidebar:nav.later'), 'Later', `${lng} delete`);
+
+    // Create: 다시 추가하면 번역이 돌아온다
+    setBundle(bundle());
+    assert.equal(i18n.t('sidebar:nav.later'), later, `${lng} create`);
+  }
 });
 
 test('언어 등급 상수: 1등급 2개, 2등급 31개(i18n.md 표 순서), 선택 목록의 2등급은 베타', () => {
