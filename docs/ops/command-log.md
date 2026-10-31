@@ -344,3 +344,6 @@
 | 2026-11-01 06:09 | 배정: dev-5 i18n-5h E1b 새 키 18개 × 2등급 28개 언어 일괄(haiku). 진행 2명(dev-4 E1c, dev-5), 감속(스왑 95%) |
 | 2026-11-01 06:12 | i18n-5h 검토: i18n:check 경고 504→0, i18n:test 38 → PR #136, 리뷰 지적 0 → 머지 |
 | 2026-11-01 06:13 | 배정: dev-5 i18n-5i ar·he·fa(haiku, rtl:test 포함). 진행 2명(dev-4 E1c, dev-5) |
+| 2026-11-01 06:20 | E1c 검토: 리베이스 충돌 0, dev4 DB에 020000 적용, workspace-isolation 19·workspaces 41·channels 14·admin 48·users 23·messages 33·websocket 11·error-code-coverage 11, tsc, 외부 URL → PR #138, /code-review high. 결정: 헤더 B 게스트의 B 멤버 목록 노출은 워크스페이스 범위 목록이므로 승인 |
+| 2026-11-01 06:23 | i18n-5i 검토: tsc, lint, i18n:check 0, i18n:test 42, rtl:test 50, 물리 방향 189, 외부 URL → PR #139, /code-review low |
+| 2026-11-01 06:24 | PR #139 리뷰 지적 0 → 머지. 2등급 31/31 완료 |
