@@ -8,6 +8,7 @@ import { processDueReminders } from './services/reminderService.js';
 import { getAuditRetentionDays } from './config.js';
 import { purgeOldAuditLogs } from './utils/auditLog.js';
 import { purgeSessions } from './services/sessionService.js';
+import { purgeExpiredMessages, type PurgeCounts } from './services/retentionService.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
@@ -157,6 +158,32 @@ export async function purgeAuditLogsIfDue(now: number = Date.now()): Promise<num
   }
 }
 
+const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 성공하면 하루 뒤
+const RETENTION_RETRY_MS = 60 * 60 * 1000; // 실패하면 1시간 뒤 재시도(백오프)
+let nextRetentionAt = 0;
+let retentionRunning = false; // 정리가 길어져도 겹쳐 돌지 않는다
+
+/** 틱마다 불러도 하루에 한 번만 보존 정책에 따라 만료된 메시지를 지운다. 정책이 없으면 아무것도 지우지 않는다. 실패하면 1시간 뒤 다시 시도한다. */
+export async function purgeRetentionIfDue(now: number = Date.now()): Promise<PurgeCounts | null> {
+  if (retentionRunning || now < nextRetentionAt) return null;
+  retentionRunning = true;
+  try {
+    const result = await purgeExpiredMessages(new Date(now));
+    nextRetentionAt = now + RETENTION_INTERVAL_MS;
+    return result;
+  } catch (err) {
+    nextRetentionAt = now + RETENTION_RETRY_MS;
+    throw err;
+  } finally {
+    retentionRunning = false;
+  }
+}
+
+/** 테스트용: 다음 실행 시각을 되돌린다 */
+export function resetRetentionSchedule(): void {
+  nextRetentionAt = 0;
+}
+
 const SESSION_PURGE_INTERVAL_MS = 60 * 60 * 1000; // 1시간에 한 번이면 충분하다(만료 판정은 요청 때 따로 한다)
 let nextSessionPurgeAt = 0;
 
@@ -173,6 +200,7 @@ export function startScheduler(): NodeJS.Timeout {
   const handle = setInterval(() => {
     void purgeSessionsIfDue().catch((err) => logError('Scheduler: purgeSessions failed', err));
     void purgeAuditLogsIfDue().catch((err) => logError('Scheduler: purgeAuditLogs failed', err));
+    void purgeRetentionIfDue().catch((err) => logError('Scheduler: purgeRetention failed', err));
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.
     void clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
     // 리마인더도 예약 메시지 처리를 막지 않게 따로 돌린다. 겹치는 틱은 firedAt 선점이 막는다.

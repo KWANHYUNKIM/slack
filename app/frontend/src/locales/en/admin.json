@@ -7,7 +7,8 @@
       "invites": "Invites",
       "channels": "Channels",
       "webhooks": "Webhooks",
-      "audit": "Audit Log"
+      "audit": "Audit Log",
+      "retention": "Data retention"
     }
   },
   "channels": {
@@ -151,7 +152,9 @@
       "directMessage": "Direct message",
       "token": "Access token",
       "auditLog": "Audit log",
-      "mcpTool": "MCP tool"
+      "mcpTool": "MCP tool",
+      "workspace": "Workspace",
+      "file": "File"
     },
     "action": {
       "authLogin": "Signed in",
@@ -181,7 +184,11 @@
       "auditExported": "Audit log exported",
       "authLoginLocked": "Account locked",
       "sessionRevoked": "Device signed out",
-      "sessionRevokedAll": "All devices signed out"
+      "sessionRevokedAll": "All devices signed out",
+      "retentionPurged": "Expired data deleted",
+      "retentionWorkspaceUpdated": "Retention policy changed",
+      "retentionChannelUpdated": "Channel retention changed",
+      "retentionChannelCleared": "Channel retention reset"
     },
     "filters": {
       "allActions": "All actions",
@@ -222,5 +229,45 @@
     "transferOwnership": "Failed to transfer ownership",
     "unarchiveChannel": "Failed to unarchive channel",
     "updateRole": "Failed to update role"
+  },
+  "retention": {
+    "title": "Data retention",
+    "description": "Automatically delete messages after a set number of days. Files go with their messages. Cleanup runs once a day. Reminders are kept and show \"deleted message\".",
+    "loadError": "Failed to load the retention policy",
+    "saveError": "Failed to save the retention policy",
+    "resetError": "Failed to reset the channel policy",
+    "workspace": {
+      "heading": "Workspace default",
+      "hint": "Applies to every channel without its own setting, and to direct messages and group DMs."
+    },
+    "mode": {
+      "forever": "Keep forever",
+      "days": "Delete after a number of days",
+      "inherit": "Use workspace default"
+    },
+    "daysLabel": "Days",
+    "daysHint": "{min} to {max} days",
+    "effective": {
+      "forever": "Kept forever",
+      "days": "{count, plural, one {# day} other {# days}}"
+    },
+    "channels": {
+      "heading": "Channels",
+      "columns": {
+        "channel": "Channel",
+        "policy": "Policy",
+        "effective": "Applies"
+      },
+      "legalHold": "Legal hold",
+      "reset": "Reset to default",
+      "empty": "No channels"
+    },
+    "save": "Save",
+    "saved": "Saved",
+    "confirm": {
+      "title": "Delete old messages permanently?",
+      "message": "At the next cleanup, messages older than {count, plural, one {# day} other {# days}} will be permanently deleted along with their files. This can't be undone.",
+      "confirm": "Apply policy"
+    }
   }
 }

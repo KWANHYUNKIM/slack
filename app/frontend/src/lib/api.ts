@@ -1264,6 +1264,45 @@ export async function adminAuditExportUrl(filter: AuditLogFilter, format: 'csv' 
   return `/admin/audit-logs/export?${q.toString()}`;
 }
 
+// 데이터 보존(E5). days가 null이면 무기한이다.
+export interface RetentionChannel {
+  id: number;
+  name: string;
+  /** 덮어쓰기가 없으면 null, 있으면 { days } (days가 null이면 이 채널만 무기한) */
+  override: { days: number | null } | null;
+  effectiveDays: number | null;
+  legalHold: boolean;
+}
+
+export interface RetentionPolicy {
+  workspace: { days: number | null };
+  minDays: number;
+  maxDays: number;
+  channels: RetentionChannel[];
+}
+
+export function adminGetRetention() {
+  return request<RetentionPolicy>('/admin/retention');
+}
+
+export function adminSetWorkspaceRetention(days: number | null) {
+  return request<{ workspace: { days: number | null } }>('/admin/retention/workspace', {
+    method: 'PUT',
+    body: JSON.stringify({ days }),
+  });
+}
+
+export function adminSetChannelRetention(channelId: number, days: number | null) {
+  return request<RetentionChannel>(`/admin/retention/channels/${channelId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ days }),
+  });
+}
+
+export function adminClearChannelRetention(channelId: number) {
+  return request<RetentionChannel>(`/admin/retention/channels/${channelId}`, { method: 'DELETE' });
+}
+
 export function adminGetInvites() {
   return request<AdminInvite[]>('/admin/invites');
 }

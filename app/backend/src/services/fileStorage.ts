@@ -43,3 +43,24 @@ export async function readStoredBytes(
     return null;
   }
 }
+
+/**
+ * 저장소(GCS 또는 로컬)에서 파일 본체를 지운다. 이미 없으면 성공으로 본다. 지우지 못했으면 false.
+ * 데이터 보존 정리(retentionService)가 쓴다. DB 행은 건드리지 않는다.
+ */
+export async function deleteStoredFile(file: { filename: string; gcsPath: string | null }): Promise<boolean> {
+  try {
+    if (file.gcsPath && bucket) {
+      await bucket.file(file.gcsPath).delete({ ignoreNotFound: true });
+      return true;
+    }
+    const filePath = path.resolve(uploadDir, file.filename);
+    // 업로드 폴더 밖 경로는 건드리지 않는다
+    if (!filePath.startsWith(uploadDir + path.sep)) return false;
+    await fs.promises.rm(filePath, { force: true });
+    return true;
+  } catch (error) {
+    logError('Delete stored file error', error);
+    return false;
+  }
+}
