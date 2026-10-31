@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Thông báo cho tất cả những người đang hoạt động",
+    "channelLabel": "@channel",
+    "channelHint": "Thông báo cho tất cả mọi người trong kênh này"
+  },
+  "deleteDialog": {
+    "title": "Xóa tin nhắn",
+    "body": "Bạn có chắc chắn muốn xóa tin nhắn này không? Việc này không thể hoàn tác."
+  },
+  "editorToolbar": {
+    "attachFile": "Đính kèm tệp",
+    "emoji": "Biểu tượng cảm xúc",
+    "mention": "Nhắc đến ai đó",
+    "stopRecording": "Dừng ghi âm",
+    "recordVoice": "Ghi đoạn âm thanh"
+  },
+  "emojiAutocomplete": {
+    "navigate": "để di chuyển",
+    "select": "để chọn",
+    "dismiss": "để bỏ qua",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Gỡ {name}"
+  },
+  "fileModal": {
+    "download": "Tải xuống",
+    "loadFailed": "Không tải được nội dung tệp",
+    "truncated": "... (đã cắt bớt)",
+    "noPreview": "Không có bản xem trước",
+    "downloadToView": "Tải tệp xuống để xem"
+  },
+  "files": {
+    "allFiles": "Tất cả tệp",
+    "channelFiles": "Tệp của kênh",
+    "loadFailed": "Không tải được tệp.",
+    "empty": "Chưa có tệp nào được tải lên",
+    "download": "Tải xuống",
+    "menu": "Menu",
+    "unavailable": "Tệp không khả dụng",
+    "preparing": "Đang chuẩn bị tệp"
+  },
+  "format": {
+    "bold": "In đậm",
+    "italic": "In nghiêng",
+    "strike": "Gạch ngang",
+    "link": "Liên kết",
+    "orderedList": "Danh sách có thứ tự",
+    "bulletList": "Danh sách dấu đầu dòng",
+    "code": "Mã",
+    "codeBlock": "Khối mã",
+    "quote": "Trích dẫn"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "empty": "Không có thông báo mới",
+    "unreadCount": "{count, plural, one {# tin nhắn chưa đọc} other {# tin nhắn chưa đọc}}"
+  },
+  "search": {
+    "placeholder": "Tìm kiếm",
+    "searching": "Đang tìm...",
+    "noResults": "Không tìm thấy kết quả",
+    "previewHint": "{count, plural, one {# kết quả hàng đầu} other {# kết quả hàng đầu}} · Xem tất cả (Enter)",
+    "truncatedNotice": "Có rất nhiều kết quả. Hãy thêm bộ lọc để thu hẹp.",
+    "retry": "Thử lại",
+    "ignoredChip": "{token} (bị bỏ qua)",
+    "ignoredLimitChip": "{token} (bị bỏ qua: quá nhiều)",
+    "inChannel": "trong #{channel}",
+    "title": "Kết quả tìm kiếm",
+    "resultsFor": "Kết quả cho \"{query}\"",
+    "emptyQuery": "Nhập từ khóa tìm kiếm, hoặc dùng bộ lọc như from:, in:, has:, before:, after:.",
+    "noResultsHint": "Thử từ khóa khác hoặc bỏ bớt một số bộ lọc.",
+    "clearFilters": "Xóa tất cả bộ lọc",
+    "removeFilter": "Gỡ bộ lọc {filter}",
+    "loadFailed": "Tìm kiếm thất bại. Vui lòng thử lại.",
+    "loadMore": "Tải thêm",
+    "threadReply": "Trả lời trong chủ đề",
+    "directMessage": "Tin nhắn trực tiếp",
+    "groupMessage": "Cuộc trò chuyện nhóm",
+    "joined": "Đã tham gia",
+    "privateChannel": "Riêng tư",
+    "archivedChannel": "Đã lưu trữ",
+    "back": "Quay lại",
+    "tabs": {
+      "label": "Loại kết quả tìm kiếm",
+      "messages": "Tin nhắn",
+      "files": "Tệp",
+      "people": "Người",
+      "channels": "Kênh"
+    },
+    "sort": {
+      "label": "Sắp xếp theo",
+      "relevance": "Mức liên quan",
+      "recent": "Mới nhất"
+    }
+  },
+  "headerTabs": {
+    "files": "Tệp",
+    "pins": "Ghim"
+  },
+  "lightbox": {
+    "close": "Đóng"
+  },
+  "later": {
+    "title": "Xem sau",
+    "saved": "Đã lưu",
+    "scheduled": "Đã lên lịch",
+    "loadFailed": "Không tải được tin nhắn đã lưu.",
+    "empty": "Chưa có tin nhắn nào được lưu. Nhấn vào biểu tượng dấu trang trên bất kỳ tin nhắn nào để lưu.",
+    "removeSaved": "Gỡ khỏi mục Đã lưu",
+    "menu": "Menu",
+    "reminders": "Nhắc nhở"
+  },
+  "linkModal": {
+    "title": "Thêm liên kết",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Văn bản hiển thị",
+    "optional": "(không bắt buộc)",
+    "textPlaceholder": "Văn bản liên kết",
+    "close": "Đóng"
+  },
+  "actionsMenu": {
+    "noActions": "Không có thao tác nào",
+    "markUnread": "Đánh dấu là chưa đọc",
+    "pin": "Ghim tin nhắn",
+    "unpin": "Bỏ ghim tin nhắn",
+    "edit": "Sửa tin nhắn",
+    "delete": "Xóa tin nhắn",
+    "copyLink": "Sao chép liên kết",
+    "remind": "Nhắc tôi về tin nhắn này"
+  },
+  "area": {
+    "selectChannel": "Chọn một kênh để bắt đầu nhắn tin",
+    "openMenu": "Mở menu",
+    "placeholder": "Nhắn tin tới #{channel}",
+    "viewing": "Bạn đang xem <bold>#{channel}</bold>",
+    "joinChannel": "Tham gia kênh"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Xóa khỏi mục Đã gắn sao",
+    "star": "Thêm vào mục Đã gắn sao",
+    "members": "Thành viên: {count}",
+    "search": "Tìm kiếm",
+    "channelMenu": "Tùy chọn kênh",
+    "leaveChannel": "Rời kênh",
+    "leaveLastMember": "Không thể rời kênh — bạn là thành viên cuối cùng.",
+    "dismiss": "Bỏ qua",
+    "addTopic": "Thêm chủ đề",
+    "editDetails": "Sửa thông tin kênh"
+  },
+  "message": {
+    "edited": "(đã chỉnh sửa)",
+    "pinned": "Đã ghim",
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn",
+    "repliedToThread": "Đã trả lời trong chủ đề: {excerpt}",
+    "deletedPlaceholder": "Tin nhắn này đã bị xóa.",
+    "sendToChannel": "Gửi cả đến kênh",
+    "removeFromChannel": "Xóa khỏi kênh"
+  },
+  "input": {
+    "uploading": "Đang tải lên...",
+    "scheduleMessage": "Lên lịch tin nhắn",
+    "send": "Gửi tin nhắn",
+    "hint": "Nhấn <kbd>Enter</kbd> để gửi, <kbd>Shift + Enter</kbd> để xuống dòng",
+    "scheduledFor": "Đã lên lịch lúc {time}",
+    "scheduleFailed": "Không lên lịch được tin nhắn. Vui lòng thử lại."
+  },
+  "list": {
+    "loading": "Đang tải tin nhắn...",
+    "empty": "Chưa có tin nhắn nào",
+    "emptyReadOnly": "Kênh này chưa có tin nhắn nào.",
+    "emptyFirst": "Hãy là người đầu tiên gửi tin nhắn!"
+  },
+  "reactions": {
+    "tooltip": "{names} đã thả cảm xúc {emoji}",
+    "add": "Thêm cảm xúc",
+    "you": "Bạn"
+  },
+  "toolbar": {
+    "addReaction": "Thêm cảm xúc",
+    "replyInThread": "Trả lời trong chủ đề",
+    "removeBookmark": "Xóa dấu trang",
+    "bookmark": "Đánh dấu tin nhắn này",
+    "moreActions": "Thêm thao tác"
+  },
+  "mobileSearch": {
+    "placeholder": "Tìm tin nhắn...",
+    "hint": "Tìm tin nhắn trong tất cả kênh và cuộc trò chuyện",
+    "close": "Đóng tìm kiếm"
+  },
+  "pins": {
+    "title": "Tin nhắn đã ghim",
+    "loadFailed": "Không tải được tin nhắn đã ghim.",
+    "empty": "Chưa có tin nhắn nào được ghim"
+  },
+  "schedule": {
+    "menuTitle": "Lên lịch tin nhắn",
+    "in20": "Sau 20 phút",
+    "in1h": "Sau 1 giờ",
+    "in3h": "Sau 3 giờ",
+    "tomorrow9": "Ngày mai lúc 9:00 sáng",
+    "custom": "Thời gian tùy chọn...",
+    "modalTitle": "Lên lịch tin nhắn",
+    "dateTime": "Ngày và giờ",
+    "pickFuture": "Chọn một thời điểm trong tương lai.",
+    "submit": "Lên lịch",
+    "submitting": "Đang lên lịch...",
+    "close": "Đóng"
+  },
+  "scheduled": {
+    "loadFailed": "Không tải được tin nhắn đã lên lịch.",
+    "cancelFailed": "Không hủy được tin nhắn.",
+    "sendFailed": "Không gửi được tin nhắn.",
+    "saveFailed": "Không lưu được thay đổi.",
+    "empty": "Không có tin nhắn nào được lên lịch. Dùng biểu tượng đồng hồ trong ô soạn tin để lên lịch một tin nhắn.",
+    "sendAt": "Gửi lúc:",
+    "edit": "Sửa",
+    "sendNow": "Gửi ngay",
+    "cancel": "Hủy",
+    "failedDlp": "Tin nhắn này chưa được gửi vì khớp với quy tắc bảo vệ dữ liệu ({rule}). Hãy xóa và viết lại tin nhắn mới."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# trả lời} other {# trả lời}}"
+  },
+  "unreads": {
+    "title": "Chưa đọc",
+    "loadFailed": "Không tải được tin nhắn chưa đọc.",
+    "empty": "Không có tin nhắn chưa đọc. Bạn đã xem hết rồi! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Chủ đề",
+    "replyPlaceholder": "Trả lời...",
+    "loadFailed": "Không tải được chủ đề. Vui lòng thử lại.",
+    "loading": "Đang tải chủ đề...",
+    "replyFailed": "Không gửi được trả lời. Vui lòng thử lại.",
+    "joinToReply": "Tham gia kênh để trả lời trong chủ đề",
+    "alsoSendToChannel": "Gửi cả đến kênh"
+  },
+  "errors": {
+    "messageEmpty": "Tin nhắn không được để trống.",
+    "pasteUploadFailed": "Không tải được ảnh đã dán lên. Vui lòng thử lại.",
+    "dropUploadFailed": "Không tải được tệp đã thả lên. Vui lòng thử lại.",
+    "uploadFailed": "Không tải được tệp lên. Vui lòng thử lại.",
+    "voiceUploadFailed": "Không tải được tin nhắn thoại lên.",
+    "micDenied": "Không được phép truy cập micrô. Vui lòng cho phép truy cập micrô.",
+    "loadFailed": "Không tải được tin nhắn.",
+    "sendTimeout": "Gửi tin nhắn quá thời gian. Vui lòng thử lại.",
+    "sendFailed": "Gửi tin nhắn thất bại. Vui lòng thử lại.",
+    "pushNotConfigured": "Máy chủ chưa thiết lập thông báo đẩy",
+    "serviceWorkerUnavailable": "Service worker không khả dụng",
+    "subscribeFailed": "Không đăng ký được gói theo dõi",
+    "editFailed": "Không lưu được chỉnh sửa. Vui lòng thử lại."
+  },
+  "details": {
+    "title": "Thông tin kênh",
+    "name": "Tên",
+    "topic": "Chủ đề",
+    "topicPlaceholder": "Kênh này nói về điều gì?",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Thêm mô tả",
+    "createdBy": "Tạo bởi {name}",
+    "readOnly": "Chỉ chủ kênh, người điều hành và quản trị viên không gian làm việc mới có thể sửa các thông tin này.",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "saveFailed": "Không lưu được thông tin kênh."
+  },
+  "intro": {
+    "title": "Chào mừng đến #{name}",
+    "noDescription": "Chưa có mô tả.",
+    "editDescription": "Sửa mô tả"
+  },
+  "threads": {
+    "title": "Chủ đề",
+    "menu": "Menu",
+    "loadFailed": "Không tải được chủ đề.",
+    "empty": "Chưa có chủ đề nào",
+    "emptyHint": "Các chủ đề bạn bắt đầu hoặc trả lời sẽ hiển thị ở đây.",
+    "newReplies": "{count, plural, one {# trả lời mới} other {# trả lời mới}}",
+    "replyCount": "{count, plural, one {# trả lời} other {# trả lời}}",
+    "olderReplies": "Mở chủ đề để xem các trả lời trước đó",
+    "replyPlaceholder": "Trả lời...",
+    "send": "Gửi",
+    "replyFailed": "Không gửi được trả lời. Vui lòng thử lại.",
+    "alsoSendToChannel": "Gửi cả đến kênh",
+    "openThread": "Mở chủ đề",
+    "loadMore": "Tải thêm",
+    "loading": "Đang tải..."
+  },
+  "permalink": {
+    "copied": "Đã sao chép liên kết",
+    "notFound": "Không tìm thấy tin nhắn này, hoặc bạn không có quyền xem",
+    "goHome": "Về trang chủ",
+    "copyManually": "Không sao chép tự động được. Hãy sao chép liên kết này: {url}"
+  },
+  "unread": {
+    "divider": "Mới",
+    "newMessagesBar": "{count, plural, one {# tin nhắn mới} other {# tin nhắn mới}}",
+    "newMessagesBarAtLeast": "{count, plural, one {Từ # tin nhắn mới trở lên} other {Từ # tin nhắn mới trở lên}}",
+    "markRead": "Đánh dấu là đã đọc",
+    "jumpFailed": "Không tải được vị trí chưa đọc"
+  },
+  "reminder": {
+    "set": "Đặt nhắc nhở",
+    "customLabel": "Ngày và giờ nhắc nhở",
+    "preset": {
+      "in20": "Sau 20 phút",
+      "in1h": "Sau 1 giờ",
+      "in3h": "Sau 3 giờ",
+      "tomorrow": "Ngày mai",
+      "nextWeek": "Tuần sau",
+      "custom": "Tùy chỉnh..."
+    },
+    "status": {
+      "pending": "Sắp tới",
+      "done": "Đã hoàn thành"
+    },
+    "snooze": {
+      "m10": "10 phút",
+      "h1": "1 giờ",
+      "tomorrow": "Ngày mai"
+    },
+    "loadFailed": "Không tải được nhắc nhở.",
+    "empty": "Không có nhắc nhở nào. Dùng menu thao tác khác trên một tin nhắn hoặc nhập /remind để thêm.",
+    "emptyDone": "Không có nhắc nhở nào đã hoàn thành.",
+    "dueAt": "Đến hạn {time}",
+    "firedAt": "Đã đến hạn {time}",
+    "completedAt": "Đã hoàn thành {time}",
+    "messageDeleted": "Tin nhắn đã bị xóa",
+    "complete": "Đánh dấu là đã hoàn thành",
+    "reopen": "Đánh dấu là chưa hoàn thành",
+    "delete": "Xóa nhắc nhở",
+    "toast": {
+      "created": "Đã đặt nhắc nhở",
+      "due": "Nhắc nhở: {text}",
+      "createFailed": "Không đặt được nhắc nhở. Vui lòng thử lại."
+    },
+    "command": {
+      "syntax": "Cách dùng: /remind me [nội dung] in [số] [minutes|hours|days]",
+      "tooShort": "Nhắc nhở phải cách hiện tại ít nhất 1 phút.",
+      "tooLong": "Nhắc nhở phải nằm trong vòng một năm.",
+      "created": "Đã đặt nhắc nhở lúc {time}"
+    },
+    "pastTime": "Chọn một thời điểm trong tương lai.",
+    "loadMore": "Tải thêm"
+  }
+}

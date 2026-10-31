@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Buat channel",
+    "tabBrowse": "Jelajahi channel",
+    "nameLabel": "Nama channel",
+    "namePlaceholder": "mis. rencana-anggaran",
+    "visibility": "Visibilitas",
+    "public": "Publik",
+    "private": "Privat",
+    "publicHint": "Siapa pun di workspace dapat menemukan dan bergabung ke channel ini.",
+    "privateHint": "Hanya anggota yang diundang yang dapat menemukan dan bergabung ke channel ini.",
+    "cancel": "Batal",
+    "create": "Buat",
+    "noChannels": "Tidak ada channel yang bisa diikuti",
+    "memberCount": "{count, plural, other {# anggota}}",
+    "joined": "Sudah bergabung",
+    "join": "Gabung",
+    "close": "Tutup",
+    "errors": {
+      "createFailed": "Gagal membuat channel"
+    }
+  },
+  "errors": {
+    "loadConversations": "Gagal memuat percakapan.",
+    "loadChannels": "Gagal memuat channel."
+  },
+  "membersPanel": {
+    "title": "Anggota",
+    "addPeople": "Tambah orang",
+    "loadError": "Gagal memuat anggota.",
+    "removeError": "Gagal menghapus anggota",
+    "online": "Daring — {count}",
+    "offline": "Luring — {count}",
+    "removeDialog": {
+      "title": "Hapus anggota?",
+      "message": "Hapus <bold>{name}</bold> dari channel ini?"
+    },
+    "removing": "Menghapus...",
+    "searchByName": "Cari berdasarkan nama...",
+    "noUsers": "Pengguna tidak ditemukan",
+    "roles": {
+      "owner": "Pemilik",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Hapus anggota"
+  },
+  "dm": {
+    "messagePlaceholder": "Pesan ke {name}",
+    "you": "(Anda)",
+    "star": "Tambahkan ke Berbintang",
+    "unstar": "Hapus dari Berbintang",
+    "loadingMessages": "Memuat pesan...",
+    "selfSpace": "Ini ruang Anda. Tulis draf pesan, buat daftar tugas, atau simpan tautan dan berkas di sini.",
+    "conversationStart": "Awal percakapan Anda dengan {name}",
+    "sendToBegin": "Kirim pesan untuk memulai.",
+    "edited": "(diedit)",
+    "pinnedMessages": "Pesan yang disematkan",
+    "noPins": "Belum ada pesan yang disematkan",
+    "files": "Berkas",
+    "noFiles": "Belum ada berkas yang dibagikan",
+    "loadError": "Gagal memuat pesan.",
+    "sendError": "Pesan gagal terkirim. Silakan coba lagi."
+  },
+  "nameRules": {
+    "required": "Masukkan nama channel.",
+    "tooLong": "Nama channel maksimal {max} karakter.",
+    "invalidChars": "Nama channel hanya boleh berisi huruf, angka, tanda hubung, dan garis bawah, serta harus diawali huruf atau angka.",
+    "tooManyMarks": "Nama channel tidak boleh memiliki lebih dari 4 tanda gabung berturut-turut.",
+    "mixedScripts": "Nama channel tidak boleh mencampur abjad yang mirip (misalnya Latin dengan Sirilik atau Yunani) atau angka dari sistem bilangan lain.",
+    "taken": "Channel dengan nama itu sudah ada."
+  },
+  "groupDM": {
+    "members": "{count, plural, other {# anggota}}",
+    "nameLabel": "Nama percakapan",
+    "namePlaceholder": "Tambahkan nama",
+    "noName": "Tanpa nama (menampilkan nama anggota)",
+    "rename": "Ganti nama percakapan",
+    "addPeople": "Tambah orang",
+    "add": "Tambah",
+    "createWith": "Mulai percakapan grup",
+    "leave": "Tinggalkan percakapan",
+    "leaveConfirm": "Tinggalkan percakapan ini? Anda tidak akan lagi melihat pesannya.",
+    "conversationStart": "Ini awal percakapan Anda dengan {names}",
+    "addError": "Tidak dapat menambahkan orang. Silakan coba lagi.",
+    "renameError": "Tidak dapat mengganti nama percakapan. Silakan coba lagi.",
+    "leaveError": "Tidak dapat meninggalkan percakapan. Silakan coba lagi."
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Admin Panel",
+    "openSidebar": "Buksan ang sidebar",
+    "tabs": {
+      "members": "Mga miyembro",
+      "invites": "Mga imbitasyon",
+      "channels": "Mga channel",
+      "webhooks": "Mga webhook",
+      "audit": "Audit Log",
+      "retention": "Data retention",
+      "security": "Seguridad",
+      "dlp": "DLP",
+      "legalHolds": "Mga legal hold"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Channel",
+      "members": "Mga miyembro",
+      "messages": "Mga mensahe",
+      "created": "Ginawa"
+    },
+    "actions": {
+      "rename": "Palitan ang pangalan ng channel",
+      "archive": "I-archive ang channel",
+      "delete": "Burahin ang channel",
+      "unarchive": "I-unarchive ang channel",
+      "deletePermanently": "Burahin nang permanente"
+    },
+    "emptyActive": "Walang aktibong channel",
+    "archivedHeading": "Mga naka-archive na channel ({count})",
+    "archivedOn": "naka-archive noong {date}",
+    "messageCount": "{count, plural, one {# mensahe} other {# na mensahe}}",
+    "deleteDialog": {
+      "title": "Burahin ang channel",
+      "message": "Sigurado ka bang gusto mong burahin nang permanente ang #{name}? Mawawala ang lahat ng mensahe. Hindi ito na-undo."
+    },
+    "archiveDialog": {
+      "title": "I-archive ang channel",
+      "confirm": "I-archive",
+      "message": "I-archive ang #{name}? Itatago ito sa sidebar pero mananatili ang mga mensahe. Maaari mo itong i-unarchive mamaya."
+    },
+    "unarchiveDialog": {
+      "title": "I-unarchive ang channel",
+      "confirm": "I-unarchive",
+      "message": "I-unarchive ang #{name}? Lalabas itong muli sa sidebar para sa lahat ng miyembro."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Maghanap ng mga miyembro...",
+    "columns": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Mga aksyon"
+    },
+    "you": "(ikaw)",
+    "roles": {
+      "owner": "May-ari",
+      "admin": "Admin",
+      "member": "Miyembro",
+      "guest": "Bisita"
+    },
+    "status": {
+      "active": "Aktibo",
+      "deactivated": "Na-deactivate"
+    },
+    "actions": {
+      "transfer": "Ilipat ang pagmamay-ari",
+      "reactivate": "I-reactivate",
+      "deactivate": "I-deactivate",
+      "forceLogout": "Pilitang mag-sign out",
+      "resetMfa": "I-reset ang 2FA"
+    },
+    "empty": "Walang nakitang user",
+    "dialogs": {
+      "transfer": {
+        "title": "Ilipat ang pagmamay-ari ng workspace",
+        "confirm": "Ilipat",
+        "message": "Sigurado ka bang gusto mong ilipat ang pagmamay-ari ng workspace kay {name}? Ibababa ka sa Admin."
+      },
+      "deactivate": {
+        "title": "I-deactivate ang user",
+        "confirm": "I-deactivate",
+        "message": "Sigurado ka bang gusto mong i-deactivate si {name}? Agad silang ila-log out at hindi na makakapag-sign in."
+      },
+      "reactivate": {
+        "title": "I-reactivate ang user",
+        "confirm": "I-reactivate",
+        "message": "Sigurado ka bang gusto mong i-reactivate si {name}? Makakapag-sign in na silang muli."
+      },
+      "forceLogout": {
+        "title": "Pilitang mag-sign out",
+        "confirm": "Mag-sign out",
+        "message": "I-sign out si {name} sa lahat ng device ngayon? Mananatiling aktibo ang kanilang account at makakapag-sign in silang muli."
+      },
+      "resetMfa": {
+        "title": "I-reset ang two-factor authentication",
+        "confirm": "I-reset",
+        "message": "Alisin ang two-factor authentication ni {name}? Mag-sa-sign out sila sa lahat ng device at password lang ang kakailanganin nila para mag-sign in."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Naka-on ang two-factor authentication"
+    }
+  },
+  "invites": {
+    "createHeading": "Gumawa ng invite link",
+    "fields": {
+      "role": "Role",
+      "maxUses": "Pinakamataas na gamit",
+      "expiresIn": "Mag-e-expire sa"
+    },
+    "unlimited": "Walang limitasyon",
+    "expiry": {
+      "1d": "1 araw",
+      "7d": "7 araw",
+      "30d": "30 araw",
+      "never": "Hindi kailanman"
+    },
+    "expired": "Nag-expire na",
+    "columns": {
+      "url": "Invite URL",
+      "uses": "Gamit",
+      "expires": "Mag-e-expire",
+      "createdBy": "Ginawa ni"
+    },
+    "copyUrl": "Kopyahin ang invite URL",
+    "full": "(puno na)",
+    "delete": "Burahin ang imbitasyon",
+    "empty": "Wala pang invite link"
+  },
+  "webhooks": {
+    "createHeading": "Gumawa ng webhook",
+    "fields": {
+      "name": "Pangalan ng webhook",
+      "channel": "Channel"
+    },
+    "namePlaceholder": "Ang Integration Ko",
+    "selectChannel": "Pumili ng channel...",
+    "columns": {
+      "name": "Pangalan",
+      "url": "Webhook URL",
+      "lastUsed": "Huling ginamit"
+    },
+    "never": "Hindi kailanman",
+    "justNow": "Ngayon lang",
+    "inactive": "Hindi aktibo",
+    "copyUrl": "Kopyahin ang webhook URL",
+    "delete": "Burahin ang webhook",
+    "empty": "Wala pang naka-configure na webhook"
+  },
+  "audit": {
+    "empty": "Walang tumutugmang audit log entry. Lalabas dito ang mga naitalang aksyon.",
+    "loadMore": "Mag-load pa",
+    "targets": {
+      "user": "User",
+      "channel": "Channel",
+      "invite": "Imbitasyon",
+      "webhook": "Webhook",
+      "message": "Mensahe",
+      "directMessage": "Direktang mensahe",
+      "token": "Access token",
+      "auditLog": "Audit log",
+      "mcpTool": "MCP tool",
+      "workspace": "Workspace",
+      "file": "File",
+      "dlpRule": "DLP rule",
+      "legalHold": "Legal hold"
+    },
+    "action": {
+      "authLogin": "Nag-sign in",
+      "authLoginFailed": "Nabigo ang pag-sign in",
+      "authLogout": "Nag-sign out",
+      "authPasswordChanged": "Napalitan ang password",
+      "userRoleChanged": "Napalitan ang role",
+      "userDeactivated": "Na-deactivate",
+      "userForceLogout": "Pilitang sign-out",
+      "userReactivated": "Na-reactivate",
+      "ownershipTransferred": "Nailipat ang pagmamay-ari",
+      "ownerBootstrapped": "Nagawa ang may-ari",
+      "channelCreated": "Ginawa ang channel",
+      "channelEdited": "Na-edit ang channel",
+      "channelArchived": "Na-archive ang channel",
+      "channelUnarchived": "Na-unarchive ang channel",
+      "channelDeleted": "Nabura ang channel",
+      "channelMemberAdded": "Naidagdag ang miyembro",
+      "channelMemberRemoved": "Naalis ang miyembro",
+      "inviteCreated": "Ginawa ang imbitasyon",
+      "inviteDeleted": "Nabura ang imbitasyon",
+      "webhookCreated": "Ginawa ang webhook",
+      "webhookDeleted": "Nabura ang webhook",
+      "tokenCreate": "Ginawa ang token",
+      "tokenRevoke": "Binawi ang token",
+      "mcpToolCall": "Tawag sa MCP tool",
+      "auditExported": "Na-export ang audit log",
+      "authLoginLocked": "Na-lock ang account",
+      "sessionRevoked": "Na-sign out ang device",
+      "sessionRevokedAll": "Na-sign out ang lahat ng device",
+      "retentionPurged": "Nabura ang expired na data",
+      "retentionWorkspaceUpdated": "Napalitan ang retention policy",
+      "retentionChannelUpdated": "Napalitan ang retention ng channel",
+      "retentionChannelCleared": "Na-reset ang retention ng channel",
+      "mfaEnabled": "Na-on ang two-factor",
+      "mfaDisabled": "Na-off ang two-factor",
+      "mfaRecoveryUsed": "Ginamit ang recovery code",
+      "mfaRecoveryRegenerated": "Ginawang muli ang mga recovery code",
+      "mfaResetByAdmin": "Na-reset ng admin ang two-factor",
+      "mfaPolicyChanged": "Napalitan ang requirement ng two-factor",
+      "dlpBlocked": "Na-block ang mensahe ng DLP",
+      "dlpWarned": "Babala ng DLP",
+      "dlpRuleCreated": "Ginawa ang DLP rule",
+      "dlpRuleUpdated": "Napalitan ang DLP rule",
+      "dlpRuleDeleted": "Nabura ang DLP rule",
+      "dlpRuleTimeout": "Nag-timeout ang DLP rule",
+      "dlpRuleAutoDisabled": "Awtomatikong na-off ang DLP rule",
+      "legalHoldCreated": "Ginawa ang legal hold",
+      "legalHoldUpdated": "Na-edit ang legal hold",
+      "legalHoldCustodianAdded": "Naidagdag ang tao sa legal hold",
+      "legalHoldCustodianRemoved": "Naalis ang tao sa legal hold",
+      "legalHoldReleased": "Na-release ang legal hold",
+      "ediscoverySearched": "Paghahanap sa eDiscovery",
+      "ediscoveryExportRequested": "Hiniling ang eDiscovery export",
+      "ediscoveryExported": "Na-export ang eDiscovery"
+    },
+    "filters": {
+      "allActions": "Lahat ng aksyon",
+      "actionsSelected": "{count, plural, one {# aksyon} other {# na aksyon}}",
+      "actor": "Gumawa ng aksyon",
+      "allActors": "Lahat ng gumawa",
+      "targetType": "Uri ng target",
+      "allTargets": "Lahat ng target",
+      "from": "Mula",
+      "to": "Hanggang",
+      "apply": "Ilapat",
+      "reset": "I-reset"
+    },
+    "export": {
+      "csv": "I-export ang CSV",
+      "json": "I-export ang JSON"
+    },
+    "unknownActor": "Hindi kilala"
+  },
+  "errors": {
+    "archiveChannel": "Nabigo ang pag-archive ng channel",
+    "createInvite": "Nabigo ang paggawa ng imbitasyon",
+    "createWebhook": "Nabigo ang paggawa ng webhook",
+    "deactivateUser": "Nabigo ang pag-deactivate ng user",
+    "deleteChannel": "Nabigo ang pagbura ng channel",
+    "deleteInvite": "Nabigo ang pagbura ng imbitasyon",
+    "deleteWebhook": "Nabigo ang pagbura ng webhook",
+    "editChannel": "Nabigo ang pag-edit ng channel",
+    "exportAuditLog": "Nabigo ang pag-export ng audit log",
+    "fetchAuditLog": "Nabigo ang pagkuha ng audit log",
+    "fetchChannels": "Nabigo ang pagkuha ng mga channel",
+    "fetchInvites": "Nabigo ang pagkuha ng mga imbitasyon",
+    "fetchUsers": "Nabigo ang pagkuha ng mga user",
+    "fetchWebhooks": "Nabigo ang pagkuha ng mga webhook",
+    "forceLogout": "Nabigong i-sign out ang user",
+    "reactivateUser": "Nabigo ang pag-reactivate ng user",
+    "removeChannelMember": "Nabigo ang pag-alis ng miyembro ng channel",
+    "transferOwnership": "Nabigo ang paglipat ng pagmamay-ari",
+    "unarchiveChannel": "Nabigo ang pag-unarchive ng channel",
+    "updateRole": "Nabigo ang pag-update ng role",
+    "resetMfa": "Nabigo ang pag-reset ng two-factor authentication"
+  },
+  "retention": {
+    "title": "Data retention",
+    "description": "Awtomatikong burahin ang mga mensahe pagkatapos ng nakatakdang bilang ng araw. Kasama ng mga mensahe nila ang mga file. Tumatakbo ang cleanup minsan sa isang araw. Nananatili ang mga paalala at ipinapakitang \"binurang mensahe\".",
+    "loadError": "Hindi ma-load ang retention policy",
+    "saveError": "Hindi ma-save ang retention policy",
+    "resetError": "Hindi ma-reset ang policy ng channel",
+    "workspace": {
+      "heading": "Default ng workspace",
+      "hint": "Nalalapat sa bawat channel na walang sariling setting, at sa mga direktang mensahe at group DM."
+    },
+    "mode": {
+      "forever": "Itago habambuhay",
+      "days": "Burahin pagkatapos ng ilang araw",
+      "inherit": "Gamitin ang default ng workspace"
+    },
+    "daysLabel": "Mga araw",
+    "daysHint": "{min} hanggang {max} na araw",
+    "effective": {
+      "forever": "Itinatago habambuhay",
+      "days": "{count, plural, one {# araw} other {# na araw}}"
+    },
+    "channels": {
+      "heading": "Mga channel",
+      "columns": {
+        "channel": "Channel",
+        "policy": "Policy",
+        "effective": "Nalalapat"
+      },
+      "legalHold": "Legal hold",
+      "reset": "I-reset sa default",
+      "empty": "Walang channel"
+    },
+    "save": "I-save",
+    "saved": "Na-save",
+    "confirm": {
+      "title": "Burahin nang permanente ang mga lumang mensahe?",
+      "message": "Sa susunod na cleanup, mabubura nang permanente kasama ng mga file nila ang mga mensaheng mas matanda sa {count, plural, one {# araw} other {# na araw}}. Hindi ito na-undo.",
+      "confirm": "Ilapat ang policy"
+    }
+  },
+  "security": {
+    "title": "Two-factor authentication",
+    "requireMfa": "Hingin ang two-factor authentication sa lahat",
+    "requireMfaHint": "Ang mga miyembrong walang two-factor authentication ay makakarating lamang sa setup screen hanggang sa i-on nila ito.",
+    "unavailable": "Naka-off ang two-factor authentication sa server na ito dahil walang naka-set na encryption key (TOTP_ENCRYPTION_KEY). Hindi ipinatutupad ang requirement.",
+    "saved": "Na-save ang mga setting ng seguridad",
+    "loading": "Naglo-load...",
+    "errors": {
+      "loadFailed": "Hindi ma-load ang mga setting ng seguridad.",
+      "saveFailed": "Hindi ma-save ang mga setting ng seguridad."
+    },
+    "allowOAuthApps": "Payagan ang mga miyembro na kumonekta ng OAuth app",
+    "allowOAuthAppsHint": "Pinapayagan ang mga miyembro na kumonekta ng mga app gaya ng Claude sa pamamagitan ng OAuth sign-in. Kapag na-off ito, agad na made-disconnect ang bawat app."
+  },
+  "dlp": {
+    "title": "Data loss prevention",
+    "description": "Tuklasin ang mga sensitibong pattern gaya ng card number sa mga mensahe. Pinipigilan ng blocking rule ang pag-save ng mensahe. Sine-save pa rin ng warning rule ang mensahe at itinatala ito sa audit log. Hindi kailanman isinusulat sa log ang text ng mensahe.",
+    "loadError": "Hindi ma-load ang mga DLP rule",
+    "saveError": "Hindi ma-save ang rule",
+    "toggleError": "Hindi mapalitan ang rule",
+    "deleteError": "Hindi mabura ang rule",
+    "testError": "Hindi masubukan ang pattern",
+    "builtinBadge": "Built-in",
+    "builtinPattern": "Built-in na detector",
+    "builtin": {
+      "credit_card": "Numero ng credit card",
+      "kr_rrn": "Korean resident registration number",
+      "aws_access_key": "AWS access key",
+      "private_key": "Private key"
+    },
+    "action": {
+      "BLOCK": "I-block",
+      "WARN": "Babala"
+    },
+    "columns": {
+      "name": "Rule",
+      "pattern": "Pattern",
+      "action": "Aksyon",
+      "enabled": "Status"
+    },
+    "on": "On",
+    "off": "Off",
+    "toggleLabel": "I-on o i-off ang {name}",
+    "edit": "I-edit",
+    "editLabel": "I-edit ang {name}",
+    "delete": "Burahin",
+    "deleteLabel": "Burahin ang {name}",
+    "form": {
+      "createHeading": "Magdagdag ng rule",
+      "editHeading": "I-edit ang rule",
+      "name": "Pangalan",
+      "pattern": "Pattern (regular expression)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Aksyon",
+      "add": "Magdagdag ng rule",
+      "save": "I-save",
+      "cancel": "Kanselahin",
+      "hint": "Hanggang {max} na karakter. Hindi tinatanggap ang nested repeat gaya ng (a+)+, back-reference, at napakalaking bilang ng repeat."
+    },
+    "patternProblem": {
+      "empty": "Maglagay ng pattern.",
+      "tooLong": "Masyadong mahaba ang pattern.",
+      "invalid": "Hindi ito wastong regular expression.",
+      "backreference": "Hindi pinapayagan ang back-reference.",
+      "nestedQuantifier": "Maaaring gawing napakabagal ng nested repeat ang pagsusuri, kaya hindi ito pinapayagan.",
+      "repeatTooLarge": "Masyadong malaki ang bilang ng repeat (200 ang pinakamataas)."
+    },
+    "test": {
+      "heading": "Subukan ang isang pattern",
+      "hint": "Walang sine-save. Maglagay ng pattern sa itaas, o pumili ng naka-save na rule, saka mag-type ng sample text.",
+      "source": "Pattern na susubukan",
+      "sourceDraft": "Pattern sa form sa itaas",
+      "sample": "Sample text",
+      "run": "Subukan",
+      "matched": "Tumugma. Mahuhuli ang text na ito.",
+      "notMatched": "Walang tumugma.",
+      "timedOut": "Masyadong matagal ang pagsusuri at itinigil ito. Pasimplehin ang pattern."
+    },
+    "confirmDelete": {
+      "title": "Burahin ang rule na ito?",
+      "message": "Aalisin ang rule na \"{name}\" at hindi na ito susuriin."
+    }
+  },
+  "legalHolds": {
+    "description": "Itago ang lahat ng isinulat o natanggap ng isang tao, kahit burahin ito ng data retention. Maaaring maghanap at mag-export ang mga admin ng naitagong data para sa legal na pagsusuri.",
+    "statusFilter": "Ipakita",
+    "status": {
+      "active": "Aktibo",
+      "released": "Na-release",
+      "all": "Lahat"
+    },
+    "empty": "Walang legal hold",
+    "selectHint": "Pumili ng legal hold para pamahalaan ang mga tao rito at maghanap ng data nito.",
+    "loadMore": "Mag-load pa",
+    "custodianCount": "{count, plural, one {# tao} other {# na tao}}",
+    "createdOn": "Ginawa {date}",
+    "releasedOn": "Na-release {date}",
+    "createdBy": "Ginawa ni {name} noong {date}",
+    "releasedBy": "Na-release ni {name} noong {date}",
+    "unknownUser": "Hindi kilalang user",
+    "edit": "I-edit",
+    "save": "I-save",
+    "cancel": "Kanselahin",
+    "fields": {
+      "name": "Pangalan",
+      "description": "Paglalarawan (opsyonal)"
+    },
+    "create": {
+      "open": "Bagong hold",
+      "submit": "Gumawa ng hold",
+      "hint": "Maaari kang magdagdag ng mga tao pagkatapos gawin ang hold."
+    },
+    "custodians": {
+      "heading": "Mga taong nasa hold",
+      "pick": "Pumili ng tao",
+      "add": "Idagdag",
+      "remove": "Alisin si {name} sa hold na ito",
+      "empty": "Wala pang nasa hold na ito.",
+      "deactivated": "Na-deactivate"
+    },
+    "release": {
+      "open": "I-release ang hold",
+      "title": "I-release ang legal hold na ito?",
+      "message": "Titigil na sa pagtatago ng data ang \"{name}\". Ang mga taong wala sa ibang aktibong hold ay babalik sa normal na retention policy, at maaaring mabura ang kanilang mga lumang mensahe sa susunod na cleanup. Mananatiling nakatala ang hold at ang listahan ng mga tao nito. Hindi ito na-undo.",
+      "confirm": "I-release"
+    },
+    "discovery": {
+      "heading": "Paghahanap at export",
+      "hint": "Sakop ang mga mensaheng isinulat ng mga taong nasa hold sa anumang channel (kasama ang mga pribado), mga direktang mensahe at group DM na nilahukan nila, at detalye ng mga file. Kasama at minamarkahan ang mga binurang mensahe.",
+      "query": "Keyword",
+      "from": "Mula",
+      "to": "Hanggang",
+      "search": "Maghanap",
+      "export": "I-export (JSONL)",
+      "exportHint": "Ini-export ang mga resulta ng huling paghahanap. Nalalog ang bawat paghahanap at export sa audit log.",
+      "searchFirst": "Maghanap muna gamit ang mga filter na ito. Ginagamit ng export ang mga filter ng paghahanap na nakikita sa ibaba.",
+      "kinds": {
+        "channel": "Mga mensahe sa channel",
+        "dm": "Mga direktang mensahe",
+        "file": "Mga file"
+      },
+      "empty": "Walang resulta",
+      "deleted": "Binura",
+      "edited": "Na-edit",
+      "reply": "Sagot sa thread",
+      "groupDm": "Group DM #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Hindi ma-load ang mga legal hold",
+      "create": "Hindi magawa ang legal hold",
+      "update": "Hindi ma-update ang legal hold",
+      "custodians": "Hindi mapalitan ang mga taong nasa hold",
+      "release": "Hindi ma-release ang legal hold",
+      "search": "Nabigo ang paghahanap",
+      "export": "Nabigo ang export"
+    }
+  }
+}

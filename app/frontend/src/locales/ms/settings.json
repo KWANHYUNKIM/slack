@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Bahasa",
+    "pending": "{name} (terjemahan akan datang)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Pemberitahuan dijeda"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Tutup",
+    "loading": "Memuatkan...",
+    "notFound": "Profil tidak ditemui",
+    "uploadPhoto": "Muat naik foto",
+    "uploading": "Sedang memuat naik...",
+    "name": "Nama",
+    "bio": "Bio",
+    "bioPlaceholder": "Ceritakan tentang diri anda",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "status": "Status",
+    "joined": "Menyertai",
+    "message": "Mesej",
+    "edit": "Sunting Profil",
+    "statusValue": {
+      "online": "dalam talian",
+      "away": "tiada",
+      "offline": "luar talian"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuatkan profil.",
+      "saveFailed": "Gagal menyimpan profil. Sila cuba lagi.",
+      "notImage": "Sila pilih fail imej.",
+      "tooLarge": "Imej mesti kurang daripada 5MB.",
+      "uploadFailed": "Gagal memuat naik foto. Sila cuba lagi."
+    },
+    "statusUntil": "Sehingga {time}"
+  },
+  "crop": {
+    "title": "Potong foto anda",
+    "close": "Tutup",
+    "zoom": "Zum",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Sedang menyimpan...",
+    "failed": "Gagal memotong"
+  },
+  "accessTokens": {
+    "title": "Token akses peribadi",
+    "description": "Token membolehkan Claude dan klien MCP lain membaca dan, jika anda membenarkan, menulis dalam ruang kerja anda dengan kebenaran anda. Layan token seperti kata laluan.",
+    "nameLabel": "Nama token",
+    "namePlaceholder": "cth. Claude Code pada komputer riba saya",
+    "scopesLabel": "Kebenaran",
+    "scope": {
+      "channelsRead": "Senaraikan saluran",
+      "channelsHistory": "Baca mesej, benang dan aktiviti",
+      "usersRead": "Lihat orang",
+      "chatWrite": "Siarkan, sunting dan padam mesej anda",
+      "reactionsWrite": "Tambah dan alih keluar reaksi anda",
+      "imRead": "Senaraikan mesej langsung dan mesej kumpulan anda",
+      "imHistory": "Baca sejarah mesej langsung anda",
+      "imWrite": "Hantar, sunting dan padam mesej langsung anda",
+      "searchRead": "Cari mesej, fail, orang dan saluran (hasil mesej langsung memerlukan sejarah mesej langsung)",
+      "filesRead": "Senaraikan fail dan baca kandungan fail teks"
+    },
+    "expiryLabel": "Tamat tempoh",
+    "expiryDays": "{count, plural, other {# hari}}",
+    "expiryNever": "Tiada tamat tempoh",
+    "neverWarning": "Token tanpa tarikh tamat tempoh kekal sah sehingga anda batalkannya.",
+    "create": "Jana token",
+    "createdNotice": "Salin token baharu anda sekarang. Anda tidak akan dapat melihatnya lagi.",
+    "copy": "Salin token",
+    "copyCommand": "Salin arahan",
+    "copied": "Disalin ke papan keratan",
+    "connectHint": "Sambung dari Claude Code:",
+    "dismiss": "Selesai, sembunyikan token",
+    "loading": "Memuatkan...",
+    "empty": "Anda tiada token akses peribadi.",
+    "expires": "Tamat tempoh {date}",
+    "expired": "Tamat tempoh",
+    "noExpiry": "Tiada tamat tempoh",
+    "lastUsed": "Kali terakhir digunakan {date}",
+    "neverUsed": "Belum pernah digunakan",
+    "rename": "Namakan semula",
+    "renameLabel": "Namakan semula token {name}",
+    "revoke": "Batalkan",
+    "revokeLabel": "Batalkan token {name}",
+    "revokeConfirm": "Batalkan sekarang",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "errors": {
+      "loadFailed": "Gagal memuatkan token.",
+      "createFailed": "Gagal menjana token. Sila cuba lagi.",
+      "renameFailed": "Gagal menamakan semula token.",
+      "revokeFailed": "Gagal membatalkan token.",
+      "copyFailed": "Tidak dapat menyalin. Pilih teks dan salin secara manual.",
+      "limitReached": "Anda boleh mempunyai sehingga {max} token aktif. Batalkan yang tidak digunakan lagi dan cuba semula.",
+      "codeRequired": "Masukkan kod dua faktor anda untuk menjana token.",
+      "invalidCode": "Kod dua faktor tidak betul."
+    },
+    "codeLabel": "Kod dua faktor",
+    "codeHint": "Masukkan kod daripada aplikasi pengesah anda untuk menjana token."
+  },
+  "sessions": {
+    "title": "Peranti yang log masuk",
+    "description": "Peranti ini telah log masuk ke akaun anda. Log keluarkan mana-mana peranti yang tidak anda kenali atau tidak lagi digunakan.",
+    "loading": "Memuatkan...",
+    "empty": "Tiada peranti yang log masuk.",
+    "thisDevice": "Peranti ini",
+    "unknownDevice": "Peranti tidak diketahui",
+    "signedInAt": "Log masuk {date}",
+    "lastActive": "Aktif kali terakhir {date}",
+    "signOut": "Log keluar",
+    "signOutLabel": "Log keluar {device}",
+    "signOutThisLabel": "Log keluar peranti ini ({device})",
+    "signOutOthers": "Log keluar daripada semua peranti lain",
+    "signOutOthersConfirm": "{count, plural, other {Log keluar # peranti lain}}",
+    "revoked": "Peranti telah dilog keluar",
+    "revokedOthers": "Telah dilog keluar daripada semua peranti lain",
+    "errors": {
+      "loadFailed": "Gagal memuatkan peranti.",
+      "revokeFailed": "Gagal log keluar. Sila cuba lagi."
+    },
+    "device": {
+      "desktop": "Aplikasi desktop",
+      "desktopOn": "Aplikasi desktop pada {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} pada {os}",
+      "unknownOn": "Peranti tidak diketahui pada {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Tukar kata laluan",
+    "description": "Masukkan kata laluan semasa anda dan pilih yang baharu.",
+    "currentLabel": "Kata laluan semasa",
+    "newLabel": "Kata laluan baharu",
+    "confirmLabel": "Sahkan kata laluan baharu",
+    "sessionsNote": "Apabila anda menukar kata laluan, peranti lain yang log masuk akan dilog keluar.",
+    "submit": "Tukar kata laluan",
+    "submitting": "Sedang menukar...",
+    "cancel": "Batal",
+    "successToast": "Kata laluan anda telah ditukar",
+    "errors": {
+      "currentRequired": "Masukkan kata laluan semasa anda.",
+      "failed": "Tidak dapat menukar kata laluan anda. Cuba lagi."
+    }
+  },
+  "twoFactor": {
+    "title": "Pengesahan dua faktor",
+    "description": "Minta kod daripada aplikasi pengesah anda, selain kata laluan, semasa log masuk.",
+    "loading": "Memuatkan...",
+    "statusOn": "Hidup",
+    "statusOff": "Mati",
+    "enabledSince": "Dihidupkan {date}",
+    "recoveryRemaining": "{count, plural, other {Tinggal # kod pemulihan}}",
+    "unavailable": "Pengesahan dua faktor tidak tersedia pada pelayan ini. Tanya pentadbir anda.",
+    "requiredNotice": "Organisasi anda memerlukan pengesahan dua faktor.",
+    "close": "Tutup",
+    "setup": {
+      "start": "Sediakan pengesahan dua faktor",
+      "starting": "Sedang menyediakan...",
+      "step1": "1. Tambahkan akaun ini pada aplikasi pengesah anda. Buka pautan pada telefon anda, atau masukkan kunci persediaan secara manual.",
+      "uriLabel": "Pautan persediaan",
+      "openInApp": "Buka dalam aplikasi pengesah",
+      "qrLabel": "Kod QR untuk aplikasi pengesah",
+      "qrHint": "Imbas kod QR ini dengan aplikasi pengesah anda, atau gunakan pautan atau kunci di bawah.",
+      "keyLabel": "Kunci persediaan",
+      "copyKey": "Salin kunci persediaan",
+      "copyUri": "Salin pautan persediaan",
+      "copied": "Disalin",
+      "step2": "2. Masukkan kod 6 digit yang dipaparkan oleh aplikasi anda.",
+      "codeLabel": "Kod pengesahan",
+      "codePlaceholder": "123456",
+      "verify": "Hidupkan",
+      "verifying": "Sedang menyemak...",
+      "cancel": "Batal",
+      "passwordLabel": "3. Masukkan kata laluan semasa anda.",
+      "sessionsNote": "Apabila anda menghidupkan ini, peranti lain yang log masuk akan dilog keluar."
+    },
+    "recovery": {
+      "title": "Simpan kod pemulihan anda",
+      "description": "Gunakan kod pemulihan untuk log masuk jika anda kehilangan peranti. Setiap kod hanya berfungsi sekali. Kod tidak akan dipaparkan lagi.",
+      "download": "Muat turun",
+      "copy": "Salin semua",
+      "fileHeader": "Kod pemulihan. Setiap kod hanya berfungsi sekali. Simpan di tempat yang selamat.",
+      "confirmSaved": "Saya telah menyimpan kod pemulihan saya",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Kata laluan",
+      "codeLabel": "Kod pengesahan atau pemulihan",
+      "cancel": "Batal",
+      "passwordInvalid": "Masukkan kata laluan yang sah.",
+      "codeInvalid": "Masukkan kod pengesahan atau pemulihan yang sah."
+    },
+    "regenerate": {
+      "start": "Jana kod pemulihan baharu",
+      "title": "Jana kod pemulihan baharu",
+      "description": "Kod pemulihan lama berhenti berfungsi sebaik sahaja anda menjana yang baharu. Masukkan kata laluan dan kod daripada aplikasi pengesah anda (atau kod pemulihan).",
+      "submit": "Jana kod baharu",
+      "submitting": "Sedang menjana...",
+      "lowNotice": "{count, plural, other {Tinggal # kod pemulihan sahaja}}. Jana yang baharu sebelum habis.",
+      "toast": "Kod pemulihan baharu sudah sedia"
+    },
+    "disable": {
+      "title": "Matikan pengesahan dua faktor",
+      "description": "Masukkan kata laluan dan kod daripada aplikasi pengesah anda (atau kod pemulihan).",
+      "start": "Matikan",
+      "submit": "Matikan pengesahan dua faktor",
+      "submitting": "Sedang mematikan...",
+      "blockedByPolicy": "Organisasi anda memerlukan pengesahan dua faktor, jadi anda tidak boleh mematikannya. Jika anda kehilangan peranti, minta pentadbir menetapkannya semula."
+    },
+    "enabledToast": "Pengesahan dua faktor dihidupkan",
+    "disabledToast": "Pengesahan dua faktor dimatikan",
+    "errors": {
+      "loadFailed": "Tidak dapat memuatkan tetapan dua faktor.",
+      "setupFailed": "Tidak dapat memulakan persediaan. Cuba lagi.",
+      "enableFailed": "Tidak dapat menghidupkan pengesahan dua faktor.",
+      "regenerateFailed": "Tidak dapat menjana kod pemulihan baharu.",
+      "disableFailed": "Tidak dapat mematikan pengesahan dua faktor.",
+      "copyFailed": "Tidak dapat menyalin ke papan keratan."
+    }
+  },
+  "connectedApps": {
+    "title": "Aplikasi yang disambungkan",
+    "description": "Aplikasi yang anda benarkan menggunakan akaun anda melalui aliran log masuk OAuth. Ia bertindak dengan kebenaran anda. Putuskan sambungan mana-mana aplikasi yang tidak lagi anda gunakan.",
+    "loading": "Memuatkan...",
+    "empty": "Tiada aplikasi disambungkan ke akaun anda.",
+    "redirectsTo": "Kembali ke {hosts}",
+    "connectedAt": "Disambungkan {date}",
+    "lastUsed": "Kali terakhir digunakan {date}",
+    "neverUsed": "Belum pernah digunakan",
+    "disconnect": "Putuskan sambungan",
+    "disconnectLabel": "Putuskan sambungan {name}",
+    "disconnectConfirm": "Putuskan sekarang",
+    "cancel": "Batal",
+    "disconnected": "Aplikasi diputuskan sambungan",
+    "close": "Tutup",
+    "errors": {
+      "loadFailed": "Gagal memuatkan aplikasi yang disambungkan.",
+      "disconnectFailed": "Gagal memutuskan sambungan aplikasi."
+    },
+    "unnamedApp": "Aplikasi tanpa nama"
+  }
+}

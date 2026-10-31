@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Gumawa ng channel",
+    "tabBrowse": "Mag-browse ng mga channel",
+    "nameLabel": "Pangalan ng channel",
+    "namePlaceholder": "hal. plano-budget",
+    "visibility": "Visibility",
+    "public": "Pampubliko",
+    "private": "Pribado",
+    "publicHint": "Makikita at masasalihan ng sinuman sa workspace ang channel na ito.",
+    "privateHint": "Ang mga inimbitahang miyembro lamang ang makakakita at makakasali sa channel na ito.",
+    "cancel": "Kanselahin",
+    "create": "Gumawa",
+    "noChannels": "Walang channel na maaaring salihan",
+    "memberCount": "{count, plural, one {# miyembro} other {# na miyembro}}",
+    "joined": "Nasalihan na",
+    "join": "Sumali",
+    "close": "Isara",
+    "errors": {
+      "createFailed": "Nabigo ang paggawa ng channel"
+    }
+  },
+  "errors": {
+    "loadConversations": "Hindi ma-load ang mga usapan.",
+    "loadChannels": "Hindi ma-load ang mga channel."
+  },
+  "membersPanel": {
+    "title": "Mga miyembro",
+    "addPeople": "Magdagdag ng tao",
+    "loadError": "Hindi ma-load ang mga miyembro.",
+    "removeError": "Nabigo ang pag-alis ng miyembro",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Alisin ang miyembro?",
+      "message": "Alisin si <bold>{name}</bold> sa channel na ito?"
+    },
+    "removing": "Inaalis...",
+    "searchByName": "Maghanap ayon sa pangalan...",
+    "noUsers": "Walang nakitang user",
+    "roles": {
+      "owner": "May-ari",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Alisin ang miyembro"
+  },
+  "dm": {
+    "messagePlaceholder": "Mensahe kay {name}",
+    "you": "(ikaw)",
+    "star": "Idagdag sa Starred",
+    "unstar": "Alisin sa Starred",
+    "loadingMessages": "Naglo-load ng mga mensahe...",
+    "selfSpace": "Ito ang iyong espasyo. Mag-draft ng mga mensahe, ilista ang iyong mga gagawin, o itago ang mga link at file dito.",
+    "conversationStart": "Simula ng iyong usapan kay {name}",
+    "sendToBegin": "Magpadala ng mensahe para magsimula.",
+    "edited": "(na-edit)",
+    "pinnedMessages": "Mga naka-pin na mensahe",
+    "noPins": "Wala pang naka-pin na mensahe",
+    "files": "Mga file",
+    "noFiles": "Wala pang naibahaging file",
+    "loadError": "Hindi ma-load ang mga mensahe.",
+    "sendError": "Hindi naipadala ang mensahe. Subukan muli."
+  },
+  "nameRules": {
+    "required": "Maglagay ng pangalan ng channel.",
+    "tooLong": "Dapat {max} character o mas kaunti ang pangalan ng channel.",
+    "invalidChars": "Mga letra, numero, gitling, at underscore lamang ang maaaring gamitin sa pangalan ng channel, at dapat magsimula sa letra o numero.",
+    "tooManyMarks": "Hindi maaaring magkaroon ng higit sa 4 na combining mark nang sunod-sunod ang pangalan ng channel.",
+    "mixedScripts": "Hindi maaaring paghaluin ang magkakahawig na alpabeto (tulad ng Latin at Cyrillic o Greek) o digit mula sa ibang sistema ng numero sa pangalan ng channel.",
+    "taken": "May channel na may ganitong pangalan na."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# miyembro} other {# na miyembro}}",
+    "nameLabel": "Pangalan ng usapan",
+    "namePlaceholder": "Magdagdag ng pangalan",
+    "noName": "Walang pangalan (ipinapakita ang mga pangalan ng miyembro)",
+    "rename": "Palitan ang pangalan ng usapan",
+    "addPeople": "Magdagdag ng tao",
+    "add": "Idagdag",
+    "createWith": "Magsimula ng group na usapan",
+    "leave": "Umalis sa usapan",
+    "leaveConfirm": "Umalis sa usapang ito? Hindi mo na makikita ang mga mensahe nito.",
+    "conversationStart": "Ito ang simula ng iyong usapan kina {names}",
+    "addError": "Hindi naidagdag ang mga tao. Subukan muli.",
+    "renameError": "Hindi napalitan ang pangalan ng usapan. Subukan muli.",
+    "leaveError": "Hindi nakaalis sa usapan. Subukan muli."
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Wika",
+    "pending": "{name} (paparating ang pagsasalin)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Naka-pause ang notifications"
+  },
+  "profile": {
+    "title": "Profile",
+    "close": "Isara",
+    "loading": "Naglo-load...",
+    "notFound": "Hindi nahanap ang profile",
+    "uploadPhoto": "Mag-upload ng larawan",
+    "uploading": "Nag-a-upload...",
+    "name": "Pangalan",
+    "bio": "Bio",
+    "bioPlaceholder": "Ikwento sa iba ang tungkol sa iyo",
+    "cancel": "Kanselahin",
+    "save": "I-save",
+    "status": "Status",
+    "joined": "Sumali noong",
+    "message": "Mensahe",
+    "edit": "I-edit ang Profile",
+    "statusValue": {
+      "online": "online",
+      "away": "wala",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Hindi ma-load ang profile.",
+      "saveFailed": "Hindi ma-save ang profile. Subukan muli.",
+      "notImage": "Pumili ng image file.",
+      "tooLarge": "Dapat wala pang 5MB ang larawan.",
+      "uploadFailed": "Hindi ma-upload ang larawan. Subukan muli."
+    },
+    "statusUntil": "Hanggang {time}"
+  },
+  "crop": {
+    "title": "I-crop ang iyong larawan",
+    "close": "Isara",
+    "zoom": "Zoom",
+    "cancel": "Kanselahin",
+    "save": "I-save",
+    "saving": "Sine-save...",
+    "failed": "Hindi ma-crop"
+  },
+  "accessTokens": {
+    "title": "Mga personal access token",
+    "description": "Pinapayagan ng mga token ang Claude at iba pang MCP client na magbasa at, kung papayagan mo, magsulat sa iyong workspace gamit ang iyong mga pahintulot. Ingatan ang mga ito gaya ng password.",
+    "nameLabel": "Pangalan ng token",
+    "namePlaceholder": "hal. Claude Code sa aking laptop",
+    "scopesLabel": "Mga pahintulot",
+    "scope": {
+      "channelsRead": "Ilista ang mga channel",
+      "channelsHistory": "Basahin ang mga mensahe, thread, at aktibidad",
+      "usersRead": "Tingnan ang mga tao",
+      "chatWrite": "Mag-post, mag-edit, at magbura ng sarili mong mga mensahe",
+      "reactionsWrite": "Magdagdag at mag-alis ng sarili mong reaksyon",
+      "imRead": "Ilista ang iyong mga direktang mensahe at group DM",
+      "imHistory": "Basahin ang kasaysayan ng iyong direktang mensahe",
+      "imWrite": "Magpadala, mag-edit, at magbura ng iyong direktang mensahe",
+      "searchRead": "Maghanap ng mga mensahe, file, tao, at channel (kailangan ng kasaysayan ng DM para sa resulta ng DM)",
+      "filesRead": "Ilista ang mga file at basahin ang nilalaman ng text file"
+    },
+    "expiryLabel": "Mag-e-expire",
+    "expiryDays": "{count, plural, one {# araw} other {# na araw}}",
+    "expiryNever": "Walang expiration",
+    "neverWarning": "Mananatiling valid ang mga token na walang expiration hanggang bawiin mo ang mga ito.",
+    "create": "Gumawa ng token",
+    "createdNotice": "Kopyahin na ngayon ang bago mong token. Hindi mo na ito makikita muli.",
+    "copy": "Kopyahin ang token",
+    "copyCommand": "Kopyahin ang command",
+    "copied": "Nakopya sa clipboard",
+    "connectHint": "Kumonekta mula sa Claude Code:",
+    "dismiss": "Tapos na, itago ang token",
+    "loading": "Naglo-load...",
+    "empty": "Wala kang mga personal access token.",
+    "expires": "Mag-e-expire {date}",
+    "expired": "Nag-expire na",
+    "noExpiry": "Walang expiration",
+    "lastUsed": "Huling ginamit {date}",
+    "neverUsed": "Hindi pa nagagamit",
+    "rename": "Palitan ang pangalan",
+    "renameLabel": "Palitan ang pangalan ng token {name}",
+    "revoke": "Bawiin",
+    "revokeLabel": "Bawiin ang token {name}",
+    "revokeConfirm": "Bawiin ngayon",
+    "cancel": "Kanselahin",
+    "close": "Isara",
+    "errors": {
+      "loadFailed": "Hindi ma-load ang mga token.",
+      "createFailed": "Hindi magawa ang token. Subukan muli.",
+      "renameFailed": "Hindi mapalitan ang pangalan ng token.",
+      "revokeFailed": "Hindi mabawi ang token.",
+      "copyFailed": "Hindi makopya. Piliin ang teksto at kopyahin ito nang manu-mano.",
+      "limitReached": "Hanggang {max} aktibong token lang ang maaari mong magkaroon. Bawiin ang hindi mo na ginagamit at subukan muli.",
+      "codeRequired": "Ilagay ang iyong two-factor code para makagawa ng token.",
+      "invalidCode": "Mali ang two-factor code."
+    },
+    "codeLabel": "Two-factor code",
+    "codeHint": "Ilagay ang code mula sa iyong authenticator app para makagawa ng token."
+  },
+  "sessions": {
+    "title": "Mga device na naka-sign in",
+    "description": "Naka-sign in sa iyong account ang mga device na ito. Mag-sign out sa mga hindi mo kilala o hindi mo na ginagamit.",
+    "loading": "Naglo-load...",
+    "empty": "Walang naka-sign in na device.",
+    "thisDevice": "Ang device na ito",
+    "unknownDevice": "Hindi kilalang device",
+    "signedInAt": "Naka-sign in noong {date}",
+    "lastActive": "Huling aktibo noong {date}",
+    "signOut": "Mag-sign out",
+    "signOutLabel": "Mag-sign out sa {device}",
+    "signOutThisLabel": "Mag-sign out sa device na ito ({device})",
+    "signOutOthers": "Mag-sign out sa lahat ng ibang device",
+    "signOutOthersConfirm": "{count, plural, one {Mag-sign out sa # ibang device} other {Mag-sign out sa # na ibang device}}",
+    "revoked": "Na-sign out ang device",
+    "revokedOthers": "Na-sign out sa lahat ng ibang device",
+    "errors": {
+      "loadFailed": "Hindi ma-load ang mga device.",
+      "revokeFailed": "Hindi makapag-sign out. Subukan muli."
+    },
+    "device": {
+      "desktop": "Desktop app",
+      "desktopOn": "Desktop app sa {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} sa {os}",
+      "unknownOn": "Hindi kilalang device sa {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Palitan ang password",
+    "description": "Ilagay ang kasalukuyan mong password at pumili ng bago.",
+    "currentLabel": "Kasalukuyang password",
+    "newLabel": "Bagong password",
+    "confirmLabel": "Kumpirmahin ang bagong password",
+    "sessionsNote": "Kapag pinalitan mo ang password, mag-sa-sign out ang iba mo pang naka-sign in na device.",
+    "submit": "Palitan ang password",
+    "submitting": "Pinapalitan...",
+    "cancel": "Kanselahin",
+    "successToast": "Napalitan na ang iyong password",
+    "errors": {
+      "currentRequired": "Ilagay ang iyong kasalukuyang password.",
+      "failed": "Hindi mapalitan ang iyong password. Subukan muli."
+    }
+  },
+  "twoFactor": {
+    "title": "Two-factor authentication",
+    "description": "Humingi ng code mula sa iyong authenticator app bukod sa password kapag nag-sign in.",
+    "loading": "Naglo-load...",
+    "statusOn": "Naka-on",
+    "statusOff": "Naka-off",
+    "enabledSince": "Na-on noong {date}",
+    "recoveryRemaining": "{count, plural, one {Natitira ang # recovery code} other {Natitira ang # na recovery code}}",
+    "unavailable": "Hindi available ang two-factor authentication sa server na ito. Tanungin ang iyong administrator.",
+    "requiredNotice": "Kailangan ng iyong organisasyon ang two-factor authentication.",
+    "close": "Isara",
+    "setup": {
+      "start": "I-set up ang two-factor authentication",
+      "starting": "Naghahanda...",
+      "step1": "1. Idagdag ang account na ito sa iyong authenticator app. Buksan ang link sa iyong telepono, o ilagay nang manu-mano ang setup key.",
+      "uriLabel": "Setup link",
+      "openInApp": "Buksan sa authenticator app",
+      "qrLabel": "QR code para sa authenticator app",
+      "qrHint": "I-scan ang QR code na ito gamit ang iyong authenticator app, o gamitin ang link o key sa ibaba.",
+      "keyLabel": "Setup key",
+      "copyKey": "Kopyahin ang setup key",
+      "copyUri": "Kopyahin ang setup link",
+      "copied": "Nakopya",
+      "step2": "2. Ilagay ang 6-digit na code na ipinapakita ng iyong app.",
+      "codeLabel": "Authentication code",
+      "codePlaceholder": "123456",
+      "verify": "I-on",
+      "verifying": "Chine-check...",
+      "cancel": "Kanselahin",
+      "passwordLabel": "3. Ilagay ang kasalukuyan mong password.",
+      "sessionsNote": "Kapag in-on mo ito, mag-sa-sign out ang iba mo pang naka-sign in na device."
+    },
+    "recovery": {
+      "title": "I-save ang iyong recovery code",
+      "description": "Gumamit ng recovery code para mag-sign in kung mawala ang iyong device. Isang beses lang gumagana ang bawat code. Hindi na ito ipapakita muli.",
+      "download": "I-download",
+      "copy": "Kopyahin lahat",
+      "fileHeader": "Mga recovery code. Isang beses lang gumagana ang bawat code. Itago ang mga ito sa ligtas na lugar.",
+      "confirmSaved": "Na-save ko na ang aking mga recovery code",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Password",
+      "codeLabel": "Authentication o recovery code",
+      "cancel": "Kanselahin",
+      "passwordInvalid": "Maglagay ng wastong password.",
+      "codeInvalid": "Maglagay ng wastong authentication o recovery code."
+    },
+    "regenerate": {
+      "start": "Gumawa ng bagong recovery code",
+      "title": "Gumawa ng bagong recovery code",
+      "description": "Titigil sa paggana ang mga lumang recovery code mo pagkagawa ng bago. Ilagay ang iyong password at code mula sa iyong authenticator app (o recovery code).",
+      "submit": "Gumawa ng bagong code",
+      "submitting": "Gumagawa...",
+      "lowNotice": "{count, plural, one {Isa na lang ang natitirang recovery code} other {# na lang ang natitirang recovery code}}. Gumawa ng bago bago maubos.",
+      "toast": "Handa na ang mga bagong recovery code"
+    },
+    "disable": {
+      "title": "I-off ang two-factor authentication",
+      "description": "Ilagay ang iyong password at code mula sa iyong authenticator app (o recovery code).",
+      "start": "I-off",
+      "submit": "I-off ang two-factor authentication",
+      "submitting": "Ina-off...",
+      "blockedByPolicy": "Kailangan ng iyong organisasyon ang two-factor authentication, kaya hindi mo ito maaaring i-off. Kung nawala ang iyong device, humingi ng tulong sa administrator na i-reset ito."
+    },
+    "enabledToast": "Naka-on na ang two-factor authentication",
+    "disabledToast": "Naka-off na ang two-factor authentication",
+    "errors": {
+      "loadFailed": "Hindi ma-load ang mga setting ng two-factor.",
+      "setupFailed": "Hindi masimulan ang setup. Subukan muli.",
+      "enableFailed": "Hindi ma-on ang two-factor authentication.",
+      "regenerateFailed": "Hindi makagawa ng bagong recovery code.",
+      "disableFailed": "Hindi ma-off ang two-factor authentication.",
+      "copyFailed": "Hindi makopya sa clipboard."
+    }
+  },
+  "connectedApps": {
+    "title": "Mga konektadong app",
+    "description": "Mga app na pinayagan mong gamitin ang iyong account sa pamamagitan ng OAuth sign-in. Kikilos ang mga ito gamit ang iyong mga pahintulot. I-disconnect ang anumang app na hindi mo na ginagamit.",
+    "loading": "Naglo-load...",
+    "empty": "Walang app na nakakonekta sa iyong account.",
+    "redirectsTo": "Bumabalik sa {hosts}",
+    "connectedAt": "Nakakonekta noong {date}",
+    "lastUsed": "Huling ginamit {date}",
+    "neverUsed": "Hindi pa nagagamit",
+    "disconnect": "I-disconnect",
+    "disconnectLabel": "I-disconnect ang {name}",
+    "disconnectConfirm": "I-disconnect ngayon",
+    "cancel": "Kanselahin",
+    "disconnected": "Na-disconnect ang app",
+    "close": "Isara",
+    "errors": {
+      "loadFailed": "Hindi ma-load ang mga konektadong app.",
+      "disconnectFailed": "Hindi ma-disconnect ang app."
+    },
+    "unnamedApp": "App na walang pangalan"
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Ngôn ngữ",
+    "pending": "{name} (bản dịch sắp có)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Ảnh đại diện",
+    "dnd": "Đã tạm dừng thông báo"
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "close": "Đóng",
+    "loading": "Đang tải...",
+    "notFound": "Không tìm thấy hồ sơ",
+    "uploadPhoto": "Tải ảnh lên",
+    "uploading": "Đang tải lên...",
+    "name": "Tên",
+    "bio": "Giới thiệu",
+    "bioPlaceholder": "Giới thiệu về bản thân bạn",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "status": "Trạng thái",
+    "joined": "Tham gia",
+    "message": "Nhắn tin",
+    "edit": "Sửa hồ sơ",
+    "statusValue": {
+      "online": "đang hoạt động",
+      "away": "vắng mặt",
+      "offline": "ngoại tuyến"
+    },
+    "errors": {
+      "loadFailed": "Không tải được hồ sơ.",
+      "saveFailed": "Không lưu được hồ sơ. Vui lòng thử lại.",
+      "notImage": "Vui lòng chọn tệp ảnh.",
+      "tooLarge": "Ảnh phải nhỏ hơn 5MB.",
+      "uploadFailed": "Không tải được ảnh lên. Vui lòng thử lại."
+    },
+    "statusUntil": "Đến {time}"
+  },
+  "crop": {
+    "title": "Cắt ảnh của bạn",
+    "close": "Đóng",
+    "zoom": "Phóng to",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "failed": "Không cắt được ảnh"
+  },
+  "accessTokens": {
+    "title": "Mã truy cập cá nhân",
+    "description": "Mã cho phép Claude và các ứng dụng MCP khác đọc và, nếu bạn cho phép, ghi vào không gian làm việc của bạn với quyền của bạn. Hãy giữ mã như mật khẩu.",
+    "nameLabel": "Tên mã",
+    "namePlaceholder": "ví dụ: Claude Code trên máy tính của tôi",
+    "scopesLabel": "Quyền",
+    "scope": {
+      "channelsRead": "Liệt kê kênh",
+      "channelsHistory": "Đọc tin nhắn, chủ đề và hoạt động",
+      "usersRead": "Xem danh sách người dùng",
+      "chatWrite": "Đăng, sửa và xóa tin nhắn của bạn",
+      "reactionsWrite": "Thêm và gỡ cảm xúc của bạn",
+      "imRead": "Liệt kê tin nhắn trực tiếp và nhóm của bạn",
+      "imHistory": "Đọc lịch sử tin nhắn trực tiếp của bạn",
+      "imWrite": "Gửi, sửa và xóa tin nhắn trực tiếp của bạn",
+      "searchRead": "Tìm tin nhắn, tệp, người dùng và kênh (kết quả tin nhắn trực tiếp cần quyền đọc lịch sử tin nhắn trực tiếp)",
+      "filesRead": "Liệt kê tệp và đọc nội dung tệp văn bản"
+    },
+    "expiryLabel": "Hết hạn",
+    "expiryDays": "{count, plural, one {# ngày} other {# ngày}}",
+    "expiryNever": "Không hết hạn",
+    "neverWarning": "Mã không có ngày hết hạn sẽ vẫn có hiệu lực cho đến khi bạn thu hồi.",
+    "create": "Tạo mã",
+    "createdNotice": "Hãy sao chép mã mới ngay bây giờ. Bạn sẽ không thể xem lại mã này.",
+    "copy": "Sao chép mã",
+    "copyCommand": "Sao chép lệnh",
+    "copied": "Đã sao chép vào bộ nhớ tạm",
+    "connectHint": "Kết nối từ Claude Code:",
+    "dismiss": "Xong, ẩn mã",
+    "loading": "Đang tải...",
+    "empty": "Bạn chưa có mã truy cập cá nhân nào.",
+    "expires": "Hết hạn {date}",
+    "expired": "Đã hết hạn",
+    "noExpiry": "Không hết hạn",
+    "lastUsed": "Dùng lần cuối {date}",
+    "neverUsed": "Chưa từng dùng",
+    "rename": "Đổi tên",
+    "renameLabel": "Đổi tên mã {name}",
+    "revoke": "Thu hồi",
+    "revokeLabel": "Thu hồi mã {name}",
+    "revokeConfirm": "Thu hồi ngay",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "errors": {
+      "loadFailed": "Không tải được mã.",
+      "createFailed": "Không tạo được mã. Vui lòng thử lại.",
+      "renameFailed": "Không đổi được tên mã.",
+      "revokeFailed": "Không thu hồi được mã.",
+      "copyFailed": "Không sao chép được. Hãy chọn văn bản và sao chép thủ công.",
+      "limitReached": "Bạn có tối đa {max} mã đang hoạt động. Hãy thu hồi mã không còn dùng và thử lại.",
+      "codeRequired": "Nhập mã xác thực hai bước để tạo mã.",
+      "invalidCode": "Mã xác thực hai bước không đúng."
+    },
+    "codeLabel": "Mã xác thực hai bước",
+    "codeHint": "Nhập mã từ ứng dụng xác thực để tạo mã."
+  },
+  "sessions": {
+    "title": "Thiết bị đã đăng nhập",
+    "description": "Các thiết bị này đang đăng nhập vào tài khoản của bạn. Hãy đăng xuất những thiết bị bạn không nhận ra hoặc không còn dùng.",
+    "loading": "Đang tải...",
+    "empty": "Không có thiết bị nào đang đăng nhập.",
+    "thisDevice": "Thiết bị này",
+    "unknownDevice": "Thiết bị không xác định",
+    "signedInAt": "Đăng nhập {date}",
+    "lastActive": "Hoạt động lần cuối {date}",
+    "signOut": "Đăng xuất",
+    "signOutLabel": "Đăng xuất {device}",
+    "signOutThisLabel": "Đăng xuất thiết bị này ({device})",
+    "signOutOthers": "Đăng xuất khỏi tất cả thiết bị khác",
+    "signOutOthersConfirm": "{count, plural, one {Đăng xuất # thiết bị khác} other {Đăng xuất # thiết bị khác}}",
+    "revoked": "Đã đăng xuất thiết bị",
+    "revokedOthers": "Đã đăng xuất khỏi tất cả thiết bị khác",
+    "errors": {
+      "loadFailed": "Không tải được thiết bị.",
+      "revokeFailed": "Không đăng xuất được. Vui lòng thử lại."
+    },
+    "device": {
+      "desktop": "Ứng dụng máy tính",
+      "desktopOn": "Ứng dụng máy tính trên {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} trên {os}",
+      "unknownOn": "Thiết bị không xác định trên {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Đổi mật khẩu",
+    "description": "Nhập mật khẩu hiện tại và chọn mật khẩu mới.",
+    "currentLabel": "Mật khẩu hiện tại",
+    "newLabel": "Mật khẩu mới",
+    "confirmLabel": "Xác nhận mật khẩu mới",
+    "sessionsNote": "Khi bạn đổi mật khẩu, các thiết bị khác đang đăng nhập sẽ bị đăng xuất.",
+    "submit": "Đổi mật khẩu",
+    "submitting": "Đang đổi...",
+    "cancel": "Hủy",
+    "successToast": "Mật khẩu của bạn đã được đổi",
+    "errors": {
+      "currentRequired": "Nhập mật khẩu hiện tại của bạn.",
+      "failed": "Không đổi được mật khẩu. Hãy thử lại."
+    }
+  },
+  "twoFactor": {
+    "title": "Xác thực hai bước",
+    "description": "Yêu cầu mã từ ứng dụng xác thực, ngoài mật khẩu, khi bạn đăng nhập.",
+    "loading": "Đang tải...",
+    "statusOn": "Bật",
+    "statusOff": "Tắt",
+    "enabledSince": "Đã bật {date}",
+    "recoveryRemaining": "{count, plural, one {Còn # mã khôi phục} other {Còn # mã khôi phục}}",
+    "unavailable": "Máy chủ này không hỗ trợ xác thực hai bước. Hãy hỏi quản trị viên.",
+    "requiredNotice": "Tổ chức của bạn yêu cầu xác thực hai bước.",
+    "close": "Đóng",
+    "setup": {
+      "start": "Thiết lập xác thực hai bước",
+      "starting": "Đang chuẩn bị...",
+      "step1": "1. Thêm tài khoản này vào ứng dụng xác thực. Mở liên kết trên điện thoại hoặc nhập khóa thiết lập bằng tay.",
+      "uriLabel": "Liên kết thiết lập",
+      "openInApp": "Mở trong ứng dụng xác thực",
+      "qrLabel": "Mã QR cho ứng dụng xác thực",
+      "qrHint": "Quét mã QR này bằng ứng dụng xác thực, hoặc dùng liên kết hoặc khóa bên dưới.",
+      "keyLabel": "Khóa thiết lập",
+      "copyKey": "Sao chép khóa thiết lập",
+      "copyUri": "Sao chép liên kết thiết lập",
+      "copied": "Đã sao chép",
+      "step2": "2. Nhập mã 6 chữ số mà ứng dụng hiển thị.",
+      "codeLabel": "Mã xác thực",
+      "codePlaceholder": "123456",
+      "verify": "Bật",
+      "verifying": "Đang kiểm tra...",
+      "cancel": "Hủy",
+      "passwordLabel": "3. Nhập mật khẩu hiện tại của bạn.",
+      "sessionsNote": "Khi bạn bật tính năng này, các thiết bị khác đang đăng nhập sẽ bị đăng xuất."
+    },
+    "recovery": {
+      "title": "Lưu mã khôi phục của bạn",
+      "description": "Dùng mã khôi phục để đăng nhập nếu bạn làm mất thiết bị. Mỗi mã chỉ dùng được một lần. Mã sẽ không hiển thị lại.",
+      "download": "Tải xuống",
+      "copy": "Sao chép tất cả",
+      "fileHeader": "Mã khôi phục. Mỗi mã chỉ dùng được một lần. Hãy giữ ở nơi an toàn.",
+      "confirmSaved": "Tôi đã lưu mã khôi phục",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Mật khẩu",
+      "codeLabel": "Mã xác thực hoặc mã khôi phục",
+      "cancel": "Hủy",
+      "passwordInvalid": "Nhập mật khẩu hợp lệ.",
+      "codeInvalid": "Nhập mã xác thực hoặc mã khôi phục hợp lệ."
+    },
+    "regenerate": {
+      "start": "Tạo mã khôi phục mới",
+      "title": "Tạo mã khôi phục mới",
+      "description": "Mã khôi phục cũ sẽ ngừng hoạt động ngay khi bạn tạo mã mới. Nhập mật khẩu và mã từ ứng dụng xác thực (hoặc mã khôi phục).",
+      "submit": "Tạo mã mới",
+      "submitting": "Đang tạo...",
+      "lowNotice": "{count, plural, one {Chỉ còn # mã khôi phục} other {Chỉ còn # mã khôi phục}}. Hãy tạo mã mới trước khi hết.",
+      "toast": "Mã khôi phục mới đã sẵn sàng"
+    },
+    "disable": {
+      "title": "Tắt xác thực hai bước",
+      "description": "Nhập mật khẩu và mã từ ứng dụng xác thực (hoặc mã khôi phục).",
+      "start": "Tắt",
+      "submit": "Tắt xác thực hai bước",
+      "submitting": "Đang tắt...",
+      "blockedByPolicy": "Tổ chức của bạn yêu cầu xác thực hai bước nên bạn không thể tắt. Nếu bạn làm mất thiết bị, hãy nhờ quản trị viên đặt lại."
+    },
+    "enabledToast": "Đã bật xác thực hai bước",
+    "disabledToast": "Đã tắt xác thực hai bước",
+    "errors": {
+      "loadFailed": "Không tải được cài đặt xác thực hai bước.",
+      "setupFailed": "Không bắt đầu được thiết lập. Hãy thử lại.",
+      "enableFailed": "Không bật được xác thực hai bước.",
+      "regenerateFailed": "Không tạo được mã khôi phục mới.",
+      "disableFailed": "Không tắt được xác thực hai bước.",
+      "copyFailed": "Không sao chép được vào bộ nhớ tạm."
+    }
+  },
+  "connectedApps": {
+    "title": "Ứng dụng đã kết nối",
+    "description": "Các ứng dụng bạn đã cho phép sử dụng tài khoản của bạn qua luồng đăng nhập OAuth. Chúng hoạt động bằng quyền của bạn. Hãy ngắt kết nối mọi ứng dụng bạn không còn dùng.",
+    "loading": "Đang tải...",
+    "empty": "Không có ứng dụng nào được kết nối với tài khoản của bạn.",
+    "redirectsTo": "Chuyển về {hosts}",
+    "connectedAt": "Đã kết nối {date}",
+    "lastUsed": "Dùng lần cuối {date}",
+    "neverUsed": "Chưa từng dùng",
+    "disconnect": "Ngắt kết nối",
+    "disconnectLabel": "Ngắt kết nối {name}",
+    "disconnectConfirm": "Ngắt kết nối ngay",
+    "cancel": "Hủy",
+    "disconnected": "Đã ngắt kết nối ứng dụng",
+    "close": "Đóng",
+    "errors": {
+      "loadFailed": "Không tải được ứng dụng đã kết nối.",
+      "disconnectFailed": "Không ngắt kết nối được ứng dụng."
+    },
+    "unnamedApp": "Ứng dụng chưa đặt tên"
+  }
+}

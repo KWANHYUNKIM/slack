@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(dibisukan)",
+    "mute": "Bisukan",
+    "unmute": "Suarakan",
+    "leave": "Keluar dari huddle"
+  },
+  "button": {
+    "leaveFirstError": "Keluar dulu dari huddle Anda saat ini",
+    "cancelInviteFirstError": "Batalkan dulu undangan Anda saat ini",
+    "cancelInvite": "Batalkan undangan",
+    "calling": "Menelepon...",
+    "inHuddle": "Dalam huddle",
+    "leaveCurrentFirst": "Keluar dulu dari huddle saat ini",
+    "start": "Mulai huddle"
+  },
+  "incoming": {
+    "invite": "Undangan huddle",
+    "secondsLeft": "{count} dtk",
+    "decline": "Tolak",
+    "accept": "Terima"
+  },
+  "system": {
+    "youStarted": "Anda memulai huddle.",
+    "started": "Memulai huddle.",
+    "ended": "Berakhir",
+    "youSentInvite": "Anda mengirim undangan huddle.",
+    "sentInvite": "Mengirimi Anda undangan huddle.",
+    "huddleStarted": "Huddle dimulai",
+    "huddleEnded": "Huddle berakhir ({duration})",
+    "durationSeconds": "{seconds} dtk",
+    "durationMinutesSeconds": "{minutes} mnt {seconds} dtk"
+  },
+  "errors": {
+    "leaveFirst": "Keluar dulu dari huddle Anda saat ini",
+    "cancelInviteFirst": "Batalkan dulu undangan Anda saat ini",
+    "micDenied": "Akses mikrofon ditolak",
+    "busy": "Mereka sedang berada di huddle lain",
+    "declined": "Undangan ditolak",
+    "expired": "Undangan kedaluwarsa",
+    "rateLimited": "Terlalu banyak permintaan. Coba lagi sebentar lagi",
+    "invalidInvite": "Permintaan undangan tidak valid",
+    "cannotInviteSelf": "Anda tidak dapat mengundang diri sendiri",
+    "userNotFound": "Pengguna tidak ditemukan",
+    "invalidAccept": "Permintaan penerimaan tidak valid",
+    "inviteNotFound": "Undangan tidak ditemukan atau sudah kedaluwarsa",
+    "peerOffline": "Mereka sedang luring",
+    "generic": "Tidak dapat memulai huddle. Silakan coba lagi"
+  }
+}

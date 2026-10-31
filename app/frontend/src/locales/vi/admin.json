@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Bảng quản trị",
+    "openSidebar": "Mở thanh bên",
+    "tabs": {
+      "members": "Thành viên",
+      "invites": "Lời mời",
+      "channels": "Kênh",
+      "webhooks": "Webhook",
+      "audit": "Nhật ký kiểm tra",
+      "retention": "Lưu giữ dữ liệu",
+      "security": "Bảo mật",
+      "dlp": "DLP",
+      "legalHolds": "Lưu giữ pháp lý"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kênh",
+      "members": "Thành viên",
+      "messages": "Tin nhắn",
+      "created": "Ngày tạo"
+    },
+    "actions": {
+      "rename": "Đổi tên kênh",
+      "archive": "Lưu trữ kênh",
+      "delete": "Xóa kênh",
+      "unarchive": "Bỏ lưu trữ kênh",
+      "deletePermanently": "Xóa vĩnh viễn"
+    },
+    "emptyActive": "Không có kênh đang hoạt động",
+    "archivedHeading": "Kênh đã lưu trữ ({count})",
+    "archivedOn": "đã lưu trữ {date}",
+    "messageCount": "{count, plural, one {# tin nhắn} other {# tin nhắn}}",
+    "deleteDialog": {
+      "title": "Xóa kênh",
+      "message": "Bạn có chắc chắn muốn xóa vĩnh viễn #{name} không? Mọi tin nhắn sẽ bị mất. Việc này không thể hoàn tác."
+    },
+    "archiveDialog": {
+      "title": "Lưu trữ kênh",
+      "confirm": "Lưu trữ",
+      "message": "Lưu trữ #{name}? Kênh sẽ bị ẩn khỏi thanh bên nhưng tin nhắn vẫn được giữ lại. Bạn có thể bỏ lưu trữ sau."
+    },
+    "unarchiveDialog": {
+      "title": "Bỏ lưu trữ kênh",
+      "confirm": "Bỏ lưu trữ",
+      "message": "Bỏ lưu trữ #{name}? Kênh sẽ hiển thị lại trên thanh bên của mọi thành viên."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Tìm thành viên...",
+    "columns": {
+      "user": "Người dùng",
+      "email": "Email",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "you": "(bạn)",
+    "roles": {
+      "owner": "Chủ sở hữu",
+      "admin": "Quản trị viên",
+      "member": "Thành viên",
+      "guest": "Khách"
+    },
+    "status": {
+      "active": "Đang hoạt động",
+      "deactivated": "Đã vô hiệu hóa"
+    },
+    "actions": {
+      "transfer": "Chuyển quyền sở hữu",
+      "reactivate": "Kích hoạt lại",
+      "deactivate": "Vô hiệu hóa",
+      "forceLogout": "Buộc đăng xuất",
+      "resetMfa": "Đặt lại xác thực hai bước"
+    },
+    "empty": "Không tìm thấy người dùng",
+    "dialogs": {
+      "transfer": {
+        "title": "Chuyển quyền sở hữu không gian làm việc",
+        "confirm": "Chuyển",
+        "message": "Bạn có chắc chắn muốn chuyển quyền sở hữu không gian làm việc cho {name} không? Bạn sẽ bị hạ xuống vai trò Quản trị viên."
+      },
+      "deactivate": {
+        "title": "Vô hiệu hóa người dùng",
+        "confirm": "Vô hiệu hóa",
+        "message": "Bạn có chắc chắn muốn vô hiệu hóa {name} không? Người này sẽ bị đăng xuất ngay và không thể đăng nhập."
+      },
+      "reactivate": {
+        "title": "Kích hoạt lại người dùng",
+        "confirm": "Kích hoạt lại",
+        "message": "Bạn có chắc chắn muốn kích hoạt lại {name} không? Người này sẽ có thể đăng nhập trở lại."
+      },
+      "forceLogout": {
+        "title": "Buộc đăng xuất",
+        "confirm": "Đăng xuất",
+        "message": "Đăng xuất {name} khỏi mọi thiết bị ngay bây giờ? Tài khoản vẫn hoạt động và người này có thể đăng nhập lại."
+      },
+      "resetMfa": {
+        "title": "Đặt lại xác thực hai bước",
+        "confirm": "Đặt lại",
+        "message": "Gỡ xác thực hai bước của {name}? Người này sẽ bị đăng xuất khỏi mọi thiết bị và chỉ cần mật khẩu để đăng nhập."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Đã bật xác thực hai bước"
+    }
+  },
+  "invites": {
+    "createHeading": "Tạo liên kết mời",
+    "fields": {
+      "role": "Vai trò",
+      "maxUses": "Số lần dùng tối đa",
+      "expiresIn": "Hết hạn sau"
+    },
+    "unlimited": "Không giới hạn",
+    "expiry": {
+      "1d": "1 ngày",
+      "7d": "7 ngày",
+      "30d": "30 ngày",
+      "never": "Không bao giờ"
+    },
+    "expired": "Đã hết hạn",
+    "columns": {
+      "url": "URL lời mời",
+      "uses": "Số lần dùng",
+      "expires": "Hết hạn",
+      "createdBy": "Tạo bởi"
+    },
+    "copyUrl": "Sao chép URL lời mời",
+    "full": "(đã đầy)",
+    "delete": "Xóa lời mời",
+    "empty": "Chưa có liên kết mời nào"
+  },
+  "webhooks": {
+    "createHeading": "Tạo webhook",
+    "fields": {
+      "name": "Tên webhook",
+      "channel": "Kênh"
+    },
+    "namePlaceholder": "Tích hợp của tôi",
+    "selectChannel": "Chọn kênh...",
+    "columns": {
+      "name": "Tên",
+      "url": "URL webhook",
+      "lastUsed": "Dùng lần cuối"
+    },
+    "never": "Chưa bao giờ",
+    "justNow": "Vừa xong",
+    "inactive": "Không hoạt động",
+    "copyUrl": "Sao chép URL webhook",
+    "delete": "Xóa webhook",
+    "empty": "Chưa cấu hình webhook nào"
+  },
+  "audit": {
+    "empty": "Không có mục nhật ký kiểm tra nào khớp. Các thao tác đã ghi sẽ hiển thị ở đây.",
+    "loadMore": "Tải thêm",
+    "targets": {
+      "user": "Người dùng",
+      "channel": "Kênh",
+      "invite": "Lời mời",
+      "webhook": "Webhook",
+      "message": "Tin nhắn",
+      "directMessage": "Tin nhắn trực tiếp",
+      "token": "Mã truy cập",
+      "auditLog": "Nhật ký kiểm tra",
+      "mcpTool": "Công cụ MCP",
+      "workspace": "Không gian làm việc",
+      "file": "Tệp",
+      "dlpRule": "Quy tắc DLP",
+      "legalHold": "Lưu giữ pháp lý"
+    },
+    "action": {
+      "authLogin": "Đã đăng nhập",
+      "authLoginFailed": "Đăng nhập thất bại",
+      "authLogout": "Đã đăng xuất",
+      "authPasswordChanged": "Đã đổi mật khẩu",
+      "userRoleChanged": "Đã đổi vai trò",
+      "userDeactivated": "Đã vô hiệu hóa",
+      "userForceLogout": "Buộc đăng xuất",
+      "userReactivated": "Đã kích hoạt lại",
+      "ownershipTransferred": "Đã chuyển quyền sở hữu",
+      "ownerBootstrapped": "Đã tạo chủ sở hữu",
+      "channelCreated": "Đã tạo kênh",
+      "channelEdited": "Đã sửa kênh",
+      "channelArchived": "Đã lưu trữ kênh",
+      "channelUnarchived": "Đã bỏ lưu trữ kênh",
+      "channelDeleted": "Đã xóa kênh",
+      "channelMemberAdded": "Đã thêm thành viên",
+      "channelMemberRemoved": "Đã xóa thành viên",
+      "inviteCreated": "Đã tạo lời mời",
+      "inviteDeleted": "Đã xóa lời mời",
+      "webhookCreated": "Đã tạo webhook",
+      "webhookDeleted": "Đã xóa webhook",
+      "tokenCreate": "Đã tạo mã",
+      "tokenRevoke": "Đã thu hồi mã",
+      "mcpToolCall": "Gọi công cụ MCP",
+      "auditExported": "Đã xuất nhật ký kiểm tra",
+      "authLoginLocked": "Tài khoản đã bị khóa",
+      "sessionRevoked": "Đã đăng xuất thiết bị",
+      "sessionRevokedAll": "Đã đăng xuất mọi thiết bị",
+      "retentionPurged": "Đã xóa dữ liệu hết hạn",
+      "retentionWorkspaceUpdated": "Đã đổi chính sách lưu giữ",
+      "retentionChannelUpdated": "Đã đổi lưu giữ của kênh",
+      "retentionChannelCleared": "Đã đặt lại lưu giữ của kênh",
+      "mfaEnabled": "Đã bật xác thực hai bước",
+      "mfaDisabled": "Đã tắt xác thực hai bước",
+      "mfaRecoveryUsed": "Đã dùng mã khôi phục",
+      "mfaRecoveryRegenerated": "Đã tạo lại mã khôi phục",
+      "mfaResetByAdmin": "Quản trị viên đã đặt lại xác thực hai bước",
+      "mfaPolicyChanged": "Đã đổi yêu cầu xác thực hai bước",
+      "dlpBlocked": "Tin nhắn bị DLP chặn",
+      "dlpWarned": "Cảnh báo DLP",
+      "dlpRuleCreated": "Đã tạo quy tắc DLP",
+      "dlpRuleUpdated": "Đã đổi quy tắc DLP",
+      "dlpRuleDeleted": "Đã xóa quy tắc DLP",
+      "dlpRuleTimeout": "Quy tắc DLP hết thời gian",
+      "dlpRuleAutoDisabled": "Quy tắc DLP đã tự động tắt",
+      "legalHoldCreated": "Đã tạo lưu giữ pháp lý",
+      "legalHoldUpdated": "Đã sửa lưu giữ pháp lý",
+      "legalHoldCustodianAdded": "Đã thêm người vào lưu giữ pháp lý",
+      "legalHoldCustodianRemoved": "Đã gỡ người khỏi lưu giữ pháp lý",
+      "legalHoldReleased": "Đã gỡ lưu giữ pháp lý",
+      "ediscoverySearched": "Tìm kiếm eDiscovery",
+      "ediscoveryExportRequested": "Đã yêu cầu xuất eDiscovery",
+      "ediscoveryExported": "Đã xuất eDiscovery"
+    },
+    "filters": {
+      "allActions": "Tất cả thao tác",
+      "actionsSelected": "{count, plural, one {# thao tác} other {# thao tác}}",
+      "actor": "Người thực hiện",
+      "allActors": "Tất cả người thực hiện",
+      "targetType": "Loại đối tượng",
+      "allTargets": "Tất cả đối tượng",
+      "from": "Từ",
+      "to": "Đến",
+      "apply": "Áp dụng",
+      "reset": "Đặt lại"
+    },
+    "export": {
+      "csv": "Xuất CSV",
+      "json": "Xuất JSON"
+    },
+    "unknownActor": "Không rõ"
+  },
+  "errors": {
+    "archiveChannel": "Không lưu trữ được kênh",
+    "createInvite": "Không tạo được lời mời",
+    "createWebhook": "Không tạo được webhook",
+    "deactivateUser": "Không vô hiệu hóa được người dùng",
+    "deleteChannel": "Không xóa được kênh",
+    "deleteInvite": "Không xóa được lời mời",
+    "deleteWebhook": "Không xóa được webhook",
+    "editChannel": "Không sửa được kênh",
+    "exportAuditLog": "Không xuất được nhật ký kiểm tra",
+    "fetchAuditLog": "Không tải được nhật ký kiểm tra",
+    "fetchChannels": "Không tải được danh sách kênh",
+    "fetchInvites": "Không tải được lời mời",
+    "fetchUsers": "Không tải được danh sách người dùng",
+    "fetchWebhooks": "Không tải được webhook",
+    "forceLogout": "Không buộc đăng xuất được người dùng",
+    "reactivateUser": "Không kích hoạt lại được người dùng",
+    "removeChannelMember": "Không xóa được thành viên khỏi kênh",
+    "transferOwnership": "Không chuyển được quyền sở hữu",
+    "unarchiveChannel": "Không bỏ lưu trữ được kênh",
+    "updateRole": "Không cập nhật được vai trò",
+    "resetMfa": "Không đặt lại được xác thực hai bước"
+  },
+  "retention": {
+    "title": "Lưu giữ dữ liệu",
+    "description": "Tự động xóa tin nhắn sau một số ngày nhất định. Tệp sẽ bị xóa cùng tin nhắn. Việc dọn dẹp chạy mỗi ngày một lần. Nhắc nhở vẫn được giữ và hiển thị \"tin nhắn đã bị xóa\".",
+    "loadError": "Không tải được chính sách lưu giữ",
+    "saveError": "Không lưu được chính sách lưu giữ",
+    "resetError": "Không đặt lại được chính sách của kênh",
+    "workspace": {
+      "heading": "Mặc định của không gian làm việc",
+      "hint": "Áp dụng cho mọi kênh không có cài đặt riêng, cũng như tin nhắn trực tiếp và tin nhắn nhóm."
+    },
+    "mode": {
+      "forever": "Giữ mãi mãi",
+      "days": "Xóa sau một số ngày",
+      "inherit": "Dùng mặc định của không gian làm việc"
+    },
+    "daysLabel": "Số ngày",
+    "daysHint": "Từ {min} đến {max} ngày",
+    "effective": {
+      "forever": "Giữ mãi mãi",
+      "days": "{count, plural, one {# ngày} other {# ngày}}"
+    },
+    "channels": {
+      "heading": "Kênh",
+      "columns": {
+        "channel": "Kênh",
+        "policy": "Chính sách",
+        "effective": "Áp dụng"
+      },
+      "legalHold": "Lưu giữ pháp lý",
+      "reset": "Đặt lại về mặc định",
+      "empty": "Không có kênh"
+    },
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "confirm": {
+      "title": "Xóa vĩnh viễn tin nhắn cũ?",
+      "message": "Ở lần dọn dẹp tiếp theo, các tin nhắn cũ hơn {count, plural, one {# ngày} other {# ngày}} sẽ bị xóa vĩnh viễn cùng với tệp của chúng. Việc này không thể hoàn tác.",
+      "confirm": "Áp dụng chính sách"
+    }
+  },
+  "security": {
+    "title": "Xác thực hai bước",
+    "requireMfa": "Yêu cầu xác thực hai bước với tất cả mọi người",
+    "requireMfaHint": "Thành viên chưa bật xác thực hai bước chỉ có thể vào màn hình thiết lập cho đến khi họ bật.",
+    "unavailable": "Xác thực hai bước đang tắt trên máy chủ này vì chưa đặt khóa mã hóa (TOTP_ENCRYPTION_KEY). Yêu cầu này chưa được áp dụng.",
+    "saved": "Đã lưu cài đặt bảo mật",
+    "loading": "Đang tải...",
+    "errors": {
+      "loadFailed": "Không tải được cài đặt bảo mật.",
+      "saveFailed": "Không lưu được cài đặt bảo mật."
+    },
+    "allowOAuthApps": "Cho phép thành viên kết nối ứng dụng OAuth",
+    "allowOAuthAppsHint": "Cho phép thành viên kết nối các ứng dụng như Claude qua luồng đăng nhập OAuth. Tắt tính năng này sẽ ngắt kết nối mọi ứng dụng ngay lập tức."
+  },
+  "dlp": {
+    "title": "Bảo vệ dữ liệu",
+    "description": "Phát hiện các mẫu nhạy cảm như số thẻ trong tin nhắn. Quy tắc chặn sẽ ngăn tin nhắn được lưu. Quy tắc cảnh báo vẫn lưu tin nhắn và ghi lại trong nhật ký kiểm tra. Nội dung tin nhắn không bao giờ được ghi vào nhật ký.",
+    "loadError": "Không tải được quy tắc DLP",
+    "saveError": "Không lưu được quy tắc",
+    "toggleError": "Không đổi được quy tắc",
+    "deleteError": "Không xóa được quy tắc",
+    "testError": "Không kiểm tra được mẫu",
+    "builtinBadge": "Có sẵn",
+    "builtinPattern": "Bộ phát hiện có sẵn",
+    "builtin": {
+      "credit_card": "Số thẻ tín dụng",
+      "kr_rrn": "Số đăng ký cư trú Hàn Quốc",
+      "aws_access_key": "Khóa truy cập AWS",
+      "private_key": "Khóa riêng tư"
+    },
+    "action": {
+      "BLOCK": "Chặn",
+      "WARN": "Cảnh báo"
+    },
+    "columns": {
+      "name": "Quy tắc",
+      "pattern": "Mẫu",
+      "action": "Hành động",
+      "enabled": "Trạng thái"
+    },
+    "on": "Bật",
+    "off": "Tắt",
+    "toggleLabel": "Bật hoặc tắt {name}",
+    "edit": "Sửa",
+    "editLabel": "Sửa {name}",
+    "delete": "Xóa",
+    "deleteLabel": "Xóa {name}",
+    "form": {
+      "createHeading": "Thêm quy tắc",
+      "editHeading": "Sửa quy tắc",
+      "name": "Tên",
+      "pattern": "Mẫu (biểu thức chính quy)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Hành động",
+      "add": "Thêm quy tắc",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "hint": "Tối đa {max} ký tự. Các lặp lồng nhau như (a+)+, tham chiếu ngược và số lần lặp rất lớn sẽ bị từ chối."
+    },
+    "patternProblem": {
+      "empty": "Nhập một mẫu.",
+      "tooLong": "Mẫu quá dài.",
+      "invalid": "Đây không phải là biểu thức chính quy hợp lệ.",
+      "backreference": "Không được dùng tham chiếu ngược.",
+      "nestedQuantifier": "Các lặp lồng nhau có thể làm việc kiểm tra chạy rất chậm nên không được phép.",
+      "repeatTooLarge": "Số lần lặp quá lớn (tối đa 200)."
+    },
+    "test": {
+      "heading": "Kiểm tra một mẫu",
+      "hint": "Không có gì được lưu. Nhập mẫu ở trên hoặc chọn một quy tắc đã lưu, rồi nhập văn bản mẫu.",
+      "source": "Mẫu cần kiểm tra",
+      "sourceDraft": "Mẫu trong biểu mẫu phía trên",
+      "sample": "Văn bản mẫu",
+      "run": "Kiểm tra",
+      "matched": "Khớp. Văn bản này sẽ bị phát hiện.",
+      "notMatched": "Không khớp.",
+      "timedOut": "Việc kiểm tra mất quá nhiều thời gian nên đã bị dừng. Hãy đơn giản hóa mẫu."
+    },
+    "confirmDelete": {
+      "title": "Xóa quy tắc này?",
+      "message": "Quy tắc \"{name}\" sẽ bị gỡ bỏ và không còn được kiểm tra nữa."
+    }
+  },
+  "legalHolds": {
+    "description": "Giữ lại mọi nội dung một người đã viết hoặc nhận được, ngay cả khi chính sách lưu giữ dữ liệu sẽ xóa chúng. Quản trị viên có thể tìm kiếm và xuất dữ liệu được giữ lại để phục vụ rà soát pháp lý.",
+    "statusFilter": "Hiển thị",
+    "status": {
+      "active": "Đang hiệu lực",
+      "released": "Đã gỡ",
+      "all": "Tất cả"
+    },
+    "empty": "Không có lưu giữ pháp lý nào",
+    "selectHint": "Chọn một lưu giữ pháp lý để quản lý người liên quan và tìm kiếm dữ liệu của lưu giữ đó.",
+    "loadMore": "Tải thêm",
+    "custodianCount": "{count, plural, one {# người} other {# người}}",
+    "createdOn": "Tạo ngày {date}",
+    "releasedOn": "Gỡ ngày {date}",
+    "createdBy": "Tạo bởi {name} vào {date}",
+    "releasedBy": "Gỡ bởi {name} vào {date}",
+    "unknownUser": "Người dùng không rõ",
+    "edit": "Sửa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "fields": {
+      "name": "Tên",
+      "description": "Mô tả (không bắt buộc)"
+    },
+    "create": {
+      "open": "Lưu giữ mới",
+      "submit": "Tạo lưu giữ",
+      "hint": "Bạn có thể thêm người sau khi tạo lưu giữ."
+    },
+    "custodians": {
+      "heading": "Người trong diện lưu giữ",
+      "pick": "Chọn một người",
+      "add": "Thêm",
+      "remove": "Gỡ {name} khỏi diện lưu giữ này",
+      "empty": "Chưa có ai trong diện lưu giữ này.",
+      "deactivated": "Đã vô hiệu hóa"
+    },
+    "release": {
+      "open": "Gỡ lưu giữ",
+      "title": "Gỡ lưu giữ pháp lý này?",
+      "message": "\"{name}\" sẽ không còn giữ dữ liệu nữa. Những người không nằm trong lưu giữ đang hiệu lực khác sẽ quay lại chính sách lưu giữ thông thường, và tin nhắn cũ của họ có thể bị xóa ở lần dọn dẹp tiếp theo. Lưu giữ và danh sách người liên quan vẫn được ghi lại. Việc này không thể hoàn tác.",
+      "confirm": "Gỡ"
+    },
+    "discovery": {
+      "heading": "Tìm kiếm và xuất dữ liệu",
+      "hint": "Bao gồm tin nhắn mà những người trong diện lưu giữ đã viết ở mọi kênh (kể cả kênh riêng tư), tin nhắn trực tiếp và nhóm họ tham gia, cùng thông tin tệp. Tin nhắn đã xóa cũng được đưa vào và được đánh dấu.",
+      "query": "Từ khóa",
+      "from": "Từ",
+      "to": "Đến",
+      "search": "Tìm kiếm",
+      "export": "Xuất (JSONL)",
+      "exportHint": "Xuất kết quả của lần tìm kiếm gần nhất. Mọi lần tìm kiếm và xuất đều được ghi vào nhật ký kiểm tra.",
+      "searchFirst": "Hãy tìm kiếm với các bộ lọc này trước. Xuất sẽ dùng bộ lọc của lần tìm kiếm hiển thị bên dưới.",
+      "kinds": {
+        "channel": "Tin nhắn trong kênh",
+        "dm": "Tin nhắn trực tiếp",
+        "file": "Tệp"
+      },
+      "empty": "Không có kết quả",
+      "deleted": "Đã xóa",
+      "edited": "Đã sửa",
+      "reply": "Trả lời trong chủ đề",
+      "groupDm": "Tin nhắn nhóm #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Không tải được lưu giữ pháp lý",
+      "create": "Không tạo được lưu giữ pháp lý",
+      "update": "Không cập nhật được lưu giữ pháp lý",
+      "custodians": "Không thay đổi được người trong diện lưu giữ",
+      "release": "Không gỡ được lưu giữ pháp lý",
+      "search": "Tìm kiếm thất bại",
+      "export": "Xuất thất bại"
+    }
+  }
+}

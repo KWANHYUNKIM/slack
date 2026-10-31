@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(naka-mute)",
+    "mute": "I-mute",
+    "unmute": "I-unmute",
+    "leave": "Umalis sa huddle"
+  },
+  "button": {
+    "leaveFirstError": "Umalis muna sa kasalukuyan mong huddle",
+    "cancelInviteFirstError": "Kanselahin muna ang kasalukuyan mong imbitasyon",
+    "cancelInvite": "Kanselahin ang imbitasyon",
+    "calling": "Tumatawag...",
+    "inHuddle": "Nasa huddle",
+    "leaveCurrentFirst": "Umalis muna sa kasalukuyang huddle",
+    "start": "Simulan ang huddle"
+  },
+  "incoming": {
+    "invite": "Imbitasyon sa huddle",
+    "secondsLeft": "{count}s",
+    "decline": "Tanggihan",
+    "accept": "Tanggapin"
+  },
+  "system": {
+    "youStarted": "Sinimulan mo ang isang huddle.",
+    "started": "Sinimulan ang isang huddle.",
+    "ended": "Natapos",
+    "youSentInvite": "Nagpadala ka ng imbitasyon sa huddle.",
+    "sentInvite": "Nagpadala sa iyo ng imbitasyon sa huddle.",
+    "huddleStarted": "Nagsimula ang huddle",
+    "huddleEnded": "Natapos ang huddle ({duration})",
+    "durationSeconds": "{seconds}s",
+    "durationMinutesSeconds": "{minutes}m {seconds}s"
+  },
+  "errors": {
+    "leaveFirst": "Umalis muna sa kasalukuyan mong huddle",
+    "cancelInviteFirst": "Kanselahin muna ang kasalukuyan mong imbitasyon",
+    "micDenied": "Tinanggihan ang access sa mikropono",
+    "busy": "Nasa ibang huddle sila",
+    "declined": "Tinanggihan ang imbitasyon",
+    "expired": "Nag-expire na ang imbitasyon",
+    "rateLimited": "Masyadong maraming request. Subukan muli sa ilang sandali",
+    "invalidInvite": "Hindi wasto ang request ng imbitasyon",
+    "cannotInviteSelf": "Hindi mo maaaring imbitahan ang sarili mo",
+    "userNotFound": "Hindi nahanap ang user",
+    "invalidAccept": "Hindi wasto ang request na tanggapin",
+    "inviteNotFound": "Hindi nahanap ang imbitasyon o nag-expire na ito",
+    "peerOffline": "Offline sila",
+    "generic": "Hindi masimulan ang huddle. Subukan muli"
+  }
+}
