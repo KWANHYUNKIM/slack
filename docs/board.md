@@ -9,7 +9,7 @@
 | 04-threads-view, 05-user-status-dnd 스펙 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3, Slack 테스트 채널 CRUD 실습 포함 |
 | REA run1: Slack 데스크톱 앱 분석과 REA 평가 | planner-1 | opus | 완료 | 45분 | 2026-10-31 09:13 | 2026-10-31 09:35 | 루프 2 |
 | 규칙 문서(git, FE, BE, 보안, 기술 스택, 엔터프라이즈·배포) | 총괄 | - | 완료 | 30분 | 2026-10-31 09:15 | 2026-10-31 09:35 | |
-| fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | 진행 중 | 1h | 2026-10-31 09:23 | | security, files, edge-cases, admin |
+| fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | PR #5 (리뷰 반영 중) | 1h | 2026-10-31 09:23 | 2026-10-31 09:48 | security, files, edge-cases, admin |
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | PR #3 | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
 | D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | - | opus | 대기 | 2h | | | 보안 문서 9절 |
 | D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | - | sonnet | 대기 | 1.5h | | | D1 이후 |
@@ -22,3 +22,6 @@
 | 04-threads-view | - | sonnet | 대기(01 이후) | 2h | | | 스키마 변경(ThreadRead) |
 | 05-user-status-dnd | - | sonnet | 대기(01 이후) | 1.5h | | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | - | sonnet | 대기(감속, dev-1 이후) | 1.5h | | | CI frontend job 통과 조건 |
+| feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | - | haiku | 대기 | 45분 | | | 총괄 결정: Slack과 같게 |
+| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |
+| perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |

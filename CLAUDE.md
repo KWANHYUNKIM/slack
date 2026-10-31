@@ -7,6 +7,7 @@
 ## 0. 프로젝트 개요
 - 목표: Slack과 동일하게 동작하는 팀 메신저를 직접 구현한다.
 - 분석 대상: 실제 Slack 워크스페이스 `https://app.slack.com/client/T0757A9TZUJ/C0754D3UL21`, Slack 데스크톱 앱(Electron)
+- **CRUD 실습용 테스트 채널**: 비공개 `#claude-test` `https://app.slack.com/client/T0757A9TZUJ/C0CDUKV338U` (2026-10-31 사용자 지시로 총괄이 생성, 멤버는 사용자 본인뿐). 쓰기 실습은 이 채널에서만 한다. `#일반`에는 쓰지 않는다.
 - 리버스 엔지니어링 도구: **REA** (`morluto/rea` 6.8.0, Claude Code에 MCP `rea`와 스킬 `reverse-engineer-anything`으로 설치됨. Node 24.22.1 이상 필요, 현재 Homebrew `node@24` 24.22.2)
 - 코드 베이스: **ncvgl/slawk** (MIT, Node.js · PostgreSQL · Prisma · Socket.io · React · Vite · Tailwind)를 `app/`에 받아 확장한다. (기준 커밋 `5f30358`, 2026-06-12. MIT 라이선스 고지 `app/LICENSE` 유지)
 - 저장소: `https://github.com/KWANHYUNKIM/slack` (공개 저장소이므로 비밀 정보 커밋 금지)
@@ -83,7 +84,7 @@ RAM이 8GB이므로 8명이 동시에 돌 수 없다. `memory_pressure`의 여�
 
 ## 5. 금지 사항
 - Slack의 소스 코드, 디자인 에셋, 로고, 브랜드 이름을 그대로 복사하지 않는다. 동작 방식만 분석해 직접 구현한다.
-- 분석 워크스페이스에서의 CRUD 실습은 **테스트 채널 안에서만** 한다. 직접 만든 메시지, 스레드, 리액션, 파일은 실습 후 지운다. 다른 사람에게 메시지·DM 보내기, 멤버 초대·제거, 워크스페이스 관리자 설정 변경, 결제·앱 설치는 하지 않는다.
+- 분석 워크스페이스에서의 CRUD 실습은 **테스트 채널 `#claude-test` 안에서만** 한다. 직접 만든 메시지, 스레드, 리액션, 파일은 실습 후 지운다. 다른 사람에게 메시지·DM 보내기, 멤버 초대·제거, 워크스페이스 관리자 설정 변경, 결제·앱 설치는 하지 않는다.
 - 토큰, 비밀번호, 쿠키 같은 인증 정보를 파일이나 문서에 남기지 않는다.
 - 커밋, 푸시, 외부 배포는 사용자가 요청할 때만 한다.
 
