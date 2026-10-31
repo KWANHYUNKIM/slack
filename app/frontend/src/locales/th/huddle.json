@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(ปิดเสียง)",
+    "mute": "ปิดเสียง",
+    "unmute": "เปิดเสียง",
+    "leave": "ออกจากฮัดเดิล"
+  },
+  "button": {
+    "leaveFirstError": "ออกจากฮัดเดิลปัจจุบันก่อน",
+    "cancelInviteFirstError": "ยกเลิกคำเชิญปัจจุบันก่อน",
+    "cancelInvite": "ยกเลิกคำเชิญ",
+    "calling": "กำลังโทร...",
+    "inHuddle": "อยู่ในฮัดเดิล",
+    "leaveCurrentFirst": "ออกจากฮัดเดิลปัจจุบันก่อน",
+    "start": "เริ่มฮัดเดิล"
+  },
+  "incoming": {
+    "invite": "คำเชิญเข้าฮัดเดิล",
+    "secondsLeft": "{count} วินาที",
+    "decline": "ปฏิเสธ",
+    "accept": "รับ"
+  },
+  "system": {
+    "youStarted": "คุณเริ่มฮัดเดิล",
+    "started": "เริ่มฮัดเดิลแล้ว",
+    "ended": "สิ้นสุดแล้ว",
+    "youSentInvite": "คุณส่งคำเชิญเข้าฮัดเดิล",
+    "sentInvite": "ส่งคำเชิญเข้าฮัดเดิลถึงคุณ",
+    "huddleStarted": "เริ่มฮัดเดิล",
+    "huddleEnded": "ฮัดเดิลสิ้นสุด ({duration})",
+    "durationSeconds": "{seconds} วินาที",
+    "durationMinutesSeconds": "{minutes} นาที {seconds} วินาที"
+  },
+  "errors": {
+    "leaveFirst": "ออกจากฮัดเดิลปัจจุบันก่อน",
+    "cancelInviteFirst": "ยกเลิกคำเชิญปัจจุบันก่อน",
+    "micDenied": "ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน",
+    "busy": "พวกเขาอยู่ในฮัดเดิลอื่น",
+    "declined": "คำเชิญถูกปฏิเสธ",
+    "expired": "คำเชิญหมดอายุแล้ว",
+    "rateLimited": "มีคำขอมากเกินไป ลองอีกครั้งในอีกสักครู่",
+    "invalidInvite": "คำขอเชิญไม่ถูกต้อง",
+    "cannotInviteSelf": "คุณเชิญตัวเองไม่ได้",
+    "userNotFound": "ไม่พบผู้ใช้",
+    "invalidAccept": "คำขอรับคำเชิญไม่ถูกต้อง",
+    "inviteNotFound": "ไม่พบคำเชิญหรือหมดอายุแล้ว",
+    "peerOffline": "พวกเขาออฟไลน์อยู่",
+    "generic": "เริ่มฮัดเดิลไม่สำเร็จ กรุณาลองอีกครั้ง"
+  }
+}

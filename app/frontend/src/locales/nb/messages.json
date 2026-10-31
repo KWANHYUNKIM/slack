@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Varsle alle som er pålogget",
+    "channelLabel": "@channel",
+    "channelHint": "Varsle alle i denne kanalen"
+  },
+  "deleteDialog": {
+    "title": "Slett melding",
+    "body": "Er du sikker på at du vil slette denne meldingen? Dette kan ikke angres."
+  },
+  "editorToolbar": {
+    "attachFile": "Legg ved fil",
+    "emoji": "Emoji",
+    "mention": "Nevn noen",
+    "stopRecording": "Stopp opptak",
+    "recordVoice": "Ta opp talemelding"
+  },
+  "emojiAutocomplete": {
+    "navigate": "for å navigere",
+    "select": "for å velge",
+    "dismiss": "for å lukke",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Fjern {name}"
+  },
+  "fileModal": {
+    "download": "Last ned",
+    "loadFailed": "Kunne ikke laste filinnholdet",
+    "truncated": "... (kuttet)",
+    "noPreview": "Ingen forhåndsvisning tilgjengelig",
+    "downloadToView": "Last ned filen for å se den"
+  },
+  "files": {
+    "allFiles": "Alle filer",
+    "channelFiles": "Kanalfiler",
+    "loadFailed": "Kunne ikke laste filer.",
+    "empty": "Ingen filer er lastet opp ennå",
+    "download": "Last ned",
+    "menu": "Meny",
+    "unavailable": "Filen er ikke tilgjengelig",
+    "preparing": "Klargjør fil"
+  },
+  "format": {
+    "bold": "Fet",
+    "italic": "Kursiv",
+    "strike": "Gjennomstreking",
+    "link": "Lenke",
+    "orderedList": "Nummerert liste",
+    "bulletList": "Punktliste",
+    "code": "Kode",
+    "codeBlock": "Kodeblokk",
+    "quote": "Sitat"
+  },
+  "notifications": {
+    "title": "Varsler",
+    "empty": "Ingen nye varsler",
+    "unreadCount": "{count, plural, one {# ulest melding} other {# uleste meldinger}}"
+  },
+  "search": {
+    "placeholder": "Søk",
+    "searching": "Søker...",
+    "noResults": "Fant ingen resultater",
+    "previewHint": "{count, plural, one {Topp # resultat} other {Topp # resultater}} · Vis alle (Enter)",
+    "truncatedNotice": "Det er mange resultater. Legg til filtre for å snevre inn.",
+    "retry": "Prøv igjen",
+    "ignoredChip": "{token} (ignorert)",
+    "ignoredLimitChip": "{token} (ignorert: for mange)",
+    "inChannel": "i #{channel}",
+    "title": "Søkeresultater",
+    "resultsFor": "Resultater for \"{query}\"",
+    "emptyQuery": "Skriv et søkeord, eller bruk filtre som from:, in:, has:, before:, after:.",
+    "noResultsHint": "Prøv andre søkeord, eller fjern noen filtre.",
+    "clearFilters": "Fjern alle filtre",
+    "removeFilter": "Fjern filteret {filter}",
+    "loadFailed": "Søket mislyktes. Prøv igjen.",
+    "loadMore": "Last inn flere",
+    "threadReply": "Svar i tråd",
+    "directMessage": "Direktemelding",
+    "groupMessage": "Gruppesamtale",
+    "joined": "Med",
+    "privateChannel": "Privat",
+    "archivedChannel": "Arkivert",
+    "back": "Tilbake",
+    "tabs": {
+      "label": "Typer søkeresultater",
+      "messages": "Meldinger",
+      "files": "Filer",
+      "people": "Personer",
+      "channels": "Kanaler"
+    },
+    "sort": {
+      "label": "Sorter etter",
+      "relevance": "Relevans",
+      "recent": "Nyeste"
+    }
+  },
+  "headerTabs": {
+    "files": "Filer",
+    "pins": "Festede"
+  },
+  "lightbox": {
+    "close": "Lukk"
+  },
+  "later": {
+    "title": "Senere",
+    "saved": "Lagret",
+    "scheduled": "Planlagt",
+    "loadFailed": "Kunne ikke laste lagrede meldinger.",
+    "empty": "Ingen lagrede meldinger ennå. Klikk bokmerkeikonet på en melding for å lagre den.",
+    "removeSaved": "Fjern fra Lagret",
+    "menu": "Meny",
+    "reminders": "Påminnelser"
+  },
+  "linkModal": {
+    "title": "Legg til lenke",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Visningstekst",
+    "optional": "(valgfri)",
+    "textPlaceholder": "Lenketekst",
+    "close": "Lukk"
+  },
+  "actionsMenu": {
+    "noActions": "Ingen tilgjengelige handlinger",
+    "markUnread": "Merk som ulest",
+    "pin": "Fest melding",
+    "unpin": "Løsne melding",
+    "edit": "Rediger melding",
+    "delete": "Slett melding",
+    "copyLink": "Kopier lenke",
+    "remind": "Påminn meg om dette"
+  },
+  "area": {
+    "selectChannel": "Velg en kanal for å begynne å skrive meldinger",
+    "openMenu": "Åpne meny",
+    "placeholder": "Melding til #{channel}",
+    "viewing": "Du ser på <bold>#{channel}</bold>",
+    "joinChannel": "Bli med i kanalen"
+  },
+  "header": {
+    "menu": "Meny",
+    "unstar": "Fjern fra Stjernemerkede",
+    "star": "Legg til i Stjernemerkede",
+    "members": "Medlemmer: {count}",
+    "search": "Søk",
+    "channelMenu": "Kanalvalg",
+    "leaveChannel": "Forlat kanal",
+    "leaveLastMember": "Kan ikke forlate kanalen – du er det siste medlemmet.",
+    "dismiss": "Lukk",
+    "addTopic": "Legg til et emne",
+    "editDetails": "Rediger kanaldetaljer"
+  },
+  "message": {
+    "edited": "(redigert)",
+    "pinned": "Festet",
+    "showMore": "Vis mer",
+    "showLess": "Vis mindre",
+    "repliedToThread": "Svarte i en tråd: {excerpt}",
+    "deletedPlaceholder": "Denne meldingen ble slettet.",
+    "sendToChannel": "Send også til kanalen",
+    "removeFromChannel": "Fjern fra kanal"
+  },
+  "input": {
+    "uploading": "Laster opp...",
+    "scheduleMessage": "Planlegg melding",
+    "send": "Send melding",
+    "hint": "Trykk <kbd>Enter</kbd> for å sende, <kbd>Shift + Enter</kbd> for ny linje",
+    "scheduledFor": "Planlagt til {time}",
+    "scheduleFailed": "Kunne ikke planlegge meldingen. Prøv igjen."
+  },
+  "list": {
+    "loading": "Laster meldinger...",
+    "empty": "Ingen meldinger ennå",
+    "emptyReadOnly": "Denne kanalen har ingen meldinger.",
+    "emptyFirst": "Vær den første som sender en melding!"
+  },
+  "reactions": {
+    "tooltip": "{names} reagerte med {emoji}",
+    "add": "Legg til reaksjon",
+    "you": "Du"
+  },
+  "toolbar": {
+    "addReaction": "Legg til reaksjon",
+    "replyInThread": "Svar i tråd",
+    "removeBookmark": "Fjern bokmerke",
+    "bookmark": "Legg bokmerke til denne meldingen",
+    "moreActions": "Flere handlinger"
+  },
+  "mobileSearch": {
+    "placeholder": "Søk i meldinger...",
+    "hint": "Søk etter meldinger i alle kanaler og samtaler",
+    "close": "Lukk søk"
+  },
+  "pins": {
+    "title": "Festede meldinger",
+    "loadFailed": "Kunne ikke laste festede meldinger.",
+    "empty": "Ingen festede meldinger ennå"
+  },
+  "schedule": {
+    "menuTitle": "Planlegg melding",
+    "in20": "Om 20 minutter",
+    "in1h": "Om 1 time",
+    "in3h": "Om 3 timer",
+    "tomorrow9": "I morgen kl. 09:00",
+    "custom": "Egendefinert tid...",
+    "modalTitle": "Planlegg melding",
+    "dateTime": "Dato og klokkeslett",
+    "pickFuture": "Velg et tidspunkt i fremtiden.",
+    "submit": "Planlegg",
+    "submitting": "Planlegger...",
+    "close": "Lukk"
+  },
+  "scheduled": {
+    "loadFailed": "Kunne ikke laste planlagte meldinger.",
+    "cancelFailed": "Kunne ikke avbryte meldingen.",
+    "sendFailed": "Kunne ikke sende meldingen.",
+    "saveFailed": "Kunne ikke lagre endringene.",
+    "empty": "Ingen planlagte meldinger. Bruk klokkeikonet i meldingsfeltet for å planlegge en.",
+    "sendAt": "Sendes:",
+    "edit": "Rediger",
+    "sendNow": "Send nå",
+    "cancel": "Avbryt",
+    "failedDlp": "Denne meldingen ble ikke sendt fordi den traff en regel for databeskyttelse ({rule}). Slett den og skriv en ny."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# svar} other {# svar}}"
+  },
+  "unreads": {
+    "title": "Uleste",
+    "loadFailed": "Kunne ikke laste uleste meldinger.",
+    "empty": "Ingen uleste meldinger. Du er helt oppdatert! 🎉",
+    "menu": "Meny"
+  },
+  "threadPanel": {
+    "title": "Tråd",
+    "replyPlaceholder": "Svar...",
+    "loadFailed": "Kunne ikke laste tråden. Prøv igjen.",
+    "loading": "Laster tråd...",
+    "replyFailed": "Kunne ikke sende svaret. Prøv igjen.",
+    "joinToReply": "Bli med i kanalen for å svare i tråder",
+    "alsoSendToChannel": "Send også til kanalen"
+  },
+  "errors": {
+    "messageEmpty": "Meldingen kan ikke være tom.",
+    "pasteUploadFailed": "Kunne ikke laste opp det innlimte bildet. Prøv igjen.",
+    "dropUploadFailed": "Kunne ikke laste opp den droppede filen. Prøv igjen.",
+    "uploadFailed": "Kunne ikke laste opp filen. Prøv igjen.",
+    "voiceUploadFailed": "Kunne ikke laste opp talemeldingen.",
+    "micDenied": "Tilgang til mikrofonen er avslått. Tillat tilgang til mikrofonen.",
+    "loadFailed": "Kunne ikke laste meldinger.",
+    "sendTimeout": "Sending av meldingen tok for lang tid. Prøv igjen.",
+    "sendFailed": "Meldingen kunne ikke sendes. Prøv igjen.",
+    "pushNotConfigured": "Push-varsler er ikke satt opp på serveren",
+    "serviceWorkerUnavailable": "Service worker er ikke tilgjengelig",
+    "subscribeFailed": "Kunne ikke registrere abonnementet",
+    "editFailed": "Kunne ikke lagre redigeringen. Prøv igjen."
+  },
+  "details": {
+    "title": "Kanaldetaljer",
+    "name": "Navn",
+    "topic": "Emne",
+    "topicPlaceholder": "Hva handler denne kanalen om?",
+    "description": "Beskrivelse",
+    "descriptionPlaceholder": "Legg til en beskrivelse",
+    "createdBy": "Opprettet av {name}",
+    "readOnly": "Bare kanaleiere, moderatorer og administratorer for arbeidsområdet kan redigere disse detaljene.",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "saveFailed": "Kunne ikke lagre kanaldetaljene."
+  },
+  "intro": {
+    "title": "Velkommen til #{name}",
+    "noDescription": "Ingen beskrivelse ennå.",
+    "editDescription": "Rediger beskrivelse"
+  },
+  "threads": {
+    "title": "Tråder",
+    "menu": "Meny",
+    "loadFailed": "Kunne ikke laste tråder.",
+    "empty": "Ingen tråder ennå",
+    "emptyHint": "Tråder du starter eller svarer i, vises her.",
+    "newReplies": "{count, plural, one {# nytt svar} other {# nye svar}}",
+    "replyCount": "{count, plural, one {# svar} other {# svar}}",
+    "olderReplies": "Åpne tråden for å se tidligere svar",
+    "replyPlaceholder": "Svar...",
+    "send": "Send",
+    "replyFailed": "Kunne ikke sende svaret. Prøv igjen.",
+    "alsoSendToChannel": "Send også til kanalen",
+    "openThread": "Åpne tråd",
+    "loadMore": "Last inn flere",
+    "loading": "Laster inn..."
+  },
+  "permalink": {
+    "copied": "Lenken er kopiert",
+    "notFound": "Denne meldingen finnes ikke, eller du har ikke tilgang til den",
+    "goHome": "Gå til startsiden",
+    "copyManually": "Kunne ikke kopiere automatisk. Kopier denne lenken: {url}"
+  },
+  "unread": {
+    "divider": "Nytt",
+    "newMessagesBar": "{count, plural, one {# ny melding} other {# nye meldinger}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# eller flere nye meldinger} other {# eller flere nye meldinger}}",
+    "markRead": "Merk som lest",
+    "jumpFailed": "Kunne ikke laste posisjonen for uleste meldinger"
+  },
+  "reminder": {
+    "set": "Angi påminnelse",
+    "customLabel": "Dato og klokkeslett for påminnelsen",
+    "preset": {
+      "in20": "Om 20 minutter",
+      "in1h": "Om 1 time",
+      "in3h": "Om 3 timer",
+      "tomorrow": "I morgen",
+      "nextWeek": "Neste uke",
+      "custom": "Egendefinert..."
+    },
+    "status": {
+      "pending": "Kommende",
+      "done": "Fullført"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 time",
+      "tomorrow": "I morgen"
+    },
+    "loadFailed": "Kunne ikke laste påminnelser.",
+    "empty": "Ingen påminnelser. Bruk menyen for flere handlinger på en melding, eller skriv /remind for å legge til en.",
+    "emptyDone": "Ingen fullførte påminnelser.",
+    "dueAt": "Forfaller {time}",
+    "firedAt": "Forfalt {time}",
+    "completedAt": "Fullført {time}",
+    "messageDeleted": "Slettet melding",
+    "complete": "Merk som fullført",
+    "reopen": "Merk som ikke fullført",
+    "delete": "Slett påminnelse",
+    "toast": {
+      "created": "Påminnelse angitt",
+      "due": "Påminnelse: {text}",
+      "createFailed": "Kunne ikke angi påminnelsen. Prøv igjen."
+    },
+    "command": {
+      "syntax": "Bruk: /remind me [tekst] in [antall] [minutes|hours|days]",
+      "tooShort": "Påminnelsen må være minst 1 minutt fram i tid.",
+      "tooLong": "Påminnelsen må være innen ett år.",
+      "created": "Påminnelse satt til {time}"
+    },
+    "pastTime": "Velg et tidspunkt i fremtiden.",
+    "loadMore": "Last inn flere"
+  }
+}

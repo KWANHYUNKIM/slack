@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Språk",
+    "pending": "{name} (oversettelse kommer snart)",
+    "beta": "Beta",
+    "betaOption": "{name} (beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Varsler er satt på pause"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Lukk",
+    "loading": "Laster inn...",
+    "notFound": "Fant ikke profilen",
+    "uploadPhoto": "Last opp bilde",
+    "uploading": "Laster opp...",
+    "name": "Navn",
+    "bio": "Presentasjon",
+    "bioPlaceholder": "Fortell andre litt om deg selv",
+    "cancel": "Avbryt",
+    "save": "Lagre",
+    "status": "Status",
+    "joined": "Ble med",
+    "message": "Melding",
+    "edit": "Rediger profil",
+    "statusValue": {
+      "online": "pålogget",
+      "away": "borte",
+      "offline": "frakoblet"
+    },
+    "errors": {
+      "loadFailed": "Kunne ikke laste profilen.",
+      "saveFailed": "Kunne ikke lagre profilen. Prøv igjen.",
+      "notImage": "Velg en bildefil.",
+      "tooLarge": "Bildet må være under 5 MB.",
+      "uploadFailed": "Kunne ikke laste opp bildet. Prøv igjen."
+    },
+    "statusUntil": "Til {time}"
+  },
+  "crop": {
+    "title": "Beskjær bildet ditt",
+    "close": "Lukk",
+    "zoom": "Zoom",
+    "cancel": "Avbryt",
+    "save": "Lagre",
+    "saving": "Lagrer...",
+    "failed": "Kunne ikke beskjære"
+  },
+  "accessTokens": {
+    "title": "Personlige tilgangstokener",
+    "description": "Tokener lar Claude og andre MCP-klienter lese, og om du tillater det også skrive, i arbeidsområdet ditt med dine rettigheter. Behandle dem som et passord.",
+    "nameLabel": "Tokennavn",
+    "namePlaceholder": "f.eks. Claude Code på bærbar PC-en min",
+    "scopesLabel": "Tillatelser",
+    "scope": {
+      "channelsRead": "Se kanallisten",
+      "channelsHistory": "Lese meldinger, tråder og aktivitet",
+      "usersRead": "Se personer",
+      "chatWrite": "Publisere, redigere og slette dine meldinger",
+      "reactionsWrite": "Legge til og fjerne dine reaksjoner",
+      "imRead": "Se listen over dine direktemeldinger og gruppemeldinger",
+      "imHistory": "Lese historikken for dine direktemeldinger",
+      "imWrite": "Sende, redigere og slette dine direktemeldinger",
+      "searchRead": "Søke i meldinger, filer, personer og kanaler (DM-treff krever DM-historikk)",
+      "filesRead": "Se filliste og lese innholdet i tekstfiler"
+    },
+    "expiryLabel": "Utløper",
+    "expiryDays": "{count, plural, one {# dag} other {# dager}}",
+    "expiryNever": "Utløper aldri",
+    "neverWarning": "Tokener uten utløpsdato gjelder til du tilbakekaller dem.",
+    "create": "Generer token",
+    "createdNotice": "Kopier det nye tokenet nå. Du kan ikke se det igjen.",
+    "copy": "Kopier token",
+    "copyCommand": "Kopier kommando",
+    "copied": "Kopiert til utklippstavlen",
+    "connectHint": "Koble til fra Claude Code:",
+    "dismiss": "Ferdig, skjul token",
+    "loading": "Laster inn...",
+    "empty": "Du har ingen personlige tilgangstokener.",
+    "expires": "Utløper {date}",
+    "expired": "Utløpt",
+    "noExpiry": "Utløper aldri",
+    "lastUsed": "Sist brukt {date}",
+    "neverUsed": "Aldri brukt",
+    "rename": "Gi nytt navn",
+    "renameLabel": "Gi tokenet {name} nytt navn",
+    "revoke": "Tilbakekall",
+    "revokeLabel": "Tilbakekall tokenet {name}",
+    "revokeConfirm": "Tilbakekall nå",
+    "cancel": "Avbryt",
+    "close": "Lukk",
+    "errors": {
+      "loadFailed": "Kunne ikke laste tokener.",
+      "createFailed": "Kunne ikke opprette tokenet. Prøv igjen.",
+      "renameFailed": "Kunne ikke gi tokenet nytt navn.",
+      "revokeFailed": "Kunne ikke tilbakekalle tokenet.",
+      "copyFailed": "Kunne ikke kopiere. Marker teksten og kopier den manuelt.",
+      "limitReached": "Du kan ha opptil {max} aktive tokener. Tilbakekall ett du ikke bruker lenger, og prøv igjen.",
+      "codeRequired": "Skriv inn to-trinnskoden din for å opprette et token.",
+      "invalidCode": "To-trinnskoden er feil."
+    },
+    "codeLabel": "To-trinnskode",
+    "codeHint": "Skriv inn en kode fra autentiseringsappen din for å opprette et token."
+  },
+  "sessions": {
+    "title": "Innloggede enheter",
+    "description": "Disse enhetene er logget inn på kontoen din. Logg av alle du ikke kjenner igjen eller ikke bruker lenger.",
+    "loading": "Laster inn...",
+    "empty": "Ingen innloggede enheter.",
+    "thisDevice": "Denne enheten",
+    "unknownDevice": "Ukjent enhet",
+    "signedInAt": "Logget inn {date}",
+    "lastActive": "Sist aktiv {date}",
+    "signOut": "Logg av",
+    "signOutLabel": "Logg av {device}",
+    "signOutThisLabel": "Logg av denne enheten ({device})",
+    "signOutOthers": "Logg av alle andre enheter",
+    "signOutOthersConfirm": "{count, plural, one {Logg av # annen enhet} other {Logg av # andre enheter}}",
+    "revoked": "Enheten er logget av",
+    "revokedOthers": "Logget av alle andre enheter",
+    "errors": {
+      "loadFailed": "Kunne ikke laste enheter.",
+      "revokeFailed": "Kunne ikke logge av. Prøv igjen."
+    },
+    "device": {
+      "desktop": "Skrivebordsapp",
+      "desktopOn": "Skrivebordsapp på {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} på {os}",
+      "unknownOn": "Ukjent enhet på {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Endre passord",
+    "description": "Skriv inn det nåværende passordet ditt, og velg et nytt.",
+    "currentLabel": "Nåværende passord",
+    "newLabel": "Nytt passord",
+    "confirmLabel": "Bekreft nytt passord",
+    "sessionsNote": "Når du endrer passordet, blir de andre innloggede enhetene dine logget av.",
+    "submit": "Endre passord",
+    "submitting": "Endrer...",
+    "cancel": "Avbryt",
+    "successToast": "Passordet ditt er endret",
+    "errors": {
+      "currentRequired": "Skriv inn det nåværende passordet ditt.",
+      "failed": "Kunne ikke endre passordet ditt. Prøv igjen."
+    }
+  },
+  "twoFactor": {
+    "title": "To-trinnsbekreftelse",
+    "description": "Be om en kode fra autentiseringsappen din i tillegg til passordet når du logger inn.",
+    "loading": "Laster inn...",
+    "statusOn": "På",
+    "statusOff": "Av",
+    "enabledSince": "Slått på {date}",
+    "recoveryRemaining": "{count, plural, one {# gjenopprettingskode igjen} other {# gjenopprettingskoder igjen}}",
+    "unavailable": "To-trinnsbekreftelse er ikke tilgjengelig på denne serveren. Spør administratoren din.",
+    "requiredNotice": "Organisasjonen din krever to-trinnsbekreftelse.",
+    "close": "Lukk",
+    "setup": {
+      "start": "Sett opp to-trinnsbekreftelse",
+      "starting": "Klargjør...",
+      "step1": "1. Legg til denne kontoen i autentiseringsappen din. Åpne lenken på telefonen, eller skriv inn oppsettnøkkelen for hånd.",
+      "uriLabel": "Oppsettlenke",
+      "openInApp": "Åpne i autentiseringsappen",
+      "qrLabel": "QR-kode for autentiseringsappen",
+      "qrHint": "Skann denne QR-koden med autentiseringsappen din, eller bruk lenken eller nøkkelen under.",
+      "keyLabel": "Oppsettnøkkel",
+      "copyKey": "Kopier oppsettnøkkel",
+      "copyUri": "Kopier oppsettlenke",
+      "copied": "Kopiert",
+      "step2": "2. Skriv inn den 6-sifrede koden som appen viser.",
+      "codeLabel": "Bekreftelseskode",
+      "codePlaceholder": "123456",
+      "verify": "Slå på",
+      "verifying": "Sjekker...",
+      "cancel": "Avbryt",
+      "passwordLabel": "3. Skriv inn det nåværende passordet ditt.",
+      "sessionsNote": "Når du slår dette på, blir de andre innloggede enhetene dine logget av."
+    },
+    "recovery": {
+      "title": "Lagre gjenopprettingskodene dine",
+      "description": "Bruk en gjenopprettingskode for å logge inn hvis du mister enheten. Hver kode fungerer én gang. De vises ikke igjen.",
+      "download": "Last ned",
+      "copy": "Kopier alle",
+      "fileHeader": "Gjenopprettingskoder. Hver kode fungerer én gang. Oppbevar dem trygt.",
+      "confirmSaved": "Jeg har lagret gjenopprettingskodene mine",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Passord",
+      "codeLabel": "Autentiserings- eller gjenopprettingskode",
+      "cancel": "Avbryt",
+      "passwordInvalid": "Skriv inn et gyldig passord.",
+      "codeInvalid": "Skriv inn en gyldig autentiserings- eller gjenopprettingskode."
+    },
+    "regenerate": {
+      "start": "Lag nye gjenopprettingskoder",
+      "title": "Lag nye gjenopprettingskoder",
+      "description": "De gamle gjenopprettingskodene dine slutter å fungere så snart du lager nye. Skriv inn passordet ditt og en kode fra autentiseringsappen din (eller en gjenopprettingskode).",
+      "submit": "Lag nye koder",
+      "submitting": "Lager...",
+      "lowNotice": "{count, plural, one {Bare # gjenopprettingskode er igjen} other {Bare # gjenopprettingskoder er igjen}}. Lag nye før de går tom.",
+      "toast": "Nye gjenopprettingskoder er klare"
+    },
+    "disable": {
+      "title": "Slå av to-trinnsbekreftelse",
+      "description": "Skriv inn passordet ditt og en kode fra autentiseringsappen din (eller en gjenopprettingskode).",
+      "start": "Slå av",
+      "submit": "Slå av to-trinnsbekreftelse",
+      "submitting": "Slår av...",
+      "blockedByPolicy": "Organisasjonen din krever to-trinnsbekreftelse, så du kan ikke slå det av. Hvis du mistet enheten, be en administrator om å tilbakestille det."
+    },
+    "enabledToast": "To-trinnsbekreftelse er slått på",
+    "disabledToast": "To-trinnsbekreftelse er slått av",
+    "errors": {
+      "loadFailed": "Kunne ikke laste innstillingene for to-trinnsbekreftelse.",
+      "setupFailed": "Kunne ikke starte oppsettet. Prøv igjen.",
+      "enableFailed": "Kunne ikke slå på to-trinnsbekreftelse.",
+      "regenerateFailed": "Kunne ikke lage nye gjenopprettingskoder.",
+      "disableFailed": "Kunne ikke slå av to-trinnsbekreftelse.",
+      "copyFailed": "Kunne ikke kopiere til utklippstavlen."
+    }
+  },
+  "connectedApps": {
+    "title": "Tilkoblede apper",
+    "description": "Apper du har tillatt å bruke kontoen din gjennom OAuth-innlogging. De handler med dine rettigheter. Koble fra apper du ikke bruker lenger.",
+    "loading": "Laster inn...",
+    "empty": "Ingen apper er koblet til kontoen din.",
+    "redirectsTo": "Sender tilbake til {hosts}",
+    "connectedAt": "Koblet til {date}",
+    "lastUsed": "Sist brukt {date}",
+    "neverUsed": "Aldri brukt",
+    "disconnect": "Koble fra",
+    "disconnectLabel": "Koble fra {name}",
+    "disconnectConfirm": "Koble fra nå",
+    "cancel": "Avbryt",
+    "disconnected": "Appen er koblet fra",
+    "close": "Lukk",
+    "errors": {
+      "loadFailed": "Kunne ikke laste tilkoblede apper.",
+      "disconnectFailed": "Kunne ikke koble fra appen."
+    },
+    "unnamedApp": "Navnløs app"
+  }
+}

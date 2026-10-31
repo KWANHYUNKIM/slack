@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "close": "बंद करें",
+    "send": "भेजें",
+    "confirm": "पुष्टि करें",
+    "back": "वापस",
+    "remove": "हटाएं",
+    "add": "जोड़ें",
+    "create": "बनाएं",
+    "retry": "फिर से कोशिश करें",
+    "search": "खोजें",
+    "copy": "कॉपी करें",
+    "done": "हो गया",
+    "next": "अगला",
+    "more": "और"
+  },
+  "emojiPicker": {
+    "loadFailed": "इमोजी लोड नहीं हो सके। अपना कनेक्शन जांचें और फिर से कोशिश करें।",
+    "retry": "फिर से कोशिश करें"
+  },
+  "status": {
+    "loading": "लोड हो रहा है...",
+    "saving": "सहेजा जा रहा है...",
+    "deleting": "हटाया जा रहा है..."
+  },
+  "dates": {
+    "today": "आज",
+    "yesterday": "कल"
+  },
+  "quickSwitcher": {
+    "title": "त्वरित स्विचर",
+    "inputLabel": "किसी बातचीत पर जाएं",
+    "placeholder": "किसी चैनल या बातचीत पर जाएं",
+    "recent": "हाल के",
+    "results": "परिणाम",
+    "clearRecent": "हाल के साफ़ करें",
+    "listLabel": "बातचीत",
+    "noResults": "कोई मेल खाने वाली बातचीत नहीं मिली",
+    "starred": "स्टार किए गए",
+    "unread": "बिना पढ़े",
+    "dnd": "परेशान न करें",
+    "footer": "खोलने के लिए {keys}। चुनने के लिए ऊपर और नीचे, जाने के लिए Enter, बंद करने के लिए Esc।",
+    "open": "इस पर जाएं…",
+    "kind": {
+      "channel": "चैनल",
+      "dm": "सीधा संदेश",
+      "group": "समूह संदेश"
+    }
+  },
+  "shortcuts": {
+    "title": "कीबोर्ड शॉर्टकट",
+    "groups": {
+      "navigation": "नेविगेशन",
+      "general": "सामान्य"
+    },
+    "items": {
+      "switcher": "त्वरित स्विचर खोलें",
+      "prevChannel": "पिछली बातचीत",
+      "nextChannel": "अगली बातचीत",
+      "prevUnread": "पिछली बिना पढ़ी बातचीत",
+      "nextUnread": "अगली बिना पढ़ी बातचीत",
+      "help": "कीबोर्ड शॉर्टकट दिखाएं",
+      "closeTop": "त्वरित स्विचर या यह संवाद बंद करें"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "वर्कस्पेस"
+  },
+  "organization": {
+    "defaultName": "संगठन"
+  }
+}

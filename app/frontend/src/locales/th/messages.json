@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "แจ้งเตือนทุกคนที่กำลังออนไลน์",
+    "channelLabel": "@channel",
+    "channelHint": "แจ้งเตือนทุกคนในช่องนี้"
+  },
+  "deleteDialog": {
+    "title": "ลบข้อความ",
+    "body": "คุณแน่ใจหรือไม่ว่าต้องการลบข้อความนี้ ไม่สามารถยกเลิกได้"
+  },
+  "editorToolbar": {
+    "attachFile": "แนบไฟล์",
+    "emoji": "อีโมจิ",
+    "mention": "กล่าวถึงใครสักคน",
+    "stopRecording": "หยุดการบันทึก",
+    "recordVoice": "บันทึกคลิปเสียง"
+  },
+  "emojiAutocomplete": {
+    "navigate": "เลื่อน",
+    "select": "เลือก",
+    "dismiss": "ปิด",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "นำ {name} ออก"
+  },
+  "fileModal": {
+    "download": "ดาวน์โหลด",
+    "loadFailed": "โหลดเนื้อหาไฟล์ไม่ได้",
+    "truncated": "... (ตัดทอนแล้ว)",
+    "noPreview": "ไม่มีตัวอย่างให้ดู",
+    "downloadToView": "ดาวน์โหลดไฟล์เพื่อดู"
+  },
+  "files": {
+    "allFiles": "ไฟล์ทั้งหมด",
+    "channelFiles": "ไฟล์ของช่อง",
+    "loadFailed": "โหลดไฟล์ไม่สำเร็จ",
+    "empty": "ยังไม่มีการอัปโหลดไฟล์",
+    "download": "ดาวน์โหลด",
+    "menu": "เมนู",
+    "unavailable": "ไฟล์ไม่พร้อมใช้งาน",
+    "preparing": "กำลังเตรียมไฟล์"
+  },
+  "format": {
+    "bold": "ตัวหนา",
+    "italic": "ตัวเอียง",
+    "strike": "ขีดฆ่า",
+    "link": "ลิงก์",
+    "orderedList": "รายการลำดับเลข",
+    "bulletList": "รายการแบบจุด",
+    "code": "โค้ด",
+    "codeBlock": "บล็อกโค้ด",
+    "quote": "อ้างอิง"
+  },
+  "notifications": {
+    "title": "การแจ้งเตือน",
+    "empty": "ไม่มีการแจ้งเตือนใหม่",
+    "unreadCount": "{count, plural, other {# ข้อความที่ยังไม่ได้อ่าน}}"
+  },
+  "search": {
+    "placeholder": "ค้นหา",
+    "searching": "กำลังค้นหา...",
+    "noResults": "ไม่พบผลลัพธ์",
+    "previewHint": "{count, plural, other {ผลลัพธ์ # อันดับแรก}} · ดูทั้งหมด (Enter)",
+    "truncatedNotice": "มีผลลัพธ์จำนวนมาก เพิ่มตัวกรองเพื่อจำกัดผลลัพธ์",
+    "retry": "ลองอีกครั้ง",
+    "ignoredChip": "{token} (ไม่นำมาพิจารณา)",
+    "ignoredLimitChip": "{token} (ไม่นำมาพิจารณา: มากเกินไป)",
+    "inChannel": "ใน #{channel}",
+    "title": "ผลการค้นหา",
+    "resultsFor": "ผลลัพธ์สำหรับ \"{query}\"",
+    "emptyQuery": "พิมพ์คำที่ต้องการค้นหา หรือใช้ตัวกรอง เช่น from:, in:, has:, before:, after:",
+    "noResultsHint": "ลองใช้คำอื่นหรือนำตัวกรองบางอย่างออก",
+    "clearFilters": "ล้างตัวกรองทั้งหมด",
+    "removeFilter": "นำตัวกรอง {filter} ออก",
+    "loadFailed": "ค้นหาไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "loadMore": "โหลดเพิ่มเติม",
+    "threadReply": "การตอบกลับในเธรด",
+    "directMessage": "ข้อความส่วนตัว",
+    "groupMessage": "การสนทนากลุ่ม",
+    "joined": "เข้าร่วมแล้ว",
+    "privateChannel": "ส่วนตัว",
+    "archivedChannel": "เก็บถาวรแล้ว",
+    "back": "กลับ",
+    "tabs": {
+      "label": "ประเภทผลการค้นหา",
+      "messages": "ข้อความ",
+      "files": "ไฟล์",
+      "people": "ผู้คน",
+      "channels": "ช่อง"
+    },
+    "sort": {
+      "label": "เรียงตาม",
+      "relevance": "ความเกี่ยวข้อง",
+      "recent": "ล่าสุด"
+    }
+  },
+  "headerTabs": {
+    "files": "ไฟล์",
+    "pins": "ปักหมุด"
+  },
+  "lightbox": {
+    "close": "ปิด"
+  },
+  "later": {
+    "title": "ภายหลัง",
+    "saved": "บันทึกไว้",
+    "scheduled": "ตั้งเวลาไว้",
+    "loadFailed": "โหลดข้อความที่บันทึกไว้ไม่สำเร็จ",
+    "empty": "ยังไม่มีข้อความที่บันทึกไว้ คลิกไอคอนบุ๊กมาร์กบนข้อความใดก็ได้เพื่อบันทึก",
+    "removeSaved": "นำออกจากรายการที่บันทึกไว้",
+    "menu": "เมนู",
+    "reminders": "การเตือน"
+  },
+  "linkModal": {
+    "title": "เพิ่มลิงก์",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "ข้อความที่แสดง",
+    "optional": "(ไม่บังคับ)",
+    "textPlaceholder": "ข้อความของลิงก์",
+    "close": "ปิด"
+  },
+  "actionsMenu": {
+    "noActions": "ไม่มีการดำเนินการที่ใช้ได้",
+    "markUnread": "ทำเครื่องหมายว่ายังไม่ได้อ่าน",
+    "pin": "ปักหมุดข้อความ",
+    "unpin": "เลิกปักหมุดข้อความ",
+    "edit": "แก้ไขข้อความ",
+    "delete": "ลบข้อความ",
+    "copyLink": "คัดลอกลิงก์",
+    "remind": "เตือนฉันเกี่ยวกับข้อความนี้"
+  },
+  "area": {
+    "selectChannel": "เลือกช่องเพื่อเริ่มส่งข้อความ",
+    "openMenu": "เปิดเมนู",
+    "placeholder": "ส่งข้อความถึง #{channel}",
+    "viewing": "คุณกำลังดู <bold>#{channel}</bold>",
+    "joinChannel": "เข้าร่วมช่อง"
+  },
+  "header": {
+    "menu": "เมนู",
+    "unstar": "นำออกจากรายการที่ติดดาว",
+    "star": "เพิ่มในรายการที่ติดดาว",
+    "members": "สมาชิก: {count}",
+    "search": "ค้นหา",
+    "channelMenu": "ตัวเลือกของช่อง",
+    "leaveChannel": "ออกจากช่อง",
+    "leaveLastMember": "ออกจากช่องไม่ได้ เพราะคุณเป็นสมาชิกคนสุดท้าย",
+    "dismiss": "ปิด",
+    "addTopic": "เพิ่มหัวข้อ",
+    "editDetails": "แก้ไขรายละเอียดของช่อง"
+  },
+  "message": {
+    "edited": "(แก้ไขแล้ว)",
+    "pinned": "ปักหมุดแล้ว",
+    "showMore": "แสดงเพิ่มเติม",
+    "showLess": "แสดงน้อยลง",
+    "repliedToThread": "ตอบกลับในเธรดแล้ว: {excerpt}",
+    "deletedPlaceholder": "ข้อความนี้ถูกลบแล้ว",
+    "sendToChannel": "ส่งไปยังช่องด้วย",
+    "removeFromChannel": "นำออกจากช่อง"
+  },
+  "input": {
+    "uploading": "กำลังอัปโหลด...",
+    "scheduleMessage": "ตั้งเวลาส่งข้อความ",
+    "send": "ส่งข้อความ",
+    "hint": "กด <kbd>Enter</kbd> เพื่อส่ง กด <kbd>Shift + Enter</kbd> เพื่อขึ้นบรรทัดใหม่",
+    "scheduledFor": "ตั้งเวลาส่งไว้ {time}",
+    "scheduleFailed": "ตั้งเวลาส่งข้อความไม่สำเร็จ กรุณาลองอีกครั้ง"
+  },
+  "list": {
+    "loading": "กำลังโหลดข้อความ...",
+    "empty": "ยังไม่มีข้อความ",
+    "emptyReadOnly": "ช่องนี้ยังไม่มีข้อความ",
+    "emptyFirst": "เป็นคนแรกที่ส่งข้อความ!"
+  },
+  "reactions": {
+    "tooltip": "{names} แสดงปฏิกิริยา {emoji}",
+    "add": "เพิ่มปฏิกิริยา",
+    "you": "คุณ"
+  },
+  "toolbar": {
+    "addReaction": "เพิ่มปฏิกิริยา",
+    "replyInThread": "ตอบกลับในเธรด",
+    "removeBookmark": "นำบุ๊กมาร์กออก",
+    "bookmark": "ทำเครื่องหมายข้อความนี้",
+    "moreActions": "การดำเนินการเพิ่มเติม"
+  },
+  "mobileSearch": {
+    "placeholder": "ค้นหาข้อความ...",
+    "hint": "ค้นหาข้อความในทุกช่องและการสนทนา",
+    "close": "ปิดการค้นหา"
+  },
+  "pins": {
+    "title": "ข้อความที่ปักหมุด",
+    "loadFailed": "โหลดข้อความที่ปักหมุดไม่สำเร็จ",
+    "empty": "ยังไม่มีข้อความที่ปักหมุด"
+  },
+  "schedule": {
+    "menuTitle": "ตั้งเวลาส่งข้อความ",
+    "in20": "อีก 20 นาที",
+    "in1h": "อีก 1 ชั่วโมง",
+    "in3h": "อีก 3 ชั่วโมง",
+    "tomorrow9": "พรุ่งนี้ 9:00 น.",
+    "custom": "เลือกเวลาเอง...",
+    "modalTitle": "ตั้งเวลาส่งข้อความ",
+    "dateTime": "วันที่และเวลา",
+    "pickFuture": "กรุณาเลือกเวลาในอนาคต",
+    "submit": "ตั้งเวลา",
+    "submitting": "กำลังตั้งเวลา...",
+    "close": "ปิด"
+  },
+  "scheduled": {
+    "loadFailed": "โหลดข้อความที่ตั้งเวลาไว้ไม่สำเร็จ",
+    "cancelFailed": "ยกเลิกข้อความไม่สำเร็จ",
+    "sendFailed": "ส่งข้อความไม่สำเร็จ",
+    "saveFailed": "บันทึกการเปลี่ยนแปลงไม่สำเร็จ",
+    "empty": "ไม่มีข้อความที่ตั้งเวลาไว้ ใช้ไอคอนนาฬิกาในช่องพิมพ์ข้อความเพื่อตั้งเวลาส่ง",
+    "sendAt": "ส่งเมื่อ:",
+    "edit": "แก้ไข",
+    "sendNow": "ส่งเดี๋ยวนี้",
+    "cancel": "ยกเลิก",
+    "failedDlp": "ข้อความนี้ยังไม่ได้ส่งเพราะตรงกับกฎการปกป้องข้อมูล ({rule}) กรุณาลบแล้วเขียนใหม่"
+  },
+  "thread": {
+    "replyCount": "{count, plural, other {# การตอบกลับ}}"
+  },
+  "unreads": {
+    "title": "ยังไม่ได้อ่าน",
+    "loadFailed": "โหลดข้อความที่ยังไม่ได้อ่านไม่สำเร็จ",
+    "empty": "ไม่มีข้อความที่ยังไม่ได้อ่าน คุณอ่านครบแล้ว! 🎉",
+    "menu": "เมนู"
+  },
+  "threadPanel": {
+    "title": "เธรด",
+    "replyPlaceholder": "ตอบกลับ...",
+    "loadFailed": "โหลดเธรดไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "loading": "กำลังโหลดเธรด...",
+    "replyFailed": "ส่งการตอบกลับไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "joinToReply": "เข้าร่วมช่องเพื่อตอบกลับในเธรด",
+    "alsoSendToChannel": "ส่งไปยังช่องด้วย"
+  },
+  "errors": {
+    "messageEmpty": "ข้อความต้องไม่ว่างเปล่า",
+    "pasteUploadFailed": "อัปโหลดรูปภาพที่วางไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "dropUploadFailed": "อัปโหลดไฟล์ที่ลากมาวางไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "uploadFailed": "อัปโหลดไฟล์ไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "voiceUploadFailed": "อัปโหลดข้อความเสียงไม่สำเร็จ",
+    "micDenied": "ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน กรุณาอนุญาตการเข้าถึงไมโครโฟน",
+    "loadFailed": "โหลดข้อความไม่สำเร็จ",
+    "sendTimeout": "การส่งข้อความหมดเวลา กรุณาลองอีกครั้ง",
+    "sendFailed": "ส่งข้อความไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "pushNotConfigured": "เซิร์ฟเวอร์ยังไม่ได้ตั้งค่าการแจ้งเตือนแบบพุช",
+    "serviceWorkerUnavailable": "ไม่พบ Service Worker",
+    "subscribeFailed": "ลงทะเบียนการสมัครรับการแจ้งเตือนไม่สำเร็จ",
+    "editFailed": "บันทึกการแก้ไขไม่สำเร็จ กรุณาลองอีกครั้ง"
+  },
+  "details": {
+    "title": "รายละเอียดช่อง",
+    "name": "ชื่อ",
+    "topic": "หัวข้อ",
+    "topicPlaceholder": "ช่องนี้เกี่ยวกับเรื่องอะไร?",
+    "description": "คำอธิบาย",
+    "descriptionPlaceholder": "เพิ่มคำอธิบาย",
+    "createdBy": "สร้างโดย {name}",
+    "readOnly": "มีเพียงเจ้าของช่อง ผู้ดูแลช่อง และผู้ดูแลเวิร์กสเปซเท่านั้นที่แก้ไขรายละเอียดเหล่านี้ได้",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "saveFailed": "บันทึกรายละเอียดช่องไม่สำเร็จ"
+  },
+  "intro": {
+    "title": "ยินดีต้อนรับสู่ #{name}",
+    "noDescription": "ยังไม่มีคำอธิบาย",
+    "editDescription": "แก้ไขคำอธิบาย"
+  },
+  "threads": {
+    "title": "เธรด",
+    "menu": "เมนู",
+    "loadFailed": "โหลดเธรดไม่สำเร็จ",
+    "empty": "ยังไม่มีเธรด",
+    "emptyHint": "เธรดที่คุณเริ่มหรือตอบกลับจะแสดงที่นี่",
+    "newReplies": "{count, plural, other {# การตอบกลับใหม่}}",
+    "replyCount": "{count, plural, other {# การตอบกลับ}}",
+    "olderReplies": "เปิดเธรดเพื่อดูการตอบกลับก่อนหน้า",
+    "replyPlaceholder": "ตอบกลับ...",
+    "send": "ส่ง",
+    "replyFailed": "ส่งการตอบกลับไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "alsoSendToChannel": "ส่งไปยังช่องด้วย",
+    "openThread": "เปิดเธรด",
+    "loadMore": "โหลดเพิ่มเติม",
+    "loading": "กำลังโหลด..."
+  },
+  "permalink": {
+    "copied": "คัดลอกลิงก์แล้ว",
+    "notFound": "ไม่พบข้อความนี้ หรือคุณไม่มีสิทธิ์ดู",
+    "goHome": "กลับหน้าหลัก",
+    "copyManually": "คัดลอกอัตโนมัติไม่ได้ คัดลอกลิงก์นี้: {url}"
+  },
+  "unread": {
+    "divider": "ใหม่",
+    "newMessagesBar": "{count, plural, other {# ข้อความใหม่}}",
+    "newMessagesBarAtLeast": "{count, plural, other {# ข้อความใหม่ขึ้นไป}}",
+    "markRead": "ทำเครื่องหมายว่าอ่านแล้ว",
+    "jumpFailed": "โหลดตำแหน่งข้อความที่ยังไม่ได้อ่านไม่ได้"
+  },
+  "reminder": {
+    "set": "ตั้งการเตือน",
+    "customLabel": "วันที่และเวลาของการเตือน",
+    "preset": {
+      "in20": "อีก 20 นาที",
+      "in1h": "อีก 1 ชั่วโมง",
+      "in3h": "อีก 3 ชั่วโมง",
+      "tomorrow": "พรุ่งนี้",
+      "nextWeek": "สัปดาห์หน้า",
+      "custom": "กำหนดเอง..."
+    },
+    "status": {
+      "pending": "กำลังจะถึง",
+      "done": "เสร็จแล้ว"
+    },
+    "snooze": {
+      "m10": "10 นาที",
+      "h1": "1 ชั่วโมง",
+      "tomorrow": "พรุ่งนี้"
+    },
+    "loadFailed": "โหลดการเตือนไม่สำเร็จ",
+    "empty": "ไม่มีการเตือน ใช้เมนูการดำเนินการเพิ่มเติมบนข้อความ หรือพิมพ์ /remind เพื่อเพิ่ม",
+    "emptyDone": "ไม่มีการเตือนที่เสร็จแล้ว",
+    "dueAt": "ถึงกำหนด {time}",
+    "firedAt": "ถึงกำหนดเมื่อ {time}",
+    "completedAt": "เสร็จเมื่อ {time}",
+    "messageDeleted": "ข้อความที่ถูกลบ",
+    "complete": "ทำเครื่องหมายว่าเสร็จแล้ว",
+    "reopen": "ทำเครื่องหมายว่ายังไม่เสร็จ",
+    "delete": "ลบการเตือน",
+    "toast": {
+      "created": "ตั้งการเตือนแล้ว",
+      "due": "การเตือน: {text}",
+      "createFailed": "ตั้งการเตือนไม่สำเร็จ กรุณาลองอีกครั้ง"
+    },
+    "command": {
+      "syntax": "วิธีใช้: /remind me [ข้อความ] in [จำนวน] [minutes|hours|days]",
+      "tooShort": "การเตือนต้องอยู่ห่างจากตอนนี้อย่างน้อย 1 นาที",
+      "tooLong": "การเตือนต้องอยู่ภายในหนึ่งปี",
+      "created": "ตั้งการเตือนไว้ {time} แล้ว"
+    },
+    "pastTime": "กรุณาเลือกเวลาในอนาคต",
+    "loadMore": "โหลดเพิ่มเติม"
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Adminpanel",
+    "openSidebar": "Åpne sidepanelet",
+    "tabs": {
+      "members": "Medlemmer",
+      "invites": "Invitasjoner",
+      "channels": "Kanaler",
+      "webhooks": "Webhooks",
+      "audit": "Revisjonslogg",
+      "retention": "Datalagring",
+      "security": "Sikkerhet",
+      "dlp": "DLP",
+      "legalHolds": "Juridiske beslag"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanal",
+      "members": "Medlemmer",
+      "messages": "Meldinger",
+      "created": "Opprettet"
+    },
+    "actions": {
+      "rename": "Gi kanalen nytt navn",
+      "archive": "Arkiver kanal",
+      "delete": "Slett kanal",
+      "unarchive": "Gjenopprett kanal",
+      "deletePermanently": "Slett permanent"
+    },
+    "emptyActive": "Ingen aktive kanaler",
+    "archivedHeading": "Arkiverte kanaler ({count})",
+    "archivedOn": "arkivert {date}",
+    "messageCount": "{count, plural, one {# melding} other {# meldinger}}",
+    "deleteDialog": {
+      "title": "Slett kanal",
+      "message": "Er du sikker på at du vil slette #{name} permanent? Alle meldinger går tapt. Dette kan ikke angres."
+    },
+    "archiveDialog": {
+      "title": "Arkiver kanal",
+      "confirm": "Arkiver",
+      "message": "Arkivere #{name}? Den skjules i sidepanelet, men meldingene beholdes. Du kan gjenopprette den senere."
+    },
+    "unarchiveDialog": {
+      "title": "Gjenopprett kanal",
+      "confirm": "Gjenopprett",
+      "message": "Gjenopprette #{name}? Den vises igjen i sidepanelet for alle medlemmer."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Søk etter medlemmer...",
+    "columns": {
+      "user": "Bruker",
+      "email": "E-post",
+      "role": "Rolle",
+      "status": "Status",
+      "actions": "Handlinger"
+    },
+    "you": "(deg)",
+    "roles": {
+      "owner": "Eier",
+      "admin": "Administrator",
+      "member": "Medlem",
+      "guest": "Gjest"
+    },
+    "status": {
+      "active": "Aktiv",
+      "deactivated": "Deaktivert"
+    },
+    "actions": {
+      "transfer": "Overfør eierskap",
+      "reactivate": "Aktiver igjen",
+      "deactivate": "Deaktiver",
+      "forceLogout": "Tvungen utlogging",
+      "resetMfa": "Tilbakestill 2FA"
+    },
+    "empty": "Fant ingen brukere",
+    "dialogs": {
+      "transfer": {
+        "title": "Overfør eierskap til arbeidsområdet",
+        "confirm": "Overfør",
+        "message": "Er du sikker på at du vil overføre eierskapet til arbeidsområdet til {name}? Du blir nedgradert til administrator."
+      },
+      "deactivate": {
+        "title": "Deaktiver bruker",
+        "confirm": "Deaktiver",
+        "message": "Er du sikker på at du vil deaktivere {name}? De blir logget av med en gang og kan ikke logge inn."
+      },
+      "reactivate": {
+        "title": "Aktiver bruker igjen",
+        "confirm": "Aktiver",
+        "message": "Er du sikker på at du vil aktivere {name} igjen? De kan logge inn igjen."
+      },
+      "forceLogout": {
+        "title": "Tvungen utlogging",
+        "confirm": "Logg av",
+        "message": "Logge {name} av fra alle enheter nå? Kontoen forblir aktiv, og de kan logge inn igjen."
+      },
+      "resetMfa": {
+        "title": "Tilbakestill to-trinnsbekreftelse",
+        "confirm": "Tilbakestill",
+        "message": "Fjerne to-trinnsbekreftelse for {name}? De blir logget av fra alle enheter og kan bare logge inn med passordet sitt."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "To-trinnsbekreftelse er slått på"
+    }
+  },
+  "invites": {
+    "createHeading": "Opprett invitasjonslenke",
+    "fields": {
+      "role": "Rolle",
+      "maxUses": "Maks antall bruk",
+      "expiresIn": "Utløper om"
+    },
+    "unlimited": "Ubegrenset",
+    "expiry": {
+      "1d": "1 dag",
+      "7d": "7 dager",
+      "30d": "30 dager",
+      "never": "Aldri"
+    },
+    "expired": "Utløpt",
+    "columns": {
+      "url": "Invitasjons-URL",
+      "uses": "Bruk",
+      "expires": "Utløper",
+      "createdBy": "Opprettet av"
+    },
+    "copyUrl": "Kopier invitasjons-URL",
+    "full": "(full)",
+    "delete": "Slett invitasjon",
+    "empty": "Ingen invitasjonslenker ennå"
+  },
+  "webhooks": {
+    "createHeading": "Opprett webhook",
+    "fields": {
+      "name": "Navn på webhook",
+      "channel": "Kanal"
+    },
+    "namePlaceholder": "Min integrasjon",
+    "selectChannel": "Velg kanal...",
+    "columns": {
+      "name": "Navn",
+      "url": "Webhook-URL",
+      "lastUsed": "Sist brukt"
+    },
+    "never": "Aldri",
+    "justNow": "Nettopp",
+    "inactive": "Inaktiv",
+    "copyUrl": "Kopier webhook-URL",
+    "delete": "Slett webhook",
+    "empty": "Ingen webhooks satt opp ennå"
+  },
+  "audit": {
+    "empty": "Ingen oppføringer i revisjonsloggen samsvarer. Registrerte handlinger vises her.",
+    "loadMore": "Last inn flere",
+    "targets": {
+      "user": "Bruker",
+      "channel": "Kanal",
+      "invite": "Invitasjon",
+      "webhook": "Webhook",
+      "message": "Melding",
+      "directMessage": "Direktemelding",
+      "token": "Tilgangstoken",
+      "auditLog": "Revisjonslogg",
+      "mcpTool": "MCP-verktøy",
+      "workspace": "Arbeidsområde",
+      "file": "Fil",
+      "dlpRule": "DLP-regel",
+      "legalHold": "Juridisk beslag"
+    },
+    "action": {
+      "authLogin": "Logget inn",
+      "authLoginFailed": "Innlogging mislyktes",
+      "authLogout": "Logget ut",
+      "authPasswordChanged": "Passord endret",
+      "userRoleChanged": "Rolle endret",
+      "userDeactivated": "Deaktivert",
+      "userForceLogout": "Tvungen utlogging",
+      "userReactivated": "Aktivert igjen",
+      "ownershipTransferred": "Eierskap overført",
+      "ownerBootstrapped": "Eier opprettet",
+      "channelCreated": "Kanal opprettet",
+      "channelEdited": "Kanal redigert",
+      "channelArchived": "Kanal arkivert",
+      "channelUnarchived": "Kanal gjenopprettet",
+      "channelDeleted": "Kanal slettet",
+      "channelMemberAdded": "Medlem lagt til",
+      "channelMemberRemoved": "Medlem fjernet",
+      "inviteCreated": "Invitasjon opprettet",
+      "inviteDeleted": "Invitasjon slettet",
+      "webhookCreated": "Webhook opprettet",
+      "webhookDeleted": "Webhook slettet",
+      "tokenCreate": "Token opprettet",
+      "tokenRevoke": "Token tilbakekalt",
+      "mcpToolCall": "MCP-verktøykall",
+      "auditExported": "Revisjonslogg eksportert",
+      "authLoginLocked": "Konto låst",
+      "sessionRevoked": "Enhet logget av",
+      "sessionRevokedAll": "Alle enheter logget av",
+      "retentionPurged": "Utløpte data slettet",
+      "retentionWorkspaceUpdated": "Lagringspolicy endret",
+      "retentionChannelUpdated": "Lagring for kanal endret",
+      "retentionChannelCleared": "Lagring for kanal tilbakestilt",
+      "mfaEnabled": "To-trinnsbekreftelse slått på",
+      "mfaDisabled": "To-trinnsbekreftelse slått av",
+      "mfaRecoveryUsed": "Gjenopprettingskode brukt",
+      "mfaRecoveryRegenerated": "Gjenopprettingskoder laget på nytt",
+      "mfaResetByAdmin": "To-trinnsbekreftelse tilbakestilt av admin",
+      "mfaPolicyChanged": "Krav om to-trinnsbekreftelse endret",
+      "dlpBlocked": "Melding blokkert av DLP",
+      "dlpWarned": "DLP-advarsel",
+      "dlpRuleCreated": "DLP-regel opprettet",
+      "dlpRuleUpdated": "DLP-regel endret",
+      "dlpRuleDeleted": "DLP-regel slettet",
+      "dlpRuleTimeout": "DLP-regel fikk tidsavbrudd",
+      "dlpRuleAutoDisabled": "DLP-regel slått av automatisk",
+      "legalHoldCreated": "Juridisk beslag opprettet",
+      "legalHoldUpdated": "Juridisk beslag redigert",
+      "legalHoldCustodianAdded": "Person lagt til i juridisk beslag",
+      "legalHoldCustodianRemoved": "Person fjernet fra juridisk beslag",
+      "legalHoldReleased": "Juridisk beslag frigitt",
+      "ediscoverySearched": "eDiscovery-søk",
+      "ediscoveryExportRequested": "eDiscovery-eksport bedt om",
+      "ediscoveryExported": "eDiscovery eksportert"
+    },
+    "filters": {
+      "allActions": "Alle handlinger",
+      "actionsSelected": "{count, plural, one {# handling} other {# handlinger}}",
+      "actor": "Utfører",
+      "allActors": "Alle utførere",
+      "targetType": "Måltype",
+      "allTargets": "Alle mål",
+      "from": "Fra",
+      "to": "Til",
+      "apply": "Bruk",
+      "reset": "Tilbakestill"
+    },
+    "export": {
+      "csv": "Eksporter CSV",
+      "json": "Eksporter JSON"
+    },
+    "unknownActor": "Ukjent"
+  },
+  "errors": {
+    "archiveChannel": "Kunne ikke arkivere kanalen",
+    "createInvite": "Kunne ikke opprette invitasjonen",
+    "createWebhook": "Kunne ikke opprette webhooken",
+    "deactivateUser": "Kunne ikke deaktivere brukeren",
+    "deleteChannel": "Kunne ikke slette kanalen",
+    "deleteInvite": "Kunne ikke slette invitasjonen",
+    "deleteWebhook": "Kunne ikke slette webhooken",
+    "editChannel": "Kunne ikke redigere kanalen",
+    "exportAuditLog": "Kunne ikke eksportere revisjonsloggen",
+    "fetchAuditLog": "Kunne ikke hente revisjonsloggen",
+    "fetchChannels": "Kunne ikke hente kanaler",
+    "fetchInvites": "Kunne ikke hente invitasjoner",
+    "fetchUsers": "Kunne ikke hente brukere",
+    "fetchWebhooks": "Kunne ikke hente webhooks",
+    "forceLogout": "Kunne ikke logge brukeren av",
+    "reactivateUser": "Kunne ikke aktivere brukeren igjen",
+    "removeChannelMember": "Kunne ikke fjerne kanalmedlemmet",
+    "transferOwnership": "Kunne ikke overføre eierskapet",
+    "unarchiveChannel": "Kunne ikke gjenopprette kanalen",
+    "updateRole": "Kunne ikke oppdatere rollen",
+    "resetMfa": "Kunne ikke tilbakestille to-trinnsbekreftelse"
+  },
+  "retention": {
+    "title": "Datalagring",
+    "description": "Slett meldinger automatisk etter et oppgitt antall dager. Filer slettes sammen med meldingene. Opprydding kjører én gang i døgnet. Påminnelser beholdes og viser \"slettet melding\".",
+    "loadError": "Kunne ikke laste lagringspolicyen",
+    "saveError": "Kunne ikke lagre lagringspolicyen",
+    "resetError": "Kunne ikke tilbakestille kanalpolicyen",
+    "workspace": {
+      "heading": "Standard for arbeidsområdet",
+      "hint": "Gjelder for alle kanaler uten egen innstilling, og for direktemeldinger og gruppemeldinger."
+    },
+    "mode": {
+      "forever": "Behold for alltid",
+      "days": "Slett etter et antall dager",
+      "inherit": "Bruk standard for arbeidsområdet"
+    },
+    "daysLabel": "Dager",
+    "daysHint": "{min} til {max} dager",
+    "effective": {
+      "forever": "Beholdes for alltid",
+      "days": "{count, plural, one {# dag} other {# dager}}"
+    },
+    "channels": {
+      "heading": "Kanaler",
+      "columns": {
+        "channel": "Kanal",
+        "policy": "Policy",
+        "effective": "Gjelder"
+      },
+      "legalHold": "Juridisk beslag",
+      "reset": "Tilbakestill til standard",
+      "empty": "Ingen kanaler"
+    },
+    "save": "Lagre",
+    "saved": "Lagret",
+    "confirm": {
+      "title": "Slette gamle meldinger permanent?",
+      "message": "Ved neste opprydding slettes meldinger som er eldre enn {count, plural, one {# dag} other {# dager}} permanent sammen med filene. Dette kan ikke angres.",
+      "confirm": "Bruk policy"
+    }
+  },
+  "security": {
+    "title": "To-trinnsbekreftelse",
+    "requireMfa": "Krev to-trinnsbekreftelse for alle",
+    "requireMfaHint": "Medlemmer uten to-trinnsbekreftelse kan bare komme til oppsettskjermen til de slår det på.",
+    "unavailable": "To-trinnsbekreftelse er slått av på denne serveren fordi det ikke er satt en krypteringsnøkkel (TOTP_ENCRYPTION_KEY). Kravet håndheves ikke.",
+    "saved": "Sikkerhetsinnstillingene er lagret",
+    "loading": "Laster inn...",
+    "errors": {
+      "loadFailed": "Kunne ikke laste sikkerhetsinnstillingene.",
+      "saveFailed": "Kunne ikke lagre sikkerhetsinnstillingene."
+    },
+    "allowOAuthApps": "Tillat medlemmer å koble til OAuth-apper",
+    "allowOAuthAppsHint": "Lar medlemmer koble til apper som Claude gjennom OAuth-innlogging. Hvis du slår av dette, kobles alle apper fra med en gang."
+  },
+  "dlp": {
+    "title": "Forebygging av datatap",
+    "description": "Finn sensitive mønstre i meldinger, for eksempel kortnumre. En blokkeringsregel hindrer at meldingen lagres. En advarselsregel lagrer meldingen og fører den i revisjonsloggen. Meldingsteksten skrives aldri til loggen.",
+    "loadError": "Kunne ikke laste DLP-reglene",
+    "saveError": "Kunne ikke lagre regelen",
+    "toggleError": "Kunne ikke endre regelen",
+    "deleteError": "Kunne ikke slette regelen",
+    "testError": "Kunne ikke teste mønsteret",
+    "builtinBadge": "Innebygd",
+    "builtinPattern": "Innebygd detektor",
+    "builtin": {
+      "credit_card": "Kortnummer",
+      "kr_rrn": "Koreansk fødselsnummer (registreringsnummer)",
+      "aws_access_key": "AWS-tilgangsnøkkel",
+      "private_key": "Privat nøkkel"
+    },
+    "action": {
+      "BLOCK": "Blokker",
+      "WARN": "Advar"
+    },
+    "columns": {
+      "name": "Regel",
+      "pattern": "Mønster",
+      "action": "Handling",
+      "enabled": "Status"
+    },
+    "on": "På",
+    "off": "Av",
+    "toggleLabel": "Slå {name} av eller på",
+    "edit": "Rediger",
+    "editLabel": "Rediger {name}",
+    "delete": "Slett",
+    "deleteLabel": "Slett {name}",
+    "form": {
+      "createHeading": "Legg til en regel",
+      "editHeading": "Rediger regel",
+      "name": "Navn",
+      "pattern": "Mønster (regulært uttrykk)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Handling",
+      "add": "Legg til regel",
+      "save": "Lagre",
+      "cancel": "Avbryt",
+      "hint": "Opptil {max} tegn. Nestede gjentakelser som (a+)+, tilbakereferanser og svært store gjentakelsestall avvises."
+    },
+    "patternProblem": {
+      "empty": "Skriv inn et mønster.",
+      "tooLong": "Mønsteret er for langt.",
+      "invalid": "Dette er ikke et gyldig regulært uttrykk.",
+      "backreference": "Tilbakereferanser er ikke tillatt.",
+      "nestedQuantifier": "Nestede gjentakelser kan gjøre kontrollen svært treg og er ikke tillatt.",
+      "repeatTooLarge": "Gjentakelsestallet er for stort (maks 200)."
+    },
+    "test": {
+      "heading": "Test et mønster",
+      "hint": "Ingenting lagres. Skriv inn et mønster over, eller velg en lagret regel, og skriv inn eksempeltekst.",
+      "source": "Mønster som skal testes",
+      "sourceDraft": "Mønster i skjemaet over",
+      "sample": "Eksempeltekst",
+      "run": "Test",
+      "matched": "Treff. Denne teksten ville blitt fanget.",
+      "notMatched": "Ingen treff.",
+      "timedOut": "Kontrollen tok for lang tid og ble stoppet. Forenkle mønsteret."
+    },
+    "confirmDelete": {
+      "title": "Slette denne regelen?",
+      "message": "Regelen \"{name}\" fjernes og kontrolleres ikke lenger."
+    }
+  },
+  "legalHolds": {
+    "description": "Bevar alt en person har skrevet eller mottatt, selv når datalagring ville slettet det. Administratorer kan søke i og eksportere de bevarte dataene til juridisk gjennomgang.",
+    "statusFilter": "Vis",
+    "status": {
+      "active": "Aktiv",
+      "released": "Frigitt",
+      "all": "Alle"
+    },
+    "empty": "Ingen juridiske beslag",
+    "selectHint": "Velg et juridisk beslag for å administrere personene i det og søke i dataene.",
+    "loadMore": "Last inn flere",
+    "custodianCount": "{count, plural, one {# person} other {# personer}}",
+    "createdOn": "Opprettet {date}",
+    "releasedOn": "Frigitt {date}",
+    "createdBy": "Opprettet av {name} {date}",
+    "releasedBy": "Frigitt av {name} {date}",
+    "unknownUser": "Ukjent bruker",
+    "edit": "Rediger",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "fields": {
+      "name": "Navn",
+      "description": "Beskrivelse (valgfri)"
+    },
+    "create": {
+      "open": "Nytt beslag",
+      "submit": "Opprett beslag",
+      "hint": "Du kan legge til personer etter at beslaget er opprettet."
+    },
+    "custodians": {
+      "heading": "Personer i beslaget",
+      "pick": "Velg en person",
+      "add": "Legg til",
+      "remove": "Fjern {name} fra dette beslaget",
+      "empty": "Ingen er i dette beslaget ennå.",
+      "deactivated": "Deaktivert"
+    },
+    "release": {
+      "open": "Frigi beslag",
+      "title": "Frigi dette juridiske beslaget?",
+      "message": "\"{name}\" slutter å bevare data. Personer som ikke er i et annet aktivt beslag, går tilbake til vanlig lagringspolicy, og de gamle meldingene deres kan bli slettet ved neste opprydding. Beslaget og listen over personer blir stående i loggen. Dette kan ikke angres.",
+      "confirm": "Frigi"
+    },
+    "discovery": {
+      "heading": "Søk og eksporter",
+      "hint": "Dekker meldinger skrevet av personene i beslaget i alle kanaler (også private), direktemeldinger og gruppemeldinger de deltok i, og filopplysninger. Slettede meldinger er inkludert og merket.",
+      "query": "Nøkkelord",
+      "from": "Fra",
+      "to": "Til",
+      "search": "Søk",
+      "export": "Eksporter (JSONL)",
+      "exportHint": "Eksporterer resultatene av det siste søket. Hvert søk og hver eksport føres i revisjonsloggen.",
+      "searchFirst": "Søk med disse filtrene først. Eksporten bruker filtrene fra søket som vises nedenfor.",
+      "kinds": {
+        "channel": "Kanalmeldinger",
+        "dm": "Direktemeldinger",
+        "file": "Filer"
+      },
+      "empty": "Ingen resultater",
+      "deleted": "Slettet",
+      "edited": "Redigert",
+      "reply": "Svar i tråd",
+      "groupDm": "Gruppemelding #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Kunne ikke laste juridiske beslag",
+      "create": "Kunne ikke opprette juridisk beslag",
+      "update": "Kunne ikke oppdatere juridisk beslag",
+      "custodians": "Kunne ikke endre personene i beslaget",
+      "release": "Kunne ikke frigi juridisk beslag",
+      "search": "Søket mislyktes",
+      "export": "Eksporten mislyktes"
+    }
+  }
+}

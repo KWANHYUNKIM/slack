@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "กิจกรรม",
+    "markAllRead": "ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว",
+    "loading": "กำลังโหลด...",
+    "loadingMore": "กำลังโหลดเพิ่มเติม...",
+    "loadFailed": "โหลดกิจกรรมไม่สำเร็จ",
+    "empty": "ยังไม่มีกิจกรรม",
+    "unread": "ยังไม่ได้อ่าน",
+    "menu": "เมนู",
+    "someone": "มีคนหนึ่ง",
+    "directMessage": "ข้อความส่วนตัว",
+    "messageDeleted": "ข้อความที่ถูกลบ"
+  },
+  "tabs": {
+    "all": "ทั้งหมด",
+    "mentions": "การกล่าวถึง",
+    "threads": "เธรด",
+    "reactions": "ปฏิกิริยา"
+  },
+  "describe": {
+    "mention": "{actor} กล่าวถึงคุณใน {where}",
+    "channelMention": "{actor} กล่าวถึง @channel ใน {where}",
+    "hereMention": "{actor} กล่าวถึง @here ใน {where}",
+    "threadReply": "{actor} ตอบกลับในเธรดใน {where}",
+    "reaction": "{actor} แสดงปฏิกิริยา {emoji} ต่อข้อความของคุณใน {where}",
+    "reminder": "การเตือน"
+  }
+}

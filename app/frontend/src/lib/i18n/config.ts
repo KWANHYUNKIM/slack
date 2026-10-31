@@ -43,6 +43,10 @@ export const SELECTABLE_LOCALES = [
   { code: 'id', name: 'Bahasa Indonesia' },
   { code: 'ms', name: 'Bahasa Melayu' },
   { code: 'fil', name: 'Filipino' },
+  { code: 'hi', name: 'हिन्दी' },
+  { code: 'bn', name: 'বাংলা' },
+  { code: 'th', name: 'ไทย' },
+  { code: 'nb', name: 'Norsk bokmål' },
 ] as const;
 
 /**

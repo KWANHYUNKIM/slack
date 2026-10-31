@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "কার্যকলাপ",
+    "markAllRead": "সব পঠিত হিসেবে চিহ্নিত করুন",
+    "loading": "লোড হচ্ছে...",
+    "loadingMore": "আরও লোড হচ্ছে...",
+    "loadFailed": "কার্যকলাপ লোড করা যায়নি।",
+    "empty": "এখনো কোনো কার্যকলাপ নেই।",
+    "unread": "অপঠিত",
+    "menu": "মেনু",
+    "someone": "কেউ",
+    "directMessage": "একটি সরাসরি বার্তা",
+    "messageDeleted": "মুছে ফেলা বার্তা"
+  },
+  "tabs": {
+    "all": "সব",
+    "mentions": "উল্লেখ",
+    "threads": "থ্রেড",
+    "reactions": "প্রতিক্রিয়া"
+  },
+  "describe": {
+    "mention": "{where} এ {actor} আপনাকে উল্লেখ করেছেন",
+    "channelMention": "{where} এ {actor} @channel উল্লেখ করেছেন",
+    "hereMention": "{where} এ {actor} @here উল্লেখ করেছেন",
+    "threadReply": "{where} এ {actor} একটি থ্রেডে উত্তর দিয়েছেন",
+    "reaction": "{where} এ আপনার বার্তায় {actor} {emoji} প্রতিক্রিয়া দিয়েছেন",
+    "reminder": "অনুস্মারক"
+  }
+}

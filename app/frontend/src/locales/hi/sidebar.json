@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "गतिविधि",
+    "unreads": "बिना पढ़े",
+    "later": "बाद में",
+    "files": "फ़ाइलें",
+    "admin": "एडमिन",
+    "threads": "थ्रेड"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "नया संदेश"
+  },
+  "userMenu": {
+    "profile": "प्रोफ़ाइल",
+    "notificationsBlocked": "सूचनाएं ब्लॉक हैं",
+    "disableNotifications": "सूचनाएं बंद करें",
+    "enableNotifications": "सूचनाएं चालू करें",
+    "signOut": "साइन आउट",
+    "updateStatus": "अपनी स्थिति बदलें",
+    "pauseNotifications": "सूचनाएं रोकें",
+    "pausedUntil": "{time} तक रुकी हुई",
+    "pausedIndefinitely": "आपकी स्थिति साफ़ होने तक रुकी हुई",
+    "resumeNotifications": "सूचनाएं फिर से शुरू करें",
+    "pause": {
+      "m30": "30 मिनट",
+      "h1": "1 घंटा",
+      "h2": "2 घंटे",
+      "tomorrow": "कल तक"
+    },
+    "pauseError": "सूचना रोकने की सेटिंग नहीं बदली जा सकी। कृपया फिर से कोशिश करें।",
+    "accessTokens": "निजी एक्सेस टोकन",
+    "sessions": "साइन इन किए गए डिवाइस",
+    "twoFactor": "दो-चरणीय प्रमाणीकरण",
+    "changePassword": "पासवर्ड बदलें",
+    "connectedApps": "कनेक्टेड ऐप्स"
+  },
+  "sections": {
+    "starred": "स्टार किए गए",
+    "channels": "चैनल",
+    "addChannels": "चैनल जोड़ें",
+    "directMessages": "सीधे संदेश",
+    "addTeammates": "साथी जोड़ें",
+    "starredEmpty": "किसी चैनल या बातचीत को यहां रखने के लिए उसे स्टार करें।",
+    "collapse": "{section} छिपाएं",
+    "expand": "{section} दिखाएं"
+  },
+  "teammates": {
+    "title": "सीधा संदेश",
+    "subtitle": "बातचीत खोजें या शुरू करें",
+    "searchPlaceholder": "नाम से खोजें...",
+    "noUsers": "कोई उपयोगकर्ता नहीं मिला",
+    "close": "बंद करें",
+    "pickSubtitle": "अधिकतम {max, plural, one {# व्यक्ति} other {# लोग}} चुनें",
+    "select": "{name} चुनें",
+    "selectedCount": "{max} में से {count} चुने गए",
+    "start": "बातचीत शुरू करें",
+    "startGroup": "समूह बातचीत शुरू करें"
+  },
+  "you": "(आप)",
+  "notifications": {
+    "someone": "कोई",
+    "sentAttachment": "एक अटैचमेंट भेजा",
+    "threadTitle": "{name} (थ्रेड)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# सदस्य} other {# सदस्य}}",
+    "createError": "समूह बातचीत शुरू नहीं हो सकी। कृपया फिर से कोशिश करें।"
+  },
+  "statusDialog": {
+    "title": "स्थिति सेट करें",
+    "emojiLabel": "इमोजी चुनें",
+    "textLabel": "आपकी स्थिति क्या है?",
+    "textPlaceholder": "आपकी स्थिति क्या है?",
+    "durationLabel": "इसके बाद साफ़ करें",
+    "duration": {
+      "never": "साफ़ न करें",
+      "m30": "30 मिनट",
+      "h1": "1 घंटा",
+      "h4": "4 घंटे",
+      "today": "आज",
+      "week": "इस हफ़्ते"
+    },
+    "pauseCheckbox": "स्थिति साफ़ होने तक सूचनाएं रोकें",
+    "save": "सहेजें",
+    "clear": "स्थिति साफ़ करें",
+    "cancel": "रद्द करें",
+    "expiresAt": "{time} पर साफ़ होगी",
+    "saveError": "आपकी स्थिति सहेजी नहीं जा सकी। कृपया फिर से कोशिश करें।"
+  },
+  "findConversation": "बातचीत खोजें"
+}

@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "কার্যকলাপ",
+    "unreads": "অপঠিত",
+    "later": "পরে",
+    "files": "ফাইল",
+    "admin": "অ্যাডমিন",
+    "threads": "থ্রেড"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "নতুন বার্তা"
+  },
+  "userMenu": {
+    "profile": "প্রোফাইল",
+    "notificationsBlocked": "বিজ্ঞপ্তি বন্ধ আছে",
+    "disableNotifications": "বিজ্ঞপ্তি বন্ধ করুন",
+    "enableNotifications": "বিজ্ঞপ্তি চালু করুন",
+    "signOut": "সাইন আউট",
+    "updateStatus": "আপনার অবস্থা বদলান",
+    "pauseNotifications": "বিজ্ঞপ্তি বিরতি দিন",
+    "pausedUntil": "{time} পর্যন্ত বিরতিতে",
+    "pausedIndefinitely": "আপনার অবস্থা মুছে না যাওয়া পর্যন্ত বিরতিতে",
+    "resumeNotifications": "বিজ্ঞপ্তি আবার চালু করুন",
+    "pause": {
+      "m30": "৩০ মিনিট",
+      "h1": "১ ঘণ্টা",
+      "h2": "২ ঘণ্টা",
+      "tomorrow": "আগামীকাল পর্যন্ত"
+    },
+    "pauseError": "বিজ্ঞপ্তির বিরতি বদলানো যায়নি। আবার চেষ্টা করুন।",
+    "accessTokens": "ব্যক্তিগত অ্যাক্সেস টোকেন",
+    "sessions": "সাইন ইন করা ডিভাইস",
+    "twoFactor": "দুই-ধাপ যাচাইকরণ",
+    "changePassword": "পাসওয়ার্ড বদলান",
+    "connectedApps": "সংযুক্ত অ্যাপ"
+  },
+  "sections": {
+    "starred": "তারকাচিহ্নিত",
+    "channels": "চ্যানেল",
+    "addChannels": "চ্যানেল যোগ করুন",
+    "directMessages": "সরাসরি বার্তা",
+    "addTeammates": "সহকর্মী যোগ করুন",
+    "starredEmpty": "কোনো চ্যানেল বা কথোপকথন এখানে রাখতে সেটিকে তারকাচিহ্নিত করুন।",
+    "collapse": "{section} ভাঁজ করুন",
+    "expand": "{section} খুলুন"
+  },
+  "teammates": {
+    "title": "সরাসরি বার্তা",
+    "subtitle": "কথোপকথন খুঁজুন বা শুরু করুন",
+    "searchPlaceholder": "নাম দিয়ে খুঁজুন...",
+    "noUsers": "কোনো ব্যবহারকারী পাওয়া যায়নি",
+    "close": "বন্ধ করুন",
+    "pickSubtitle": "সর্বোচ্চ {max, plural, one {# জন} other {# জন}} বেছে নিন",
+    "select": "{name}-কে বেছে নিন",
+    "selectedCount": "{max}-এর মধ্যে {count} জন বেছে নেওয়া হয়েছে",
+    "start": "কথোপকথন শুরু করুন",
+    "startGroup": "গ্রুপ কথোপকথন শুরু করুন"
+  },
+  "you": "(আপনি)",
+  "notifications": {
+    "someone": "কেউ",
+    "sentAttachment": "একটি সংযুক্তি পাঠিয়েছেন",
+    "threadTitle": "{name} (থ্রেড)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# জন সদস্য} other {# জন সদস্য}}",
+    "createError": "গ্রুপ কথোপকথন শুরু করা যায়নি। আবার চেষ্টা করুন।"
+  },
+  "statusDialog": {
+    "title": "অবস্থা সেট করুন",
+    "emojiLabel": "একটি ইমোজি বেছে নিন",
+    "textLabel": "আপনার অবস্থা কী?",
+    "textPlaceholder": "আপনার অবস্থা কী?",
+    "durationLabel": "এর পরে মুছুন",
+    "duration": {
+      "never": "মুছবেন না",
+      "m30": "৩০ মিনিট",
+      "h1": "১ ঘণ্টা",
+      "h4": "৪ ঘণ্টা",
+      "today": "আজ",
+      "week": "এই সপ্তাহ"
+    },
+    "pauseCheckbox": "অবস্থা মুছে না যাওয়া পর্যন্ত বিজ্ঞপ্তি বিরতি দিন",
+    "save": "সংরক্ষণ করুন",
+    "clear": "অবস্থা মুছুন",
+    "cancel": "বাতিল",
+    "expiresAt": "{time}-এ মুছে যাবে",
+    "saveError": "আপনার অবস্থা সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"
+  },
+  "findConversation": "কথোপকথন খুঁজুন"
+}

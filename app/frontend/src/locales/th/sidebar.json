@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "กิจกรรม",
+    "unreads": "ยังไม่ได้อ่าน",
+    "later": "ภายหลัง",
+    "files": "ไฟล์",
+    "admin": "ผู้ดูแลระบบ",
+    "threads": "เธรด"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "ข้อความใหม่"
+  },
+  "userMenu": {
+    "profile": "โปรไฟล์",
+    "notificationsBlocked": "การแจ้งเตือนถูกบล็อก",
+    "disableNotifications": "ปิดการแจ้งเตือน",
+    "enableNotifications": "เปิดการแจ้งเตือน",
+    "signOut": "ออกจากระบบ",
+    "updateStatus": "อัปเดตสถานะของคุณ",
+    "pauseNotifications": "หยุดการแจ้งเตือนชั่วคราว",
+    "pausedUntil": "หยุดชั่วคราวจนถึง {time}",
+    "pausedIndefinitely": "หยุดชั่วคราวจนกว่าสถานะจะถูกล้าง",
+    "resumeNotifications": "เปิดการแจ้งเตือนอีกครั้ง",
+    "pause": {
+      "m30": "30 นาที",
+      "h1": "1 ชั่วโมง",
+      "h2": "2 ชั่วโมง",
+      "tomorrow": "จนถึงพรุ่งนี้"
+    },
+    "pauseError": "เปลี่ยนการหยุดการแจ้งเตือนไม่ได้ กรุณาลองอีกครั้ง",
+    "accessTokens": "โทเคนการเข้าถึงส่วนตัว",
+    "sessions": "อุปกรณ์ที่เข้าสู่ระบบ",
+    "twoFactor": "การยืนยันตัวตนสองขั้นตอน",
+    "changePassword": "เปลี่ยนรหัสผ่าน",
+    "connectedApps": "แอปที่เชื่อมต่อ"
+  },
+  "sections": {
+    "starred": "ที่ติดดาว",
+    "channels": "ช่อง",
+    "addChannels": "เพิ่มช่อง",
+    "directMessages": "ข้อความส่วนตัว",
+    "addTeammates": "เพิ่มเพื่อนร่วมงาน",
+    "starredEmpty": "ติดดาวช่องหรือการสนทนาเพื่อเก็บไว้ที่นี่",
+    "collapse": "ยุบ {section}",
+    "expand": "ขยาย {section}"
+  },
+  "teammates": {
+    "title": "ข้อความส่วนตัว",
+    "subtitle": "ค้นหาหรือเริ่มการสนทนา",
+    "searchPlaceholder": "ค้นหาตามชื่อ...",
+    "noUsers": "ไม่พบผู้ใช้",
+    "close": "ปิด",
+    "pickSubtitle": "เลือกได้สูงสุด {max, plural, other {# คน}}",
+    "select": "เลือก {name}",
+    "selectedCount": "เลือกแล้ว {count} จาก {max}",
+    "start": "เริ่มการสนทนา",
+    "startGroup": "เริ่มการสนทนากลุ่ม"
+  },
+  "you": "(คุณ)",
+  "notifications": {
+    "someone": "มีคนหนึ่ง",
+    "sentAttachment": "ส่งไฟล์แนบ",
+    "threadTitle": "{name} (เธรด)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# สมาชิก}}",
+    "createError": "เริ่มการสนทนากลุ่มไม่สำเร็จ กรุณาลองอีกครั้ง"
+  },
+  "statusDialog": {
+    "title": "ตั้งสถานะ",
+    "emojiLabel": "เลือกอีโมจิ",
+    "textLabel": "สถานะของคุณคืออะไร?",
+    "textPlaceholder": "สถานะของคุณคืออะไร?",
+    "durationLabel": "ล้างหลังจาก",
+    "duration": {
+      "never": "ไม่ล้าง",
+      "m30": "30 นาที",
+      "h1": "1 ชั่วโมง",
+      "h4": "4 ชั่วโมง",
+      "today": "วันนี้",
+      "week": "สัปดาห์นี้"
+    },
+    "pauseCheckbox": "หยุดการแจ้งเตือนชั่วคราวจนกว่าจะล้างสถานะ",
+    "save": "บันทึก",
+    "clear": "ล้างสถานะ",
+    "cancel": "ยกเลิก",
+    "expiresAt": "จะล้างเมื่อ {time}",
+    "saveError": "บันทึกสถานะไม่สำเร็จ กรุณาลองอีกครั้ง"
+  },
+  "findConversation": "ค้นหาการสนทนา"
+}
