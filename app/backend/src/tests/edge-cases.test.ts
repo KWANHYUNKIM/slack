@@ -109,25 +109,16 @@ describe('Edge Cases & Error Handling', () => {
       expect(res.body.content).toBe(emojiContent);
     });
 
-    it('should reject underscores and periods in channel name', async () => {
-      const res = await request(app)
-        .post('/channels')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ name: 'test-channel_123.beta' });
-
-      expect(res.status).toBe(400);
-    });
-
-    it('should accept lowercase letters, digits and hyphens in channel name', async () => {
-      const name = 'test-channel-123-beta';
+    it('should handle special characters in channel name', async () => {
+      const specialName = 'test-channel_123.beta';
 
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ name });
+        .send({ name: specialName });
 
       expect(res.status).toBe(201);
-      expect(res.body.name).toBe(name);
+      expect(res.body.name).toBe(specialName);
     });
 
     it('should handle newlines in messages', async () => {

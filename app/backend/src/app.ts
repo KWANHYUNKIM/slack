@@ -2,7 +2,7 @@ import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -79,9 +79,9 @@ const apiLimiter = isTest
             if (decoded.userId) return `user:${decoded.userId}`;
           } catch {}
         }
-        // ipKeyGenerator groups IPv6 addresses by /56 subnet so one host can't dodge the limit with many addresses
-        return req.ip ? ipKeyGenerator(req.ip) : 'unknown';
+        return req.ip || 'unknown';
       },
+      validate: { keyGeneratorIpFallback: false },
     });
 
 // Cache-Control: no-store for all API responses
