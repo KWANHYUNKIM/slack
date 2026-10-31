@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Hash, Menu } from 'lucide-react';
 import { useMobileStore } from '@/stores/useMobileStore';
@@ -163,7 +163,9 @@ export function MessageArea() {
           <div className="px-5 pb-4 pt-3 bg-white border-t border-slack-border">
             <div className="flex items-center justify-center gap-3 rounded-lg border border-slack-border p-4">
               <Hash className="h-4 w-4 text-slack-secondary" />
-              <span className="text-[15px] text-slack-secondary">{t('area.viewing', { channel: activeChannel.name })}</span>
+              <span className="text-[15px] text-slack-secondary">
+                <Trans t={t} i18nKey="area.viewing" values={{ channel: activeChannel.name }} components={{ bold: <strong /> }} />
+              </span>
               <button
                 onClick={async () => { await joinChannel(activeChannelId!); await fetchChannels(); }}
                 className="rounded bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover"

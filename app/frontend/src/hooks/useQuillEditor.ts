@@ -9,6 +9,7 @@ import { useEmojiData } from '@/lib/emoji/emojiData';
 import { buildEmojiIndex, buildEmojiMap } from '@/lib/emoji/emojiLookup';
 import type { EmojiOption } from '@/components/Messages/EmojiAutocomplete';
 import { t } from '@/lib/i18n';
+import { syncQuillPlaceholder } from '@/lib/quillPlaceholder';
 
 // Register a custom mention embed blot so @mentions are distinct from plain text
 class MentionBlot extends Embed {
@@ -505,10 +506,10 @@ export function useQuillEditor({
     quillRef.current = quill;
   }, [placeholder, testId, enableInlineCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update placeholder when it changes
+  // 언어가 바뀌면 placeholder 문구가 바뀌므로 data-placeholder를 다시 쓴다(Quill은 생성 때만 읽는다)
   useEffect(() => {
     if (quillRef.current) {
-      quillRef.current.root.dataset.placeholder = placeholder;
+      syncQuillPlaceholder(quillRef.current.root, placeholder);
     }
   }, [placeholder]);
 

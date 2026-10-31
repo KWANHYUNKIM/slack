@@ -37,6 +37,14 @@
     "micDenied": "Microphone access denied",
     "busy": "They are in another huddle",
     "declined": "Invite was declined",
-    "expired": "Invite expired"
+    "expired": "Invite expired",
+    "rateLimited": "Too many requests. Try again in a moment",
+    "invalidInvite": "The invite request was invalid",
+    "cannotInviteSelf": "You cannot invite yourself",
+    "userNotFound": "User not found",
+    "invalidAccept": "The accept request was invalid",
+    "inviteNotFound": "Invite not found or expired",
+    "peerOffline": "They are offline",
+    "generic": "Couldn't start the huddle. Please try again"
   }
 }

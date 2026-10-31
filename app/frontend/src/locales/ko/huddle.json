@@ -37,6 +37,14 @@
     "micDenied": "마이크 사용 권한이 거부되었습니다",
     "busy": "상대방이 다른 허들에 참여 중입니다",
     "declined": "초대가 거절되었습니다",
-    "expired": "초대가 만료되었습니다"
+    "expired": "초대가 만료되었습니다",
+    "rateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요",
+    "invalidInvite": "초대 요청이 올바르지 않습니다",
+    "cannotInviteSelf": "자기 자신은 초대할 수 없습니다",
+    "userNotFound": "사용자를 찾을 수 없습니다",
+    "invalidAccept": "수락 요청이 올바르지 않습니다",
+    "inviteNotFound": "초대를 찾을 수 없거나 만료되었습니다",
+    "peerOffline": "상대방이 오프라인입니다",
+    "generic": "허들을 시작하지 못했습니다. 다시 시도해 주세요"
   }
 }
