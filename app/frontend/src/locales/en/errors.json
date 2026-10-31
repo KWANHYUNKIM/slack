@@ -48,6 +48,7 @@
     "INVALID_LOCALE": "The language setting is not valid.",
     "INVALID_TIME_ZONE": "The time zone is not valid.",
     "INVALID_FILE_IDS": "Some attached files are not valid.",
+    "FILE_ATTACHED_TO_DELETED": "This file belongs to a deleted message and cannot be deleted.",
     "TOKEN_LIMIT_REACHED": "You have reached the limit for access tokens. Delete one first.",
     "PAYLOAD_TOO_LARGE": "The request is too large.",
     "UNSUPPORTED_MEDIA_TYPE": "This content type is not supported.",

@@ -1,6 +1,6 @@
 import type { DirectMessage } from '@prisma/client';
 import prisma from '../db.js';
-import { attachableFiles } from './fileAttach.js';
+import { attachableFiles, uniqueFileIds } from './fileAttach.js';
 import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { checkDmGroupMembership } from '../middleware/authorize.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
@@ -82,7 +82,7 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
         where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+      if (updated.count !== uniqueFileIds(fileIds).length) throw new InvalidFileIdsError();
     }
 
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
@@ -139,7 +139,7 @@ export async function sendDirectReply(sender: DmSender, parentDm: DirectMessage,
         where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+      if (updated.count !== uniqueFileIds(fileIds).length) throw new InvalidFileIdsError();
     }
 
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });

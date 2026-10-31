@@ -1,4 +1,6 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import fs from 'fs';
+import path from 'path';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
@@ -136,5 +138,78 @@ describe('Detached attachments on soft delete', () => {
     expect(r.files).toBeGreaterThanOrEqual(1);
     expect(await prisma.file.findUnique({ where: { id: file.id } })).toBeNull();
     await setWorkspaceRetentionDays(null);
+  });
+  const OLD = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+  it('attaches a file even when its id is sent twice', async () => {
+    const file = await mkFile(aliceId, 'dup');
+    const sent = await request(app).post('/dms').set(auth(aliceToken)).send({ toUserId: bobId, content: 'dup', fileIds: [file.id, file.id] }).expect(201);
+    expect(sent.body.files).toHaveLength(1);
+    const f2 = await mkFile(aliceId, 'dup2');
+    await request(app).post('/dms').set(auth(aliceToken)).send({ toUserId: bobId, content: 'dup', fileIds: [f2.id, f2.id, 999999] }).expect(400);
+  });
+
+  it('hides detached files from GET /files and refuses deleting them (even for the uploader)', async () => {
+    const file = await mkFile(aliceId, 'list');
+    const sent = await request(app).post('/dms').set(auth(aliceToken)).send({ toUserId: bobId, content: 'list', fileIds: [file.id] }).expect(201);
+    await request(app).delete(`/dms/messages/${sent.body.id}`).set(auth(aliceToken)).expect(200);
+    expect((await request(app).get('/files').set(auth(aliceToken)).expect(200)).body.some((x: { id: number }) => x.id === file.id)).toBe(false);
+
+    // 보존 대상자가 DM을 지운 뒤 파일을 지우려 해도 거부되고 파일이 남는다
+    await prisma.user.update({ where: { id: aliceId }, data: { legalHold: true } });
+    const del = await request(app).delete(`/files/${file.id}`).set(auth(aliceToken));
+    await prisma.user.update({ where: { id: aliceId }, data: { legalHold: false } });
+    expect(del.status).toBe(400);
+    expect(del.body.code).toBe('FILE_ATTACHED_TO_DELETED');
+    expect(await prisma.file.findUnique({ where: { id: file.id } })).not.toBeNull();
+    // 일반 미첨부 파일은 여전히 지울 수 있다
+    const plain = await mkFile(aliceId, 'plain');
+    await request(app).delete(`/files/${plain.id}`).set(auth(aliceToken)).expect(200);
+  });
+
+  it('keeps detached files whose original DM recipient or channel is under legal hold, and purges them after release', async () => {
+    await setWorkspaceRetentionDays(30);
+    const dmFile = await mkFile(aliceId, 'hold-dm', OLD);
+    const dm = await request(app).post('/dms').set(auth(aliceToken)).send({ toUserId: bobId, content: 'x', fileIds: [dmFile.id] }).expect(201);
+    await request(app).delete(`/dms/messages/${dm.body.id}`).set(auth(aliceToken)).expect(200);
+    const ch = await prisma.channel.create({ data: { name: 'fd-hold-chan', createdBy: aliceId, legalHold: true } });
+    await prisma.channelMember.create({ data: { userId: aliceId, channelId: ch.id } });
+    const chFile = await mkFile(aliceId, 'hold-ch', OLD);
+    const msg = await request(app).post(`/channels/${ch.id}/messages`).set(auth(aliceToken)).send({ content: 'x', fileIds: [chFile.id] }).expect(201);
+    await request(app).delete(`/messages/${msg.body.id}`).set(auth(aliceToken)).expect(200);
+    const freeFile = await mkFile(aliceId, 'free-orphan', OLD);
+
+    await prisma.user.update({ where: { id: bobId }, data: { legalHold: true } });
+    await purgeExpiredMessages();
+    expect(await prisma.file.findUnique({ where: { id: dmFile.id } })).not.toBeNull();
+    expect(await prisma.file.findUnique({ where: { id: chFile.id } })).not.toBeNull();
+    expect(await prisma.file.findUnique({ where: { id: freeFile.id } })).toBeNull();
+
+    // 받는 사람만 풀어도 채널 보존이 남아 있으면 채널 파일은 남는다
+    await prisma.user.update({ where: { id: bobId }, data: { legalHold: false } });
+    await purgeExpiredMessages();
+    expect(await prisma.file.findUnique({ where: { id: dmFile.id } })).toBeNull();
+    expect(await prisma.file.findUnique({ where: { id: chFile.id } })).not.toBeNull();
+    await prisma.channel.update({ where: { id: ch.id }, data: { legalHold: false } });
+    await purgeExpiredMessages();
+    expect(await prisma.file.findUnique({ where: { id: chFile.id } })).toBeNull();
+    await setWorkspaceRetentionDays(null);
+  });
+
+  it('backfill migration detaches files of already soft-deleted DMs only', async () => {
+    const deletedDm = await prisma.directMessage.create({ data: { content: 'old gone', fromUserId: aliceId, toUserId: bobId, deletedAt: new Date() } });
+    const liveDm = await prisma.directMessage.create({ data: { content: 'live', fromUserId: aliceId, toUserId: bobId } });
+    const a = await mkFile(aliceId, 'bf-gone');
+    const b = await mkFile(aliceId, 'bf-live');
+    await prisma.file.update({ where: { id: a.id }, data: { dmId: deletedDm.id } });
+    await prisma.file.update({ where: { id: b.id }, data: { dmId: liveDm.id } });
+
+    const sql = fs.readFileSync(path.resolve('prisma/migrations/20261101100000_backfill_detached_dm_files/migration.sql'), 'utf8');
+    await prisma.$executeRawUnsafe(sql);
+    expect(await prisma.file.findUniqueOrThrow({ where: { id: a.id } })).toMatchObject({ dmId: null, detachedFromDmId: deletedDm.id });
+    expect(await prisma.file.findUniqueOrThrow({ where: { id: b.id } })).toMatchObject({ dmId: liveDm.id, detachedFromDmId: null });
+    // 다시 실행해도 같다
+    await prisma.$executeRawUnsafe(sql);
+    expect(await prisma.file.findUniqueOrThrow({ where: { id: a.id } })).toMatchObject({ dmId: null, detachedFromDmId: deletedDm.id });
   });
 });
