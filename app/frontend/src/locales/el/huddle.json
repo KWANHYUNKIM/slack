@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(σε σίγαση)",
+    "mute": "Σίγαση",
+    "unmute": "Κατάργηση σίγασης",
+    "leave": "Αποχώρηση από το huddle"
+  },
+  "button": {
+    "leaveFirstError": "Αποχωρήστε πρώτα από το τρέχον huddle",
+    "cancelInviteFirstError": "Ακυρώστε πρώτα την τρέχουσα πρόσκληση",
+    "cancelInvite": "Ακύρωση πρόσκλησης",
+    "calling": "Κλήση...",
+    "inHuddle": "Σε huddle",
+    "leaveCurrentFirst": "Αποχωρήστε πρώτα από το τρέχον huddle",
+    "start": "Έναρξη huddle"
+  },
+  "incoming": {
+    "invite": "Πρόσκληση huddle",
+    "secondsLeft": "{count} δλ",
+    "decline": "Απόρριψη",
+    "accept": "Αποδοχή"
+  },
+  "system": {
+    "youStarted": "Ξεκινήσατε ένα huddle.",
+    "started": "Ξεκίνησε ένα huddle.",
+    "ended": "Τέλος",
+    "youSentInvite": "Στείλατε μια πρόσκληση huddle.",
+    "sentInvite": "Σας έστειλε μια πρόσκληση huddle.",
+    "huddleStarted": "Το huddle ξεκίνησε",
+    "huddleEnded": "Το huddle τελείωσε ({duration})",
+    "durationSeconds": "{seconds} δλ",
+    "durationMinutesSeconds": "{minutes} λ {seconds} δλ"
+  },
+  "errors": {
+    "leaveFirst": "Αποχωρήστε πρώτα από το τρέχον huddle",
+    "cancelInviteFirst": "Ακυρώστε πρώτα την τρέχουσα πρόσκληση",
+    "micDenied": "Η πρόσβαση στο μικρόφωνο απορρίφθηκε",
+    "busy": "Ο/Η άλλος/η είναι σε άλλο huddle",
+    "declined": "Η πρόσκληση απορρίφθηκε",
+    "expired": "Η πρόσκληση έληξε",
+    "rateLimited": "Πολλά αιτήματα. Δοκιμάστε ξανά σε λίγο",
+    "invalidInvite": "Το αίτημα πρόσκλησης δεν ήταν έγκυρο",
+    "cannotInviteSelf": "Δεν μπορείτε να προσκαλέσετε τον εαυτό σας",
+    "userNotFound": "Ο χρήστης δεν βρέθηκε",
+    "invalidAccept": "Το αίτημα αποδοχής δεν ήταν έγκυρο",
+    "inviteNotFound": "Η πρόσκληση δεν βρέθηκε ή έχει λήξει",
+    "peerOffline": "Είναι εκτός σύνδεσης",
+    "generic": "Δεν ήταν δυνατή η έναρξη του huddle. Δοκιμάστε ξανά"
+  }
+}

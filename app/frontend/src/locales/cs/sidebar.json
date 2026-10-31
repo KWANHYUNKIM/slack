@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktivita",
+    "unreads": "Nepřečtené",
+    "later": "Později",
+    "files": "Soubory",
+    "admin": "Správa",
+    "threads": "Vlákna"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nová zpráva"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Oznámení jsou zablokována",
+    "disableNotifications": "Vypnout oznámení",
+    "enableNotifications": "Zapnout oznámení",
+    "signOut": "Odhlásit se",
+    "updateStatus": "Upravit váš stav",
+    "pauseNotifications": "Pozastavit oznámení",
+    "pausedUntil": "Pozastaveno do {time}",
+    "pausedIndefinitely": "Pozastaveno, dokud se stav nevymaže",
+    "resumeNotifications": "Obnovit oznámení",
+    "pause": {
+      "m30": "30 minut",
+      "h1": "1 hodina",
+      "h2": "2 hodiny",
+      "tomorrow": "Do zítřka"
+    },
+    "pauseError": "Pozastavení oznámení se nepodařilo změnit. Zkuste to znovu.",
+    "accessTokens": "Osobní přístupové tokeny",
+    "sessions": "Přihlášená zařízení",
+    "twoFactor": "Dvoufázové ověření",
+    "changePassword": "Změnit heslo",
+    "connectedApps": "Připojené aplikace"
+  },
+  "sections": {
+    "starred": "Oblíbené",
+    "channels": "Kanály",
+    "addChannels": "Přidat kanály",
+    "directMessages": "Přímé zprávy",
+    "addTeammates": "Přidat kolegy",
+    "starredEmpty": "Označte kanál nebo konverzaci hvězdičkou, aby zůstala zde.",
+    "collapse": "Sbalit {section}",
+    "expand": "Rozbalit {section}"
+  },
+  "teammates": {
+    "title": "Přímá zpráva",
+    "subtitle": "Najděte nebo zahajte konverzaci",
+    "searchPlaceholder": "Hledat podle jména...",
+    "noUsers": "Nebyli nalezeni žádní uživatelé",
+    "close": "Zavřít",
+    "pickSubtitle": "Vyberte až {max, plural, one {# osobu} few {# osoby} many {# osoby} other {# osob}}",
+    "select": "Vybrat {name}",
+    "selectedCount": "Vybráno: {count} z {max}",
+    "start": "Zahájit konverzaci",
+    "startGroup": "Zahájit skupinovou konverzaci"
+  },
+  "you": "(vy)",
+  "notifications": {
+    "someone": "Někdo",
+    "sentAttachment": "Odeslal(a) přílohu",
+    "threadTitle": "{name} (vlákno)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# člen} few {# členové} many {# člena} other {# členů}}",
+    "createError": "Skupinovou konverzaci se nepodařilo zahájit. Zkuste to znovu."
+  },
+  "statusDialog": {
+    "title": "Nastavit stav",
+    "emojiLabel": "Vyberte emotikon",
+    "textLabel": "Jaký je váš stav?",
+    "textPlaceholder": "Jaký je váš stav?",
+    "durationLabel": "Vymazat po",
+    "duration": {
+      "never": "Nemazat",
+      "m30": "30 minut",
+      "h1": "1 hodina",
+      "h4": "4 hodiny",
+      "today": "Dnes",
+      "week": "Tento týden"
+    },
+    "pauseCheckbox": "Pozastavit oznámení, dokud se stav nevymaže",
+    "save": "Uložit",
+    "clear": "Vymazat stav",
+    "cancel": "Zrušit",
+    "expiresAt": "Vymaže se v {time}",
+    "saveError": "Stav se nepodařilo uložit. Zkuste to znovu."
+  },
+  "findConversation": "Najít konverzaci"
+}

@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(némítva)",
+    "mute": "Némítás",
+    "unmute": "Némítás feloldása",
+    "leave": "Kilépés a huddle-ből"
+  },
+  "button": {
+    "leaveFirstError": "Előbb lépjen ki a jelenlegi huddle-ből",
+    "cancelInviteFirstError": "Előbb vonja vissza a jelenlegi meghívását",
+    "cancelInvite": "Meghívás visszavonása",
+    "calling": "Hívás...",
+    "inHuddle": "Huddle-ben",
+    "leaveCurrentFirst": "Előbb lépjen ki a jelenlegi huddle-ből",
+    "start": "Huddle indítása"
+  },
+  "incoming": {
+    "invite": "Huddle-meghívó",
+    "secondsLeft": "{count} mp",
+    "decline": "Elutasítás",
+    "accept": "Elfogadás"
+  },
+  "system": {
+    "youStarted": "Ön huddle-t indított.",
+    "started": "Huddle-t indított.",
+    "ended": "Befejeződött",
+    "youSentInvite": "Huddle-meghívót küldött.",
+    "sentInvite": "Huddle-meghívót küldött Önnek.",
+    "huddleStarted": "A huddle elindult",
+    "huddleEnded": "A huddle véget ért ({duration})",
+    "durationSeconds": "{seconds} mp",
+    "durationMinutesSeconds": "{minutes} p {seconds} mp"
+  },
+  "errors": {
+    "leaveFirst": "Előbb lépjen ki a jelenlegi huddle-ből",
+    "cancelInviteFirst": "Előbb vonja vissza a jelenlegi meghívását",
+    "micDenied": "A mikrofon-hozzáférés megtagadva",
+    "busy": "A másik fél egy másik huddle-ben van",
+    "declined": "A meghívást elutasították",
+    "expired": "A meghívó lejárt",
+    "rateLimited": "Túl sok kérés. Próbálja újra kis idő múlva",
+    "invalidInvite": "A meghívási kérés érvénytelen volt",
+    "cannotInviteSelf": "Nem hívhatja meg saját magát",
+    "userNotFound": "A felhasználó nem található",
+    "invalidAccept": "Az elfogadási kérés érvénytelen volt",
+    "inviteNotFound": "A meghívó nem található, vagy lejárt",
+    "peerOffline": "A másik fél offline",
+    "generic": "A huddle-t nem sikerült elindítani. Próbálja újra"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Δραστηριότητα",
+    "unreads": "Μη αναγνωσμένα",
+    "later": "Αργότερα",
+    "files": "Αρχεία",
+    "admin": "Διαχείριση",
+    "threads": "Νήματα"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Νέο μήνυμα"
+  },
+  "userMenu": {
+    "profile": "Προφίλ",
+    "notificationsBlocked": "Οι ειδοποιήσεις έχουν αποκλειστεί",
+    "disableNotifications": "Απενεργοποίηση ειδοποιήσεων",
+    "enableNotifications": "Ενεργοποίηση ειδοποιήσεων",
+    "signOut": "Αποσύνδεση",
+    "updateStatus": "Ενημέρωση της κατάστασής σας",
+    "pauseNotifications": "Παύση ειδοποιήσεων",
+    "pausedUntil": "Σε παύση έως τις {time}",
+    "pausedIndefinitely": "Σε παύση έως ότου διαγραφεί η κατάστασή σας",
+    "resumeNotifications": "Συνέχιση ειδοποιήσεων",
+    "pause": {
+      "m30": "30 λεπτά",
+      "h1": "1 ώρα",
+      "h2": "2 ώρες",
+      "tomorrow": "Έως αύριο"
+    },
+    "pauseError": "Η παύση των ειδοποιήσεων δεν μπόρεσε να αλλάξει. Δοκιμάστε ξανά.",
+    "accessTokens": "Προσωπικά διακριτικά πρόσβασης",
+    "sessions": "Συνδεδεμένες συσκευές",
+    "twoFactor": "Επαλήθευση δύο παραγόντων",
+    "changePassword": "Αλλαγή κωδικού πρόσβασης",
+    "connectedApps": "Συνδεδεμένες εφαρμογές"
+  },
+  "sections": {
+    "starred": "Με αστέρι",
+    "channels": "Κανάλια",
+    "addChannels": "Προσθήκη καναλιών",
+    "directMessages": "Άμεσα μηνύματα",
+    "addTeammates": "Προσθήκη συνεργατών",
+    "starredEmpty": "Βάλτε αστέρι σε ένα κανάλι ή μια συνομιλία για να εμφανίζεται εδώ.",
+    "collapse": "Σύμπτυξη {section}",
+    "expand": "Ανάπτυξη {section}"
+  },
+  "teammates": {
+    "title": "Άμεσο μήνυμα",
+    "subtitle": "Βρείτε ή ξεκινήστε μια συνομιλία",
+    "searchPlaceholder": "Αναζήτηση με όνομα...",
+    "noUsers": "Δεν βρέθηκαν χρήστες",
+    "close": "Κλείσιμο",
+    "pickSubtitle": "Επιλέξτε έως {max, plural, one {# άτομο} other {# άτομα}}",
+    "select": "Επιλογή του/της {name}",
+    "selectedCount": "Επιλέχθηκαν {count} από {max}",
+    "start": "Έναρξη συνομιλίας",
+    "startGroup": "Έναρξη ομαδικής συνομιλίας"
+  },
+  "you": "(εσείς)",
+  "notifications": {
+    "someone": "Κάποιος",
+    "sentAttachment": "Έστειλε ένα συνημμένο",
+    "threadTitle": "{name} (νήμα)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# μέλος} other {# μέλη}}",
+    "createError": "Δεν ήταν δυνατή η έναρξη της ομαδικής συνομιλίας. Δοκιμάστε ξανά."
+  },
+  "statusDialog": {
+    "title": "Ορισμός κατάστασης",
+    "emojiLabel": "Επιλέξτε emoji",
+    "textLabel": "Ποια είναι η κατάστασή σας;",
+    "textPlaceholder": "Ποια είναι η κατάστασή σας;",
+    "durationLabel": "Εκκαθάριση μετά από",
+    "duration": {
+      "never": "Χωρίς εκκαθάριση",
+      "m30": "30 λεπτά",
+      "h1": "1 ώρα",
+      "h4": "4 ώρες",
+      "today": "Σήμερα",
+      "week": "Αυτή την εβδομάδα"
+    },
+    "pauseCheckbox": "Παύση ειδοποιήσεων έως ότου διαγραφεί η κατάσταση",
+    "save": "Αποθήκευση",
+    "clear": "Εκκαθάριση κατάστασης",
+    "cancel": "Ακύρωση",
+    "expiresAt": "Εκκαθάριση στις {time}",
+    "saveError": "Η κατάστασή σας δεν μπόρεσε να αποθηκευτεί. Δοκιμάστε ξανά."
+  },
+  "findConversation": "Εύρεση συνομιλίας"
+}

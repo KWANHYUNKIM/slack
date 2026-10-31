@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Tevékenység",
+    "markAllRead": "Összes megjelölése olvasottként",
+    "loading": "Betöltés...",
+    "loadingMore": "További betöltése...",
+    "loadFailed": "A tevékenységet nem sikerült betölteni.",
+    "empty": "Még nincs tevékenység.",
+    "unread": "Olvasatlan",
+    "menu": "Menü",
+    "someone": "Valaki",
+    "directMessage": "egy közvetlen üzenet",
+    "messageDeleted": "Törölt üzenet"
+  },
+  "tabs": {
+    "all": "Mind",
+    "mentions": "Megemlítések",
+    "threads": "Szálak",
+    "reactions": "Reakciók"
+  },
+  "describe": {
+    "mention": "{actor} megemlített téged ebben: {where}",
+    "channelMention": "{actor} megemlítette a @channel-t ebben: {where}",
+    "hereMention": "{actor} megemlítette a @here-t ebben: {where}",
+    "threadReply": "{actor} válaszolt egy szálra ebben: {where}",
+    "reaction": "{actor} {emoji} reakciót adott az üzenetedre ebben: {where}",
+    "reminder": "Emlékeztető"
+  }
+}

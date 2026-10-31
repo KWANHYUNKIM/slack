@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Activitate",
+    "markAllRead": "Marchează tot ca citit",
+    "loading": "Se încarcă...",
+    "loadingMore": "Se încarcă mai multe...",
+    "loadFailed": "Activitatea nu a putut fi încărcată.",
+    "empty": "Nicio activitate încă.",
+    "unread": "Necitit",
+    "menu": "Meniu",
+    "someone": "Cineva",
+    "directMessage": "un mesaj direct",
+    "messageDeleted": "Mesaj șters"
+  },
+  "tabs": {
+    "all": "Toate",
+    "mentions": "Mențiuni",
+    "threads": "Fire",
+    "reactions": "Reacții"
+  },
+  "describe": {
+    "mention": "{actor} te-a menționat în {where}",
+    "channelMention": "{actor} a menționat @channel în {where}",
+    "hereMention": "{actor} a menționat @here în {where}",
+    "threadReply": "{actor} a răspuns la un fir de discuție în {where}",
+    "reaction": "{actor} a reacționat cu {emoji} la mesajul tău din {where}",
+    "reminder": "Memento"
+  }
+}

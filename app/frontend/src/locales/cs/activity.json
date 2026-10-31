@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Aktivita",
+    "markAllRead": "Označit vše jako přečtené",
+    "loading": "Načítání...",
+    "loadingMore": "Načítání dalších...",
+    "loadFailed": "Aktivitu se nepodařilo načíst.",
+    "empty": "Zatím žádná aktivita.",
+    "unread": "Nepřečtené",
+    "menu": "Nabídka",
+    "someone": "Někdo",
+    "directMessage": "přímá zpráva",
+    "messageDeleted": "Smazaná zpráva"
+  },
+  "tabs": {
+    "all": "Vše",
+    "mentions": "Zmínky",
+    "threads": "Vlákna",
+    "reactions": "Reakce"
+  },
+  "describe": {
+    "mention": "{actor} vás zmínil v {where}",
+    "channelMention": "{actor} zmínil @channel v {where}",
+    "hereMention": "{actor} zmínil @here v {where}",
+    "threadReply": "{actor} odpověděl ve vlákně v {where}",
+    "reaction": "{actor} zareagoval na vaši zprávu emotikonem {emoji} v {where}",
+    "reminder": "Připomenutí"
+  }
+}

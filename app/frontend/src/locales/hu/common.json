@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "delete": "Törlés",
+    "edit": "Szerkesztés",
+    "close": "Bezárás",
+    "send": "Küldés",
+    "confirm": "Megerősítés",
+    "back": "Vissza",
+    "remove": "Eltávolítás",
+    "add": "Hozzáadás",
+    "create": "Létrehozás",
+    "retry": "Újrapróbálkozás",
+    "search": "Keresés",
+    "copy": "Másolás",
+    "done": "Kész",
+    "next": "Tovább",
+    "more": "Több"
+  },
+  "emojiPicker": {
+    "loadFailed": "Az emodzsikat nem sikerült betölteni. Ellenőrizze a kapcsolatot, és próbálja újra.",
+    "retry": "Újrapróbálkozás"
+  },
+  "status": {
+    "loading": "Betöltés...",
+    "saving": "Mentés...",
+    "deleting": "Törlés..."
+  },
+  "dates": {
+    "today": "Ma",
+    "yesterday": "Tegnap"
+  },
+  "quickSwitcher": {
+    "title": "Gyorsváltó",
+    "inputLabel": "Ugrás beszélgetésre",
+    "placeholder": "Ugrás csatornára vagy beszélgetésre",
+    "recent": "Legutóbbiak",
+    "results": "Találatok",
+    "clearRecent": "Legutóbbiak törlése",
+    "listLabel": "Beszélgetések",
+    "noResults": "Nincs megfelelő beszélgetés",
+    "starred": "Csillagozott",
+    "unread": "Olvasatlan",
+    "dnd": "Ne zavarjanak",
+    "footer": "{keys} a megnyitáshoz. Mozgás a fel és le nyilakkal, Enter a megnyitáshoz, Esc a bezáráshoz.",
+    "open": "Ugrás ide…",
+    "kind": {
+      "channel": "Csatorna",
+      "dm": "Közvetlen üzenet",
+      "group": "Csoportos üzenet"
+    }
+  },
+  "shortcuts": {
+    "title": "Billentyűparancsok",
+    "groups": {
+      "navigation": "Navigáció",
+      "general": "Általános"
+    },
+    "items": {
+      "switcher": "Gyorsváltó megnyitása",
+      "prevChannel": "Előző beszélgetés",
+      "nextChannel": "Következő beszélgetés",
+      "prevUnread": "Előző olvasatlan beszélgetés",
+      "nextUnread": "Következő olvasatlan beszélgetés",
+      "help": "Billentyűparancsok megjelenítése",
+      "closeTop": "A gyorsváltó vagy ez a párbeszédablak bezárása"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Munkaterület"
+  },
+  "organization": {
+    "defaultName": "Szervezet"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Creează un canal",
+    "tabBrowse": "Răsfoiește canalele",
+    "nameLabel": "Nume canal",
+    "namePlaceholder": "de ex. plan-buget",
+    "visibility": "Vizibilitate",
+    "public": "Public",
+    "private": "Privat",
+    "publicHint": "Oricine din spațiul de lucru poate găsi și se poate alătura acestui canal.",
+    "privateHint": "Doar membrii invitați pot găsi și se pot alătura acestui canal.",
+    "cancel": "Anulează",
+    "create": "Creează",
+    "noChannels": "Nu există canale disponibile la care să te alături",
+    "memberCount": "{count, plural, one {# membru} few {# membri} other {# de membri}}",
+    "joined": "Alăturat",
+    "join": "Alătură-te",
+    "close": "Închide",
+    "errors": {
+      "createFailed": "Canalul nu a putut fi creat"
+    }
+  },
+  "errors": {
+    "loadConversations": "Conversațiile nu au putut fi încărcate.",
+    "loadChannels": "Canalele nu au putut fi încărcate."
+  },
+  "membersPanel": {
+    "title": "Membri",
+    "addPeople": "Adaugă persoane",
+    "loadError": "Membrii nu au putut fi încărcați.",
+    "removeError": "Membrul nu a putut fi eliminat",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Elimini membrul?",
+      "message": "Elimini pe <bold>{name}</bold> din acest canal?"
+    },
+    "removing": "Se elimină...",
+    "searchByName": "Caută după nume...",
+    "noUsers": "Nu s-au găsit utilizatori",
+    "roles": {
+      "owner": "Proprietar",
+      "moderator": "Moderator"
+    },
+    "removeMember": "Elimină membrul"
+  },
+  "dm": {
+    "messagePlaceholder": "Mesaj pentru {name}",
+    "you": "(tu)",
+    "star": "Adaugă la marcate cu stea",
+    "unstar": "Elimină din marcate cu stea",
+    "loadingMessages": "Se încarcă mesajele...",
+    "selfSpace": "Acesta este spațiul tău. Scrie ciorne, fă listă cu sarcinile sau păstrează la îndemână linkuri și fișiere.",
+    "conversationStart": "Începutul conversației tale cu {name}",
+    "sendToBegin": "Trimite un mesaj pentru a începe.",
+    "edited": "(editat)",
+    "pinnedMessages": "Mesaje fixate",
+    "noPins": "Încă nu există mesaje fixate",
+    "files": "Fișiere",
+    "noFiles": "Încă nu au fost partajate fișiere",
+    "loadError": "Mesajele nu au putut fi încărcate.",
+    "sendError": "Mesajul nu a putut fi trimis. Încearcă din nou."
+  },
+  "nameRules": {
+    "required": "Introdu un nume de canal.",
+    "tooLong": "Numele canalului poate avea cel mult {max} caractere.",
+    "invalidChars": "Numele canalelor pot conține doar litere, cifre, cratime și liniuțe de subliniere și trebuie să înceapă cu o literă sau o cifră.",
+    "tooManyMarks": "Numele canalului nu poate avea mai mult de 4 semne diacritice combinate unul după altul.",
+    "mixedScripts": "Numele canalului nu poate combina alfabete care arată asemănător (de exemplu latină cu chirilică sau greacă) și nici cifre din alt sistem de numerație.",
+    "taken": "Există deja un canal cu acest nume."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# membru} few {# membri} other {# de membri}}",
+    "nameLabel": "Nume conversație",
+    "namePlaceholder": "Adaugă un nume",
+    "noName": "Fără nume (se afișează numele membrilor)",
+    "rename": "Redenumește conversația",
+    "addPeople": "Adaugă persoane",
+    "add": "Adaugă",
+    "createWith": "Începe o conversație de grup",
+    "leave": "Părăsește conversația",
+    "leaveConfirm": "Părăsești această conversație? Nu vei mai vedea mesajele ei.",
+    "conversationStart": "Acesta este începutul conversației tale cu {names}",
+    "addError": "Persoanele nu au putut fi adăugate. Încearcă din nou.",
+    "renameError": "Conversația nu a putut fi redenumită. Încearcă din nou.",
+    "leaveError": "Nu te-ai putut retrage din conversație. Încearcă din nou."
+  }
+}

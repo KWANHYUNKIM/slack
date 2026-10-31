@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "close": "Sulje",
+    "send": "Lähetä",
+    "confirm": "Vahvista",
+    "back": "Takaisin",
+    "remove": "Poista",
+    "add": "Lisää",
+    "create": "Luo",
+    "retry": "Yritä uudelleen",
+    "search": "Hae",
+    "copy": "Kopioi",
+    "done": "Valmis",
+    "next": "Seuraava",
+    "more": "Lisää"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emojien lataaminen ei onnistunut. Tarkista yhteys ja yritä uudelleen.",
+    "retry": "Yritä uudelleen"
+  },
+  "status": {
+    "loading": "Ladataan...",
+    "saving": "Tallennetaan...",
+    "deleting": "Poistetaan..."
+  },
+  "dates": {
+    "today": "Tänään",
+    "yesterday": "Eilen"
+  },
+  "quickSwitcher": {
+    "title": "Pikavaihtaja",
+    "inputLabel": "Siirry keskusteluun",
+    "placeholder": "Siirry kanavaan tai keskusteluun",
+    "recent": "Viimeisimmät",
+    "results": "Tulokset",
+    "clearRecent": "Tyhjennä viimeisimmät",
+    "listLabel": "Keskustelut",
+    "noResults": "Vastaavia keskusteluja ei löytynyt",
+    "starred": "Tähdellä merkityt",
+    "unread": "Lukematon",
+    "dnd": "Älä häiritse",
+    "footer": "{keys} avaa. Siirry nuolinäppäimillä ylös ja alas, Enter avaa, Esc sulkee.",
+    "open": "Siirry…",
+    "kind": {
+      "channel": "Kanava",
+      "dm": "Yksityisviesti",
+      "group": "Ryhmäviesti"
+    }
+  },
+  "shortcuts": {
+    "title": "Pikanäppäimet",
+    "groups": {
+      "navigation": "Siirtyminen",
+      "general": "Yleiset"
+    },
+    "items": {
+      "switcher": "Avaa pikavaihtaja",
+      "prevChannel": "Edellinen keskustelu",
+      "nextChannel": "Seuraava keskustelu",
+      "prevUnread": "Edellinen lukematon keskustelu",
+      "nextUnread": "Seuraava lukematon keskustelu",
+      "help": "Näytä pikanäppäimet",
+      "closeTop": "Sulje pikavaihtaja tai tämä ikkuna"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Työtila"
+  },
+  "organization": {
+    "defaultName": "Organisaatio"
+  }
+}

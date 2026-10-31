@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Toiminta",
+    "unreads": "Lukemattomat",
+    "later": "Myöhemmin",
+    "files": "Tiedostot",
+    "admin": "Ylläpito",
+    "threads": "Ketjut"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Uusi viesti"
+  },
+  "userMenu": {
+    "profile": "Profiili",
+    "notificationsBlocked": "Ilmoitukset estetty",
+    "disableNotifications": "Poista ilmoitukset käytöstä",
+    "enableNotifications": "Ota ilmoitukset käyttöön",
+    "signOut": "Kirjaudu ulos",
+    "updateStatus": "Päivitä tilasi",
+    "pauseNotifications": "Keskeytä ilmoitukset",
+    "pausedUntil": "Keskeytetty klo {time} asti",
+    "pausedIndefinitely": "Keskeytetty, kunnes tilasi tyhjennetään",
+    "resumeNotifications": "Jatka ilmoituksia",
+    "pause": {
+      "m30": "30 minuuttia",
+      "h1": "1 tunti",
+      "h2": "2 tuntia",
+      "tomorrow": "Huomiseen asti"
+    },
+    "pauseError": "Ilmoitusten keskeytystä ei voitu muuttaa. Yritä uudelleen.",
+    "accessTokens": "Henkilökohtaiset käyttöoikeustunnisteet",
+    "sessions": "Kirjautuneet laitteet",
+    "twoFactor": "Kaksivaiheinen todennus",
+    "changePassword": "Vaihda salasana",
+    "connectedApps": "Yhdistetyt sovellukset"
+  },
+  "sections": {
+    "starred": "Tähdelliset",
+    "channels": "Kanavat",
+    "addChannels": "Lisää kanavia",
+    "directMessages": "Yksityisviestit",
+    "addTeammates": "Lisää työtovereita",
+    "starredEmpty": "Merkitse kanava tai keskustelu tähdellä, niin se näkyy tässä.",
+    "collapse": "Tiivistä {section}",
+    "expand": "Laajenna {section}"
+  },
+  "teammates": {
+    "title": "Yksityisviesti",
+    "subtitle": "Etsi keskustelu tai aloita uusi",
+    "searchPlaceholder": "Hae nimellä...",
+    "noUsers": "Käyttäjiä ei löytynyt",
+    "close": "Sulje",
+    "pickSubtitle": "Valitse enintään {max, plural, one {# henkilö} other {# henkilöä}}",
+    "select": "Valitse {name}",
+    "selectedCount": "{count} / {max} valittu",
+    "start": "Aloita keskustelu",
+    "startGroup": "Aloita ryhmäkeskustelu"
+  },
+  "you": "(sinä)",
+  "notifications": {
+    "someone": "Joku",
+    "sentAttachment": "Lähetti liitteen",
+    "threadTitle": "{name} (ketju)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# jäsen} other {# jäsentä}}",
+    "createError": "Ryhmäkeskustelua ei voitu aloittaa. Yritä uudelleen."
+  },
+  "statusDialog": {
+    "title": "Aseta tila",
+    "emojiLabel": "Valitse emoji",
+    "textLabel": "Mikä on tilasi?",
+    "textPlaceholder": "Mikä on tilasi?",
+    "durationLabel": "Tyhjennä kohdassa",
+    "duration": {
+      "never": "Älä tyhjennä",
+      "m30": "30 minuuttia",
+      "h1": "1 tunti",
+      "h4": "4 tuntia",
+      "today": "Tänään",
+      "week": "Tämä viikko"
+    },
+    "pauseCheckbox": "Keskeytä ilmoitukset, kunnes tila tyhjennetään",
+    "save": "Tallenna",
+    "clear": "Tyhjennä tila",
+    "cancel": "Peruuta",
+    "expiresAt": "Tyhjenee klo {time}",
+    "saveError": "Tilaasi ei voitu tallentaa. Yritä uudelleen."
+  },
+  "findConversation": "Etsi keskustelu"
+}

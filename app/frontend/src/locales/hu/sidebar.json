@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Tevékenység",
+    "unreads": "Olvasatlanok",
+    "later": "Később",
+    "files": "Fájlok",
+    "admin": "Adminisztráció",
+    "threads": "Szálak"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Új üzenet"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Az értesítések le vannak tiltva",
+    "disableNotifications": "Értesítések kikapcsolása",
+    "enableNotifications": "Értesítések bekapcsolása",
+    "signOut": "Kijelentkezés",
+    "updateStatus": "Állapot frissítése",
+    "pauseNotifications": "Értesítések szüneteltetése",
+    "pausedUntil": "Szüneteltetve eddig: {time}",
+    "pausedIndefinitely": "Szüneteltetve, amíg az állapot nincs törölve",
+    "resumeNotifications": "Értesítések folytatása",
+    "pause": {
+      "m30": "30 perc",
+      "h1": "1 óra",
+      "h2": "2 óra",
+      "tomorrow": "Holnapig"
+    },
+    "pauseError": "Az értesítések szüneteltetését nem sikerült módosítani. Próbálja újra.",
+    "accessTokens": "Személyes hozzáférési tokenek",
+    "sessions": "Bejelentkezett eszközök",
+    "twoFactor": "Kétlépcsős azonosítás",
+    "changePassword": "Jelszó módosítása",
+    "connectedApps": "Csatlakoztatott alkalmazások"
+  },
+  "sections": {
+    "starred": "Csillagozott",
+    "channels": "Csatornák",
+    "addChannels": "Csatornák hozzáadása",
+    "directMessages": "Közvetlen üzenetek",
+    "addTeammates": "Munkatársak hozzáadása",
+    "starredEmpty": "Csillagozzon meg egy csatornát vagy beszélgetést, hogy itt maradjon.",
+    "collapse": "{section} összecsukása",
+    "expand": "{section} kibontása"
+  },
+  "teammates": {
+    "title": "Közvetlen üzenet",
+    "subtitle": "Beszélgetés keresése vagy indítása",
+    "searchPlaceholder": "Keresés név szerint...",
+    "noUsers": "Nincs találat a felhasználók között",
+    "close": "Bezárás",
+    "pickSubtitle": "Legfeljebb {max, plural, one {# személy} other {# személy}} választható ki",
+    "select": "{name} kiválasztása",
+    "selectedCount": "{count} / {max} kiválasztva",
+    "start": "Beszélgetés indítása",
+    "startGroup": "Csoportos beszélgetés indítása"
+  },
+  "you": "(ön)",
+  "notifications": {
+    "someone": "Valaki",
+    "sentAttachment": "Mellékletet küldött",
+    "threadTitle": "{name} (szál)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# tag} other {# tag}}",
+    "createError": "A csoportos beszélgetést nem sikerült elindítani. Próbálja újra."
+  },
+  "statusDialog": {
+    "title": "Állapot beállítása",
+    "emojiLabel": "Emodzsi kiválasztása",
+    "textLabel": "Mi az állapota?",
+    "textPlaceholder": "Mi az állapota?",
+    "durationLabel": "Törlés ennyi idő után",
+    "duration": {
+      "never": "Ne törölje",
+      "m30": "30 perc",
+      "h1": "1 óra",
+      "h4": "4 óra",
+      "today": "Ma",
+      "week": "Ezen a héten"
+    },
+    "pauseCheckbox": "Értesítések szüneteltetése, amíg az állapot nincs törölve",
+    "save": "Mentés",
+    "clear": "Állapot törlése",
+    "cancel": "Mégse",
+    "expiresAt": "Törlődik ekkor: {time}",
+    "saveError": "Az állapotot nem sikerült menteni. Próbálja újra."
+  },
+  "findConversation": "Beszélgetés keresése"
+}

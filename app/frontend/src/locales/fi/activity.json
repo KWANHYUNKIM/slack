@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Toiminta",
+    "markAllRead": "Merkitse kaikki luetuksi",
+    "loading": "Ladataan...",
+    "loadingMore": "Ladataan lisää...",
+    "loadFailed": "Toiminnan lataaminen ei onnistunut.",
+    "empty": "Ei vielä toimintaa.",
+    "unread": "Lukematon",
+    "menu": "Valikko",
+    "someone": "Joku",
+    "directMessage": "yksityisviesti",
+    "messageDeleted": "Poistettu viesti"
+  },
+  "tabs": {
+    "all": "Kaikki",
+    "mentions": "Maininnat",
+    "threads": "Ketjut",
+    "reactions": "Reaktiot"
+  },
+  "describe": {
+    "mention": "{actor} mainitsi sinut kohteessa {where}",
+    "channelMention": "{actor} mainitsi @channel-maininnan kohteessa {where}",
+    "hereMention": "{actor} mainitsi @here-maininnan kohteessa {where}",
+    "threadReply": "{actor} vastasi ketjuun kohteessa {where}",
+    "reaction": "{actor} reagoi viestiisi {emoji} kohteessa {where}",
+    "reminder": "Muistutus"
+  }
+}

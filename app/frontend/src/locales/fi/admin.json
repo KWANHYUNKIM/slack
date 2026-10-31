@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Ylläpitopaneeli",
+    "openSidebar": "Avaa sivupalkki",
+    "tabs": {
+      "members": "Jäsenet",
+      "invites": "Kutsut",
+      "channels": "Kanavat",
+      "webhooks": "Webhookit",
+      "audit": "Tapahtumaloki",
+      "retention": "Tietojen säilytys",
+      "security": "Tietoturva",
+      "dlp": "DLP",
+      "legalHolds": "Oikeudelliset säilytykset"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanava",
+      "members": "Jäsenet",
+      "messages": "Viestit",
+      "created": "Luotu"
+    },
+    "actions": {
+      "rename": "Nimeä kanava uudelleen",
+      "archive": "Arkistoi kanava",
+      "delete": "Poista kanava",
+      "unarchive": "Palauta arkistosta",
+      "deletePermanently": "Poista pysyvästi"
+    },
+    "emptyActive": "Ei aktiivisia kanavia",
+    "archivedHeading": "Arkistoidut kanavat ({count})",
+    "archivedOn": "arkistoitu {date}",
+    "messageCount": "{count, plural, one {# viesti} other {# viestiä}}",
+    "deleteDialog": {
+      "title": "Poista kanava",
+      "message": "Haluatko varmasti poistaa kanavan #{name} pysyvästi? Kaikki viestit menetetään. Tätä ei voi peruuttaa."
+    },
+    "archiveDialog": {
+      "title": "Arkistoi kanava",
+      "confirm": "Arkistoi",
+      "message": "Arkistoidaanko #{name}? Se piilotetaan sivupalkista, mutta viestit säilyvät. Voit palauttaa sen myöhemmin."
+    },
+    "unarchiveDialog": {
+      "title": "Palauta kanava arkistosta",
+      "confirm": "Palauta",
+      "message": "Palautetaanko #{name}? Se tulee takaisin sivupalkkiin kaikille jäsenille."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Hae jäseniä...",
+    "columns": {
+      "user": "Käyttäjä",
+      "email": "Sähköposti",
+      "role": "Rooli",
+      "status": "Tila",
+      "actions": "Toiminnot"
+    },
+    "you": "(sinä)",
+    "roles": {
+      "owner": "Omistaja",
+      "admin": "Ylläpitäjä",
+      "member": "Jäsen",
+      "guest": "Vieras"
+    },
+    "status": {
+      "active": "Aktiivinen",
+      "deactivated": "Poistettu käytöstä"
+    },
+    "actions": {
+      "transfer": "Siirrä omistajuus",
+      "reactivate": "Ota uudelleen käyttöön",
+      "deactivate": "Poista käytöstä",
+      "forceLogout": "Pakota uloskirjautuminen",
+      "resetMfa": "Nollaa kaksivaiheinen todennus"
+    },
+    "empty": "Käyttäjiä ei löytynyt",
+    "dialogs": {
+      "transfer": {
+        "title": "Siirrä työtilan omistajuus",
+        "confirm": "Siirrä",
+        "message": "Haluatko varmasti siirtää työtilan omistajuuden henkilölle {name}? Sinut määritetään ylläpitäjäksi."
+      },
+      "deactivate": {
+        "title": "Poista käyttäjä käytöstä",
+        "confirm": "Poista käytöstä",
+        "message": "Haluatko varmasti poistaa henkilön {name} käytöstä? Hänet kirjataan heti ulos eikä hän voi kirjautua sisään."
+      },
+      "reactivate": {
+        "title": "Ota käyttäjä uudelleen käyttöön",
+        "confirm": "Ota käyttöön",
+        "message": "Haluatko varmasti ottaa henkilön {name} uudelleen käyttöön? Hän voi taas kirjautua sisään."
+      },
+      "forceLogout": {
+        "title": "Pakota uloskirjautuminen",
+        "confirm": "Kirjaa ulos",
+        "message": "Kirjataanko henkilö {name} ulos kaikilta laitteilta nyt? Hänen tilinsä pysyy aktiivisena, ja hän voi kirjautua sisään uudelleen."
+      },
+      "resetMfa": {
+        "title": "Nollaa kaksivaiheinen todennus",
+        "confirm": "Nollaa",
+        "message": "Poistetaanko kaksivaiheinen todennus henkilöltä {name}? Hänet kirjataan ulos kaikilta laitteilta, ja hän voi kirjautua vain salasanalla."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Kaksivaiheinen todennus on käytössä"
+    }
+  },
+  "invites": {
+    "createHeading": "Luo kutsulinkki",
+    "fields": {
+      "role": "Rooli",
+      "maxUses": "Käyttökertoja enintään",
+      "expiresIn": "Vanhenee"
+    },
+    "unlimited": "Rajoittamaton",
+    "expiry": {
+      "1d": "1 päivä",
+      "7d": "7 päivää",
+      "30d": "30 päivää",
+      "never": "Ei koskaan"
+    },
+    "expired": "Vanhentunut",
+    "columns": {
+      "url": "Kutsulinkki",
+      "uses": "Käyttökerrat",
+      "expires": "Vanhenee",
+      "createdBy": "Luonut"
+    },
+    "copyUrl": "Kopioi kutsulinkki",
+    "full": "(täynnä)",
+    "delete": "Poista kutsu",
+    "empty": "Ei vielä kutsulinkkejä"
+  },
+  "webhooks": {
+    "createHeading": "Luo webhook",
+    "fields": {
+      "name": "Webhookin nimi",
+      "channel": "Kanava"
+    },
+    "namePlaceholder": "Oma integraatio",
+    "selectChannel": "Valitse kanava...",
+    "columns": {
+      "name": "Nimi",
+      "url": "Webhookin URL-osoite",
+      "lastUsed": "Viimeksi käytetty"
+    },
+    "never": "Ei koskaan",
+    "justNow": "Juuri nyt",
+    "inactive": "Ei käytössä",
+    "copyUrl": "Kopioi webhookin URL-osoite",
+    "delete": "Poista webhook",
+    "empty": "Webhookeja ei ole vielä määritetty"
+  },
+  "audit": {
+    "empty": "Ei vastaavia tapahtumalokin merkintöjä. Kirjatut toiminnot näkyvät tässä.",
+    "loadMore": "Lataa lisää",
+    "targets": {
+      "user": "Käyttäjä",
+      "channel": "Kanava",
+      "invite": "Kutsu",
+      "webhook": "Webhook",
+      "message": "Viesti",
+      "directMessage": "Yksityisviesti",
+      "token": "Käyttöoikeustunniste",
+      "auditLog": "Tapahtumaloki",
+      "mcpTool": "MCP-työkalu",
+      "workspace": "Työtila",
+      "file": "Tiedosto",
+      "dlpRule": "DLP-sääntö",
+      "legalHold": "Oikeudellinen säilytys"
+    },
+    "action": {
+      "authLogin": "Kirjautunut sisään",
+      "authLoginFailed": "Kirjautuminen epäonnistui",
+      "authLogout": "Kirjautunut ulos",
+      "authPasswordChanged": "Salasana vaihdettu",
+      "userRoleChanged": "Rooli vaihdettu",
+      "userDeactivated": "Poistettu käytöstä",
+      "userForceLogout": "Pakotettu uloskirjautuminen",
+      "userReactivated": "Otettu uudelleen käyttöön",
+      "ownershipTransferred": "Omistajuus siirretty",
+      "ownerBootstrapped": "Omistaja luotu",
+      "channelCreated": "Kanava luotu",
+      "channelEdited": "Kanavaa muokattu",
+      "channelArchived": "Kanava arkistoitu",
+      "channelUnarchived": "Kanava palautettu arkistosta",
+      "channelDeleted": "Kanava poistettu",
+      "channelMemberAdded": "Jäsen lisätty",
+      "channelMemberRemoved": "Jäsen poistettu",
+      "inviteCreated": "Kutsu luotu",
+      "inviteDeleted": "Kutsu poistettu",
+      "webhookCreated": "Webhook luotu",
+      "webhookDeleted": "Webhook poistettu",
+      "tokenCreate": "Tunniste luotu",
+      "tokenRevoke": "Tunniste kumottu",
+      "mcpToolCall": "MCP-työkalun kutsu",
+      "auditExported": "Tapahtumaloki viety",
+      "authLoginLocked": "Tili lukittu",
+      "sessionRevoked": "Laite kirjattu ulos",
+      "sessionRevokedAll": "Kaikki laitteet kirjattu ulos",
+      "retentionPurged": "Vanhentuneet tiedot poistettu",
+      "retentionWorkspaceUpdated": "Säilytyskäytäntö muutettu",
+      "retentionChannelUpdated": "Kanavan säilytys muutettu",
+      "retentionChannelCleared": "Kanavan säilytys palautettu oletukseksi",
+      "mfaEnabled": "Kaksivaiheinen todennus otettu käyttöön",
+      "mfaDisabled": "Kaksivaiheinen todennus poistettu käytöstä",
+      "mfaRecoveryUsed": "Palautuskoodia käytetty",
+      "mfaRecoveryRegenerated": "Palautuskoodit luotu uudelleen",
+      "mfaResetByAdmin": "Ylläpitäjä nollasi kaksivaiheisen todennuksen",
+      "mfaPolicyChanged": "Kaksivaiheisen todennuksen vaatimus muutettu",
+      "dlpBlocked": "DLP esti viestin",
+      "dlpWarned": "DLP-varoitus",
+      "dlpRuleCreated": "DLP-sääntö luotu",
+      "dlpRuleUpdated": "DLP-sääntö muutettu",
+      "dlpRuleDeleted": "DLP-sääntö poistettu",
+      "dlpRuleTimeout": "DLP-säännön aikakatkaisu",
+      "dlpRuleAutoDisabled": "DLP-sääntö poistettiin käytöstä automaattisesti",
+      "legalHoldCreated": "Oikeudellinen säilytys luotu",
+      "legalHoldUpdated": "Oikeudellista säilytystä muokattu",
+      "legalHoldCustodianAdded": "Henkilö lisätty oikeudelliseen säilytykseen",
+      "legalHoldCustodianRemoved": "Henkilö poistettu oikeudellisesta säilytyksestä",
+      "legalHoldReleased": "Oikeudellinen säilytys vapautettu",
+      "ediscoverySearched": "eDiscovery-haku",
+      "ediscoveryExportRequested": "eDiscovery-vienti pyydetty",
+      "ediscoveryExported": "eDiscovery viety"
+    },
+    "filters": {
+      "allActions": "Kaikki toiminnot",
+      "actionsSelected": "{count, plural, one {# toiminto} other {# toimintoa}}",
+      "actor": "Toimija",
+      "allActors": "Kaikki toimijat",
+      "targetType": "Kohteen tyyppi",
+      "allTargets": "Kaikki kohteet",
+      "from": "Alkaen",
+      "to": "Päättyen",
+      "apply": "Käytä",
+      "reset": "Nollaa"
+    },
+    "export": {
+      "csv": "Vie CSV",
+      "json": "Vie JSON"
+    },
+    "unknownActor": "Tuntematon"
+  },
+  "errors": {
+    "archiveChannel": "Kanavan arkistointi epäonnistui",
+    "createInvite": "Kutsun luominen epäonnistui",
+    "createWebhook": "Webhookin luominen epäonnistui",
+    "deactivateUser": "Käyttäjän poistaminen käytöstä epäonnistui",
+    "deleteChannel": "Kanavan poistaminen epäonnistui",
+    "deleteInvite": "Kutsun poistaminen epäonnistui",
+    "deleteWebhook": "Webhookin poistaminen epäonnistui",
+    "editChannel": "Kanavan muokkaaminen epäonnistui",
+    "exportAuditLog": "Tapahtumalokin vieminen epäonnistui",
+    "fetchAuditLog": "Tapahtumalokin hakeminen epäonnistui",
+    "fetchChannels": "Kanavien hakeminen epäonnistui",
+    "fetchInvites": "Kutsujen hakeminen epäonnistui",
+    "fetchUsers": "Käyttäjien hakeminen epäonnistui",
+    "fetchWebhooks": "Webhookien hakeminen epäonnistui",
+    "forceLogout": "Käyttäjän uloskirjaaminen epäonnistui",
+    "reactivateUser": "Käyttäjän ottaminen uudelleen käyttöön epäonnistui",
+    "removeChannelMember": "Kanavan jäsenen poistaminen epäonnistui",
+    "transferOwnership": "Omistajuuden siirtäminen epäonnistui",
+    "unarchiveChannel": "Kanavan palauttaminen arkistosta epäonnistui",
+    "updateRole": "Roolin päivittäminen epäonnistui",
+    "resetMfa": "Kaksivaiheisen todennuksen nollaaminen epäonnistui"
+  },
+  "retention": {
+    "title": "Tietojen säilytys",
+    "description": "Poista viestit automaattisesti asetetun päivämäärän jälkeen. Tiedostot poistuvat viestien mukana. Siivous ajetaan kerran päivässä. Muistutukset säilytetään ja näyttävät tekstin \"poistettu viesti\".",
+    "loadError": "Säilytyskäytännön lataaminen epäonnistui",
+    "saveError": "Säilytyskäytännön tallentaminen epäonnistui",
+    "resetError": "Kanavan käytännön palauttaminen oletukseksi epäonnistui",
+    "workspace": {
+      "heading": "Työtilan oletus",
+      "hint": "Koskee jokaista kanavaa, jolla ei ole omaa asetusta, sekä yksityisviestejä ja ryhmäviestejä."
+    },
+    "mode": {
+      "forever": "Säilytä ikuisesti",
+      "days": "Poista tietyn päivämäärän jälkeen",
+      "inherit": "Käytä työtilan oletusta"
+    },
+    "daysLabel": "Päivää",
+    "daysHint": "{min}–{max} päivää",
+    "effective": {
+      "forever": "Säilytetään ikuisesti",
+      "days": "{count, plural, one {# päivä} other {# päivää}}"
+    },
+    "channels": {
+      "heading": "Kanavat",
+      "columns": {
+        "channel": "Kanava",
+        "policy": "Käytäntö",
+        "effective": "Sovelletaan"
+      },
+      "legalHold": "Oikeudellinen säilytys",
+      "reset": "Palauta oletukseen",
+      "empty": "Ei kanavia"
+    },
+    "save": "Tallenna",
+    "saved": "Tallennettu",
+    "confirm": {
+      "title": "Poistetaanko vanhat viestit pysyvästi?",
+      "message": "Seuraavassa siivouksessa viestit, jotka ovat vanhempia kuin {count, plural, one {# päivä} other {# päivää}}, poistetaan pysyvästi tiedostoineen. Tätä ei voi peruuttaa.",
+      "confirm": "Ota käytäntö käyttöön"
+    }
+  },
+  "security": {
+    "title": "Kaksivaiheinen todennus",
+    "requireMfa": "Vaadi kaksivaiheinen todennus kaikilta",
+    "requireMfaHint": "Jäsenet ilman kaksivaiheista todennusta näkevät vain käyttöönoton, kunnes ottavat sen käyttöön.",
+    "unavailable": "Kaksivaiheinen todennus on pois käytöstä tällä palvelimella, koska salausavainta ei ole asetettu (TOTP_ENCRYPTION_KEY). Vaatimusta ei noudateta.",
+    "saved": "Tietoturva-asetukset tallennettu",
+    "loading": "Ladataan...",
+    "errors": {
+      "loadFailed": "Tietoturva-asetuksia ei voitu ladata.",
+      "saveFailed": "Tietoturva-asetuksia ei voitu tallentaa."
+    },
+    "allowOAuthApps": "Salli jäsenten yhdistää OAuth-sovelluksia",
+    "allowOAuthAppsHint": "Antaa jäsenten yhdistää sovelluksia, kuten Clauden, OAuth-kirjautumisen kautta. Tämän poistaminen käytöstä katkaisee kaikkien sovellusten yhteyden heti."
+  },
+  "dlp": {
+    "title": "Tietovuodon esto",
+    "description": "Tunnistaa arkaluonteisia kaavoja viesteistä, kuten korttinumeroita. Estosääntö estää viestin tallentumisen. Varoitussääntö tallentaa viestin ja kirjaa sen tapahtumalokiin. Viestin tekstiä ei kirjata lokiin koskaan.",
+    "loadError": "DLP-sääntöjen lataaminen epäonnistui",
+    "saveError": "Säännön tallentaminen epäonnistui",
+    "toggleError": "Säännön muuttaminen epäonnistui",
+    "deleteError": "Säännön poistaminen epäonnistui",
+    "testError": "Kaavan testaaminen epäonnistui",
+    "builtinBadge": "Sisäänrakennettu",
+    "builtinPattern": "Sisäänrakennettu tunnistin",
+    "builtin": {
+      "credit_card": "Korttinumero",
+      "kr_rrn": "Korealainen henkilötunnus",
+      "aws_access_key": "AWS-käyttöavain",
+      "private_key": "Yksityinen avain"
+    },
+    "action": {
+      "BLOCK": "Estä",
+      "WARN": "Varoita"
+    },
+    "columns": {
+      "name": "Sääntö",
+      "pattern": "Kaava",
+      "action": "Toiminto",
+      "enabled": "Tila"
+    },
+    "on": "Käytössä",
+    "off": "Pois",
+    "toggleLabel": "Ota {name} käyttöön tai poista käytöstä",
+    "edit": "Muokkaa",
+    "editLabel": "Muokkaa: {name}",
+    "delete": "Poista",
+    "deleteLabel": "Poista: {name}",
+    "form": {
+      "createHeading": "Lisää sääntö",
+      "editHeading": "Muokkaa sääntöä",
+      "name": "Nimi",
+      "pattern": "Kaava (säännöllinen lauseke)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Toiminto",
+      "add": "Lisää sääntö",
+      "save": "Tallenna",
+      "cancel": "Peruuta",
+      "hint": "Enintään {max} merkkiä. Sisäkkäiset toistot, kuten (a+)+, takaisinviittaukset ja hyvin suuret toistomäärät hylätään."
+    },
+    "patternProblem": {
+      "empty": "Anna kaava.",
+      "tooLong": "Kaava on liian pitkä.",
+      "invalid": "Tämä ei ole kelvollinen säännöllinen lauseke.",
+      "backreference": "Takaisinviittaukset eivät ole sallittuja.",
+      "nestedQuantifier": "Sisäkkäiset toistot voivat hidastaa tarkistuksen erittäin paljon, eikä niitä sallita.",
+      "repeatTooLarge": "Toistomäärä on liian suuri (enintään 200)."
+    },
+    "test": {
+      "heading": "Testaa kaava",
+      "hint": "Mitään ei tallenneta. Kirjoita kaava yllä tai valitse tallennettu sääntö ja kirjoita sitten esimerkkiteksti.",
+      "source": "Testattava kaava",
+      "sourceDraft": "Kaava yllä olevasta lomakkeesta",
+      "sample": "Esimerkkiteksti",
+      "run": "Testaa",
+      "matched": "Osuu. Tämä teksti tunnistettaisiin.",
+      "notMatched": "Ei osumaa.",
+      "timedOut": "Tarkistus kesti liian kauan ja se pysäytettiin. Yksinkertaista kaava."
+    },
+    "confirmDelete": {
+      "title": "Poistetaanko tämä sääntö?",
+      "message": "Sääntö \"{name}\" poistetaan eikä sitä enää tarkisteta."
+    }
+  },
+  "legalHolds": {
+    "description": "Säilytä kaikki, mitä henkilö on kirjoittanut tai vastaanottanut, vaikka tietojen säilytys poistaisi sen. Ylläpitäjät voivat hakea ja viedä säilytetyt tiedot oikeudelliseen tarkasteluun.",
+    "statusFilter": "Näytä",
+    "status": {
+      "active": "Aktiiviset",
+      "released": "Vapautetut",
+      "all": "Kaikki"
+    },
+    "empty": "Ei oikeudellisia säilytyksiä",
+    "selectHint": "Valitse oikeudellinen säilytys hallitaksesi sen henkilöitä ja hakeaksesi sen tietoja.",
+    "loadMore": "Lataa lisää",
+    "custodianCount": "{count, plural, one {# henkilö} other {# henkilöä}}",
+    "createdOn": "Luotu {date}",
+    "releasedOn": "Vapautettu {date}",
+    "createdBy": "Luonut {name} {date}",
+    "releasedBy": "Vapauttanut {name} {date}",
+    "unknownUser": "Tuntematon käyttäjä",
+    "edit": "Muokkaa",
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "fields": {
+      "name": "Nimi",
+      "description": "Kuvaus (valinnainen)"
+    },
+    "create": {
+      "open": "Uusi säilytys",
+      "submit": "Luo säilytys",
+      "hint": "Voit lisätä henkilöitä luomisen jälkeen."
+    },
+    "custodians": {
+      "heading": "Säilytyksen henkilöt",
+      "pick": "Valitse henkilö",
+      "add": "Lisää",
+      "remove": "Poista {name} tästä säilytyksestä",
+      "empty": "Säilytyksessä ei ole vielä ketään.",
+      "deactivated": "Poistettu käytöstä"
+    },
+    "release": {
+      "open": "Vapauta säilytys",
+      "title": "Vapautetaanko tämä oikeudellinen säilytys?",
+      "message": "\"{name}\" lakkaa säilyttämästä tietoja. Henkilöt, jotka eivät kuulu toiseen aktiiviseen säilytykseen, siirtyvät takaisin tavanomaisen säilytyskäytännön piiriin, ja heidän vanhat viestinsä voidaan poistaa seuraavassa siivouksessa. Säilytys ja sen henkilölista jäävät kirjauksiin. Tätä ei voi peruuttaa.",
+      "confirm": "Vapauta"
+    },
+    "discovery": {
+      "heading": "Haku ja vienti",
+      "hint": "Kattaa säilytyksen henkilöiden kirjoittamat viestit kaikissa kanavissa (myös yksityisissä), yksityis- ja ryhmäviestit, joihin he ovat osallistuneet, sekä tiedostojen tiedot. Poistetut viestit sisältyvät ja ne on merkitty.",
+      "query": "Hakusana",
+      "from": "Alkaen",
+      "to": "Päättyen",
+      "search": "Hae",
+      "export": "Vie (JSONL)",
+      "exportHint": "Vie viimeisimmän haun tulokset. Jokainen haku ja vienti kirjataan tapahtumalokiin.",
+      "searchFirst": "Hae ensin näillä suodattimilla. Vienti käyttää alla näkyvän haun suodattimia.",
+      "kinds": {
+        "channel": "Kanavaviestit",
+        "dm": "Yksityisviestit",
+        "file": "Tiedostot"
+      },
+      "empty": "Ei tuloksia",
+      "deleted": "Poistettu",
+      "edited": "Muokattu",
+      "reply": "Ketjun vastaus",
+      "groupDm": "Ryhmäviesti #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Oikeudellisten säilytysten lataaminen epäonnistui",
+      "create": "Oikeudellisen säilytyksen luominen epäonnistui",
+      "update": "Oikeudellisen säilytyksen päivittäminen epäonnistui",
+      "custodians": "Säilytyksen henkilöiden muuttaminen epäonnistui",
+      "release": "Oikeudellisen säilytyksen vapauttaminen epäonnistui",
+      "search": "Haku epäonnistui",
+      "export": "Vienti epäonnistui"
+    }
+  }
+}
