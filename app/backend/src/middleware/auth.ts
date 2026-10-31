@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { AuthRequest, JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
 import prisma from '../db.js';
+import { logError } from '../utils/logger.js';
 
 // Short-lived cache for tokenVersion checks to avoid a DB round-trip on every request.
 // TTL is 5 seconds — revoked tokens may work for up to 5s after revocation.
@@ -39,8 +40,19 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
 
   const token = authHeader.split(' ')[1];
 
+  // JWT 검증 실패(서명, 만료, 형식 오류)는 잘못된 토큰이므로 401이다.
+  let decoded: JwtPayload & { purpose?: string };
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload & { purpose?: string };
+    decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload & { purpose?: string };
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+
+  // 여기서부터의 실패(DB 조회 등)는 서버 오류다. 401로 삼키면 진단이 안 되므로 기록하고 500을 낸다.
+  // 응답 본문에는 내부 정보를 넣지 않는다.
+  let cached: { tokenVersion: number; role: string; deactivatedAt: Date | null; expiresAt: number };
+  try {
     // Reject scoped tokens (e.g. file-download) from being used as general auth
     if (decoded.purpose) {
       res.status(401).json({ error: 'Invalid token' });
@@ -56,8 +68,8 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 
     const now = Date.now();
-    let cached = tokenCache.get(decoded.userId);
-    if (!cached || cached.expiresAt < now) {
+    const existing = tokenCache.get(decoded.userId);
+    if (!existing || existing.expiresAt < now) {
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: { tokenVersion: true, role: true, deactivatedAt: true },
@@ -68,6 +80,8 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
       }
       cached = { tokenVersion: user.tokenVersion, role: user.role, deactivatedAt: user.deactivatedAt, expiresAt: now + TOKEN_CACHE_TTL };
       tokenCache.set(decoded.userId, cached);
+    } else {
+      cached = existing;
     }
 
     if (cached.tokenVersion !== decoded.tokenVersion) {
@@ -78,10 +92,12 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
-    req.user = { ...decoded, role: cached.role };
-
-    next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+    logError('Auth middleware error', error);
+    res.status(500).json({ error: 'Internal server error' });
+    return;
   }
+
+  req.user = { ...decoded, role: cached.role };
+  next();
 }
