@@ -1,4 +1,5 @@
 import { t as translate } from '@/lib/i18n';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatFileSize } from '@/lib/i18n/format';
@@ -37,6 +38,7 @@ function isPdf(mimetype: string): boolean {
 
 export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose }: FilePreviewModalProps) {
   const { t } = useTranslation(['messages', 'common']);
+  useFileTokens();
   const isText = isTextFile(mimetype, fileName);
   const [textContent, setTextContent] = useState<string | null>(null);
   // The modal is mounted per file, so start in the loading state for text files

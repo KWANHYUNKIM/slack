@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { FileText, Download, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, DATE_MEDIUM } from '@/lib/i18n/format';
-import { getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
+import { getUserFiles, getAuthFileUrl, getFileUrl, type ApiFileWithUser } from '@/lib/api';
 import { formatBytes } from '@/lib/fileUtils';
 import { FileIcon } from './FileIcon';
 import { ImageLightbox } from './ImageLightbox';
@@ -10,6 +11,7 @@ import { useMobileStore } from '@/stores/useMobileStore';
 
 export function FilesPage() {
   const { t } = useTranslation(['messages', 'common']);
+  useFileTokens();
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -18,8 +20,8 @@ export function FilesPage() {
 
   const fetchFiles = useCallback(() => {
     setIsLoading(true);
-    Promise.all([getUserFiles(), refreshDownloadToken()])
-      .then(([data]) => {
+    getUserFiles()
+      .then((data) => {
         setFiles(data);
         setLoadError(null);
       })
