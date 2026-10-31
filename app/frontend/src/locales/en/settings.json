@@ -1,0 +1,46 @@
+{
+  "language": {
+    "label": "Language"
+  },
+  "avatar": {
+    "alt": "Avatar"
+  },
+  "profile": {
+    "title": "Profile",
+    "close": "Close",
+    "loading": "Loading...",
+    "notFound": "Profile not found",
+    "uploadPhoto": "Upload photo",
+    "uploading": "Uploading...",
+    "name": "Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell people about yourself",
+    "cancel": "Cancel",
+    "save": "Save",
+    "status": "Status",
+    "joined": "Joined",
+    "message": "Message",
+    "edit": "Edit Profile",
+    "statusValue": {
+      "online": "online",
+      "away": "away",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Failed to load profile.",
+      "saveFailed": "Failed to save profile. Please try again.",
+      "notImage": "Please select an image file.",
+      "tooLarge": "Image must be under 5MB.",
+      "uploadFailed": "Failed to upload photo. Please try again."
+    }
+  },
+  "crop": {
+    "title": "Crop your photo",
+    "close": "Close",
+    "zoom": "Zoom",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "failed": "Failed to crop"
+  }
+}

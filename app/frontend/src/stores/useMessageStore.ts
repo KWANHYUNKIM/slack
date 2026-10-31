@@ -3,6 +3,7 @@ import * as api from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { Message, Reaction } from '@/lib/types';
+import { t } from '@/lib/i18n';
 
 function transformApiMessage(msg: api.ApiMessage): Message {
   // Group raw reaction rows into { emoji, count, userIds[] }
@@ -95,7 +96,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       set({ messages, isLoading: false, loadedChannelId: channelId });
     } catch {
       if (get().loadedChannelId !== channelId) return;
-      set({ isLoading: false, loadError: 'Failed to load messages.' });
+      set({ isLoading: false, loadError: t('messages:errors.loadFailed') });
     }
   },
 
@@ -110,7 +111,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       return new Promise<void>((resolve, reject) => {
         // Fallback timeout — reject if no ack in 10s so failures aren't silently swallowed
         const timeout = setTimeout(() => {
-          set({ sendError: 'Message send timed out. Please try again.' });
+          set({ sendError: t('messages:errors.sendTimeout') });
           reject(new Error('Message send timed out'));
         }, 10000);
         socket.emit('message:send', { channelId, content, fileIds }, (response: { error?: string }) => {
@@ -134,7 +135,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           sendError: null,
         }));
       } catch (err) {
-        const msg = (err instanceof Error && err.message) || 'Message failed to send. Please try again.';
+        const msg = (err instanceof Error && err.message) || t('messages:errors.sendFailed');
         set({ sendError: msg });
         throw err;
       }
@@ -319,14 +320,14 @@ export const useMessageStore = create<MessageState>((set, get) => ({
             ...m,
             reactions: m.reactions.map((r) =>
               r.emoji === emoji
-                ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, 'You'] }
+                ? { ...r, count: r.count + 1, userIds: [...r.userIds, userId], userNames: [...r.userNames, t('messages:reactions.you')] }
                 : r,
             ),
           };
         }
         return {
           ...m,
-          reactions: [...m.reactions, { emoji, count: 1, userIds: [userId], userNames: ['You'] }],
+          reactions: [...m.reactions, { emoji, count: 1, userIds: [userId], userNames: [t('messages:reactions.you')] }],
         };
       }),
     });

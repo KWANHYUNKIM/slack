@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChannelActions } from '@/hooks/useChannelActions';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ export function AddTeammatesDialog({
   onClose,
   onSelectUser,
 }: AddTeammatesDialogProps) {
+  const { t } = useTranslation('sidebar');
   const [teammateSearch, setTeammateSearch] = useState('');
   const { teammates, searchTeammates } = useChannelActions();
   const currentUser = useAuthStore((s) => s.user);
@@ -37,8 +39,8 @@ export function AddTeammatesDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-[480px] rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-[22px] font-bold text-slack-primary mb-2">Direct message</h2>
-        <p className="text-[14px] text-slack-hint mb-4">Find or start a conversation</p>
+        <h2 className="text-[22px] font-bold text-slack-primary mb-2">{t('teammates.title')}</h2>
+        <p className="text-[14px] text-slack-hint mb-4">{t('teammates.subtitle')}</p>
         <input
           data-testid="teammate-search"
           type="text"
@@ -47,19 +49,19 @@ export function AddTeammatesDialog({
             setTeammateSearch(e.target.value);
             searchTeammates(e.target.value);
           }}
-          placeholder="Search by name..."
+          placeholder={t('teammates.searchPlaceholder')}
           autoFocus
           className="w-full rounded border border-slack-input-border px-3 py-2 text-[15px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link mb-3"
         />
         {teammates.length === 0 ? (
-          <p className="text-center text-slack-hint py-4">No users found</p>
+          <p className="text-center text-slack-hint py-4">{t('teammates.noUsers')}</p>
         ) : (
           <div className="max-h-[300px] overflow-y-auto space-y-1">
             {teammates.map((u) => (
               <button
                 key={u.id}
                 onClick={() => onSelectUser(u)}
-                className="flex w-full items-center gap-3 rounded px-3 py-2 hover:bg-slack-hover text-left"
+                className="flex w-full items-center gap-3 rounded px-3 py-2 hover:bg-slack-hover text-start"
               >
                 <Avatar
                   src={u.avatar ?? undefined}
@@ -69,7 +71,7 @@ export function AddTeammatesDialog({
                 />
                 <div>
                   <p className="text-[14px] font-medium text-slack-primary">
-                    {u.name}{u.id === currentUser?.id && <span className="text-slack-hint font-normal"> (you)</span>}
+                    {u.name}{u.id === currentUser?.id && <span className="text-slack-hint font-normal"> {t('you')}</span>}
                   </p>
                 </div>
               </button>
@@ -78,7 +80,7 @@ export function AddTeammatesDialog({
         )}
         <div className="mt-4 flex justify-end">
           <Button variant="ghost" onClick={onClose}>
-            Close
+            {t('teammates.close')}
           </Button>
         </div>
       </div>

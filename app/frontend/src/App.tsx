@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { t } from '@/lib/i18n';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -18,12 +20,13 @@ import { LoginPage } from '@/components/Auth/LoginPage';
 import { RegisterPage } from '@/components/Auth/RegisterPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation('common');
   const { isAuthenticated, isHydrating } = useAuthStore();
 
   if (isHydrating) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-gray-500">Loading...</p>
+        <p className="text-sm text-gray-500">{t('status.loading')}</p>
       </div>
     );
   }
@@ -240,7 +243,7 @@ function AppShell() {
           if (channelName) {
             navigator.serviceWorker.ready.then((reg) => {
               reg.showNotification(`#${channelName}`, {
-                body: `${msg.user?.name || 'Someone'}: ${(msg.content || '').slice(0, 100)}`,
+                body: `${msg.user?.name || t('sidebar:notifications.someone')}: ${(msg.content || '').slice(0, 100)}`,
                 icon: '/favicon-192.png',
                 badge: '/favicon-192.png',
                 data: { url: `/c/${msg.channelId}` },
@@ -281,7 +284,7 @@ function AppShell() {
         if (document.hidden && !isFromMe && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
           navigator.serviceWorker.ready.then((reg) => {
             reg.showNotification(otherUser.name, {
-              body: (dm.content || '').slice(0, 100) || 'Sent an attachment',
+              body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
               icon: '/favicon-192.png',
               badge: '/favicon-192.png',
               data: { url: `/d/${otherUserId}` },
@@ -317,8 +320,8 @@ function AppShell() {
       const { activeDMId } = useChannelStore.getState();
       if (document.hidden && activeDMId !== otherUserId && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
         navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification(`${reply.fromUser.name} (thread)`, {
-            body: (reply.content || '').slice(0, 100) || 'Sent an attachment',
+          reg.showNotification(t('sidebar:notifications.threadTitle', { name: reply.fromUser.name }), {
+            body: (reply.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
             icon: '/favicon-192.png',
             badge: '/favicon-192.png',
             data: { url: `/d/${otherUserId}` },

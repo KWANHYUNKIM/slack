@@ -116,12 +116,12 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     // Open thread
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: parentMsg }).first();
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     // Click thread button (MessageSquare icon - second button)
     await hoverToolbar.locator('button').nth(1).click();
 
     // Thread panel should open (look for "Thread" heading in the panel)
-    await expect(page.locator('.border-l').getByText('Thread').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.border-s').getByText('Thread').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('Feature #8: Search', async ({ page }) => {
@@ -180,7 +180,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     // Hover and click emoji button
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg }).first();
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').first().click();
 
     // Emoji picker should appear
@@ -199,7 +199,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     // Hover and open more menu
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: original });
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').last().click();
 
     // Edit message
@@ -233,7 +233,7 @@ test.describe('QA: Comprehensive Feature Verification', () => {
     // Pin the message
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: msg }).first();
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').last().click();
     await page.getByText('Pin message').click();
 

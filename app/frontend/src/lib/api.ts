@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /**
  * Manages a short-lived download token for file URLs.
  * Uses a scoped JWT (5min expiry) instead of the full auth token to limit exposure.
@@ -115,7 +117,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Request failed' }));
+    const body = await res.json().catch(() => ({ error: t('errors:client.requestFailed') }));
     // Auto-logout on 401 (expired/invalid token).
     // Guard: only redirect once — concurrent 401s after token removal are no-ops.
     // Uses hard reload (window.location) so all in-memory Zustand state is wiped.
@@ -124,8 +126,8 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
       window.location.href = '/login';
     }
     const errorMsg = Array.isArray(body.error)
-      ? body.error.map((e: { message?: string }) => e.message || 'Validation error').join(', ')
-      : body.error || 'Request failed';
+      ? body.error.map((e: { message?: string }) => e.message || t('errors:client.validation')).join(', ')
+      : body.error || t('errors:client.requestFailed');
     throw new ApiError(errorMsg, res.status);
   }
 
@@ -478,8 +480,8 @@ export async function uploadFile(file: File): Promise<ApiFile> {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Upload failed' }));
-    throw new ApiError(body.error || 'Upload failed', res.status);
+    const body = await res.json().catch(() => ({ error: t('errors:client.uploadFailed') }));
+    throw new ApiError(body.error || t('errors:client.uploadFailed'), res.status);
   }
 
   return res.json();
@@ -532,8 +534,8 @@ export async function uploadAvatar(file: Blob): Promise<UserProfile> {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Upload failed' }));
-    throw new ApiError(body.error || 'Upload failed', res.status);
+    const body = await res.json().catch(() => ({ error: t('errors:client.uploadFailed') }));
+    throw new ApiError(body.error || t('errors:client.uploadFailed'), res.status);
   }
 
   return res.json();
@@ -894,4 +896,10 @@ export function adminCreateWebhook(data: { name: string; channelId: number }) {
 
 export function adminDeleteWebhook(webhookId: number) {
   return request<{ message: string }>(`/webhooks/${webhookId}`, { method: 'DELETE' });
+}
+
+// ---- Huddles ----
+
+export function getHuddleConfig() {
+  return request<{ iceServers: RTCIceServer[] }>('/huddles/config');
 }

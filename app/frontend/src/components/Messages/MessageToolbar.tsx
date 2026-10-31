@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Smile, MessageSquare, MoreHorizontal, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ export function MessageToolbar({
   className,
   testIdPrefix,
 }: MessageToolbarProps) {
+  const { t } = useTranslation('messages');
   return (
     <div
       data-testid={testIdPrefix ? `${testIdPrefix}-message-toolbar` : undefined}
@@ -35,7 +37,7 @@ export function MessageToolbar({
           variant="toolbar"
           size="icon-sm"
           data-testid={testIdPrefix ? `${testIdPrefix}-emoji-btn` : undefined}
-          title="Add reaction"
+          title={t('toolbar.addReaction')}
           onClick={onEmojiClick}
         >
           <Smile className="h-4 w-4 text-slack-secondary" />
@@ -45,7 +47,7 @@ export function MessageToolbar({
         <Button
           variant="toolbar"
           size="icon-sm"
-          title="Reply in thread"
+          title={t('toolbar.replyInThread')}
           onClick={onThreadClick}
         >
           <MessageSquare className="h-4 w-4 text-slack-secondary" />
@@ -57,7 +59,7 @@ export function MessageToolbar({
           size="icon-sm"
           data-testid="bookmark-button"
           onClick={onBookmarkClick}
-          title={isBookmarked ? 'Remove bookmark' : 'Bookmark this message'}
+          title={isBookmarked ? t('toolbar.removeBookmark') : t('toolbar.bookmark')}
         >
           <Bookmark
             data-testid="bookmark-icon"
@@ -73,7 +75,7 @@ export function MessageToolbar({
           variant="toolbar"
           size="icon-sm"
           data-testid={testIdPrefix ? `${testIdPrefix}-more-btn` : undefined}
-          title="More actions"
+          title={t('toolbar.moreActions')}
           onClick={onMoreClick}
         >
           <MoreHorizontal className="h-4 w-4 text-slack-secondary" />

@@ -7,6 +7,7 @@ import { MENTION_CHANNEL_ID, MENTION_HERE_ID, type MentionUser } from '@/lib/typ
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import emojiData from '@emoji-mart/data';
 import type { EmojiOption } from '@/components/Messages/EmojiAutocomplete';
+import { t } from '@/lib/i18n';
 
 // Register a custom mention embed blot so @mentions are distinct from plain text
 class MentionBlot extends Embed {
@@ -470,7 +471,7 @@ export function useQuillEditor({
               setPendingFiles((prev) => [...prev, uploaded]);
             }
           } catch (err) {
-            const msg = (err instanceof Error && err.message) || 'Failed to upload pasted image. Please try again.';
+            const msg = (err instanceof Error && err.message) || t('messages:errors.pasteUploadFailed');
             setUploadError(msg);
             setTimeout(() => setUploadError(null), 5000);
           } finally {
@@ -507,7 +508,7 @@ export function useQuillEditor({
             setPendingFiles((prev) => [...prev, uploaded]);
           }
         } catch (err) {
-          const msg = (err instanceof Error && err.message) || 'Failed to upload dropped file. Please try again.';
+          const msg = (err instanceof Error && err.message) || t('messages:errors.dropUploadFailed');
           setUploadError(msg);
           setTimeout(() => setUploadError(null), 5000);
         } finally {
@@ -686,7 +687,7 @@ export function useQuillEditor({
         setPendingFiles((prev) => [...prev, uploaded]);
       }
     } catch (err) {
-      const msg = (err instanceof Error && err.message) || 'Failed to upload file. Please try again.';
+      const msg = (err instanceof Error && err.message) || t('messages:errors.uploadFailed');
       setUploadError(msg);
       setTimeout(() => setUploadError(null), 5000);
     } finally {

@@ -5,7 +5,7 @@ const ROW = '.group.relative.flex.px-5';
 
 async function editMessage(page: Page, current: string, next: string) {
   await page.locator(ROW).filter({ hasText: current }).hover();
-  await page.locator('.absolute.-top-4.right-5').locator('button').last().click();
+  await page.locator('.absolute.-top-4.end-5').locator('button').last().click();
   await page.getByText('Edit message').click();
   await page.locator('textarea').fill(next);
   await page.keyboard.press('Enter');
@@ -77,7 +77,7 @@ test.describe('Activity: mentions', () => {
 
     // Delete: A deletes the message -> item gone for B
     await pageA.locator(ROW).filter({ hasText: body2 }).hover();
-    await pageA.locator('.absolute.-top-4.right-5').locator('button').last().click();
+    await pageA.locator('.absolute.-top-4.end-5').locator('button').last().click();
     await pageA.getByText('Delete message').click();
     const confirmButton = pageA.getByRole('button', { name: /delete|confirm/i });
     if (await confirmButton.isVisible({ timeout: 2_000 }).catch(() => false)) {

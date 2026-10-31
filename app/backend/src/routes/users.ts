@@ -163,10 +163,19 @@ router.post('/me/avatar', authMiddleware, avatarUpload.single('avatar'), async (
     const outputFilename = crypto.randomUUID() + '.png';
     const outputPath = path.join(uploadDir, outputFilename);
 
-    await sharp(file.path, { limitInputPixels: 4096 * 4096 })
-      .resize(512, 512, { fit: 'cover' })
-      .png()
-      .toFile(outputPath);
+    try {
+      await sharp(file.path, { limitInputPixels: 4096 * 4096 })
+        .resize(512, 512, { fit: 'cover' })
+        .png()
+        .toFile(outputPath);
+    } catch (sharpError) {
+      // Over the pixel limit or undecodable image: client error, not a server failure
+      logError('Avatar image rejected', sharpError);
+      fs.unlinkSync(file.path);
+      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      res.status(400).json({ error: 'Image is too large or cannot be processed' });
+      return;
+    }
 
     // Delete the original upload
     fs.unlinkSync(file.path);

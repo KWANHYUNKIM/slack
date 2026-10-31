@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { Picker } from 'emoji-mart';
 import data from '@emoji-mart/data';
 import { cn } from '@/lib/utils';
+import i18n from '@/lib/i18n';
+import { loadEmojiMartI18n } from '@/lib/i18n/emojiI18n';
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: { native: string; id: string }) => void;
@@ -23,10 +25,24 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
     const container = containerRef.current;
     if (!container) return;
 
+    let cancelled = false;
+
     // Delay picker creation to avoid the opening click triggering onClickOutside
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      // 번들에 포함된 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
+      // 실패하면 i18n 없이 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      let locale = 'en';
+      let pickerI18n: Record<string, unknown> | undefined;
+      try {
+        ({ locale, i18n: pickerI18n } = await loadEmojiMartI18n(i18n.language));
+      } catch (err) {
+        console.warn('emoji-mart i18n load failed, falling back to en', err);
+      }
+      if (cancelled) return;
       const picker = new Picker({
         data,
+        i18n: pickerI18n,
+        locale,
         onEmojiSelect: (emoji: { native: string; id: string }) => onEmojiSelectRef.current(emoji),
         onClickOutside: () => onClickOutsideRef.current?.(),
         set: 'native',
@@ -43,6 +59,7 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
     }, 0);
 
     return () => {
+      cancelled = true;
       clearTimeout(timer);
       container.replaceChildren();
     };

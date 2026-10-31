@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ interface HeaderNotificationsProps {
 }
 
 export function HeaderNotifications({ excludeChannelId, testIdPrefix = '' }: HeaderNotificationsProps) {
+  const { t } = useTranslation(['messages', 'activity']);
   const navigate = useNavigate();
   const channels = useChannelStore((s) => s.channels);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -29,30 +31,30 @@ export function HeaderNotifications({ excludeChannelId, testIdPrefix = '' }: Hea
         variant="toolbar"
         size="icon-xs"
         data-testid={`${prefix}notification-bell`}
-        title="Notifications"
+        title={t('messages:notifications.title')}
         onClick={() => setShowNotifications((v) => !v)}
       >
         <Bell className={cn('h-4 w-4', showNotifications ? 'text-slack-link' : 'text-slack-secondary')} />
       </Button>
       {showNotifications && (
-        <div data-testid={`${prefix}notifications-panel`} className="absolute right-0 top-7 z-50 w-[300px] max-h-[360px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
+        <div data-testid={`${prefix}notifications-panel`} className="absolute end-0 top-7 z-50 w-[300px] max-h-[360px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
           <div className="px-3 py-2 border-b border-slack-border">
-            <h3 className="text-[13px] font-bold text-slack-primary">Activity</h3>
+            <h3 className="text-[13px] font-bold text-slack-primary">{t('activity:page.title')}</h3>
           </div>
           {unread.length === 0 ? (
-            <p className="px-3 py-6 text-center text-[13px] text-slack-hint">No new notifications</p>
+            <p className="px-3 py-6 text-center text-[13px] text-slack-hint">{t('messages:notifications.empty')}</p>
           ) : (
             unread.map((ch) => (
               <button
                 key={ch.id}
                 onClick={() => { navigate(`/c/${ch.id}`); setShowNotifications(false); }}
-                className="w-full text-left px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
+                className="w-full text-start px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-medium text-slack-primary">#{ch.name}</span>
                   <span className="text-[12px] bg-slack-badge text-white rounded-full px-1.5 min-w-[20px] text-center">{ch.unreadCount}</span>
                 </div>
-                <p className="text-[12px] text-slack-hint mt-0.5">{ch.unreadCount} unread message{ch.unreadCount !== 1 ? 's' : ''}</p>
+                <p className="text-[12px] text-slack-hint mt-0.5">{t('messages:notifications.unreadCount', { count: ch.unreadCount })}</p>
               </button>
             ))
           )}

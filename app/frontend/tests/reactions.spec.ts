@@ -9,7 +9,7 @@ async function addReactionViaHover(page: import('@playwright/test').Page, messag
   await messageRow.hover();
 
   // Click the emoji (Smile) button — first button in the hover toolbar
-  const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+  const hoverToolbar = page.locator('.absolute.-top-4.end-5');
   await hoverToolbar.locator('button').first().click();
 
   // Wait for the emoji picker to render (it's a custom element but accessible via roles)

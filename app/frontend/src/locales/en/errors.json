@@ -1,0 +1,9 @@
+{
+  "client": {
+    "requestFailed": "Request failed",
+    "validation": "Validation error",
+    "uploadFailed": "Upload failed",
+    "dismiss": "Dismiss",
+    "reconnecting": "Reconnecting..."
+  }
+}

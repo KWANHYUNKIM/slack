@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Inbox, Hash, Menu } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/lib/i18n/format';
 import { getUnreadMessages, type ApiMessage } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -8,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMobileStore } from '@/stores/useMobileStore';
 
 export function UnreadsPage() {
+  const { t } = useTranslation(['messages', 'common']);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -20,9 +22,9 @@ export function UnreadsPage() {
         setMessages(data.messages);
         setLoadError(null);
       })
-      .catch(() => setLoadError('Failed to load unread messages.'))
+      .catch(() => setLoadError(t('messages:unreads.loadFailed')))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchUnreads();
@@ -34,23 +36,24 @@ export function UnreadsPage() {
         <div className="flex h-[49px] items-center px-5">
           <button
             onClick={useMobileStore.getState().openSidebar}
-            className="mr-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+            aria-label={t('messages:unreads.menu')}
+            className="me-2 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
           >
             <Menu className="h-5 w-5 text-slack-secondary" />
           </button>
-          <Inbox className="h-5 w-5 text-slack-secondary mr-2" />
-          <span className="text-[18px] font-bold text-slack-primary">Unreads</span>
+          <Inbox className="h-5 w-5 text-slack-secondary me-2" />
+          <span className="text-[18px] font-bold text-slack-primary">{t('messages:unreads.title')}</span>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         {isLoading ? (
-          <div className="text-center text-sm text-slack-hint">Loading...</div>
+          <div className="text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (
           <div className="text-center text-sm text-slack-error">{loadError}</div>
         ) : messages.length === 0 ? (
           <div className="text-center text-sm text-slack-hint py-8">
-            No unread messages. You're all caught up! 🎉
+            {t('messages:unreads.empty')}
           </div>
         ) : (
           <div className="space-y-1">
@@ -76,7 +79,7 @@ export function UnreadsPage() {
                       {msg.user.name}
                     </span>
                     <span className="text-[12px] text-slack-secondary">
-                      {format(new Date(msg.createdAt), 'MMM d, h:mm a')}
+                      {formatDateTime(msg.createdAt)}
                     </span>
                   </div>
                   <div className="text-[15px] text-slack-primary leading-[22px] whitespace-pre-wrap break-words line-clamp-3">

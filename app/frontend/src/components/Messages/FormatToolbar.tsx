@@ -9,18 +9,19 @@ import {
   CodeSquare,
   Quote,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 const formatButtons = [
-  { icon: Bold, label: 'Bold', format: 'bold' },
-  { icon: Italic, label: 'Italic', format: 'italic' },
-  { icon: Strikethrough, label: 'Strikethrough', format: 'strike' },
-  { icon: Link, label: 'Link', format: 'link' },
-  { icon: ListOrdered, label: 'Ordered List', format: 'list', value: 'ordered' },
-  { icon: List, label: 'Bullet List', format: 'list', value: 'bullet' },
-  { icon: Code, label: 'Code', format: 'code' },
-  { icon: CodeSquare, label: 'Code Block', format: 'code-block' },
-  { icon: Quote, label: 'Quote', format: 'blockquote' },
+  { icon: Bold, key: 'bold', format: 'bold' },
+  { icon: Italic, key: 'italic', format: 'italic' },
+  { icon: Strikethrough, key: 'strike', format: 'strike' },
+  { icon: Link, key: 'link', format: 'link' },
+  { icon: ListOrdered, key: 'orderedList', format: 'list', value: 'ordered' },
+  { icon: List, key: 'bulletList', format: 'list', value: 'bullet' },
+  { icon: Code, key: 'code', format: 'code' },
+  { icon: CodeSquare, key: 'codeBlock', format: 'code-block' },
+  { icon: Quote, key: 'quote', format: 'blockquote' },
 ];
 
 interface FormatToolbarProps {
@@ -28,6 +29,7 @@ interface FormatToolbarProps {
 }
 
 export function FormatToolbar({ onApplyFormat }: FormatToolbarProps) {
+  const { t } = useTranslation('messages');
   return (
     <div
       data-testid="formatting-toolbar"
@@ -35,11 +37,11 @@ export function FormatToolbar({ onApplyFormat }: FormatToolbarProps) {
     >
       {formatButtons.map((button) => (
         <Button
-          key={button.label}
+          key={button.key}
           variant="toolbar"
           size="icon-sm"
           onClick={() => onApplyFormat(button.format, button.value)}
-          title={button.label}
+          title={t(`format.${button.key}`)}
         >
           <button.icon className="h-[18px] w-[18px]" />
         </Button>

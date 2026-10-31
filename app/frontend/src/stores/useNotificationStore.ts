@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { t } from '@/lib/i18n';
 
 type Permission = 'default' | 'granted' | 'denied' | 'unsupported';
 
@@ -58,7 +59,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     try {
       // Fetch VAPID key
       const keyRes = await fetch('/push/vapid-key');
-      if (!keyRes.ok) throw new Error('Push not configured on server');
+      if (!keyRes.ok) throw new Error(t('messages:errors.pushNotConfigured'));
       const { vapidPublicKey } = await keyRes.json();
 
       // Request permission (must be called from user gesture)
@@ -71,7 +72,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // Get SW registration and subscribe
       const reg = await getRegistration();
-      if (!reg) throw new Error('Service worker not available');
+      if (!reg) throw new Error(t('messages:errors.serviceWorkerUnavailable'));
 
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -94,7 +95,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to register subscription');
+      if (!res.ok) throw new Error(t('messages:errors.subscribeFailed'));
 
       set({ isSubscribed: true, isLoading: false });
     } catch (err) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Hash, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { Channel } from '@/lib/types';
@@ -23,6 +24,7 @@ export function AddChannelDialog({
   onNavigateToChannel,
   onBrowse,
 }: AddChannelDialogProps) {
+  const { t } = useTranslation('channels');
   const [addChannelMode, setAddChannelMode] = useState<'create' | 'browse'>('create');
   const [newChannelName, setNewChannelName] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -67,7 +69,7 @@ export function AddChannelDialog({
                 : 'text-slack-hint hover:text-slack-primary'
             )}
           >
-            Create a channel
+            {t('dialog.tabCreate')}
           </button>
           <button
             onClick={handleBrowse}
@@ -78,7 +80,7 @@ export function AddChannelDialog({
                 : 'text-slack-hint hover:text-slack-primary'
             )}
           >
-            Browse channels
+            {t('dialog.tabBrowse')}
           </button>
         </div>
 
@@ -90,11 +92,11 @@ export function AddChannelDialog({
                 const name = newChannelName.trim().toLowerCase();
                 if (!name) return;
                 if (name.length > 25) {
-                  setCreateChannelError('Channel name must be 25 characters or fewer');
+                  setCreateChannelError(t('dialog.errors.tooLong'));
                   return;
                 }
                 if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
-                  setCreateChannelError('Channel names can only contain lowercase letters, numbers, and hyphens');
+                  setCreateChannelError(t('dialog.errors.invalidChars'));
                   return;
                 }
                 try {
@@ -103,13 +105,13 @@ export function AddChannelDialog({
                   setCreateChannelError('');
                 } catch (err) {
                   setCreateChannelError(
-                    err instanceof Error ? err.message : 'Failed to create channel'
+                    err instanceof Error ? err.message : t('dialog.errors.createFailed')
                   );
                 }
               }}
             >
               <label className="block text-[14px] font-medium text-slack-primary mb-1">
-                Channel name
+                {t('dialog.nameLabel')}
               </label>
               <input
                 type="text"
@@ -119,14 +121,14 @@ export function AddChannelDialog({
                   setNewChannelName(val);
                   const trimmed = val.trim().toLowerCase();
                   if (trimmed.length > 25) {
-                    setCreateChannelError('Channel name must be 25 characters or fewer');
+                    setCreateChannelError(t('dialog.errors.tooLong'));
                   } else if (trimmed.length > 0 && !/^[a-z0-9][a-z0-9-]*$/.test(trimmed)) {
-                    setCreateChannelError('Channel names can only contain lowercase letters, numbers, and hyphens');
+                    setCreateChannelError(t('dialog.errors.invalidChars'));
                   } else if (createChannelError) {
                     setCreateChannelError('');
                   }
                 }}
-                placeholder="e.g. plan-budget"
+                placeholder={t('dialog.namePlaceholder')}
                 autoFocus
                 className="w-full rounded border border-slack-input-border px-3 py-2 text-[15px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
               />
@@ -146,7 +148,7 @@ export function AddChannelDialog({
 
               <div className="mt-3">
                 <label className="block text-[14px] font-medium text-slack-primary mb-2">
-                  Visibility
+                  {t('dialog.visibility')}
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -160,7 +162,7 @@ export function AddChannelDialog({
                     )}
                   >
                     <Hash className="h-3.5 w-3.5" />
-                    Public
+                    {t('dialog.public')}
                   </button>
                   <button
                     type="button"
@@ -173,29 +175,29 @@ export function AddChannelDialog({
                     )}
                   >
                     <Lock className="h-3.5 w-3.5" />
-                    Private
+                    {t('dialog.private')}
                   </button>
                 </div>
                 <p className="mt-1 text-[12px] text-slack-hint">
                   {isPrivate
-                    ? 'Only invited members can find and join this channel.'
-                    : 'Anyone in the workspace can find and join this channel.'}
+                    ? t('dialog.privateHint')
+                    : t('dialog.publicHint')}
                 </p>
               </div>
 
               <div className="mt-4 flex justify-end gap-2">
                 <Button variant="ghost" type="button" onClick={handleClose}>
-                  Cancel
+                  {t('dialog.cancel')}
                 </Button>
                 <Button type="submit" disabled={!newChannelName.trim() || !!createChannelError}>
-                  Create
+                  {t('dialog.create')}
                 </Button>
               </div>
             </form>
           ) : (
             <div>
               {browseChannels.length === 0 ? (
-                <p className="text-center text-slack-hint py-8">No channels available to join</p>
+                <p className="text-center text-slack-hint py-8">{t('dialog.noChannels')}</p>
               ) : (
                 <div className="max-h-[300px] overflow-y-auto space-y-1">
                   {browseChannels.map((ch) => (
@@ -211,13 +213,13 @@ export function AddChannelDialog({
                       <div className="flex items-center gap-2">
                         {ch.isPrivate ? <Lock className="h-3.5 w-3.5 text-slack-disabled" /> : <Hash className="h-3.5 w-3.5 text-slack-disabled" />}
                         <span className="text-[15px] text-slack-primary">{ch.name}</span>
-                        <span className="text-[12px] text-slack-hint">{ch.memberCount} {ch.memberCount === 1 ? 'member' : 'members'}</span>
+                        <span className="text-[12px] text-slack-hint">{t('dialog.memberCount', { count: ch.memberCount })}</span>
                       </div>
                       {ch.isMember ? (
-                        <span data-testid="joined-badge" className="text-[12px] text-slack-hint font-medium px-2 py-1">Joined</span>
+                        <span data-testid="joined-badge" className="text-[12px] text-slack-hint font-medium px-2 py-1">{t('dialog.joined')}</span>
                       ) : (
                         <Button size="sm" onClick={() => { onJoinChannel(ch.id).then(() => { onNavigateToChannel(ch.id); handleClose(); }); }}>
-                          Join
+                          {t('dialog.join')}
                         </Button>
                       )}
                     </div>
@@ -226,7 +228,7 @@ export function AddChannelDialog({
               )}
               <div className="mt-4 flex justify-end">
                 <Button variant="ghost" onClick={handleClose}>
-                  Close
+                  {t('dialog.close')}
                 </Button>
               </div>
             </div>

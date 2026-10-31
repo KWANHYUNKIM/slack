@@ -168,6 +168,8 @@ router.post('/', authMiddleware, uploadLimiter, (req: AuthRequest, res: Response
     const allowedMimesByMagic = new Set([
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
       'application/pdf', 'application/zip',
+      // file-type 22 detects iWork packages separately from plain zip
+      'application/vnd.apple.keynote', 'application/vnd.apple.pages', 'application/vnd.apple.numbers',
       'audio/mpeg', 'audio/ogg', 'audio/mp4', 'audio/webm',
       'video/mp4', 'video/webm', 'video/quicktime',
     ]);

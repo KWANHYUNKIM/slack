@@ -672,46 +672,107 @@ describe('Activity: mentions, thread replies, reactions', () => {
   });
 
   describe('channel read clears old mentions', () => {
-    it('clears every old top-level mention even when the read cursor is already ahead; thread-reply mentions stay', async () => {
+    const channelsOf = async (u: TestUser) => {
+      await settle();
+      return (await request(app).get('/channels').set(auth(u))).body.find((c: any) => c.id === pubId);
+    };
+    const cursorOf = async (u: TestUser) =>
+      (await prisma.channelRead.findUnique({ where: { userId_channelId: { userId: u.id, channelId: pubId } } }))?.lastReadMessageId ?? null;
+    const resetRead = async (u: TestUser) => {
+      await prisma.channelRead.deleteMany({ where: { userId: u.id, channelId: pubId } });
+    };
+
+    it('baseline alone (open channel, no /read) clears old top-level mentions; thread-reply mentions stay', async () => {
+      await resetRead(bob);
       const ids: number[] = [];
       for (let i = 0; i < 12; i++) ids.push((await post(alice, pubId, `old ${i} ${mention(bob)}`)).body.id);
-      const parent = ids[0];
-      const reply = await request(app).post(`/messages/${parent}/reply`).set(auth(alice)).send({ content: `in thread ${mention(bob)}` });
+      const reply = await request(app).post(`/messages/${ids[0]}/reply`).set(auth(alice)).send({ content: `in thread ${mention(bob)}` });
       const latest = (await post(alice, pubId, 'latest')).body.id;
-      const channelsOf = async () => {
-        await settle();
-        return (await request(app).get('/channels').set(auth(bob))).body.find((c: any) => c.id === pubId);
-      };
-      expect((await channelsOf()).mentionCount).toBe(13);
-
-      // the read cursor is already at the newest message (e.g. read earlier by another client), ahead of every old mention
-      await prisma.channelRead.upsert({
-        where: { userId_channelId: { userId: bob.id, channelId: pubId } },
-        create: { userId: bob.id, channelId: pubId, lastReadMessageId: latest },
-        update: { lastReadMessageId: latest },
-      });
-      expect((await channelsOf()).mentionCount).toBe(13);
+      expect((await channelsOf(bob)).mentionCount).toBe(13);
 
       const bobSocket = await connect(bob);
       const reads = collect(bobSocket, 'activity:read');
-
-      // the client reports a position that is not newer than the cursor (older page / stale last id)
-      const res = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: ids[3] });
+      const res = await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
       expect(res.status).toBe(200);
       await settle();
 
-      expect((await channelsOf()).mentionCount).toBe(1); // only the thread-reply mention remains
-      const left = await dbActivities({ userId: bob.id, readAt: null });
-      expect(left.map((a) => a.messageId)).toEqual([reply.body.id]);
+      expect(await cursorOf(bob)).toBe(latest);
+      expect((await channelsOf(bob)).mentionCount).toBe(1);
+      expect((await dbActivities({ userId: bob.id, readAt: null })).map((a) => a.messageId)).toEqual([reply.body.id]);
       await waitFor(() => reads, (e) => e.length >= 1);
       expect(reads[0].ids).toHaveLength(12);
 
-      // reading up to the newest message is a no-op for the rest; the thread-reply mention is cleared by opening the thread
-      await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: latest });
-      expect((await channelsOf()).mentionCount).toBe(1);
-      await request(app).get(`/messages/${parent}/thread`).set(auth(bob));
-      expect((await channelsOf()).mentionCount).toBe(0);
+      // a second baseline is a no-op; opening the thread clears the rest
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      expect((await channelsOf(bob)).mentionCount).toBe(1);
+      await request(app).get(`/messages/${ids[0]}/thread`).set(auth(bob));
+      expect((await channelsOf(bob)).mentionCount).toBe(0);
       bobSocket.disconnect();
+    });
+
+    it('/read clears only up to the requested message and never moves the cursor back', async () => {
+      await resetRead(bob);
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      const a = (await post(alice, pubId, `m1 ${mention(bob)}`)).body.id;
+      const b = (await post(alice, pubId, `m2 ${mention(bob)}`)).body.id;
+      const c = (await post(alice, pubId, `m3 ${mention(bob)}`)).body.id;
+      await settle();
+
+      expect((await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: b })).status).toBe(200);
+      await settle();
+      expect(await cursorOf(bob)).toBe(b);
+      expect((await dbActivities({ userId: bob.id, readAt: null, channelId: pubId })).map((x) => x.messageId)).toEqual([c]);
+
+      // stale request: cursor stays, the newer mention is not touched
+      await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: a });
+      await settle();
+      expect(await cursorOf(bob)).toBe(b);
+      expect((await dbActivities({ userId: bob.id, readAt: null, channelId: pubId })).map((x) => x.messageId)).toEqual([c]);
+
+      await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: c });
+      await settle();
+      expect(await cursorOf(bob)).toBe(c);
+      expect(await dbActivities({ userId: bob.id, readAt: null, channelId: pubId })).toHaveLength(0);
+    });
+
+    it('concurrent /read requests leave the cursor at the largest id', async () => {
+      await resetRead(bob);
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      const lo = (await post(alice, pubId, 'lo')).body.id;
+      const hi = (await post(alice, pubId, 'hi')).body.id;
+      for (let i = 0; i < 5; i++) {
+        await prisma.channelRead.updateMany({ where: { userId: bob.id, channelId: pubId }, data: { lastReadMessageId: null } });
+        const rs = await Promise.all([hi, lo, hi, lo].map((messageId) => request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId })));
+        rs.forEach((r) => expect(r.status).toBe(200));
+        expect(await cursorOf(bob)).toBe(hi);
+      }
+      // with no row at all, concurrent first reads still succeed
+      await resetRead(bob);
+      const rs = await Promise.all([lo, hi].map((messageId) => request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId })));
+      rs.forEach((r) => expect(r.status).toBe(200));
+      expect(await cursorOf(bob)).toBe(hi);
+    });
+
+    it('a deleted message in this channel still advances the cursor and clears mentions; another channel id is 404', async () => {
+      await resetRead(bob);
+      await request(app).post(`/channels/${pubId}/read/baseline`).set(auth(bob));
+      const m = (await post(alice, pubId, `to delete ${mention(bob)}`)).body.id;
+      const other = (await post(alice, pubId, `after ${mention(bob)}`)).body.id;
+      await settle();
+      expect((await request(app).delete(`/messages/${m}`).set(auth(alice))).status).toBe(200);
+      await settle();
+
+      const res = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: m });
+      expect(res.status).toBe(200);
+      await settle();
+      expect(await cursorOf(bob)).toBe(m);
+      expect((await dbActivities({ userId: bob.id, readAt: null, channelId: pubId })).map((x) => x.messageId)).toEqual([other]);
+
+      const foreign = (await post(alice, privId, 'private')).body.id;
+      const denied = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: foreign });
+      expect(denied.status).toBe(404);
+      const missing = await request(app).post(`/channels/${pubId}/read`).set(auth(bob)).send({ messageId: 2147483000 });
+      expect(missing.status).toBe(404);
     });
   });
 });

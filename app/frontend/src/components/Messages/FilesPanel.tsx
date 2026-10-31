@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate, DATE_MEDIUM } from '@/lib/i18n/format';
 import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
 import { ImageLightbox } from './ImageLightbox';
 import { PanelHeader } from './PanelHeader';
@@ -15,6 +16,7 @@ interface FilesPanelProps {
 
 
 export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
+  const { t } = useTranslation(['messages', 'common']);
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
         setLoadError(null);
       })
       .catch(() => {
-        if (!cancelled) setLoadError('Failed to load files.');
+        if (!cancelled) setLoadError(t('messages:files.loadFailed'));
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -39,20 +41,20 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [channelId]);
+  }, [channelId, t]);
 
-  const panelTitle = title ?? (channelId ? 'Channel files' : 'All files');
+  const panelTitle = title ?? (channelId ? t('messages:files.channelFiles') : t('messages:files.allFiles'));
 
   return (
-    <div data-testid="files-panel" className="flex w-full md:w-[300px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto">
+    <div data-testid="files-panel" className="flex w-full md:w-[300px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto">
       <PanelHeader icon={FileText} title={panelTitle} onClose={onClose} />
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {isLoading ? (
-          <div className="p-4 text-center text-sm text-slack-hint">Loading...</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('common:status.loading')}</div>
         ) : loadError ? (
           <div className="p-4 text-center text-sm text-slack-error">{loadError}</div>
         ) : files.length === 0 ? (
-          <div className="p-4 text-center text-sm text-slack-hint">No files uploaded yet</div>
+          <div className="p-4 text-center text-sm text-slack-hint">{t('messages:files.empty')}</div>
         ) : (
           files.map((file) => (
             <div key={file.id} className="border-b border-slack-border-light px-4 py-3">
@@ -76,7 +78,7 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
                   {file.mimetype.startsWith('image/') ? (
                     <button
                       onClick={() => { setLightboxSrc(getFileUrl(file.id)); setLightboxAlt(file.originalName); }}
-                      className="block text-[13px] font-medium text-slack-link hover:underline truncate text-left"
+                      className="block text-[13px] font-medium text-slack-link hover:underline truncate text-start"
                     >
                       {file.originalName}
                     </button>
@@ -92,14 +94,14 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
                   )}
                   <p className="text-[11px] text-slack-secondary">
                     {formatBytes(file.size)} &middot; {file.user.name} &middot;{' '}
-                    {format(new Date(file.createdAt), 'MMM d, yyyy')}
+                    {formatDate(file.createdAt, DATE_MEDIUM)}
                   </p>
                 </div>
                 <a
                   href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
                   download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
                   className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded hover:bg-slack-hover"
-                  title="Download"
+                  title={t('messages:files.download')}
                 >
                   <Download className="h-3.5 w-3.5 text-slack-secondary" />
                 </a>

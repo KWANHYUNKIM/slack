@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatTime } from '@/lib/i18n/format';
 import { searchMessages, type SearchResult } from '@/lib/api';
 import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
@@ -12,6 +13,7 @@ interface HeaderSearchProps {
 }
 
 export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
+  const { t } = useTranslation('messages');
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -88,32 +90,33 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
 
   return (
     <div className="relative" ref={searchRef}>
-      <Search className="absolute left-2 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-slack-secondary" />
+      <Search className="absolute start-2 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-slack-secondary" />
       <input
         type="text"
-        placeholder="Search"
+        placeholder={t('search.placeholder')}
+        aria-label={t('search.placeholder')}
         value={searchQuery}
         onChange={handleSearchChange}
         onKeyDown={handleSearchKeyDown}
-        className="h-[26px] w-[140px] rounded-md border border-slack-border bg-white pl-7 pr-2 text-[13px] placeholder:text-slack-secondary focus:outline-none focus:border-slack-link focus:w-[240px] transition-all"
+        className="h-[26px] w-[140px] rounded-md border border-slack-border bg-white ps-7 pe-2 text-[13px] placeholder:text-slack-secondary focus:outline-none focus:border-slack-link focus:w-[240px] transition-all"
       />
       {showResults && (
-        <div data-testid={`${prefix}search-results-dropdown`} className="absolute right-0 top-8 z-50 w-[360px] max-h-[400px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
+        <div data-testid={`${prefix}search-results-dropdown`} className="absolute end-0 top-8 z-50 w-[360px] max-h-[400px] overflow-y-auto rounded-lg border border-slack-border bg-white shadow-lg">
           {isSearching ? (
-            <div className="p-4 text-center text-sm text-slack-hint">Searching...</div>
+            <div className="p-4 text-center text-sm text-slack-hint">{t('search.searching')}</div>
           ) : searchResults.length === 0 ? (
-            <div className="p-4 text-center text-sm text-slack-hint">No results found</div>
+            <div className="p-4 text-center text-sm text-slack-hint">{t('search.noResults')}</div>
           ) : (
             <div>
               <div className="px-3 py-2 text-xs font-medium text-slack-hint border-b">
-                {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                {t('search.resultCount', { count: searchResults.length })}
               </div>
               {searchResults.map((result) => (
                 <button
                   key={`${result.type}-${result.id}`}
                   data-testid="search-result-item"
                   onClick={() => handleResultClick(result)}
-                  className="w-full text-left px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
+                  className="w-full text-start px-3 py-2 hover:bg-slack-hover border-b border-slack-border-light last:border-b-0"
                 >
                   <div className="flex items-start gap-2">
                     <Avatar
@@ -127,13 +130,10 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
                       <div className="flex items-center gap-1 text-xs text-slack-hint">
                         <span className="font-medium text-slack-primary">{result.user.name}</span>
                         <span data-testid="search-result-timestamp" className="text-slack-disabled">
-                          {format(new Date(result.createdAt), 'h:mm a')}
+                          {formatTime(result.createdAt)}
                         </span>
                         {result.channel && (
-                          <>
-                            <span>in</span>
-                            <span className="font-medium">#{result.channel.name}</span>
-                          </>
+                          <span>{t('search.inChannel', { channel: result.channel.name })}</span>
                         )}
                       </div>
                       <div className="mt-0.5 text-sm text-slack-primary line-clamp-2">{renderMessageContent(result.content)}</div>

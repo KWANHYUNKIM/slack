@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import fixWebmDuration from 'fix-webm-duration';
 import { uploadFile, type ApiFile } from '@/lib/api';
+import { t } from '@/lib/i18n';
 
 interface UseVoiceRecorderOptions {
   onRecorded: (file: ApiFile) => void;
@@ -64,7 +65,7 @@ export function useVoiceRecorder({ onRecorded, onError }: UseVoiceRecorderOption
           const uploaded = await uploadFile(file);
           onRecorded(uploaded);
         } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Failed to upload voice message.';
+          const msg = err instanceof Error ? err.message : t('messages:errors.voiceUploadFailed');
           onError?.(msg);
         }
       };
@@ -78,7 +79,7 @@ export function useVoiceRecorder({ onRecorded, onError }: UseVoiceRecorderOption
         setDuration((d) => d + 1);
       }, 1000);
     } catch {
-      onError?.('Microphone access denied. Please allow microphone access.');
+      onError?.(t('messages:errors.micDenied'));
     }
   }, [onRecorded, onError]);
 

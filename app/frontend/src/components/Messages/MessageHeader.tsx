@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Hash, Lock, Star, MoreVertical, LogOut, Menu, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getChannelMembers, type ChannelMember } from '@/lib/api';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -25,6 +26,7 @@ interface MessageHeaderProps {
 }
 
 export function MessageHeader({ channel, showMembers, onToggleMembers, onTogglePins, showPins, onToggleFiles, showFiles, readOnly }: MessageHeaderProps) {
+  const { t } = useTranslation('messages');
   const navigate = useNavigate();
   const openSidebar = useMobileStore((s) => s.openSidebar);
   const toggleStar = useChannelStore((s) => s.toggleStar);
@@ -73,7 +75,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
         navigate('/');
       }
     } catch {
-      setLeaveError('Cannot leave channel — you are the last member.');
+      setLeaveError(t('header.leaveLastMember'));
     }
   };
 
@@ -85,7 +87,8 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
         <div className="flex items-center gap-1">
           <button
             onClick={openSidebar}
-            className="mr-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+            aria-label={t('header.menu')}
+            className="me-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
           >
             <Menu className="h-5 w-5 text-slack-secondary" />
           </button>
@@ -102,7 +105,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
               size="icon-xs"
               data-testid="star-channel-button"
               onClick={() => toggleStar(channel.id)}
-              title={channel.isStarred ? 'Remove from Starred' : 'Add to Starred'}
+              title={channel.isStarred ? t('header.unstar') : t('header.star')}
             >
               <Star className={cn('h-4 w-4', channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-slack-secondary')} />
             </Button>
@@ -114,6 +117,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
           <button
             data-testid="member-avatars-button"
             onClick={onToggleMembers}
+            aria-label={t('header.members', { count: channel.memberCount })}
             className={cn(
               'flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[13px] hover:bg-slack-hover',
               showMembers ? 'text-slack-link bg-slack-highlight' : 'text-slack-secondary'
@@ -144,6 +148,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
           </div>
           <button
             onClick={() => setShowMobileSearch(true)}
+            aria-label={t('header.search')}
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover sm:hidden"
             data-testid="mobile-search-button"
           >
@@ -156,17 +161,18 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
                 size="icon-xs"
                 data-testid="channel-header-menu"
                 onClick={() => setShowMenu((v) => !v)}
+                aria-label={t('header.channelMenu')}
               >
                 <MoreVertical className="h-4 w-4 text-slack-secondary" />
               </Button>
               {showMenu && (
-                <div className="absolute right-0 top-7 z-50 min-w-[160px] rounded-lg border border-slack-border bg-white shadow-lg py-1">
+                <div className="absolute end-0 top-7 z-50 min-w-[160px] rounded-lg border border-slack-border bg-white shadow-lg py-1">
                   <Button
                     variant="menu-item-danger"
                     onClick={handleLeaveChannel}
                   >
                     <LogOut className="h-4 w-4" />
-                    Leave channel
+                    {t('header.leaveChannel')}
                   </Button>
                 </div>
               )}
@@ -179,7 +185,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
       {leaveError && (
         <div data-testid="leave-error" className="flex items-center justify-between bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700">
           <span>{leaveError}</span>
-          <button onClick={() => setLeaveError(null)} className="ml-2 text-red-500 hover:text-red-700 font-medium">Dismiss</button>
+          <button onClick={() => setLeaveError(null)} className="ms-2 text-red-500 hover:text-red-700 font-medium">{t('header.dismiss')}</button>
         </div>
       )}
 

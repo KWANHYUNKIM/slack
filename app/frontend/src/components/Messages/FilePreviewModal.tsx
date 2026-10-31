@@ -1,4 +1,7 @@
+import { t as translate } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatFileSize } from '@/lib/i18n/format';
 import { X, Download, FileText } from 'lucide-react';
 import { getFileUrl, getAuthFileUrl } from '@/lib/api';
 
@@ -32,13 +35,8 @@ function isPdf(mimetype: string): boolean {
   return mimetype === 'application/pdf';
 }
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose }: FilePreviewModalProps) {
+  const { t } = useTranslation(['messages', 'common']);
   const isText = isTextFile(mimetype, fileName);
   const [textContent, setTextContent] = useState<string | null>(null);
   // The modal is mounted per file, so start in the loading state for text files
@@ -61,16 +59,16 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
     if (!isText) return;
     fetch(fileUrl)
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to load file');
+        if (!res.ok) throw new Error('load failed');
         return res.text();
       })
       .then((text) => {
         // Cap preview at 100KB to avoid UI freeze
-        setTextContent(text.length > 100_000 ? text.slice(0, 100_000) + '\n\n... (truncated)' : text);
+        setTextContent(text.length > 100_000 ? text.slice(0, 100_000) + `\n\n${translate('messages:fileModal.truncated')}` : text);
         setLoading(false);
       })
       .catch(() => {
-        setError('Could not load file content');
+        setError('messages:fileModal.loadFailed');
         setLoading(false);
       });
   }, [fileUrl, isText]);
@@ -99,12 +97,12 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
               className="flex items-center gap-1 rounded px-2 py-1 text-[13px] text-slack-secondary hover:bg-slack-hover"
             >
               <Download className="h-4 w-4" />
-              Download
+              {t('messages:fileModal.download')}
             </a>
             <button
               onClick={onClose}
               className="flex h-7 w-7 items-center justify-center rounded hover:bg-slack-hover text-slack-secondary"
-              aria-label="Close"
+              aria-label={t('common:actions.close')}
             >
               <X className="h-4 w-4" />
             </button>
@@ -123,8 +121,8 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
 
           {isText && (
             <div className="p-4">
-              {loading && <p className="text-[13px] text-slack-secondary">Loading...</p>}
-              {error && <p className="text-[13px] text-red-600">{error}</p>}
+              {loading && <p className="text-[13px] text-slack-secondary">{t('common:status.loading')}</p>}
+              {error && <p className="text-[13px] text-red-600">{t(error)}</p>}
               {textContent !== null && (
                 <pre className="text-[13px] font-mono leading-relaxed text-slack-primary whitespace-pre-wrap break-words">
                   {textContent}
@@ -136,8 +134,8 @@ export function FilePreviewModal({ fileId, fileName, fileSize, mimetype, onClose
           {!isPdfFile && !isText && (
             <div className="flex flex-col items-center justify-center py-16 text-slack-secondary">
               <FileText className="h-12 w-12 mb-3" />
-              <p className="text-[14px]">No preview available</p>
-              <p className="text-[12px] mt-1">Download the file to view it</p>
+              <p className="text-[14px]">{t('messages:fileModal.noPreview')}</p>
+              <p className="text-[12px] mt-1">{t('messages:fileModal.downloadToView')}</p>
             </div>
           )}
         </div>

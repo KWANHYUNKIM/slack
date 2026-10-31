@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
 import { clearDownloadToken } from '@/lib/api';
 import { disconnectSocket } from '@/lib/socket';
@@ -38,7 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      const message = err instanceof Error ? err.message : t('auth:errors.loginFailed');
       set({ isLoading: false, error: message });
       throw err;
     }
@@ -65,7 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
+      const message = err instanceof Error ? err.message : t('auth:errors.registerFailed');
       set({ isLoading: false, error: message });
       throw err;
     }
@@ -86,7 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           user: {
             id: payload.userId,
             email: '',
-            name: 'User',
+            name: t('auth:placeholderUserName'),
           },
           isAuthenticated: true,
           isHydrating: true,
