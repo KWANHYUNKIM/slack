@@ -28,7 +28,7 @@ import {
   deleteActivitiesForMessage,
   createActivitiesForDm,
 } from '../services/mentionService.js';
-import { sendGroupMessage, emitToGroup } from '../services/dmGroupService.js';
+import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
@@ -783,31 +783,41 @@ export function initializeWebSocket(httpServer: HttpServer) {
       });
     });
 
-    // 그룹 DM 전송. HTTP POST /dms/groups/:id/messages와 같은 서비스를 쓴다.
-    socket.on('dmgroup:send', async (rawData: unknown) => {
+    // 그룹 DM 전송. HTTP POST /dms/groups/:id/messages와 같은 서비스를 쓴다. ack가 있으면 결과를 ack로 돌려준다.
+    socket.on('dmgroup:send', async (rawData: unknown, ack?: (response: { error?: string; code?: string; id?: number }) => void) => {
+      const sendError = (message: string, code?: string) => {
+        if (typeof ack === 'function') ack({ error: message, ...(code && { code }) });
+        else socket.emit('error', { message });
+      };
+
       if (!socket.user) return;
       if (!checkRateLimit(socket.user.userId, 'dmgroup:send')) {
-        socket.emit('error', { message: 'Rate limit exceeded' });
+        sendError('Rate limit exceeded');
         return;
       }
 
       try {
         const parsed = wsDmGroupSendSchema.safeParse(rawData);
         if (!parsed.success) {
-          socket.emit('error', { message: 'Invalid DM payload' });
+          sendError('Invalid DM payload');
           return;
         }
-        const { groupId, content } = parsed.data;
+        const { groupId, content, fileIds } = parsed.data;
         if (!(await checkDmGroupMembership(socket.user.userId, groupId))) {
-          socket.emit('error', { message: 'Unable to send message' });
+          sendError('Unable to send message');
           return;
         }
 
-        const dm = await sendGroupMessage({ groupId, fromUserId: socket.user.userId, content });
+        const dm = await sendGroupMessage({ groupId, fromUserId: socket.user.userId, content, fileIds });
+        if (typeof ack === 'function') ack({ id: dm.id });
         void createActivitiesForDm(dm);
       } catch (error) {
+        if (error instanceof InvalidFileIdsError) {
+          sendError(error.message, error.code);
+          return;
+        }
         logError('WebSocket group DM error', error);
-        socket.emit('error', { message: 'Failed to send DM' });
+        sendError('Failed to send DM');
       }
     });
 

@@ -11,11 +11,9 @@ import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { addDMGroupMembers, leaveDMGroup, renameDMGroup, type AuthUser } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { MAX_GROUP_SIZE } from '@/lib/groupDM';
 import type { GroupDM } from '@/lib/types';
 import { PanelHeader } from './PanelHeader';
-
-/** 그룹 DM은 본인 포함 9명까지 */
-const MAX_GROUP_SIZE = 9;
 const NAME_MAX = 100;
 
 interface GroupMembersPanelProps {

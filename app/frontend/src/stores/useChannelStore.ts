@@ -235,6 +235,8 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       dmScrollToMessageId: scrollToMessageId ?? null,
       groupDMs: state.groupDMs.map((g) => (g.id === groupId ? { ...g, unreadCount: 0 } : g)),
     }));
+    // 서버 읽음 커서와 멘션도 바로 읽음으로 바꾼다(around로 열면 메시지 조회가 읽음 처리를 하지 않는다)
+    api.markDMGroupRead(groupId).catch(() => {});
   },
 
   incrementGroupUnread: (groupId) => {

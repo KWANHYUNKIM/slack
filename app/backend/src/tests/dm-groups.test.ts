@@ -6,6 +6,7 @@ import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
+import { clearTokenCache } from '../middleware/auth.js';
 import { settleBackgroundWork as settle } from '../services/mentionService.js';
 
 // 파트 02: 그룹 DM(생성·재사용, 메시지 CRUD, 스레드·리액션·핀·파일, 멤버 추가·나가기, 읽음, 소켓, 권한)
@@ -111,6 +112,8 @@ describe('Group DMs', () => {
     await prisma.file.deleteMany();
     await prisma.directMessage.deleteMany();
     await prisma.dMGroup.deleteMany();
+    await prisma.channelMember.deleteMany();
+    await prisma.channel.deleteMany();
   });
 
   describe('POST /dms/groups', () => {
@@ -518,6 +521,136 @@ describe('Group DMs', () => {
       await waitFor(() => aliceNew, (e) => e.length === 1);
       await new Promise((r) => setTimeout(r, 200));
       expect(daveNew).toHaveLength(0);
+    });
+  });
+
+  describe('review fixes', () => {
+    // 게스트 G는 alice·bob과만 채널을 공유한다. carol은 G와 공유 채널이 없다.
+    async function setupGuest(): Promise<{ guest: TestUser; channelId: number }> {
+      const guest = await register(`Guest${Date.now()}`);
+      await prisma.user.update({ where: { id: guest.id }, data: { role: 'GUEST' } });
+      clearTokenCache();
+      const ch = await prisma.channel.create({ data: { name: `guest-ch-${guest.id}`, isPrivate: true } });
+      await prisma.channelMember.createMany({
+        data: [alice, bob, guest].map((u) => ({ userId: u.id, channelId: ch.id })),
+      });
+      return { guest, channelId: ch.id };
+    }
+
+    it('rejects a group where a guest does not share a channel with every other member', async () => {
+      const { guest } = await setupGuest();
+
+      // 멤버(alice)가 만들어도 게스트와 공유 채널이 없는 carol이 끼면 거부
+      expect((await createGroup(alice, [guest.id, carol.id])).status).toBe(400);
+      // 게스트가 행위자여도 마찬가지
+      expect((await createGroup(guest, [alice.id, carol.id])).status).toBe(400);
+      // 모두 공유 채널이 있으면 허용
+      const ok = await createGroup(alice, [guest.id, bob.id]);
+      expect(ok.status).toBe(201);
+      const groupId = ok.body.group.id;
+
+      // 추가로도 우회할 수 없다
+      const add = await request(app).post(`/dms/groups/${groupId}/members`).set(auth(alice)).send({ userIds: [carol.id] });
+      expect(add.status).toBe(400);
+      expect(await prisma.dMGroupMember.count({ where: { groupId } })).toBe(3);
+
+      // 게스트를 사람이 없는 그룹에 추가하는 것도 같은 기준
+      const plain = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
+      expect((await request(app).post(`/dms/groups/${plain}/members`).set(auth(alice)).send({ userIds: [guest.id] })).status).toBe(400);
+    });
+
+    it('lets a guest search its own group DMs even without shared-channel members', async () => {
+      const { guest, channelId } = await setupGuest();
+      const groupId = (await createGroup(alice, [guest.id, bob.id])).body.group.id;
+      await send(alice, groupId, 'findable-guest-text');
+      // 그 뒤 채널에서 빠져 공유 채널 멤버가 없어졌다
+      await prisma.channelMember.deleteMany({ where: { channelId } });
+      const res = await request(app).get('/search?q=findable-guest-text').set(auth(guest));
+      expect(res.status).toBe(200);
+      expect(res.body.results.map((r: any) => r.groupId)).toEqual([groupId]);
+    });
+
+    it('serializes concurrent member additions so the group never exceeds 9', async () => {
+      const groupId = (await createGroup(alice, [bob.id, carol.id, dave.id])).body.group.id; // 4명
+      const [a, b] = await Promise.all([
+        request(app).post(`/dms/groups/${groupId}/members`).set(auth(alice)).send({ userIds: extras.slice(0, 3).map((u) => u.id) }),
+        request(app).post(`/dms/groups/${groupId}/members`).set(auth(bob)).send({ userIds: extras.slice(3, 6).map((u) => u.id) }),
+      ]);
+      expect([a.status, b.status].sort()).toEqual([200, 400]);
+      expect(await prisma.dMGroupMember.count({ where: { groupId } })).toBe(7);
+
+      // 같은 사람을 동시에 추가해도 오류 없이 한 번만 들어간다
+      const [c, d] = await Promise.all([
+        request(app).post(`/dms/groups/${groupId}/members`).set(auth(alice)).send({ userIds: [eve.id] }),
+        request(app).post(`/dms/groups/${groupId}/members`).set(auth(bob)).send({ userIds: [eve.id] }),
+      ]);
+      expect([c.status, d.status]).toEqual([200, 200]);
+      expect([...c.body.addedUserIds, ...d.body.addedUserIds]).toEqual([eve.id]);
+      expect(await prisma.dMGroupMember.count({ where: { groupId } })).toBe(8);
+    });
+
+    it('reuses the group after leave, and restores the original key once a clash is gone', async () => {
+      // 나가기 후 같은 멤버로 다시 만들면 그 그룹이 나온다
+      const g1 = (await createGroup(alice, [bob.id, carol.id, dave.id])).body.group.id;
+      expect((await request(app).delete(`/dms/groups/${g1}/members/me`).set(auth(dave))).status).toBe(200);
+      expect((await createGroup(carol, [alice.id, bob.id])).body.group.id).toBe(g1);
+
+      // g2 = {alice,bob,carol,eve}. eve가 나가면 g1과 키가 겹치므로 접미사 키가 되고, 500이 나지 않는다
+      const g2 = (await createGroup(alice, [bob.id, carol.id, eve.id])).body.group.id;
+      expect((await request(app).delete(`/dms/groups/${g2}/members/me`).set(auth(eve))).status).toBe(200);
+      expect((await prisma.dMGroup.findUnique({ where: { id: g2 } }))!.memberKey).toMatch(/#/);
+      expect((await createGroup(alice, [bob.id, carol.id])).body.group.id).toBe(g1);
+
+      // g1에서 carol이 나가 충돌이 풀린 뒤 g2의 멤버가 바뀌면 g2는 원래 키로 돌아간다
+      expect((await request(app).delete(`/dms/groups/${g1}/members/me`).set(auth(carol))).status).toBe(200);
+      expect((await request(app).post(`/dms/groups/${g2}/members`).set(auth(alice)).send({ userIds: [dave.id] })).status).toBe(200);
+      expect((await request(app).delete(`/dms/groups/${g2}/members/me`).set(auth(dave))).status).toBe(200);
+      expect((await prisma.dMGroup.findUnique({ where: { id: g2 } }))!.memberKey).not.toMatch(/#/);
+      expect((await createGroup(alice, [bob.id, carol.id])).body.group.id).toBe(g2);
+    });
+
+    it('moves the read cursor only to top-level messages', async () => {
+      const groupId = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
+      const parent = (await send(alice, groupId, 'p')).body;
+      const reply = (await request(app).post(`/dms/messages/${parent.id}/reply`).set(auth(bob)).send({ content: 'r' })).body;
+      expect((await request(app).post(`/dms/groups/${groupId}/read`).set(auth(carol)).send({ messageId: reply.id })).status).toBe(404);
+      const ok = await request(app).post(`/dms/groups/${groupId}/read`).set(auth(carol)).send({ messageId: parent.id });
+      expect(ok.status).toBe(200);
+      expect(ok.body.lastReadDmId).toBe(parent.id);
+    });
+
+    it('returns group info only on the first page', async () => {
+      const groupId = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
+      for (let i = 0; i < 3; i++) await send(alice, groupId, `m${i}`);
+      const first = await request(app).get(`/dms/groups/${groupId}/messages?limit=2`).set(auth(bob));
+      expect(first.body.group.id).toBe(groupId);
+      const next = await request(app).get(`/dms/groups/${groupId}/messages?limit=2&cursor=${first.body.nextCursor}`).set(auth(bob));
+      expect(next.body.group).toBeUndefined();
+      expect(next.body.messages).toHaveLength(1);
+    });
+
+    it('answers 400 for invalid or already attached fileIds over HTTP and the socket', async () => {
+      const groupId = (await createGroup(alice, [bob.id, carol.id])).body.group.id;
+      const upload = await request(app).post('/files').set(auth(alice)).attach('file', Buffer.from('x'), 'a.txt');
+      const fileId = upload.body.id;
+      expect((await send(alice, groupId, 'ok', { fileIds: [fileId] })).status).toBe(201);
+
+      const again = await send(alice, groupId, 'again', { fileIds: [fileId] });
+      expect(again.status).toBe(400);
+      expect(again.body.code).toBe('INVALID_FILE_IDS');
+      expect((await send(alice, groupId, 'missing', { fileIds: [999999] })).status).toBe(400);
+      const parent = (await send(alice, groupId, 'parent')).body;
+      const badReply = await request(app).post(`/dms/messages/${parent.id}/reply`).set(auth(alice)).send({ content: 'r', fileIds: [fileId] });
+      expect(badReply.status).toBe(400);
+
+      // 실패한 전송은 메시지를 남기지 않는다(트랜잭션 롤백)
+      expect(await prisma.directMessage.count({ where: { groupId, content: { in: ['again', 'missing'] } } })).toBe(0);
+
+      const s = await connect(alice);
+      const ack = await new Promise<any>((resolve) => s.emit('dmgroup:send', { groupId, content: 'sock', fileIds: [fileId] }, resolve));
+      expect(ack).toMatchObject({ code: 'INVALID_FILE_IDS' });
+      const okAck = await new Promise<any>((resolve) => s.emit('dmgroup:send', { groupId, content: 'sock ok' }, resolve));
+      expect(okAck.id).toEqual(expect.any(Number));
     });
   });
 

@@ -86,31 +86,37 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         }
       }
 
-      if (req.user!.role !== 'GUEST' || dmUserFilter) {
-        const dmParticipantFilter = (role: 'fromUserId' | 'toUserId') => ({
-          [role]: userId,
-          groupId: null,
-          ...(dmUserFilter && { [role === 'fromUserId' ? 'toUserId' : 'fromUserId']: { in: dmUserFilter } }),
-        });
+      // 1:1 DM은 게스트라면 공유 채널 멤버가 있을 때만 검색한다
+      const searchOneToOne = req.user!.role !== 'GUEST' || !!dmUserFilter;
+      const dmParticipantFilter = (role: 'fromUserId' | 'toUserId') => ({
+        [role]: userId,
+        groupId: null,
+        ...(dmUserFilter && { [role === 'fromUserId' ? 'toUserId' : 'fromUserId']: { in: dmUserFilter } }),
+      });
 
-        // 그룹 DM은 지금 멤버인 그룹의 메시지만 검색한다(나간 그룹 제외)
-        const myGroupIds = (await prisma.dMGroupMember.findMany({ where: { userId }, select: { groupId: true } }))
-          .map((g) => g.groupId);
+      // 그룹 DM은 지금 멤버인 그룹의 메시지만 검색한다(나간 그룹 제외). 게스트도 자기가 속한 그룹은 검색된다.
+      const myGroupIds = (await prisma.dMGroupMember.findMany({ where: { userId }, select: { groupId: true } }))
+        .map((g) => g.groupId);
 
+      const dmConditions = [
+        ...(myGroupIds.length > 0 ? [
+          { groupId: { in: myGroupIds }, content: { contains: query, mode: 'insensitive' as const } },
+          { groupId: { in: myGroupIds }, fromUser: { name: { contains: query, mode: 'insensitive' as const } } },
+        ] : []),
+        ...(searchOneToOne ? [
+          { ...dmParticipantFilter('fromUserId'), content: { contains: query, mode: 'insensitive' as const } },
+          { ...dmParticipantFilter('toUserId'), content: { contains: query, mode: 'insensitive' as const } },
+          { ...dmParticipantFilter('fromUserId'), fromUser: { name: { contains: query, mode: 'insensitive' as const } } },
+          { ...dmParticipantFilter('fromUserId'), toUser: { name: { contains: query, mode: 'insensitive' as const } } },
+          { ...dmParticipantFilter('toUserId'), fromUser: { name: { contains: query, mode: 'insensitive' as const } } },
+          { ...dmParticipantFilter('toUserId'), toUser: { name: { contains: query, mode: 'insensitive' as const } } },
+        ] : []),
+      ];
+
+      if (dmConditions.length > 0) {
         dms = await prisma.directMessage.findMany({
           where: {
-            OR: [
-              ...(myGroupIds.length > 0 ? [
-                { groupId: { in: myGroupIds }, content: { contains: query, mode: 'insensitive' as const } },
-                { groupId: { in: myGroupIds }, fromUser: { name: { contains: query, mode: 'insensitive' as const } } },
-              ] : []),
-              { ...dmParticipantFilter('fromUserId'), content: { contains: query, mode: 'insensitive' } },
-              { ...dmParticipantFilter('toUserId'), content: { contains: query, mode: 'insensitive' } },
-              { ...dmParticipantFilter('fromUserId'), fromUser: { name: { contains: query, mode: 'insensitive' } } },
-              { ...dmParticipantFilter('fromUserId'), toUser: { name: { contains: query, mode: 'insensitive' } } },
-              { ...dmParticipantFilter('toUserId'), fromUser: { name: { contains: query, mode: 'insensitive' } } },
-              { ...dmParticipantFilter('toUserId'), toUser: { name: { contains: query, mode: 'insensitive' } } },
-            ],
+            OR: dmConditions,
             deletedAt: null,
           },
           include: {

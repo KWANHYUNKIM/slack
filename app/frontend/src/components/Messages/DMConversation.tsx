@@ -46,8 +46,8 @@ import {
   type ApiDirectMessage, type AuthUser,
 } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
-import { groupDisplayName, otherMembers } from '@/lib/groupDM';
-import { AddTeammatesDialog, MAX_GROUP_OTHERS } from '@/components/Sidebar/AddTeammatesDialog';
+import { groupDisplayName, otherMembers, MAX_GROUP_OTHERS } from '@/lib/groupDM';
+import { AddTeammatesDialog } from '@/components/Sidebar/AddTeammatesDialog';
 import { GroupMembersPanel } from './GroupMembersPanel';
 import { useMobileStore } from '@/stores/useMobileStore';
 import type { DMMessage } from '@/stores/useDMStore';

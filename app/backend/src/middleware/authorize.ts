@@ -413,8 +413,12 @@ export const wsDmSendSchema = z.object({
 
 export const wsDmGroupSendSchema = z.object({
   groupId: z.number().int().positive(),
-  content: contentSchema,
-});
+  content: optionalContentSchema,
+  fileIds: z.array(z.number().int().positive()).max(10).optional(),
+}).refine(
+  (data) => (data.content?.trim().length ?? 0) > 0 || (data.fileIds && data.fileIds.length > 0),
+  { message: 'Message must have content or file attachments' },
+);
 
 export const wsChannelIdSchema = z.number().int().positive();
 

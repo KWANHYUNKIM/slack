@@ -128,7 +128,7 @@ export const useDMStore = create<DMState>((set, get) => ({
       if (isGroupKey(userId)) {
         const groupData = await getDMGroupMessages(-userId, undefined, around);
         // 응답에 실린 최신 멤버 목록으로 사이드바·헤더를 맞춘다
-        useChannelStore.getState().upsertGroupDM(groupData.group);
+        if (groupData.group) useChannelStore.getState().upsertGroupDM(groupData.group);
         data = groupData;
       } else {
         data = await getConversation(userId, undefined, around);

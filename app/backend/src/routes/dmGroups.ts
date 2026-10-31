@@ -22,6 +22,7 @@ import {
   markGroupRead,
   listGroupConversations,
   emitToGroup,
+  InvalidFileIdsError,
 } from '../services/dmGroupService.js';
 
 // 그룹 DM(/dms/groups). 메시지 단위 경로(편집·삭제·스레드·리액션·핀)는 routes/dms.ts의 /dms/messages/:id를 같이 쓴다.
@@ -61,7 +62,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const check = await validateGroupUsers(req.user!, others);
+    const check = await validateGroupUsers(others, [userId, ...others]);
     if (!check.ok) {
       res.status(check.status).json({ error: check.error });
       return;
@@ -178,8 +179,9 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
       }
     }
 
-    const group = await getGroupView(groupId);
-    res.json({ group, messages, nextCursor, hasMore });
+    // 멤버 목록은 첫 페이지(커서 없음)에서만 싣는다. 이전 페이지 로드는 메시지만 필요하다.
+    const group = cursor ? undefined : await getGroupView(groupId);
+    res.json({ ...(group && { group }), messages, nextCursor, hasMore });
   } catch (error) {
     logError('Get group DM messages error', error);
     res.status(500).json({ error: 'Failed to get messages' });
@@ -198,6 +200,10 @@ router.post('/:id/messages', authMiddleware, requireDmGroupMember, async (req: A
       res.status(400).json({ error: error.issues });
       return;
     }
+    if (error instanceof InvalidFileIdsError) {
+      res.status(400).json({ error: error.message, code: error.code });
+      return;
+    }
     logError('Send group DM error', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
@@ -208,11 +214,7 @@ router.post('/:id/members', authMiddleware, requireDmGroupMember, async (req: Au
   try {
     const groupId = req.dmGroupId!;
     const { userIds } = createGroupSchema.parse(req.body);
-    const check = await validateGroupUsers(req.user!, [...new Set(userIds)]);
-    if (!check.ok) {
-      res.status(check.status).json({ error: check.error });
-      return;
-    }
+    // 사용자·게스트 격리·인원 상한 검사는 그룹 행을 잠근 트랜잭션 안에서 한다
     const result = await addGroupMembers(groupId, req.user!.userId, userIds);
     if (!result.ok) {
       res.status(result.status).json({ error: result.error });
@@ -248,7 +250,8 @@ router.post('/:id/read', authMiddleware, requireDmGroupMember, async (req: AuthR
     const userId = req.user!.userId;
     const { messageId } = readSchema.parse(req.body ?? {});
     if (messageId) {
-      const target = await prisma.directMessage.findFirst({ where: { id: messageId, groupId }, select: { id: true } });
+      // 읽음 커서는 본문(최상위) 메시지 기준이다. 스레드 답글 id로 커서를 옮기지 않는다.
+      const target = await prisma.directMessage.findFirst({ where: { id: messageId, groupId, threadId: null }, select: { id: true } });
       if (!target) {
         res.status(404).json({ error: 'Message not found in this conversation' });
         return;

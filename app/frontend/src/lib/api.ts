@@ -749,7 +749,8 @@ export function getDMGroupMessages(groupId: number, cursor?: number, around?: nu
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', String(cursor));
   if (around) params.set('around', String(around));
-  return request<{ group: ApiDMGroup; messages: ApiDirectMessage[]; hasMore: boolean }>(
+  // group은 첫 페이지(cursor 없음)에만 실린다
+  return request<{ group?: ApiDMGroup; messages: ApiDirectMessage[]; hasMore: boolean }>(
     `/dms/groups/${groupId}/messages?${params}`,
   );
 }

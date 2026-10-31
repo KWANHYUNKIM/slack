@@ -7,9 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import type { AuthUser } from '@/lib/api';
-
-/** 그룹 DM은 본인 포함 9명까지라 한 번에 고를 수 있는 상대는 8명이다 */
-export const MAX_GROUP_OTHERS = 8;
+import { MAX_GROUP_OTHERS } from '@/lib/groupDM';
 
 interface AddTeammatesDialogProps {
   open: boolean;

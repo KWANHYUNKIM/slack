@@ -19,14 +19,6 @@ export function memberKeyFor(userIds: number[]): string {
   return [...new Set(userIds)].sort((a, b) => a - b).join('-');
 }
 
-export async function isGroupMember(groupId: number, userId: number): Promise<boolean> {
-  const row = await prisma.dMGroupMember.findUnique({
-    where: { groupId_userId: { groupId, userId } },
-    select: { userId: true },
-  });
-  return !!row;
-}
-
 export async function getGroupMemberIds(groupId: number): Promise<number[]> {
   const rows = await prisma.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });
   return rows.map((r) => r.userId);
@@ -45,27 +37,51 @@ export async function emitToGroup(groupId: number, event: string, payload: unkno
 }
 
 type UserCheck = { ok: true } | { ok: false; status: number; error: string };
+type Db = Prisma.TransactionClient | typeof prisma;
+
+const UNABLE_TO_ADD: UserCheck = { ok: false, status: 400, error: 'Unable to add users' };
+
+/** 첨부할 수 없는 fileIds(남의 파일, 없는 파일, 이미 붙은 파일). 라우트와 소켓이 400으로 바꾼다. */
+export class InvalidFileIdsError extends Error {
+  readonly code = 'INVALID_FILE_IDS';
+  constructor() {
+    super('Invalid file IDs or files already attached');
+  }
+}
 
 /**
- * 그룹에 넣을 사용자들을 검사한다: 모두 존재하고 활성이어야 한다.
- * 게스트가 만들거나 추가하면 대상 모두가 게스트와 채널을 하나 이상 공유해야 한다(1:1 DM 규칙과 같다).
+ * 그룹에 들어갈 사용자들을 검사한다.
+ * - newUserIds: 모두 존재하고 활성이어야 한다.
+ * - 게스트 격리: 최종 멤버(allMemberIds) 중 게스트가 있으면, 그 게스트는 나머지 모든 멤버와 채널을 하나 이상
+ *   공유해야 한다. 행위자가 누구든 적용한다(멤버가 게스트를 모르는 사람과 묶을 수 없다). 게스트 행위자의
+ *   기존 규칙(대상과 공유 채널 필요)도 행위자가 게스트 멤버이므로 여기에 포함된다.
  */
-export async function validateGroupUsers(actor: { userId: number; role?: string }, userIds: number[]): Promise<UserCheck> {
-  if (userIds.length === 0) return { ok: true };
-  const users = await prisma.user.findMany({
-    where: { id: { in: userIds }, deactivatedAt: null },
+export async function validateGroupUsers(newUserIds: number[], allMemberIds: number[], db: Db = prisma): Promise<UserCheck> {
+  if (newUserIds.length > 0) {
+    const users = await db.user.findMany({
+      where: { id: { in: newUserIds }, deactivatedAt: null },
+      select: { id: true },
+    });
+    if (users.length !== newUserIds.length) return UNABLE_TO_ADD;
+  }
+
+  const memberIds = [...new Set(allMemberIds)];
+  const guests = await db.user.findMany({
+    where: { id: { in: memberIds }, role: 'GUEST' },
     select: { id: true },
   });
-  if (users.length !== userIds.length) return { ok: false, status: 400, error: 'Unable to add users' };
+  if (guests.length === 0) return { ok: true };
 
-  if (actor.role === 'GUEST') {
-    const shared = await prisma.$queryRaw<Array<{ userId: number }>>`
-      SELECT DISTINCT cm2."userId"
-      FROM "ChannelMember" cm1
-      JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-      WHERE cm1."userId" = ${actor.userId} AND cm2."userId" = ANY(${userIds})
-    `;
-    if (shared.length !== userIds.length) return { ok: false, status: 400, error: 'Unable to add users' };
+  const guestIds = guests.map((g) => g.id);
+  const pairs = await db.$queryRaw<Array<{ guestId: number; otherId: number }>>`
+    SELECT DISTINCT cm1."userId" AS "guestId", cm2."userId" AS "otherId"
+    FROM "ChannelMember" cm1
+    JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId" AND cm2."userId" <> cm1."userId"
+    WHERE cm1."userId" = ANY(${guestIds}) AND cm2."userId" = ANY(${memberIds})
+  `;
+  for (const guestId of guestIds) {
+    const shared = new Set(pairs.filter((p) => p.guestId === guestId).map((p) => p.otherId));
+    if (shared.size !== memberIds.length - 1) return UNABLE_TO_ADD;
   }
   return { ok: true };
 }
@@ -78,12 +94,12 @@ export interface GroupView {
   members: { id: number; name: string; avatar: string | null; status: string | null }[];
 }
 
-export async function getGroupView(groupId: number): Promise<GroupView | null> {
-  const group = await prisma.dMGroup.findUnique({
-    where: { id: groupId },
-    include: { members: { orderBy: { joinedAt: 'asc' }, include: { user: { select: GROUP_MEMBER_SELECT } } } },
-  });
-  if (!group) return null;
+const GROUP_VIEW_INCLUDE = {
+  members: { orderBy: { joinedAt: 'asc' as const }, include: { user: { select: GROUP_MEMBER_SELECT } } },
+};
+type GroupWithMembers = Prisma.DMGroupGetPayload<{ include: typeof GROUP_VIEW_INCLUDE }>;
+
+function toGroupView(group: GroupWithMembers): GroupView {
   return {
     id: group.id,
     name: group.name,
@@ -94,6 +110,11 @@ export async function getGroupView(groupId: number): Promise<GroupView | null> {
       status: isUserOnline(m.user.id) ? 'online' : 'offline',
     })),
   };
+}
+
+export async function getGroupView(groupId: number): Promise<GroupView | null> {
+  const group = await prisma.dMGroup.findUnique({ where: { id: groupId }, include: GROUP_VIEW_INCLUDE });
+  return group ? toGroupView(group) : null;
 }
 
 /**
@@ -125,15 +146,28 @@ export async function findOrCreateGroup(creatorId: number, otherIds: number[]): 
   }
 }
 
+/** 멤버 변경을 직렬화한다: 그룹 행을 잠근 뒤 멤버를 다시 읽는다(동시 추가로 9명 상한을 넘지 않게). */
+async function lockGroup(tx: Prisma.TransactionClient, groupId: number): Promise<void> {
+  await tx.$queryRaw`SELECT id FROM "DMGroup" WHERE id = ${groupId} FOR UPDATE`;
+}
+
 /**
- * 멤버가 바뀐 뒤 memberKey를 현재 멤버로 맞춘다. 다른 그룹이 이미 그 키를 쓰면 '#<id>'를 붙여
- * 재사용 대상에서 뺀다(같은 멤버 집합으로 새로 만들면 기존 그룹이 나온다).
+ * 멤버가 바뀐 뒤 memberKey를 현재 멤버로 맞춘다. 먼저 원래 키로 써 보고, 다른 그룹이 그 키를 쓰고 있어
+ * unique 위반이면 '#<id>'를 붙여 재사용 대상에서 뺀다. 매번 원래 키부터 시도하므로 충돌이 풀리면 원래 키로 돌아간다.
+ * 트랜잭션 안의 실패한 문장은 트랜잭션 전체를 깨므로 SAVEPOINT로 그 한 문장만 되돌린다.
  */
 async function refreshMemberKey(tx: Prisma.TransactionClient, groupId: number): Promise<void> {
   const rows = await tx.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });
   const key = memberKeyFor(rows.map((r) => r.userId));
-  const clash = await tx.dMGroup.findFirst({ where: { memberKey: key, id: { not: groupId } }, select: { id: true } });
-  await tx.dMGroup.update({ where: { id: groupId }, data: { memberKey: clash ? `${key}#${groupId}` : key } });
+  await tx.$executeRaw`SAVEPOINT member_key`;
+  try {
+    await tx.dMGroup.update({ where: { id: groupId }, data: { memberKey: key } });
+    await tx.$executeRaw`RELEASE SAVEPOINT member_key`;
+  } catch (err) {
+    if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002')) throw err;
+    await tx.$executeRaw`ROLLBACK TO SAVEPOINT member_key`;
+    await tx.dMGroup.update({ where: { id: groupId }, data: { memberKey: `${key}#${groupId}` } });
+  }
 }
 
 export type MemberChangeResult = { ok: true; addedIds: number[] } | { ok: false; status: number; error: string };
@@ -141,32 +175,37 @@ export type MemberChangeResult = { ok: true; addedIds: number[] } | { ok: false;
 /**
  * 멤버 추가. 정책: 기존 기록은 새 멤버에게도 보인다. 새 멤버의 읽음 커서는 지금 마지막 메시지로 둬서
  * 이전 기록 전체가 안 읽음으로 쌓이지 않게 한다. 이미 멤버인 사람은 건너뛴다.
+ * 그룹 행을 잠근 트랜잭션 안에서 멤버 수·사용자·게스트 격리를 검사하고 추가와 memberKey 갱신까지 끝낸다.
  */
 export async function addGroupMembers(groupId: number, actorId: number, userIds: number[]): Promise<MemberChangeResult> {
-  const current = await getGroupMemberIds(groupId);
-  const newIds = [...new Set(userIds)].filter((id) => !current.includes(id));
-  if (newIds.length === 0) return { ok: true, addedIds: [] };
-  if (current.length + newIds.length > MAX_GROUP_SIZE) {
-    return { ok: false, status: 400, error: `A group conversation can have at most ${MAX_GROUP_SIZE} members` };
-  }
+  const result = await prisma.$transaction(async (tx): Promise<MemberChangeResult> => {
+    await lockGroup(tx, groupId);
+    const current = (await tx.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } })).map((r) => r.userId);
+    const newIds = [...new Set(userIds)].filter((id) => !current.includes(id));
+    if (newIds.length === 0) return { ok: true, addedIds: [] };
+    if (current.length + newIds.length > MAX_GROUP_SIZE) {
+      return { ok: false, status: 400, error: `A group conversation can have at most ${MAX_GROUP_SIZE} members` };
+    }
+    const check = await validateGroupUsers(newIds, [...current, ...newIds], tx);
+    if (!check.ok) return check;
 
-  const last = await prisma.directMessage.findFirst({
-    where: { groupId, threadId: null },
-    orderBy: { id: 'desc' },
-    select: { id: true },
-  });
-  await prisma.$transaction(async (tx) => {
+    const last = await tx.directMessage.findFirst({
+      where: { groupId, threadId: null },
+      orderBy: { id: 'desc' },
+      select: { id: true },
+    });
     await tx.dMGroupMember.createMany({
       data: newIds.map((userId) => ({ groupId, userId, lastReadDmId: last?.id ?? null })),
       skipDuplicates: true,
     });
     await refreshMemberKey(tx, groupId);
+    return { ok: true, addedIds: newIds };
   });
+  if (!result.ok || result.addedIds.length === 0) return result;
 
   const view = await getGroupView(groupId);
-  const allIds = view ? view.members.map((m) => m.id) : [...current, ...newIds];
-  emitToUsers(allIds, 'dmgroup:member:added', { groupId, userIds: newIds, actorId, group: view });
-  return { ok: true, addedIds: newIds };
+  if (view) emitToUsers(view.members.map((m) => m.id), 'dmgroup:member:added', { groupId, userIds: result.addedIds, actorId, group: view });
+  return result;
 }
 
 /**
@@ -174,10 +213,12 @@ export async function addGroupMembers(groupId: number, actorId: number, userIds:
  * 나간 사람은 더 이상 조회·전송할 수 없고, 그 그룹의 내 활동은 visibleActivityWhere에서 빠진다.
  */
 export async function leaveGroup(groupId: number, userId: number): Promise<void> {
-  const before = await getGroupMemberIds(groupId);
-  await prisma.$transaction(async (tx) => {
-    await tx.dMGroupMember.delete({ where: { groupId_userId: { groupId, userId } } });
+  const before = await prisma.$transaction(async (tx) => {
+    await lockGroup(tx, groupId);
+    const rows = await tx.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });
+    await tx.dMGroupMember.deleteMany({ where: { groupId, userId } });
     await refreshMemberKey(tx, groupId);
+    return rows.map((r) => r.userId);
   });
   emitToUsers(before, 'dmgroup:member:removed', { groupId, userId });
 }
@@ -208,9 +249,7 @@ export async function sendGroupMessage(input: GroupMessageInput) {
         where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) {
-        throw new Error('Invalid file IDs or files already attached');
-      }
+      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
     }
 
     if (!threadId) {
@@ -229,8 +268,20 @@ export async function sendGroupMessage(input: GroupMessageInput) {
   const memberIds = await getGroupMemberIds(groupId);
   emitToUsers(memberIds, threadId ? 'dm:reply' : 'dm:new', dm);
 
+  // 스레드 답글은 부모 작성자와 스레드 참여자에게만 푸시한다(THREAD_REPLY 활동과 같은 기준)
+  let pushTargets = memberIds;
+  if (threadId) {
+    const participants = await prisma.directMessage.findMany({
+      where: { OR: [{ id: threadId }, { threadId }], deletedAt: null },
+      select: { fromUserId: true },
+      distinct: ['fromUserId'],
+    });
+    const participantIds = new Set(participants.map((p) => p.fromUserId));
+    pushTargets = memberIds.filter((id) => participantIds.has(id));
+  }
+
   const senderName = dm.fromUser?.name || 'Someone';
-  for (const userId of memberIds) {
+  for (const userId of pushTargets) {
     if (userId === fromUserId || isUserOnline(userId)) continue;
     sendPushToUser(
       userId,
@@ -283,10 +334,7 @@ export async function listGroupConversations(userId: number): Promise<GroupConve
   const groupIds = memberships.map((m) => m.groupId);
 
   const [groups, lastMessages, unreadRows] = await Promise.all([
-    prisma.dMGroup.findMany({
-      where: { id: { in: groupIds } },
-      include: { members: { orderBy: { joinedAt: 'asc' }, include: { user: { select: GROUP_MEMBER_SELECT } } } },
-    }),
+    prisma.dMGroup.findMany({ where: { id: { in: groupIds } }, include: GROUP_VIEW_INCLUDE }),
     prisma.$queryRaw<Array<{ id: number; content: string; fromUserId: number; createdAt: Date; groupId: number }>>`
       SELECT DISTINCT ON (dm."groupId") dm.id, dm.content, dm."fromUserId", dm."createdAt", dm."groupId"
       FROM "DirectMessage" dm
@@ -314,13 +362,7 @@ export async function listGroupConversations(userId: number): Promise<GroupConve
     const last = lastByGroup.get(g.id);
     return {
       type: 'group',
-      group: {
-        id: g.id,
-        name: g.name,
-        createdBy: g.createdBy,
-        createdAt: g.createdAt,
-        members: g.members.map((m) => ({ ...m.user, status: isUserOnline(m.user.id) ? 'online' : 'offline' })),
-      },
+      group: toGroupView(g),
       lastMessage: last ? { id: last.id, content: last.content, fromUserId: last.fromUserId, createdAt: last.createdAt } : null,
       unreadCount: unreadByGroup.get(g.id) ?? 0,
       isStarred: !!memberByGroup.get(g.id)?.starredAt,

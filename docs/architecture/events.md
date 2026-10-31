@@ -26,7 +26,7 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 
 | 이벤트 | 방향 | 대상 room | payload | 시점 |
 |---|---|---|---|---|
-| `dmgroup:send` | 클라이언트 -> 서버 | - | `{ groupId, content }` | 소켓 경로 전송. 멤버가 아니면 `error` |
+| `dmgroup:send` | 클라이언트 -> 서버 | - | `{ groupId, content, fileIds? }`, ack 지원: 성공 `{ id }`, 실패 `{ error, code? }`(잘못된 fileIds는 `code: 'INVALID_FILE_IDS'`) | 소켓 경로 전송. ack가 없으면 실패를 `error` 이벤트로 보낸다 |
 | `dmgroup:typing:start` / `dmgroup:typing:stop` | 양방향 | 나를 뺀 멤버의 `user:<id>` | 보낼 때 `groupId`(number), 받을 때 `{ groupId, userId }` | 입력 중 표시. 멤버가 아니면 무시 |
 | `dmgroup:member:added` | 서버 -> 클라이언트 | 추가 후 멤버 전원의 `user:<id>` | `{ groupId, userIds, actorId, group }` | `POST /dms/groups/:id/members` |
 | `dmgroup:member:removed` | 서버 -> 클라이언트 | 나가기 전 멤버 전원(나간 사람 포함)의 `user:<id>` | `{ groupId, userId }` | `DELETE /dms/groups/:id/members/me` |

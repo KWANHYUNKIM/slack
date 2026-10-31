@@ -11,7 +11,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { sendGroupMessage, emitToGroup } from '../services/dmGroupService.js';
+import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import {
   createActivitiesForDm,
   syncActivitiesOnDmEdit,
@@ -534,6 +534,10 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof InvalidFileIdsError) {
+      res.status(400).json({ error: error.message, code: error.code });
       return;
     }
     logError('DM reply error', error);
