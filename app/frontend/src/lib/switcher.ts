@@ -26,7 +26,10 @@ export interface SwitcherItem {
   mentionCount: number;
 }
 
-export const RECENT_STORAGE_KEY = 'recentTargets';
+/** 예전 공용 키. 사용자별 키로 옮기면서 한 번 읽어 버린다. */
+export const LEGACY_RECENT_KEY = 'recentTargets';
+/** 사용자별 최근 방문 저장 키 */
+export const recentStorageKey = (userId: number) => `recentTargets:${userId}`;
 export const RECENT_MAX = 20;
 export const SWITCHER_EMPTY_LIMIT = 8;
 export const SWITCHER_RESULT_LIMIT = 30;
@@ -73,6 +76,37 @@ export function parseRecents(raw: string | null): RecentTarget[] {
   } catch {
     return [];
   }
+}
+
+/** localStorage 모양의 최소 인터페이스(테스트에서 가짜로 대체) */
+export interface StorageLike {
+  getItem(k: string): string | null;
+  setItem(k: string, v: string): void;
+  removeItem(k: string): void;
+}
+
+/** 사용자별 최근 방문을 읽는다. 예전 공용 키는 버린다. */
+export function loadRecents(storage: StorageLike, userId: number): RecentTarget[] {
+  try {
+    storage.removeItem(LEGACY_RECENT_KEY);
+    return parseRecents(storage.getItem(recentStorageKey(userId)));
+  } catch {
+    return [];
+  }
+}
+
+export function saveRecents(storage: StorageLike, userId: number, list: RecentTarget[]): void {
+  try {
+    if (list.length === 0) storage.removeItem(recentStorageKey(userId));
+    else storage.setItem(recentStorageKey(userId), JSON.stringify(list));
+  } catch {
+    // 저장소가 막혀 있어도 화면 동작은 계속한다
+  }
+}
+
+/** 채널, DM, 그룹 목록이 모두 로드를 마쳤고 실패가 없을 때만 최근 방문을 정리해도 된다. */
+export function canPruneRecents(s: { channelsLoaded: boolean; dmsLoaded: boolean; groupsLoaded: boolean; loadError: string | null }): boolean {
+  return s.channelsLoaded && s.dmsLoaded && s.groupsLoaded && !s.loadError;
 }
 
 interface BuildInput {
@@ -165,26 +199,50 @@ export function rankSwitcherItems(
 }
 
 /**
- * 사이드바 순서의 대상 목록(Alt+위/아래 이동용).
- * 별표(채널, DM, 그룹) -> 공개 채널 -> 비공개 채널 -> 일반 DM -> 일반 그룹, Sidebar.tsx의 표시 순서와 같다.
+ * 사이드바 표시 구역(Sidebar.tsx와 Alt+위/아래 이동이 함께 쓴다).
+ * 별표 구역(채널, DM, 그룹) -> 공개 채널 -> 비공개 채널 -> 일반 DM -> 일반 그룹.
+ * 별표를 단 항목은 별표 구역으로만 가고, 내가 속하지 않은 채널은 뺀다.
  */
+export function sidebarSections(
+  input: { channels: Channel[]; directMessages: DirectMessage[]; groupDMs: GroupDM[] },
+  compare: (a: string, b: string) => number,
+) {
+  const byName = (a: Channel, b: Channel) => compare(a.name, b.name);
+  const member = input.channels.filter((ch) => ch.isMember);
+  return {
+    starredChannels: member.filter((ch) => ch.isStarred).sort(byName),
+    starredDMs: input.directMessages.filter((dm) => dm.isStarred),
+    starredGroups: input.groupDMs.filter((g) => g.isStarred),
+    publicChannels: member.filter((ch) => !ch.isPrivate && !ch.isStarred).sort(byName),
+    privateChannels: member.filter((ch) => ch.isPrivate && !ch.isStarred).sort(byName),
+    plainDMs: input.directMessages.filter((dm) => !dm.isStarred),
+    plainGroups: input.groupDMs.filter((g) => !g.isStarred),
+  };
+}
+
+/** sidebarSections를 한 줄 순서로 편 대상 목록(이전/다음 대화 이동용) */
 export function sidebarOrder(
-  input: Omit<BuildInput, 'groupName'>,
+  input: { channels: Channel[]; directMessages: DirectMessage[]; groupDMs: GroupDM[] },
   compare: (a: string, b: string) => number,
 ): SwitcherItem[] {
-  const all = buildSwitcherItems({ ...input, groupName: () => '' });
-  const byName = (a: SwitcherItem, b: SwitcherItem) => compare(a.label, b.label);
-  const ch = all.filter((i) => i.kind === 'channel');
-  const dms = all.filter((i) => i.kind === 'dm');
-  const groups = all.filter((i) => i.kind === 'group');
+  const sec = sidebarSections(input, compare);
+  const keep = (list: Channel[] | DirectMessage[] | GroupDM[], kind: 'channel' | 'dm' | 'group') => {
+    const items = buildSwitcherItems({
+      channels: kind === 'channel' ? (list as Channel[]) : [],
+      directMessages: kind === 'dm' ? (list as DirectMessage[]) : [],
+      groupDMs: kind === 'group' ? (list as GroupDM[]) : [],
+      groupName: () => '',
+    });
+    return items;
+  };
   return [
-    ...ch.filter((i) => i.isStarred).sort(byName),
-    ...dms.filter((i) => i.isStarred),
-    ...groups.filter((i) => i.isStarred),
-    ...ch.filter((i) => !i.isStarred && !i.isPrivate).sort(byName),
-    ...ch.filter((i) => !i.isStarred && i.isPrivate).sort(byName),
-    ...dms.filter((i) => !i.isStarred),
-    ...groups.filter((i) => !i.isStarred),
+    ...keep(sec.starredChannels, 'channel'),
+    ...keep(sec.starredDMs, 'dm'),
+    ...keep(sec.starredGroups, 'group'),
+    ...keep(sec.publicChannels, 'channel'),
+    ...keep(sec.privateChannels, 'channel'),
+    ...keep(sec.plainDMs, 'dm'),
+    ...keep(sec.plainGroups, 'group'),
   ];
 }
 

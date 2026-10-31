@@ -39,7 +39,7 @@
     "starred": "Starred",
     "unread": "Unread",
     "dnd": "Do not disturb",
-    "footer": "{mod}+K to open. Up and Down to move, Enter to go, Esc to close.",
+    "footer": "{keys} to open. Up and Down to move, Enter to go, Esc to close.",
     "open": "Jump to…",
     "kind": {
       "channel": "Channel",
@@ -60,7 +60,14 @@
       "prevUnread": "Previous unread conversation",
       "nextUnread": "Next unread conversation",
       "help": "Show keyboard shortcuts",
-      "closeTop": "Close the topmost panel or dialog"
+      "closeTop": "Close the quick switcher or this dialog"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
     }
   }
 }

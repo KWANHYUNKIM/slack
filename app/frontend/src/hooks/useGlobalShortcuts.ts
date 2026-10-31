@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useSwitcherStore } from '@/stores/useSwitcherStore';
 import { getCollator } from '@/lib/i18n/format';
@@ -16,12 +17,19 @@ export const isMacPlatform = () => detectMac(navigator.userAgent);
 /**
  * 전역 단축키(06). 목록과 판정은 lib/shortcuts.ts에 있다.
  * - window 캡처 단계에서 받아, Quill(snow)의 Ctrl+K 링크 단축키보다 먼저 가로챈다.
- * - 입력창/에디터에 포커스가 있으면 inEditable인 단축키(Cmd/Ctrl+K, Esc)만 동작한다.
+ * - 입력창/에디터에 포커스가 있으면 inEditable인 단축키(Cmd/Ctrl+K)만 동작한다.
+ * - Esc는 여기서 처리하지 않는다. 각 모달의 onKeyDown이 처리하고 전파를 멈춘다.
  * - 또한 방문 기록(최근 방문)을 경로 변화로 쌓는다.
  */
 export function useGlobalShortcuts() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 최근 방문 기록은 사용자별이다. 로그인한 사용자가 정해지면 그 사용자의 기록을 읽는다.
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+  useEffect(() => {
+    useSwitcherStore.getState().setUser(userId);
+  }, [userId]);
 
   // 최근 방문 기록: 채널/DM/그룹 화면에 들어갈 때마다
   useEffect(() => {
@@ -48,11 +56,6 @@ export function useGlobalShortcuts() {
         case 'help':
           e.preventDefault();
           sw.openHelp();
-          return;
-        case 'closeTop':
-          // 전환기·도움말은 각자 Esc를 처리한다. 여기서는 열려 있을 때 하나씩 닫는다.
-          if (sw.switcherOpen) sw.closeSwitcher();
-          else if (sw.helpOpen) sw.closeHelp();
           return;
         case 'prevChannel':
         case 'nextChannel':

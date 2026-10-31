@@ -5,13 +5,14 @@ import { Hash, Lock, Moon, Search, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCollator } from '@/lib/i18n/format';
 import { groupDisplayName } from '@/lib/groupDM';
-import { buildSwitcherItems, pruneRecents, rankSwitcherItems, type SwitcherItem } from '@/lib/switcher';
+import { buildSwitcherItems, canPruneRecents, pruneRecents, rankSwitcherItems, type SwitcherItem } from '@/lib/switcher';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useSwitcherStore } from '@/stores/useSwitcherStore';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Avatar } from '@/components/ui/avatar';
 import { isMacPlatform } from '@/hooks/useGlobalShortcuts';
+import { SHORTCUTS, shortcutKeys, type KeyLabelId } from '@/lib/shortcuts';
 
 const optionId = (key: string) => `switcher-opt-${key}`;
 
@@ -98,6 +99,7 @@ function SwitcherDialog() {
   const channels = useChannelStore((s) => s.channels);
   const directMessages = useChannelStore((s) => s.directMessages);
   const groupDMs = useChannelStore((s) => s.groupDMs);
+  const listsReady = useChannelStore(canPruneRecents);
   const myId = useAuthStore((s) => s.user?.id);
 
   const [query, setQuery] = useState('');
@@ -124,11 +126,13 @@ function SwitcherDialog() {
     };
   }, []);
 
-  // 나가거나 삭제된 대상은 최근 방문 기록에서도 지운다
+  // 나가거나 삭제된 대상은 최근 방문 기록에서도 지운다.
+  // 목록 로드 중이거나 실패했을 때는 비어 보이는 목록으로 기록을 지우지 않도록 건너뛴다.
   useEffect(() => {
+    if (!listsReady) return;
     const alive = pruneRecents(recents, items);
     if (alive.length !== recents.length) setRecents(alive);
-  }, [recents, items, setRecents]);
+  }, [listsReady, recents, items, setRecents]);
 
   // 선택 항목을 보이는 위치로
   useEffect(() => {
@@ -154,7 +158,9 @@ function SwitcherDialog() {
       e.preventDefault();
       select(results[activeIndex]);
     } else if (e.key === 'Escape') {
+      // Esc는 여기서만 처리한다. 전파를 막아 아래 레이어(라이트박스 등)는 닫히지 않는다.
       e.preventDefault();
+      e.stopPropagation();
       close();
     } else if (e.key === 'Tab') {
       // 포커스 트랩: 입력창과 목록 사이에서만 움직이므로 Tab은 입력창에 머문다
@@ -163,6 +169,8 @@ function SwitcherDialog() {
   };
 
   const active = results[activeIndex];
+  const keyLabel = (id: KeyLabelId) => t(`shortcuts.keys.${id}`);
+  const switcherKeys = shortcutKeys(SHORTCUTS.find((d) => d.id === 'switcher')!, isMacPlatform(), keyLabel).join('+');
   const showingRecents = query.trim().length === 0;
 
   return (
@@ -241,7 +249,7 @@ function SwitcherDialog() {
           </p>
         )}
         <div className="border-t border-slack-border px-4 py-2 text-[12px] text-slack-hint">
-          {t('quickSwitcher.footer', { mod: isMacPlatform() ? '⌘' : 'Ctrl' })}
+          {t('quickSwitcher.footer', { keys: switcherKeys })}
         </div>
       </div>
     </div>

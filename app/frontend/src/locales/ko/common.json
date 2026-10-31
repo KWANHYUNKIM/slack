@@ -39,7 +39,7 @@
     "starred": "별표",
     "unread": "안 읽음",
     "dnd": "방해금지",
-    "footer": "{mod}+K로 열기. 위·아래로 이동, Enter로 선택, Esc로 닫기.",
+    "footer": "{keys}로 열기. 위·아래로 이동, Enter로 선택, Esc로 닫기.",
     "open": "이동…",
     "kind": {
       "channel": "채널",
@@ -60,7 +60,14 @@
       "prevUnread": "이전 안 읽은 대화",
       "nextUnread": "다음 안 읽은 대화",
       "help": "키보드 단축키 보기",
-      "closeTop": "가장 위의 패널이나 대화상자 닫기"
+      "closeTop": "빠른 전환이나 이 대화상자 닫기"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
     }
   }
 }

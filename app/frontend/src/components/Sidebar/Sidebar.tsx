@@ -42,6 +42,7 @@ import { apiErrorMessage } from '@/lib/apiErrors';
 import type { AuthUser } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useSwitcherStore } from '@/stores/useSwitcherStore';
+import { sidebarSections } from '@/lib/switcher';
 // HuddleBar moved to global render in App.tsx
 
 export function Sidebar() {
@@ -198,15 +199,8 @@ export function Sidebar() {
   };
 
   const collator = getCollator(i18n.language);
-  const sortByName = (a: Channel, b: Channel) => collator.compare(a.name, b.name);
-  const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember).sort(sortByName);
-  const starredDMs = directMessages.filter((dm) => dm.isStarred);
-  const starredGroups = groupDMs.filter((g) => g.isStarred);
-  const plainGroups = groupDMs.filter((g) => !g.isStarred);
-  // 별표를 단 항목은 즐겨찾기 섹션으로 옮겨 간다
-  const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
-  const privateChannels = channels.filter((ch) => ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
-  const plainDMs = directMessages.filter((dm) => !dm.isStarred);
+  const { starredChannels, starredDMs, starredGroups, publicChannels, privateChannels, plainDMs, plainGroups } =
+    sidebarSections({ channels, directMessages, groupDMs }, collator.compare);
   const sectionToggleLabel = (expanded: boolean, label: string) =>
     expanded ? t('sections.collapse', { section: label }) : t('sections.expand', { section: label });
 

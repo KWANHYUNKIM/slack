@@ -42,7 +42,9 @@ export function ShortcutsHelpModal() {
         className="max-h-[80vh] w-full max-w-[520px] overflow-y-auto rounded-xl bg-white p-5 shadow-xl"
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
+            // Esc는 여기서만 처리한다. 전파를 막아 아래 레이어는 닫히지 않는다.
             e.preventDefault();
+            e.stopPropagation();
             close();
           } else if (e.key === 'Tab') {
             e.preventDefault(); // 포커스 가능한 요소가 닫기 버튼 하나뿐이다
@@ -70,7 +72,7 @@ export function ShortcutsHelpModal() {
                 <tr key={d.id} className="border-t border-slack-border-light">
                   <th scope="row" className="py-2 pe-3 text-start font-normal text-slack-primary">{t(d.labelKey)}</th>
                   <td className="py-2 text-end">
-                    {shortcutKeys(d, isMac).map((k, i) => (
+                    {shortcutKeys(d, isMac, (id) => t(`shortcuts.keys.${id}`)).map((k, i) => (
                       <kbd key={i} className="ms-1 rounded border border-slack-border bg-gray-50 px-1.5 py-0.5 font-sans text-[12px] text-slack-primary">
                         {k}
                       </kbd>
