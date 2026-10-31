@@ -242,47 +242,33 @@ router.delete('/users/:id/sessions/:sid', async (req: AuthRequest, res: Response
   }
 });
 
-// DELETE /admin/users/:id/sessions - 사용자의 모든 기기 로그아웃(세션만. 계정과 tokenVersion은 그대로)
+// DELETE /admin/users/:id/sessions - 사용자의 모든 기기 로그아웃. sid 없는 옛 토큰까지 막도록 tokenVersion도 올린다(force-logout과 같은 효과).
 router.delete('/users/:id/sessions', async (req: AuthRequest, res: Response) => {
   try {
     const target = await loadSessionTarget(req, res);
     if (!target) return;
+    await prisma.user.update({ where: { id: target.id }, data: { tokenVersion: { increment: 1 } } });
     const ids = await revokeUserSessions(target.id);
-    ids.forEach((sid) => kickSession(target.id, sid));
+    invalidateTokenCache(target.id);
+    kickUser(target.id);
+    // tokenVersion을 항상 올리므로(레거시 토큰 무효화) 폐기 세션이 0건이어도 감사 로그를 남긴다
     await writeAuditLog({
       action: 'session.revoked_all', actorId: req.user!.userId, targetType: 'user', targetId: target.id,
-      targetName: target.name, details: `scope=admin; count=${ids.length}`,
+      targetName: target.name, details: `scope=admin; count=${ids.length}; tokenVersion=bumped`,
     });
-    res.json({ revoked: ids.length });
+    res.json({ revoked: ids.length, tokenVersionBumped: true });
   } catch (error) {
     logError('Admin revoke sessions error', error);
     res.status(500).json({ error: 'Failed to revoke sessions' });
   }
 });
 
-// POST /admin/users/:id/force-logout - 사용자의 모든 세션을 끊는다(토큰 버전 증가 + 소켓 종료). 계정은 그대로 둔다.
+// POST /admin/users/:id/force-logout - 사용자의 모든 세션을 끊는다(토큰 버전 증가 + 세션 폐기 + 소켓 종료). 계정은 그대로 둔다.
 router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) => {
   try {
-    const userId = parseIntParam(req.params.id);
-    if (!userId) {
-      res.status(400).json({ error: 'Invalid user ID' });
-      return;
-    }
-
-    const target = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, name: true, role: true },
-    });
-    if (!target) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    const actorRole = req.user!.role || 'MEMBER';
-    if (userId !== req.user!.userId && actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
-      res.status(403).json({ error: 'Cannot force logout a user with equal or higher role' });
-      return;
-    }
+    const target = await loadSessionTarget(req, res);
+    if (!target) return;
+    const userId = target.id;
 
     // 두 방식을 함께 쓴다: tokenVersion은 sid 없는 옛 토큰까지 막고, 세션 폐기는 목록과 감사 기록을 정리한다.
     await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });

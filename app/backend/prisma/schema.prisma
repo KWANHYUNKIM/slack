@@ -495,4 +495,6 @@ model Session {
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
+  @@index([lastSeenAt])
+  @@index([revokedAt])
 }

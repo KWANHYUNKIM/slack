@@ -117,6 +117,13 @@
     "errors": {
       "loadFailed": "Failed to load devices.",
       "revokeFailed": "Failed to sign out. Please try again."
+    },
+    "device": {
+      "desktop": "Desktop app",
+      "desktopOn": "Desktop app on {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} on {os}",
+      "unknownOn": "Unknown device on {os}"
     }
   }
 }

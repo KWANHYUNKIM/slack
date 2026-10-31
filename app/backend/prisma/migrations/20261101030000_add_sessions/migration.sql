@@ -18,5 +18,11 @@ CREATE INDEX "Session_userId_revokedAt_idx" ON "Session"("userId", "revokedAt");
 -- CreateIndex
 CREATE INDEX "Session_expiresAt_idx" ON "Session"("expiresAt");
 
+-- CreateIndex
+CREATE INDEX "Session_lastSeenAt_idx" ON "Session"("lastSeenAt");
+
+-- CreateIndex
+CREATE INDEX "Session_revokedAt_idx" ON "Session"("revokedAt");
+
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

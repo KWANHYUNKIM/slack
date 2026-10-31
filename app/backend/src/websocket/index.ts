@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 import { JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
-import { isSessionAlive } from '../services/sessionService.js';
+import { isSessionAlive, touchSession } from '../services/sessionService.js';
 import { validateAccessToken, AccessTokenResult } from '../middleware/auth.js';
 import {
   checkChannelMembership,
@@ -251,6 +251,14 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
   io.on('connection', async (socket: AuthenticatedSocket) => {
     console.log(`User ${socket.user?.userId} connected`);
+
+    // 클라이언트가 보낸 이벤트(메시지, 타이핑, 포커스 등)는 활동이라 세션 lastSeenAt에 반영한다(1분 간격).
+    // 연결만 유지된 상태는 여기에 오지 않으므로 활동으로 치지 않는다.
+    socket.use((_packet, next) => {
+      const sid = socket.user?.sid;
+      if (sid) touchSession(sid);
+      next();
+    });
 
     // Per-socket cache for channel membership (only cache positive results)
     const membershipCache = new Map<number, { result: boolean; expires: number }>();
@@ -783,7 +791,6 @@ export function isUserOnline(userId: number): boolean {
   return onlineUsers.has(userId) && onlineUsers.get(userId)!.size > 0;
 }
 
-// Forcibly disconnect all sockets for a user (used by admin deactivation)
 /** 폐기된 세션(sid)의 소켓 연결만 끊는다. 같은 사용자의 다른 기기 연결은 그대로 둔다. */
 export function kickSession(userId: number, sid: string): void {
   const io = getIO();
@@ -799,6 +806,7 @@ export function kickSession(userId: number, sid: string): void {
   }
 }
 
+// Forcibly disconnect all sockets for a user (used by admin deactivation)
 export function kickUser(userId: number): void {
   const io = getIO();
   if (!io) return;
