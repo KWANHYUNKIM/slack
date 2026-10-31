@@ -1,0 +1,176 @@
+{
+  "page": {
+    "title": "관리자 패널",
+    "openSidebar": "사이드바 열기",
+    "tabs": {
+      "members": "멤버",
+      "invites": "초대",
+      "channels": "채널",
+      "webhooks": "웹훅",
+      "audit": "감사 로그"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "채널",
+      "members": "멤버",
+      "messages": "메시지",
+      "created": "생성일"
+    },
+    "actions": {
+      "rename": "채널 이름 변경",
+      "archive": "채널 보관",
+      "delete": "채널 삭제",
+      "unarchive": "채널 보관 해제",
+      "deletePermanently": "영구 삭제"
+    },
+    "emptyActive": "활성 채널이 없습니다",
+    "archivedHeading": "보관된 채널 ({count})",
+    "archivedOn": "{date}에 보관됨",
+    "messageCount": "메시지 {count}개",
+    "deleteDialog": {
+      "title": "채널 삭제",
+      "message": "#{name} 채널을 영구적으로 삭제할까요? 모든 메시지가 사라지며 되돌릴 수 없습니다."
+    },
+    "archiveDialog": {
+      "title": "채널 보관",
+      "confirm": "보관",
+      "message": "#{name} 채널을 보관할까요? 사이드바에서는 숨겨지지만 메시지는 그대로 남으며, 나중에 보관을 해제할 수 있습니다."
+    },
+    "unarchiveDialog": {
+      "title": "채널 보관 해제",
+      "confirm": "보관 해제",
+      "message": "#{name} 채널의 보관을 해제할까요? 모든 멤버의 사이드바에 다시 표시됩니다."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "멤버 검색...",
+    "columns": {
+      "user": "사용자",
+      "email": "이메일",
+      "role": "역할",
+      "status": "상태",
+      "actions": "작업"
+    },
+    "you": "(나)",
+    "roles": {
+      "owner": "소유자",
+      "admin": "관리자",
+      "member": "멤버",
+      "guest": "게스트"
+    },
+    "status": {
+      "active": "활성",
+      "deactivated": "비활성"
+    },
+    "actions": {
+      "transfer": "소유권 이전",
+      "reactivate": "다시 활성화",
+      "deactivate": "비활성화"
+    },
+    "empty": "사용자를 찾을 수 없습니다",
+    "dialogs": {
+      "transfer": {
+        "title": "워크스페이스 소유권 이전",
+        "confirm": "이전",
+        "message": "워크스페이스 소유권을 {name}님에게 이전할까요? 회원님은 관리자로 변경됩니다."
+      },
+      "deactivate": {
+        "title": "사용자 비활성화",
+        "confirm": "비활성화",
+        "message": "{name}님을 비활성화할까요? 즉시 로그아웃되며 더 이상 로그인할 수 없습니다."
+      },
+      "reactivate": {
+        "title": "사용자 다시 활성화",
+        "confirm": "다시 활성화",
+        "message": "{name}님을 다시 활성화할까요? 다시 로그인할 수 있게 됩니다."
+      }
+    }
+  },
+  "invites": {
+    "createHeading": "초대 링크 만들기",
+    "fields": {
+      "role": "역할",
+      "maxUses": "최대 사용 횟수",
+      "expiresIn": "만료까지"
+    },
+    "unlimited": "제한 없음",
+    "expiry": {
+      "1d": "1일",
+      "7d": "7일",
+      "30d": "30일",
+      "never": "만료 없음"
+    },
+    "expired": "만료됨",
+    "columns": {
+      "url": "초대 URL",
+      "uses": "사용 횟수",
+      "expires": "만료",
+      "createdBy": "만든 사람"
+    },
+    "copyUrl": "초대 URL 복사",
+    "full": "(가득 참)",
+    "delete": "초대 삭제",
+    "empty": "아직 초대 링크가 없습니다"
+  },
+  "webhooks": {
+    "createHeading": "웹훅 만들기",
+    "fields": {
+      "name": "웹훅 이름",
+      "channel": "채널"
+    },
+    "namePlaceholder": "예: 내 연동",
+    "selectChannel": "채널 선택...",
+    "columns": {
+      "name": "이름",
+      "url": "웹훅 URL",
+      "lastUsed": "마지막 사용"
+    },
+    "never": "사용 안 함",
+    "justNow": "방금",
+    "inactive": "비활성",
+    "copyUrl": "웹훅 URL 복사",
+    "delete": "웹훅 삭제",
+    "empty": "아직 설정된 웹훅이 없습니다"
+  },
+  "audit": {
+    "empty": "아직 감사 로그가 없습니다. 관리자 작업이 여기에 기록됩니다.",
+    "showing": "전체 {total}개 중 {shown}개 표시",
+    "loadMore": "더 보기",
+    "actions": {
+      "roleChanged": "역할 변경",
+      "deactivated": "비활성화",
+      "reactivated": "다시 활성화",
+      "archived": "보관",
+      "unarchived": "보관 해제",
+      "deleted": "삭제",
+      "edited": "수정",
+      "created": "생성"
+    },
+    "targets": {
+      "user": "사용자",
+      "channel": "채널",
+      "invite": "초대"
+    }
+  },
+  "errors": {
+    "archiveChannel": "채널을 보관하지 못했어요",
+    "createInvite": "초대 링크를 만들지 못했어요",
+    "createWebhook": "웹훅을 만들지 못했어요",
+    "deactivateUser": "사용자를 비활성화하지 못했어요",
+    "deleteChannel": "채널을 삭제하지 못했어요",
+    "deleteInvite": "초대 링크를 삭제하지 못했어요",
+    "deleteWebhook": "웹훅을 삭제하지 못했어요",
+    "editChannel": "채널을 수정하지 못했어요",
+    "fetchAuditLog": "감사 로그를 불러오지 못했어요",
+    "fetchChannels": "채널을 불러오지 못했어요",
+    "fetchInvites": "초대 링크를 불러오지 못했어요",
+    "fetchUsers": "사용자를 불러오지 못했어요",
+    "fetchWebhooks": "웹훅을 불러오지 못했어요",
+    "reactivateUser": "사용자를 다시 활성화하지 못했어요",
+    "removeChannelMember": "채널 멤버를 내보내지 못했어요",
+    "transferOwnership": "소유권을 이전하지 못했어요",
+    "unarchiveChannel": "채널 보관을 해제하지 못했어요",
+    "updateRole": "역할을 변경하지 못했어요"
+  }
+}

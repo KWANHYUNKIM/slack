@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { isToday, isYesterday, isSameDay } from 'date-fns';
+import { t } from '@/lib/i18n';
+import { formatDate, DATE_WEEKDAY } from '@/lib/i18n/format';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { markChannelRead } from '@/lib/api';
@@ -14,12 +17,12 @@ interface MessageListProps {
 
 function formatDateSeparator(date: Date): string {
   if (isToday(date)) {
-    return 'Today';
+    return t('common:dates.today');
   }
   if (isYesterday(date)) {
-    return 'Yesterday';
+    return t('common:dates.yesterday');
   }
-  return format(date, 'EEEE, MMMM d');
+  return formatDate(date, DATE_WEEKDAY);
 }
 
 function shouldShowDateSeparator(
@@ -44,6 +47,7 @@ function shouldShowAvatar(
 }
 
 export function MessageList({ channelId, onOpenThread, readOnly }: MessageListProps) {
+  const { t } = useTranslation('messages');
   const { getMessagesForChannel, fetchMessages, isLoading, loadError } = useMessageStore();
   const { markChannelAsRead } = useChannelStore();
   const scrollToMessageId = useChannelStore((s) => s.scrollToMessageId);
@@ -136,7 +140,7 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   if (isLoading && messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center text-slack-hint">
-        <p className="text-sm">Loading messages...</p>
+        <p className="text-sm">{t('list.loading')}</p>
       </div>
     );
   }
@@ -152,8 +156,8 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   if (messages.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-slack-hint">
-        <p className="text-lg font-medium">No messages yet</p>
-        <p className="text-sm">{readOnly ? 'This channel has no messages.' : 'Be the first to send a message!'}</p>
+        <p className="text-lg font-medium">{t('list.empty')}</p>
+        <p className="text-sm">{readOnly ? t('list.emptyReadOnly') : t('list.emptyFirst')}</p>
       </div>
     );
   }

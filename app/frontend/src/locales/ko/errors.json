@@ -1,0 +1,9 @@
+{
+  "client": {
+    "requestFailed": "요청에 실패했습니다.",
+    "validation": "입력값이 올바르지 않습니다.",
+    "uploadFailed": "업로드에 실패했습니다.",
+    "dismiss": "닫기",
+    "reconnecting": "다시 연결하는 중..."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "page": {
+    "title": "활동",
+    "markAllRead": "모두 읽음으로 표시",
+    "loading": "불러오는 중...",
+    "loadingMore": "더 불러오는 중...",
+    "loadFailed": "활동을 불러오지 못했습니다.",
+    "empty": "아직 활동이 없습니다.",
+    "unread": "읽지 않음",
+    "menu": "메뉴",
+    "someone": "누군가",
+    "directMessage": "다이렉트 메시지"
+  },
+  "tabs": {
+    "all": "전체",
+    "mentions": "멘션",
+    "threads": "스레드",
+    "reactions": "반응"
+  },
+  "describe": {
+    "mention": "{actor}님이 {where}에서 회원님을 멘션했습니다",
+    "channelMention": "{actor}님이 {where}에서 @channel을 멘션했습니다",
+    "hereMention": "{actor}님이 {where}에서 @here를 멘션했습니다",
+    "threadReply": "{actor}님이 {where}의 스레드에 답글을 남겼습니다",
+    "reaction": "{actor}님이 {where}에서 회원님의 메시지에 {emoji} 반응을 남겼습니다"
+  }
+}

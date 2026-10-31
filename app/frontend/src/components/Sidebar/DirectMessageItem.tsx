@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { DirectMessage } from '@/lib/types';
@@ -14,6 +15,7 @@ export function DirectMessageItem({
   isActive,
   onClick,
 }: DirectMessageItemProps) {
+  const { t } = useTranslation('sidebar');
   const hasUnread = dm.unreadCount > 0 || dm.mentionCount > 0;
   const currentUser = useAuthStore((s) => s.user);
   const isSelf = dm.userId === currentUser?.id;
@@ -35,7 +37,7 @@ export function DirectMessageItem({
           status={dm.userStatus}
         />
       }
-      label={<>{dm.userName}{isSelf && <span className="opacity-60"> (you)</span>}</>}
+      label={<>{dm.userName}{isSelf && <span className="opacity-60"> {t('you')}</span>}</>}
     />
   );
 }

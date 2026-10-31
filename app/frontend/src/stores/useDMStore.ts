@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { create } from 'zustand';
 import { getConversation, sendDM, editDM, deleteDM, addDMReaction, removeDMReaction, type ApiDirectMessage, type ApiDMReaction } from '@/lib/api';
 import { useAuthStore } from './useAuthStore';
@@ -115,7 +116,7 @@ export const useDMStore = create<DMState>((set, get) => ({
       }));
     } catch {
       if (get().loadingUserId !== userId) return;
-      set({ isLoading: false, loadError: 'Failed to load messages.' });
+      set({ isLoading: false, loadError: t('channels:dm.loadError') });
     }
   },
 
@@ -140,7 +141,7 @@ export const useDMStore = create<DMState>((set, get) => ({
         };
       });
     } catch {
-      set({ isSending: false, sendError: 'Message failed to send. Please try again.' });
+      set({ isSending: false, sendError: t('channels:dm.sendError') });
     }
   },
 

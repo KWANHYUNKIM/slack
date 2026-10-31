@@ -1,6 +1,7 @@
 import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Pin, Pencil, Trash2, MailOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +29,7 @@ export function MessageActionsMenu({
   anchorClassName,
   testIdPrefix,
 }: MessageActionsMenuProps) {
+  const { t } = useTranslation('messages');
   const menuRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -89,20 +91,20 @@ export function MessageActionsMenu({
     >
       {!hasAnyAction ? (
         <div className="px-4 py-1.5 text-[13px] text-slack-secondary">
-          No actions available
+          {t('actionsMenu.noActions')}
         </div>
       ) : (
         <>
           {onMarkUnread && (
             <Button variant="menu-item" onClick={onMarkUnread}>
               <MailOpen className="h-4 w-4" />
-              Mark as unread
+              {t('actionsMenu.markUnread')}
             </Button>
           )}
           {onPin && (
             <Button variant="menu-item" onClick={onPin}>
               <Pin className="h-4 w-4" />
-              {isPinned ? 'Unpin message' : 'Pin message'}
+              {isPinned ? t('actionsMenu.unpin') : t('actionsMenu.pin')}
             </Button>
           )}
           {showOwnerActions && onEdit && (
@@ -112,7 +114,7 @@ export function MessageActionsMenu({
               onClick={onEdit}
             >
               <Pencil className="h-4 w-4" />
-              Edit message
+              {t('actionsMenu.edit')}
             </Button>
           )}
           {showOwnerActions && onDelete && (
@@ -122,7 +124,7 @@ export function MessageActionsMenu({
               onClick={onDelete}
             >
               <Trash2 className="h-4 w-4" />
-              Delete message
+              {t('actionsMenu.delete')}
             </Button>
           )}
         </>

@@ -12,7 +12,7 @@ export function UnreadBadge({ count, mentionCount = 0, isActive }: UnreadBadgePr
     return (
       <span
         data-testid="mention-badge"
-        className="text-[12px] ml-1 min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5 bg-red-500 text-white font-bold"
+        className="text-[12px] ms-1 min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5 bg-red-500 text-white font-bold"
       >
         {mentionCount}
       </span>
@@ -21,7 +21,7 @@ export function UnreadBadge({ count, mentionCount = 0, isActive }: UnreadBadgePr
   if (count <= 0) return null;
   return (
     <span className={cn(
-      'text-[12px] ml-1 min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5',
+      'text-[12px] ms-1 min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5',
       isActive ? 'bg-slack-primary text-white' : 'bg-slack-badge text-white'
     )}>
       {count}

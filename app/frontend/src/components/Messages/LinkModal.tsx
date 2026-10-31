@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ export function LinkModal({
   onSave,
   onClose,
 }: LinkModalProps) {
+  const { t } = useTranslation(['messages', 'common']);
   const linkUrlInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -54,9 +56,9 @@ export function LinkModal({
         <div className="flex items-center justify-between border-b border-slack-border-light px-5 py-4">
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-slack-link" />
-            <h2 className="text-[17px] font-bold text-slack-primary">Add link</h2>
+            <h2 className="text-[17px] font-bold text-slack-primary">{t('messages:linkModal.title')}</h2>
           </div>
-          <Button variant="toolbar" size="icon-sm" onClick={handleClose}>
+          <Button variant="toolbar" size="icon-sm" onClick={handleClose} aria-label={t('messages:linkModal.close')}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -64,7 +66,7 @@ export function LinkModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-semibold text-slack-primary">URL</label>
+            <label className="text-[13px] font-semibold text-slack-primary">{t('messages:linkModal.url')}</label>
             <input
               ref={linkUrlInputRef}
               data-testid="link-url-input"
@@ -72,13 +74,13 @@ export function LinkModal({
               value={linkUrl}
               onChange={(e) => onLinkUrlChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="https://example.com"
+              placeholder={t('messages:linkModal.urlPlaceholder')}
               className="h-9 w-full rounded-md border border-slack-border-dark px-3 text-[14px] text-slack-primary placeholder-slack-secondary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-semibold text-slack-primary">
-              Display text <span className="font-normal text-slack-secondary">(optional)</span>
+              {t('messages:linkModal.displayText')} <span className="font-normal text-slack-secondary">{t('messages:linkModal.optional')}</span>
             </label>
             <input
               data-testid="link-text-input"
@@ -86,7 +88,7 @@ export function LinkModal({
               value={linkText}
               onChange={(e) => onLinkTextChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Link text"
+              placeholder={t('messages:linkModal.textPlaceholder')}
               className="h-9 w-full rounded-md border border-slack-border-dark px-3 text-[14px] text-slack-primary placeholder-slack-secondary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
             />
           </div>
@@ -99,7 +101,7 @@ export function LinkModal({
             onClick={handleClose}
             className="border-slack-border-dark px-4 py-1.5 text-[14px] font-medium text-slack-primary hover:bg-slack-hover"
           >
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button
             onClick={onSave}
@@ -109,7 +111,7 @@ export function LinkModal({
               !linkUrl.trim() && 'bg-slack-border cursor-not-allowed hover:bg-slack-border',
             )}
           >
-            Save
+            {t('common:actions.save')}
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Headphones, PhoneOff } from 'lucide-react';
 import { useHuddleStore } from '@/stores/useHuddleStore';
 
@@ -6,6 +7,7 @@ interface HuddleButtonProps {
 }
 
 export function HuddleButton({ userId }: HuddleButtonProps) {
+  const { t } = useTranslation('huddle');
   const { huddleId, peer, outgoingInvite, sendInvite, cancelInvite, error } = useHuddleStore();
 
   const isInHuddleWithThisPerson = huddleId !== null && peer?.userId === userId;
@@ -20,7 +22,7 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
       return;
     }
     if (isInAnyHuddle || hasOutgoingInvite) {
-      useHuddleStore.setState({ error: isInAnyHuddle ? 'Leave your current huddle first' : 'Cancel your current invite first' });
+      useHuddleStore.setState({ error: isInAnyHuddle ? t('button.leaveFirstError') : t('button.cancelInviteFirstError') });
       return;
     }
     sendInvite(userId);
@@ -31,10 +33,11 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
       <button
         onClick={handleClick}
         className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-        title="Cancel invite"
+        title={t('button.cancelInvite')}
+        aria-label={t('button.cancelInvite')}
       >
         <PhoneOff className="h-4 w-4" />
-        <span className="text-xs font-medium">Calling...</span>
+        <span className="text-xs font-medium">{t('button.calling')}</span>
       </button>
     );
   }
@@ -51,7 +54,8 @@ export function HuddleButton({ userId }: HuddleButtonProps) {
               ? 'text-slack-secondary opacity-50 cursor-not-allowed'
               : 'text-slack-secondary hover:bg-slack-hover'
         }`}
-        title={isInHuddleWithThisPerson ? 'In huddle' : isInAnyHuddle ? 'Leave current huddle first' : 'Start huddle'}
+        title={isInHuddleWithThisPerson ? t('button.inHuddle') : isInAnyHuddle ? t('button.leaveCurrentFirst') : t('button.start')}
+        aria-label={isInHuddleWithThisPerson ? t('button.inHuddle') : isInAnyHuddle ? t('button.leaveCurrentFirst') : t('button.start')}
       >
         <Headphones className="h-4 w-4" />
       </button>

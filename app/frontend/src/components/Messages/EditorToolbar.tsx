@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Plus, AtSign, Smile, Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,7 @@ export function EditorToolbar({
   onCancelRecording,
   children,
 }: EditorToolbarProps) {
+  const { t } = useTranslation(['messages', 'common']);
   return (
     <div className="flex items-center justify-between px-[6px] py-1">
       <div className="flex items-center">
@@ -34,7 +36,7 @@ export function EditorToolbar({
           variant="toolbar"
           size="icon-sm"
           onClick={onAttach}
-          title="Attach file"
+          title={t('messages:editorToolbar.attachFile')}
         >
           <Plus className="h-[18px] w-[18px]" />
         </Button>
@@ -42,7 +44,7 @@ export function EditorToolbar({
           variant="toolbar"
           size="icon-sm"
           onClick={onEmojiToggle}
-          title="Emoji"
+          title={t('messages:editorToolbar.emoji')}
         >
           <Smile className="h-[18px] w-[18px]" />
         </Button>
@@ -51,12 +53,12 @@ export function EditorToolbar({
           variant="toolbar"
           size="icon-sm"
           onClick={onMention}
-          title="Mention someone"
+          title={t('messages:editorToolbar.mention')}
         >
           <AtSign className="h-[18px] w-[18px]" />
         </Button>
         {isRecording ? (
-          <div className="flex items-center gap-1.5 ml-1">
+          <div className="flex items-center gap-1.5 ms-1">
             <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             <span className="text-[12px] text-red-600 font-medium tabular-nums">
               {Math.floor(recordingDuration / 60)}:{String(recordingDuration % 60).padStart(2, '0')}
@@ -66,7 +68,7 @@ export function EditorToolbar({
               variant="toolbar"
               size="icon-sm"
               onClick={onStopRecording}
-              title="Stop recording"
+              title={t('messages:editorToolbar.stopRecording')}
             >
               <Square className="h-3.5 w-3.5 fill-red-500 text-red-500" />
             </Button>
@@ -74,7 +76,7 @@ export function EditorToolbar({
               onClick={onCancelRecording}
               className="text-[11px] text-slack-secondary hover:text-slack-primary"
             >
-              Cancel
+              {t('common:actions.cancel')}
             </button>
           </div>
         ) : (
@@ -83,7 +85,7 @@ export function EditorToolbar({
             variant="toolbar"
             size="icon-sm"
             onClick={onStartRecording}
-            title="Record voice clip"
+            title={t('messages:editorToolbar.recordVoice')}
           >
             <Mic className="h-[18px] w-[18px]" />
           </Button>

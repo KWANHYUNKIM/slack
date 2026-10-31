@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Hash, Menu } from 'lucide-react';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -14,6 +15,7 @@ import { PinsPanel } from './PinsPanel';
 import { FilesPanel } from './FilesPanel';
 
 export function MessageArea() {
+  const { t } = useTranslation('messages');
   const { activeChannelId, activeDMId, getActiveChannel, getActiveDM } = useChannelStore();
   const activeChannel = getActiveChannel();
   const activeDM = getActiveDM();
@@ -63,8 +65,8 @@ export function MessageArea() {
   // Memoize placeholder to prevent MessageInput re-renders
   const activeChannelName = activeChannel?.name;
   const placeholder = useMemo(
-    () => (activeChannelName ? `Message #${activeChannelName}` : ''),
-    [activeChannelName]
+    () => (activeChannelName ? t('area.placeholder', { channel: activeChannelName }) : ''),
+    [activeChannelName, t]
   );
 
   // Show DM conversation if a DM is active
@@ -77,11 +79,12 @@ export function MessageArea() {
       <div className="flex flex-1 flex-col items-center justify-center text-slack-hint">
         <button
           onClick={useMobileStore.getState().openSidebar}
+          aria-label={t('area.openMenu')}
           className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-slack-hover md:hidden"
         >
           <Menu className="h-5 w-5 text-slack-secondary" />
         </button>
-        Select a channel to start messaging
+        {t('area.selectChannel')}
       </div>
     );
   }
@@ -127,12 +130,12 @@ export function MessageArea() {
           <div className="px-5 pb-4 pt-3 bg-white border-t border-slack-border">
             <div className="flex items-center justify-center gap-3 rounded-lg border border-slack-border p-4">
               <Hash className="h-4 w-4 text-slack-secondary" />
-              <span className="text-[15px] text-slack-secondary">You're viewing <b>#{activeChannel.name}</b></span>
+              <span className="text-[15px] text-slack-secondary">{t('area.viewing', { channel: activeChannel.name })}</span>
               <button
                 onClick={async () => { await joinChannel(activeChannelId!); await fetchChannels(); }}
                 className="rounded bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover"
               >
-                Join Channel
+                {t('area.joinChannel')}
               </button>
             </div>
           </div>

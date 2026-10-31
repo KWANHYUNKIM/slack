@@ -29,7 +29,7 @@ export function SidebarItem({
       data-active={isActive}
       data-testid={testId}
       className={cn(
-        'flex w-full items-center gap-2 h-[28px] text-[15px] transition-all rounded-[6px] text-left',
+        'flex w-full items-center gap-2 h-[28px] text-[15px] transition-all rounded-[6px] text-start',
         'mx-2 w-[calc(100%-16px)] px-4',
         isActive
           ? 'bg-white text-slack-primary font-bold'

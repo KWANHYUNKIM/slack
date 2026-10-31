@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
+import { useTranslation } from 'react-i18next';
 import type { Area } from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -11,6 +12,7 @@ interface AvatarCropModalProps {
 }
 
 export function AvatarCropModal({ imageSrc, onCrop, onClose }: AvatarCropModalProps) {
+  const { t } = useTranslation('settings');
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -51,7 +53,7 @@ export function AvatarCropModal({ imageSrc, onCrop, onClose }: AvatarCropModalPr
       );
 
       const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed to crop'))), 'image/png');
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error(t('crop.failed')))), 'image/png');
       });
 
       onCrop(blob, croppedAreaPixels);
@@ -67,8 +69,8 @@ export function AvatarCropModal({ imageSrc, onCrop, onClose }: AvatarCropModalPr
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slack-border-light px-5 py-4">
-          <h2 className="text-[17px] font-bold text-slack-primary">Crop your photo</h2>
-          <Button variant="toolbar" size="icon-sm" onClick={onClose}>
+          <h2 className="text-[17px] font-bold text-slack-primary">{t('crop.title')}</h2>
+          <Button variant="toolbar" size="icon-sm" onClick={onClose} aria-label={t('crop.close')}>
             <X className="h-4 w-4 text-slack-hint" />
           </Button>
         </div>
@@ -88,7 +90,7 @@ export function AvatarCropModal({ imageSrc, onCrop, onClose }: AvatarCropModalPr
         </div>
 
         <div className="px-5 py-3">
-          <label className="text-[13px] text-slack-hint">Zoom</label>
+          <label className="text-[13px] text-slack-hint">{t('crop.zoom')}</label>
           <input
             type="range"
             min={1}
@@ -102,10 +104,10 @@ export function AvatarCropModal({ imageSrc, onCrop, onClose }: AvatarCropModalPr
 
         <div className="flex justify-end gap-2 border-t border-slack-border-light px-5 py-3">
           <Button variant="ghost" size="sm" onClick={onClose}>
-            Cancel
+            {t('crop.cancel')}
           </Button>
           <Button size="sm" disabled={isSaving} onClick={handleSave}>
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? t('crop.saving') : t('crop.save')}
           </Button>
         </div>
       </div>

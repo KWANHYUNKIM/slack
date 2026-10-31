@@ -1,0 +1,66 @@
+{
+  "dialog": {
+    "tabCreate": "Create a channel",
+    "tabBrowse": "Browse channels",
+    "nameLabel": "Channel name",
+    "namePlaceholder": "e.g. plan-budget",
+    "visibility": "Visibility",
+    "public": "Public",
+    "private": "Private",
+    "publicHint": "Anyone in the workspace can find and join this channel.",
+    "privateHint": "Only invited members can find and join this channel.",
+    "cancel": "Cancel",
+    "create": "Create",
+    "noChannels": "No channels available to join",
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "joined": "Joined",
+    "join": "Join",
+    "close": "Close",
+    "errors": {
+      "tooLong": "Channel name must be 25 characters or fewer",
+      "invalidChars": "Channel names can only contain lowercase letters, numbers, and hyphens",
+      "createFailed": "Failed to create channel"
+    }
+  },
+  "errors": {
+    "loadConversations": "Failed to load conversations.",
+    "loadChannels": "Failed to load channels."
+  },
+  "membersPanel": {
+    "title": "Members",
+    "addPeople": "Add people",
+    "loadError": "Failed to load members.",
+    "removeError": "Failed to remove member",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Remove member?",
+      "message": "Remove <strong>{{name}}</strong> from this channel?"
+    },
+    "removing": "Removing...",
+    "searchByName": "Search by name...",
+    "noUsers": "No users found",
+    "roles": {
+      "owner": "Owner",
+      "moderator": "Mod"
+    },
+    "removeMember": "Remove member"
+  },
+  "dm": {
+    "messagePlaceholder": "Message {name}",
+    "you": "(you)",
+    "star": "Add to Starred",
+    "unstar": "Remove from Starred",
+    "loadingMessages": "Loading messages...",
+    "selfSpace": "This is your space. Draft messages, list your to-dos, or keep links and files handy.",
+    "conversationStart": "Start of your conversation with {name}",
+    "sendToBegin": "Send a message to begin.",
+    "edited": "(edited)",
+    "pinnedMessages": "Pinned messages",
+    "noPins": "No pinned messages yet",
+    "files": "Files",
+    "noFiles": "No files shared yet",
+    "loadError": "Failed to load messages.",
+    "sendError": "Message failed to send. Please try again."
+  }
+}

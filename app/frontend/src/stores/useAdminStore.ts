@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { create } from 'zustand';
 import * as api from '@/lib/api';
 import type { AdminUser, AdminChannel, AdminInvite, AuditLogEntry, AdminWebhook } from '@/lib/api';
@@ -46,7 +47,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const users = await api.adminGetUsers();
       set({ users });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to fetch users' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.fetchUsers') });
     }
   },
 
@@ -55,7 +56,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const channels = await api.adminGetChannels();
       set({ channels });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to fetch channels' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.fetchChannels') });
     }
   },
 
@@ -64,7 +65,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const invites = await api.adminGetInvites();
       set({ invites });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to fetch invites' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.fetchInvites') });
     }
   },
 
@@ -75,7 +76,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminUpdateUserRole(userId, role);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : 'Failed to update role' });
+      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.updateRole') });
     }
   },
 
@@ -85,7 +86,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       // Refresh users to reflect the role changes
       await get().fetchUsers();
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to transfer ownership' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.transferOwnership') });
     }
   },
 
@@ -96,7 +97,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminDeactivateUser(userId);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : 'Failed to deactivate user' });
+      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.deactivateUser') });
     }
   },
 
@@ -107,7 +108,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminReactivateUser(userId);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : 'Failed to reactivate user' });
+      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.reactivateUser') });
     }
   },
 
@@ -116,7 +117,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const invite = await api.adminCreateInvite(data);
       set({ invites: [invite, ...get().invites] });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to create invite' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.createInvite') });
     }
   },
 
@@ -126,7 +127,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteInvite(inviteId);
     } catch (err) {
-      set({ invites: prev, error: err instanceof Error ? err.message : 'Failed to delete invite' });
+      set({ invites: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteInvite') });
     }
   },
 
@@ -135,7 +136,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const webhooks = await api.adminGetWebhooks();
       set({ webhooks });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to fetch webhooks' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.fetchWebhooks') });
     }
   },
 
@@ -144,7 +145,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const webhook = await api.adminCreateWebhook(data);
       set({ webhooks: [webhook, ...get().webhooks] });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to create webhook' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.createWebhook') });
     }
   },
 
@@ -154,7 +155,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteWebhook(webhookId);
     } catch (err) {
-      set({ webhooks: prev, error: err instanceof Error ? err.message : 'Failed to delete webhook' });
+      set({ webhooks: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteWebhook') });
     }
   },
 
@@ -164,7 +165,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteChannel(channelId);
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : 'Failed to delete channel' });
+      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteChannel') });
     }
   },
 
@@ -179,7 +180,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminArchiveChannel(channelId);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : 'Failed to archive channel' });
+      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.archiveChannel') });
     }
   },
 
@@ -194,7 +195,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminUnarchiveChannel(channelId);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : 'Failed to unarchive channel' });
+      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.unarchiveChannel') });
     }
   },
 
@@ -204,7 +205,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminEditChannel(channelId, data);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : 'Failed to edit channel' });
+      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.editChannel') });
     }
   },
 
@@ -213,7 +214,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       await api.adminRemoveChannelMember(channelId, userId);
       // Member count will be updated via WebSocket channel:member-left event
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to remove channel member' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.removeChannelMember') });
       throw err;
     }
   },
@@ -226,7 +227,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         auditLogTotal: data.total,
       });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Failed to fetch audit log' });
+      set({ error: err instanceof Error ? err.message : t('admin:errors.fetchAuditLog') });
     }
   },
 }));

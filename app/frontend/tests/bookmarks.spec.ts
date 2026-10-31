@@ -20,7 +20,7 @@ test.describe('Bookmarks', () => {
     await messageRow.hover();
 
     // Click the bookmark button
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5').first();
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5').first();
     const bookmarkBtn = hoverToolbar.getByTestId('bookmark-button');
     await bookmarkBtn.click();
 
@@ -59,7 +59,7 @@ test.describe('Bookmarks', () => {
     // Hover and bookmark
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: uniqueText }).first();
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5').first();
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5').first();
     await hoverToolbar.getByTestId('bookmark-button').click();
 
     // Verify bookmarked
@@ -75,7 +75,7 @@ test.describe('Bookmarks', () => {
     // Hover and unbookmark
     const messageRowAfter = page.locator('.group.relative.flex.px-5').filter({ hasText: uniqueText }).first();
     await messageRowAfter.hover();
-    const hoverToolbarAfter = page.locator('.absolute.-top-4.right-5').first();
+    const hoverToolbarAfter = page.locator('.absolute.-top-4.end-5').first();
     await hoverToolbarAfter.getByTestId('bookmark-button').click();
 
     // Verify unbookmarked (should not have yellow class)
@@ -96,7 +96,7 @@ test.describe('Bookmarks', () => {
     // Bookmark the message
     const messageRow = page.locator('.group.relative.flex.px-5').filter({ hasText: uniqueText }).first();
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5').first();
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5').first();
     await hoverToolbar.getByTestId('bookmark-button').click();
     await expect(messageRow.getByTestId('bookmark-icon')).toHaveClass(/text-yellow-500/, { timeout: 5000 });
 

@@ -1,0 +1,30 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "send": "Send",
+    "confirm": "Confirm",
+    "back": "Back",
+    "remove": "Remove",
+    "add": "Add",
+    "create": "Create",
+    "retry": "Try again",
+    "search": "Search",
+    "copy": "Copy",
+    "done": "Done",
+    "next": "Next",
+    "more": "More"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/avatar';
 
 interface ThreadParticipant {
@@ -15,6 +16,7 @@ interface ThreadIndicatorProps {
 }
 
 export function ThreadIndicator({ replyCount, participants = [], onClick, testId }: ThreadIndicatorProps) {
+  const { t } = useTranslation('messages');
   // Show only repliers (deduplicated) — author is already visible as message sender
   const seen = new Set<number>();
   const allParticipants: ThreadParticipant[] = [];
@@ -30,7 +32,7 @@ export function ThreadIndicator({ replyCount, participants = [], onClick, testId
       data-testid={testId}
       onClick={onClick}
       onTouchStart={(e) => e.stopPropagation()}
-      className="mt-[6px] flex items-center gap-2 rounded px-1 py-0.5 text-[13px] text-slack-link hover:bg-slack-highlight -ml-1"
+      className="mt-[6px] flex items-center gap-2 rounded px-1 py-0.5 text-[13px] text-slack-link hover:bg-slack-highlight -ms-1"
     >
       <div data-testid="thread-avatars" className="flex -space-x-1">
         {allParticipants.slice(0, 3).map((p) => (
@@ -45,7 +47,7 @@ export function ThreadIndicator({ replyCount, participants = [], onClick, testId
         ))}
       </div>
       <span className="font-normal">
-        {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+        {t('thread.replyCount', { count: replyCount })}
       </span>
     </button>
   );

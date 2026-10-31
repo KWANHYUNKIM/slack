@@ -1,18 +1,20 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Trash2, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
+import { formatDate } from '@/lib/i18n/format';
 
-const ROLE_BADGE: Record<string, { label: string; className: string }> = {
-  ADMIN: { label: 'Admin', className: 'bg-purple-100 text-purple-700' },
-  MEMBER: { label: 'Member', className: 'bg-blue-100 text-blue-700' },
-  GUEST: { label: 'Guest', className: 'bg-gray-100 text-gray-600' },
+const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
+  ADMIN: { labelKey: 'members.roles.admin', className: 'bg-purple-100 text-purple-700' },
+  MEMBER: { labelKey: 'members.roles.member', className: 'bg-blue-100 text-blue-700' },
+  GUEST: { labelKey: 'members.roles.guest', className: 'bg-gray-100 text-gray-600' },
 };
 
 const EXPIRY_OPTIONS = [
-  { label: '1 day', value: '1d' },
-  { label: '7 days', value: '7d' },
-  { label: '30 days', value: '30d' },
-  { label: 'Never', value: 'never' },
+  { labelKey: 'invites.expiry.1d', value: '1d' },
+  { labelKey: 'invites.expiry.7d', value: '7d' },
+  { labelKey: 'invites.expiry.30d', value: '30d' },
+  { labelKey: 'invites.expiry.never', value: 'never' },
 ];
 
 function getExpiresAt(value: string): string | null {
@@ -24,6 +26,7 @@ function getExpiresAt(value: string): string | null {
 }
 
 export function AdminInvitesTab() {
+  const { t } = useTranslation('admin');
   const { invites, createInvite, deleteInvite } = useAdminStore();
   const [role, setRole] = useState<'MEMBER' | 'GUEST'>('MEMBER');
   const [maxUses, setMaxUses] = useState('');
@@ -46,49 +49,49 @@ export function AdminInvitesTab() {
   };
 
   const formatExpiry = (expiresAt: string | null) => {
-    if (!expiresAt) return 'Never';
+    if (!expiresAt) return t('invites.expiry.never');
     const date = new Date(expiresAt);
-    if (date < new Date()) return 'Expired';
-    return date.toLocaleDateString();
+    if (date < new Date()) return t('invites.expired');
+    return formatDate(date);
   };
 
   return (
     <div>
       {/* Create Form */}
       <div className="mb-6 rounded-lg border border-slack-border p-4">
-        <h3 className="text-sm font-semibold text-slack-primary mb-3">Create invite link</h3>
+        <h3 className="text-sm font-semibold text-slack-primary mb-3">{t('invites.createHeading')}</h3>
         <div className="flex items-end gap-3 flex-wrap">
           <div>
-            <label className="block text-xs text-slack-secondary mb-1">Role</label>
+            <label className="block text-xs text-slack-secondary mb-1">{t('invites.fields.role')}</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as 'MEMBER' | 'GUEST')}
               className="rounded border border-slack-border px-3 py-1.5 text-sm focus:border-slack-focus focus:outline-none"
             >
-              <option value="MEMBER">Member</option>
-              <option value="GUEST">Guest</option>
+              <option value="MEMBER">{t('members.roles.member')}</option>
+              <option value="GUEST">{t('members.roles.guest')}</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs text-slack-secondary mb-1">Max uses</label>
+            <label className="block text-xs text-slack-secondary mb-1">{t('invites.fields.maxUses')}</label>
             <input
               type="number"
               min="1"
               value={maxUses}
               onChange={(e) => setMaxUses(e.target.value)}
-              placeholder="Unlimited"
+              placeholder={t('invites.unlimited')}
               className="w-28 rounded border border-slack-border px-3 py-1.5 text-sm focus:border-slack-focus focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-xs text-slack-secondary mb-1">Expires in</label>
+            <label className="block text-xs text-slack-secondary mb-1">{t('invites.fields.expiresIn')}</label>
             <select
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
               className="rounded border border-slack-border px-3 py-1.5 text-sm focus:border-slack-focus focus:outline-none"
             >
               {EXPIRY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
               ))}
             </select>
           </div>
@@ -96,7 +99,7 @@ export function AdminInvitesTab() {
             onClick={handleCreate}
             className="rounded-lg bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover"
           >
-            Create
+            {t('common:actions.create')}
           </button>
         </div>
       </div>
@@ -106,12 +109,12 @@ export function AdminInvitesTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-slack-border">
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Invite URL</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Role</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Uses</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Expires</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Created by</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slack-secondary"></th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.columns.url')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.fields.role')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.columns.uses')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.columns.expires')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('invites.columns.createdBy')}</th>
+              <th className="text-end px-4 py-2.5 font-medium text-slack-secondary"></th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +133,7 @@ export function AdminInvitesTab() {
                       <button
                         onClick={() => copyUrl(invite.code, invite.id)}
                         className="text-slack-hint hover:text-slack-primary"
-                        title="Copy invite URL"
+                        title={t('invites.copyUrl')} aria-label={t('invites.copyUrl')}
                       >
                         {copiedId === invite.id ? (
                           <Check className="h-3.5 w-3.5 text-green-600" />
@@ -142,12 +145,12 @@ export function AdminInvitesTab() {
                   </td>
                   <td className="px-4 py-2.5">
                     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
-                      {badge.label}
+                      {t(badge.labelKey)}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-slack-secondary">
                     {invite.useCount}{invite.maxUses !== null ? ` / ${invite.maxUses}` : ''}
-                    {isExhausted && <span className="ml-1 text-red-500 text-xs">(full)</span>}
+                    {isExhausted && <span className="ms-1 text-red-500 text-xs">{t('invites.full')}</span>}
                   </td>
                   <td className="px-4 py-2.5 text-slack-secondary">
                     <span className={isExpired ? 'text-red-500' : ''}>
@@ -155,11 +158,11 @@ export function AdminInvitesTab() {
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-slack-secondary">{invite.creator.name}</td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-4 py-2.5 text-end">
                     <button
                       onClick={() => deleteInvite(invite.id)}
                       className="text-slack-hint hover:text-red-600"
-                      title="Delete invite"
+                      title={t('invites.delete')} aria-label={t('invites.delete')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -170,7 +173,7 @@ export function AdminInvitesTab() {
           </tbody>
         </table>
         {invites.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-slack-hint">No invite links yet</div>
+          <div className="px-4 py-8 text-center text-sm text-slack-hint">{t('invites.empty')}</div>
         )}
       </div>
     </div>

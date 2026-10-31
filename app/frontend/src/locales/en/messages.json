@@ -1,0 +1,215 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Notify everyone who is online",
+    "channelLabel": "@channel",
+    "channelHint": "Notify everyone in this channel"
+  },
+  "deleteDialog": {
+    "title": "Delete message",
+    "body": "Are you sure you want to delete this message? This can't be undone."
+  },
+  "editorToolbar": {
+    "attachFile": "Attach file",
+    "emoji": "Emoji",
+    "mention": "Mention someone",
+    "stopRecording": "Stop recording",
+    "recordVoice": "Record voice clip"
+  },
+  "emojiAutocomplete": {
+    "navigate": "to navigate",
+    "select": "to select",
+    "dismiss": "to dismiss",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Remove {name}"
+  },
+  "fileModal": {
+    "download": "Download",
+    "loadFailed": "Could not load file content",
+    "truncated": "... (truncated)",
+    "noPreview": "No preview available",
+    "downloadToView": "Download the file to view it"
+  },
+  "files": {
+    "allFiles": "All files",
+    "channelFiles": "Channel files",
+    "loadFailed": "Failed to load files.",
+    "empty": "No files uploaded yet",
+    "download": "Download",
+    "menu": "Menu"
+  },
+  "format": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "strike": "Strikethrough",
+    "link": "Link",
+    "orderedList": "Ordered list",
+    "bulletList": "Bulleted list",
+    "code": "Code",
+    "codeBlock": "Code block",
+    "quote": "Quote"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No new notifications",
+    "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}"
+  },
+  "search": {
+    "placeholder": "Search",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "resultCount": "{count, plural, one {# result} other {# results}}",
+    "inChannel": "in #{channel}"
+  },
+  "headerTabs": {
+    "files": "Files",
+    "pins": "Pins"
+  },
+  "lightbox": {
+    "close": "Close"
+  },
+  "later": {
+    "title": "Later",
+    "saved": "Saved",
+    "scheduled": "Scheduled",
+    "loadFailed": "Failed to load saved messages.",
+    "empty": "No saved messages yet. Click the bookmark icon on any message to save it.",
+    "removeSaved": "Remove from Saved",
+    "menu": "Menu"
+  },
+  "linkModal": {
+    "title": "Add link",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Display text",
+    "optional": "(optional)",
+    "textPlaceholder": "Link text",
+    "close": "Close"
+  },
+  "actionsMenu": {
+    "noActions": "No actions available",
+    "markUnread": "Mark as unread",
+    "pin": "Pin message",
+    "unpin": "Unpin message",
+    "edit": "Edit message",
+    "delete": "Delete message"
+  },
+  "area": {
+    "selectChannel": "Select a channel to start messaging",
+    "openMenu": "Open menu",
+    "placeholder": "Message #{channel}",
+    "viewing": "You're viewing #{channel}",
+    "joinChannel": "Join Channel"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Remove from Starred",
+    "star": "Add to Starred",
+    "members": "Members: {count}",
+    "search": "Search",
+    "channelMenu": "Channel options",
+    "leaveChannel": "Leave channel",
+    "leaveLastMember": "Cannot leave channel — you are the last member.",
+    "dismiss": "Dismiss"
+  },
+  "message": {
+    "edited": "(edited)",
+    "pinned": "Pinned",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "input": {
+    "uploading": "Uploading...",
+    "scheduleMessage": "Schedule message",
+    "send": "Send message",
+    "hint": "Press Enter to send, Shift + Enter for a new line",
+    "scheduledFor": "Scheduled for {time}",
+    "scheduleFailed": "Failed to schedule message. Please try again."
+  },
+  "list": {
+    "loading": "Loading messages...",
+    "empty": "No messages yet",
+    "emptyReadOnly": "This channel has no messages.",
+    "emptyFirst": "Be the first to send a message!"
+  },
+  "reactions": {
+    "tooltip": "{names} reacted with {emoji}",
+    "add": "Add reaction",
+    "you": "You"
+  },
+  "toolbar": {
+    "addReaction": "Add reaction",
+    "replyInThread": "Reply in thread",
+    "removeBookmark": "Remove bookmark",
+    "bookmark": "Bookmark this message",
+    "moreActions": "More actions"
+  },
+  "mobileSearch": {
+    "placeholder": "Search messages...",
+    "hint": "Search for messages across all channels and conversations",
+    "close": "Close search"
+  },
+  "pins": {
+    "title": "Pinned messages",
+    "loadFailed": "Failed to load pinned messages.",
+    "empty": "No pinned messages yet"
+  },
+  "schedule": {
+    "menuTitle": "Schedule message",
+    "in20": "In 20 minutes",
+    "in1h": "In 1 hour",
+    "in3h": "In 3 hours",
+    "tomorrow9": "Tomorrow at 9:00 AM",
+    "custom": "Custom time...",
+    "modalTitle": "Schedule message",
+    "dateTime": "Date and time",
+    "pickFuture": "Pick a time in the future.",
+    "submit": "Schedule",
+    "submitting": "Scheduling...",
+    "close": "Close"
+  },
+  "scheduled": {
+    "loadFailed": "Failed to load scheduled messages.",
+    "cancelFailed": "Failed to cancel message.",
+    "sendFailed": "Failed to send message.",
+    "saveFailed": "Failed to save changes.",
+    "empty": "No scheduled messages. Use the clock icon in the message composer to schedule one.",
+    "sendAt": "Send at:",
+    "edit": "Edit",
+    "sendNow": "Send now",
+    "cancel": "Cancel"
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# reply} other {# replies}}"
+  },
+  "unreads": {
+    "title": "Unreads",
+    "loadFailed": "Failed to load unread messages.",
+    "empty": "No unread messages. You're all caught up! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Reply...",
+    "loadFailed": "Failed to load thread. Please try again.",
+    "loading": "Loading thread...",
+    "replyFailed": "Failed to send reply. Please try again.",
+    "joinToReply": "Join the channel to reply in threads"
+  },
+  "errors": {
+    "messageEmpty": "Message cannot be empty.",
+    "pasteUploadFailed": "Failed to upload pasted image. Please try again.",
+    "dropUploadFailed": "Failed to upload dropped file. Please try again.",
+    "uploadFailed": "Failed to upload file. Please try again.",
+    "voiceUploadFailed": "Failed to upload voice message.",
+    "micDenied": "Microphone access denied. Please allow microphone access.",
+    "loadFailed": "Failed to load messages.",
+    "sendTimeout": "Message send timed out. Please try again.",
+    "sendFailed": "Message failed to send. Please try again.",
+    "pushNotConfigured": "Push notifications are not set up on the server",
+    "serviceWorkerUnavailable": "Service worker not available",
+    "subscribeFailed": "Failed to register subscription"
+  }
+}

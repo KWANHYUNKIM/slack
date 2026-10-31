@@ -1,5 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
-import { format, isToday, isYesterday } from 'date-fns';
+import { isToday, isYesterday } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate, formatTime, formatDateTime } from '@/lib/i18n/format';
+import { t as translate } from '@/lib/i18n';
 import {
   Pin,
   FileText,
@@ -46,15 +49,16 @@ interface DMConversationProps {
 }
 
 function formatDateSeparator(date: Date): string {
-  if (isToday(date)) return 'Today';
-  if (isYesterday(date)) return 'Yesterday';
-  return format(date, 'EEEE, MMMM d');
+  if (isToday(date)) return translate('common:dates.today');
+  if (isYesterday(date)) return translate('common:dates.yesterday');
+  return formatDate(date, { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 
 const EMPTY_MESSAGES: DMMessage[] = [];
 
 export function DMConversation({ userId, userName, userAvatar }: DMConversationProps) {
+  const { t } = useTranslation('channels');
   const messages = useDMStore((s) => s.messages[userId]) ?? EMPTY_MESSAGES;
   const isLoading = useDMStore((s) => s.isLoading);
   const loadError = useDMStore((s) => s.loadError);
@@ -253,7 +257,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   );
 
   // Memoize placeholder to prevent MessageInput re-renders
-  const placeholder = useMemo(() => `Message ${userName}`, [userName]);
+  const placeholder = useMemo(() => t('dm.messagePlaceholder', { name: userName }), [t, userName]);
 
   return (
     <div data-testid="dm-conversation" className="flex h-full flex-col">
@@ -265,7 +269,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
           <div className="flex items-center gap-1">
             <button
               onClick={openSidebar}
-              className="mr-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
+              className="me-1 flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover md:hidden"
             >
               <Menu className="h-5 w-5 text-slack-secondary" />
             </button>
@@ -281,16 +285,17 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
             <button
               onClick={() => openProfile(userId)}
               disabled={isSelf}
-              className={cn('ml-2 text-[18px] font-bold text-slack-primary', !isSelf && 'cursor-pointer hover:underline')}
+              className={cn('ms-2 text-[18px] font-bold text-slack-primary', !isSelf && 'cursor-pointer hover:underline')}
             >
-              {userName}{isSelf && <span className="font-normal text-slack-hint"> (you)</span>}
+              {userName}{isSelf && <span className="font-normal text-slack-hint"> {t('dm.you')}</span>}
             </button>
             <Button
               variant="toolbar"
               size="icon-xs"
               data-testid="dm-star-button"
               onClick={() => setIsStarred((v) => !v)}
-              title={isStarred ? 'Remove from Starred' : 'Add to Starred'}
+              title={isStarred ? t('dm.unstar') : t('dm.star')}
+              aria-label={isStarred ? t('dm.unstar') : t('dm.star')}
             >
               <Star className={cn('h-4 w-4', isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-slack-secondary')} />
             </Button>
@@ -308,6 +313,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
               onClick={() => setShowMobileSearch(true)}
               className="flex h-8 w-8 items-center justify-center rounded hover:bg-slack-hover sm:hidden"
               data-testid="dm-mobile-search-button"
+              aria-label={t('common:actions.search')}
             >
               <Search className="h-4 w-4 text-slack-secondary" />
             </button>
@@ -336,7 +342,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-white px-5 pb-4 pt-5">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-sm text-slack-hint">
-                Loading messages...
+                {t('dm.loadingMessages')}
               </div>
             ) : loadError ? (
               <div className="flex h-full items-center justify-center text-sm text-slack-error">
@@ -345,9 +351,9 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
             ) : messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-slack-hint">
                 <p className="text-lg font-medium">
-                  {isSelf ? 'This is your space. Draft messages, list your to-dos, or keep links and files handy.' : `Start of your conversation with ${userName}`}
+                  {isSelf ? t('dm.selfSpace') : t('dm.conversationStart', { name: userName })}
                 </p>
-                <p className="text-sm">Send a message to begin.</p>
+                <p className="text-sm">{t('dm.sendToBegin')}</p>
               </div>
             ) : (
               <>
@@ -356,8 +362,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                   const showDate =
                     !prevMsg ||
                     (!isToday(prevMsg.createdAt) &&
-                      format(msg.createdAt, 'yyyy-MM-dd') !==
-                        format(prevMsg.createdAt, 'yyyy-MM-dd'));
+                      new Date(msg.createdAt).toDateString() !==
+                        new Date(prevMsg.createdAt).toDateString());
                   const showAvatar = !prevMsg || prevMsg.fromUserId !== msg.fromUserId;
                   const isOwner = currentUser?.id === msg.fromUserId;
                   const isHovered = hoveredMessageId === msg.id;
@@ -401,7 +407,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                           setHoveredMessageId((prev) => prev === msg.id ? null : msg.id);
                         }}
                       >
-                        <div className="mr-2 w-9 flex-shrink-0">
+                        <div className="me-2 w-9 flex-shrink-0">
                           {showAvatar ? (
                             <button
                               onClick={() => openProfile(msg.fromUserId)}
@@ -416,7 +422,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             </button>
                           ) : (
                             <span className="hidden text-[12px] leading-[22px] text-slack-secondary group-hover:inline">
-                              {format(msg.createdAt, 'h:mm')}
+                              {formatTime(msg.createdAt)}
                             </span>
                           )}
                         </div>
@@ -430,10 +436,10 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                                 {msg.fromUser.name}
                               </button>
                               <span className="text-[12px] text-slack-secondary">
-                                {format(msg.createdAt, 'h:mm a')}
+                                {formatTime(msg.createdAt)}
                               </span>
                               {msg.editedAt && (
-                                <span className="text-[12px] text-slack-secondary">(edited)</span>
+                                <span className="text-[12px] text-slack-secondary">{t('dm.edited')}</span>
                               )}
                             </div>
                           )}
@@ -459,14 +465,14 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                                   onClick={cancelEdit}
                                   className="text-slack-secondary hover:underline"
                                 >
-                                  Cancel
+                                  {t('common:actions.cancel')}
                                 </button>
                                 <button
                                   data-testid="dm-edit-save"
                                   onClick={() => saveEdit(msg.content)}
                                   className="rounded bg-slack-btn px-3 py-1 text-white hover:bg-slack-btn-hover"
                                 >
-                                  Save
+                                  {t('common:actions.save')}
                                 </button>
                               </div>
                             </div>
@@ -476,7 +482,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             <div className="whitespace-pre-wrap break-words text-[15px] leading-[22px] text-slack-primary">
                               {renderMessageContent(msg.content)}
                               {!showAvatar && msg.editedAt && (
-                                <span className="ml-1 text-[12px] text-slack-secondary">(edited)</span>
+                                <span className="ms-1 text-[12px] text-slack-secondary">{t('dm.edited')}</span>
                               )}
                             </div>
                           )}
@@ -493,7 +499,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                                       <video controls playsInline preload="metadata" className="max-h-[300px] max-w-[400px]" src={getFileUrl(file.id)} />
                                       <div className="flex items-center gap-2 px-3 py-1.5 border-t border-slack-border">
                                         <span className="text-[13px] text-slack-link truncate max-w-[200px]">{file.originalName}</span>
-                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ml-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
+                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
                                           <Download className="h-4 w-4" />
                                         </a>
                                       </div>
@@ -508,7 +514,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                                       </button>
                                       <div className="flex items-center gap-2 px-3 py-1.5 border-t border-slack-border">
                                         <span className="text-[13px] text-slack-link truncate max-w-[200px]">{file.originalName}</span>
-                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ml-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
+                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
                                           <Download className="h-4 w-4" />
                                         </a>
                                       </div>
@@ -545,7 +551,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                         {/* Hover action toolbar */}
                         {(isHovered || keepToolbarOpen(msg.id)) && !isEditing && (
                           <MessageToolbar
-                            className="absolute -top-4 right-2"
+                            className="absolute -top-4 end-2"
                             testIdPrefix="dm"
                             onEmojiClick={() => setShowEmojiPickerId((prev) => prev === msg.id ? null : msg.id)}
                             onBookmarkClick={() => toggleBookmark(msg.id)}
@@ -561,7 +567,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                         {/* Emoji Picker from hover toolbar */}
                         {showEmojiPickerId === msg.id && (
                           <PortalEmojiPicker
-                            anchorClassName="absolute -top-4 right-2 mt-9"
+                            anchorClassName="absolute -top-4 end-2 mt-9"
                             onEmojiSelect={(emoji) => {
                               storeAddReaction(msg.id, emoji.native, userId);
                               setShowEmojiPickerId(null);
@@ -573,7 +579,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                         {/* More actions dropdown */}
                         {showMoreMenuId === msg.id && (
                           <MessageActionsMenu
-                            anchorClassName="absolute -top-4 right-2 mt-9"
+                            anchorClassName="absolute -top-4 end-2 mt-9"
                             onClose={() => setShowMoreMenuId(null)}
                             testIdPrefix="dm"
                             showOwnerActions={isOwner}
@@ -621,12 +627,12 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
         {showPins && (
           <div
             data-testid="dm-pins-panel"
-            className="flex w-full md:w-[300px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
+            className="flex w-full md:w-[300px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
           >
-            <PanelHeader icon={Pin} title="Pinned messages" onClose={() => setShowPins(false)} />
+            <PanelHeader icon={Pin} title={t('dm.pinnedMessages')} onClose={() => setShowPins(false)} />
             <div className="flex-1 overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {pinnedMessages.length === 0 ? (
-                <div className="text-center text-sm text-slack-hint py-4">No pinned messages yet</div>
+                <div className="text-center text-sm text-slack-hint py-4">{t('dm.noPins')}</div>
               ) : (
                 pinnedMessages.map((msg) => (
                   <div key={msg.id} className="mb-3 rounded border border-slack-border p-3">
@@ -639,7 +645,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                       />
                       <span className="text-[13px] font-bold text-slack-primary">{msg.fromUser?.name}</span>
                       <span className="text-[11px] text-slack-hint">
-                        {format(new Date(msg.createdAt), 'MMM d, h:mm a')}
+                        {formatDateTime(msg.createdAt)}
                       </span>
                     </div>
                     <div className="text-[13px] text-slack-primary">{renderMessageContent(msg.content)}</div>
@@ -654,11 +660,11 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
         {showFiles && (
           <div
             data-testid="dm-files-panel"
-            className="flex w-full md:w-[300px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
+            className="flex w-full md:w-[300px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
           >
-            <PanelHeader icon={FileText} title="Files" onClose={() => setShowFiles(false)} />
+            <PanelHeader icon={FileText} title={t('dm.files')} onClose={() => setShowFiles(false)} />
             <div className="flex-1 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-center text-sm text-slack-hint">
-              No files shared yet
+              {t('dm.noFiles')}
             </div>
           </div>
         )}

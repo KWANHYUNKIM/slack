@@ -304,7 +304,7 @@ test.describe('Bug #11: Reaction emoji size inside pill', () => {
 
     // Add a 👍 reaction via hover toolbar
     await messageRow.hover();
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').first().click();
     const searchBox = page.getByRole('searchbox', { name: 'Search' });
     await expect(searchBox).toBeVisible({ timeout: 5_000 });
@@ -354,7 +354,7 @@ test.describe('Bug #1: Pinned message does not show (edited) label', () => {
     await messageRow.hover();
 
     // Open the ⋮ more menu (4th button in hover toolbar)
-    const toolbar = messageRow.locator('.absolute.-top-4.right-5').first();
+    const toolbar = messageRow.locator('.absolute.-top-4.end-5').first();
     await toolbar.locator('button').nth(3).click();
 
     // Pin the message
@@ -383,7 +383,7 @@ test.describe('Bug #9: Pinned message has orange background', () => {
     await messageRow.hover();
 
     // Open the ⋮ more menu (4th button in hover toolbar)
-    const toolbar = messageRow.locator('.absolute.-top-4.right-5').first();
+    const toolbar = messageRow.locator('.absolute.-top-4.end-5').first();
     await toolbar.locator('button').nth(3).click();
 
     // Pin the message
@@ -412,7 +412,7 @@ test.describe('Bug #12: Bookmark button', () => {
     await messageRow.hover();
 
     // The hover toolbar should appear - click the bookmark button (3rd button in toolbar)
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await expect(hoverToolbar).toBeVisible();
     // Bookmark is the 3rd button
     await hoverToolbar.locator('button').nth(2).click();

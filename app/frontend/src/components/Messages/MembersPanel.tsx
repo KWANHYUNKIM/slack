@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { UserPlus, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { getChannelMembers, getUsers, addChannelMember, getChannel, type ChannelMember, type AuthUser } from '@/lib/api';
@@ -15,6 +16,7 @@ interface MembersPanelProps {
 }
 
 export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
+  const { t } = useTranslation('channels');
   const { user: currentUser } = useAuthStore();
   const channelStoreRemove = useChannelStore((s) => s.removeChannelMember);
   const adminStoreRemove = useAdminStore((s) => s.removeChannelMember);
@@ -39,12 +41,12 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
         useChannelStore.getState().updateMemberCount(channelId, data.length);
       })
       .catch(() => {
-        if (!isStale()) setLoadError('Failed to load members.');
+        if (!isStale()) setLoadError(t('membersPanel.loadError'));
       })
       .finally(() => {
         if (!isStale()) setIsLoading(false);
       });
-  }, [channelId]);
+  }, [channelId, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,7 +128,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
       setConfirmRemove(null);
       // Member list will refresh via WebSocket channel:member-left event
     } catch (error) {
-      alert((error instanceof Error && error.message) || 'Failed to remove member');
+      alert((error instanceof Error && error.message) || t('membersPanel.removeError'));
     } finally {
       setRemoving(false);
     }
@@ -169,9 +171,9 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   return (
     <div
       data-testid="members-panel"
-      className="flex w-full md:w-[260px] flex-col border-l border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
+      className="flex w-full md:w-[260px] flex-col border-s border-slack-border bg-white absolute inset-0 md:static md:inset-auto z-30 md:z-auto"
     >
-      <PanelHeader title="Members" onClose={onClose} />
+      <PanelHeader title={t('membersPanel.title')} onClose={onClose} />
 
       <div className="flex-1 overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Add People button */}
@@ -180,7 +182,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
           className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[14px] text-slack-link hover:bg-slack-hover mb-2"
         >
           <UserPlus className="h-4 w-4" />
-          Add people
+          {t('membersPanel.addPeople')}
         </button>
 
         {showAddForm && (
@@ -196,7 +198,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
         )}
 
         {isLoading ? (
-          <div className="text-center text-sm text-slack-hint py-4">Loading...</div>
+          <div className="text-center text-sm text-slack-hint py-4">{t('common:status.loading')}</div>
         ) : loadError ? (
           <div className="text-center text-sm text-slack-error py-4">{loadError}</div>
         ) : (
@@ -204,7 +206,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
             {onlineMembers.length > 0 && (
               <div data-testid="online-members" className="mb-4">
                 <h4 className="mb-2 text-[12px] font-medium text-slack-secondary uppercase tracking-wide">
-                  Online — {onlineMembers.length}
+                  {t('membersPanel.online', { count: onlineMembers.length })}
                 </h4>
                 {onlineMembers.map((m) => (
                   <MemberRow
@@ -220,7 +222,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
             {offlineMembers.length > 0 && (
               <div data-testid="offline-members">
                 <h4 className="mb-2 text-[12px] font-medium text-slack-secondary uppercase tracking-wide">
-                  Offline — {offlineMembers.length}
+                  {t('membersPanel.offline', { count: offlineMembers.length })}
                 </h4>
                 {offlineMembers.map((m) => (
                   <MemberRow
@@ -241,9 +243,14 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
       {confirmRemove && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-slack-primary mb-2">Remove member?</h3>
+            <h3 className="text-lg font-semibold text-slack-primary mb-2">{t('membersPanel.removeDialog.title')}</h3>
             <p className="text-sm text-slack-secondary mb-4">
-              Remove <strong>{confirmRemove.userName}</strong> from this channel?
+              <Trans
+                t={t}
+                i18nKey="membersPanel.removeDialog.message"
+                values={{ name: confirmRemove.userName }}
+                components={{ strong: <strong /> }}
+              />
             </p>
             <div className="flex gap-2 justify-end">
               <button
@@ -251,14 +258,14 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
                 disabled={removing}
                 className="px-4 py-2 text-sm rounded bg-slack-hover hover:bg-slack-border text-slack-primary disabled:opacity-50"
               >
-                Cancel
+                {t('common:actions.cancel')}
               </button>
               <button
                 onClick={confirmRemoveMember}
                 disabled={removing}
                 className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
-                {removing ? 'Removing...' : 'Remove'}
+                {removing ? t('membersPanel.removing') : t('common:actions.remove')}
               </button>
             </div>
           </div>
@@ -279,6 +286,7 @@ function AddPeopleForm({
   onAdded: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation('channels');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AuthUser[]>([]);
   const [adding, setAdding] = useState(false);
@@ -319,7 +327,8 @@ function AddPeopleForm({
           setQuery(e.target.value);
           if (e.target.value.length < 1) setResults([]);
         }}
-        placeholder="Search by name..."
+        placeholder={t('membersPanel.searchByName')}
+        aria-label={t('membersPanel.searchByName')}
         className="w-full rounded border border-slack-border px-2 py-1 text-[13px] outline-none focus:border-slack-link"
       />
       {results.length > 0 && (
@@ -329,7 +338,7 @@ function AddPeopleForm({
               key={user.id}
               disabled={adding}
               onClick={() => handleAdd(user.id)}
-              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-slack-hover disabled:opacity-50"
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-start hover:bg-slack-hover disabled:opacity-50"
             >
               <Avatar
                 src={user.avatar}
@@ -343,24 +352,25 @@ function AddPeopleForm({
         </div>
       )}
       {query.length > 0 && results.length === 0 && (
-        <div className="mt-1 text-[12px] text-slack-hint px-2">No users found</div>
+        <div className="mt-1 text-[12px] text-slack-hint px-2">{t('membersPanel.noUsers')}</div>
       )}
       <button
         onClick={onCancel}
         className="mt-1 text-[12px] text-slack-secondary hover:underline"
       >
-        Cancel
+        {t('common:actions.cancel')}
       </button>
     </div>
   );
 }
 
-const CHANNEL_ROLE_BADGE: Record<string, { label: string; className: string } | undefined> = {
-  OWNER: { label: 'Owner', className: 'bg-amber-100 text-amber-700' },
-  MODERATOR: { label: 'Mod', className: 'bg-indigo-100 text-indigo-700' },
+const CHANNEL_ROLE_BADGE: Record<string, { labelKey: string; className: string } | undefined> = {
+  OWNER: { labelKey: 'membersPanel.roles.owner', className: 'bg-amber-100 text-amber-700' },
+  MODERATOR: { labelKey: 'membersPanel.roles.moderator', className: 'bg-indigo-100 text-indigo-700' },
 };
 
 function MemberRow({ member, onClick, onRemove }: { member: ChannelMember; onClick?: () => void; onRemove?: () => void }) {
+  const { t } = useTranslation('channels');
   const roleBadge = member.channelRole ? CHANNEL_ROLE_BADGE[member.channelRole] : undefined;
   const [showRemove, setShowRemove] = useState(false);
 
@@ -383,8 +393,8 @@ function MemberRow({ member, onClick, onRemove }: { member: ChannelMember; onCli
         />
         <span className="text-[14px] text-slack-primary truncate">{member.user.name}</span>
         {roleBadge && (
-          <span className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${roleBadge.className}`}>
-            {roleBadge.label}
+          <span className={`ms-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${roleBadge.className}`}>
+            {t(roleBadge.labelKey)}
           </span>
         )}
       </button>
@@ -394,8 +404,9 @@ function MemberRow({ member, onClick, onRemove }: { member: ChannelMember; onCli
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-red-100 text-slack-secondary hover:text-red-600"
-          title="Remove member"
+          className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-red-100 text-slack-secondary hover:text-red-600"
+          title={t('membersPanel.removeMember')}
+          aria-label={t('membersPanel.removeMember')}
         >
           <X className="h-4 w-4" />
         </button>

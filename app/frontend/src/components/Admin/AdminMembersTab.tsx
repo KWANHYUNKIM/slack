@@ -1,18 +1,20 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Avatar } from '@/components/ui/avatar';
 import { ConfirmDialog } from './ConfirmDialog';
 
-const ROLE_BADGE: Record<string, { label: string; className: string }> = {
-  OWNER: { label: 'Owner', className: 'bg-amber-100 text-amber-700' },
-  ADMIN: { label: 'Admin', className: 'bg-purple-100 text-purple-700' },
-  MEMBER: { label: 'Member', className: 'bg-blue-100 text-blue-700' },
-  GUEST: { label: 'Guest', className: 'bg-gray-100 text-gray-600' },
+const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
+  OWNER: { labelKey: 'members.roles.owner', className: 'bg-amber-100 text-amber-700' },
+  ADMIN: { labelKey: 'members.roles.admin', className: 'bg-purple-100 text-purple-700' },
+  MEMBER: { labelKey: 'members.roles.member', className: 'bg-blue-100 text-blue-700' },
+  GUEST: { labelKey: 'members.roles.guest', className: 'bg-gray-100 text-gray-600' },
 };
 
 export function AdminMembersTab() {
+  const { t } = useTranslation('admin');
   const { users, updateUserRole, deactivateUser, reactivateUser, transferOwnership } = useAdminStore();
   const currentUser = useAuthStore((s) => s.user);
   const [search, setSearch] = useState('');
@@ -48,13 +50,14 @@ export function AdminMembersTab() {
   return (
     <div>
       <div className="mb-4 relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slack-hint" />
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slack-hint" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search members..."
-          className="w-full rounded-lg border border-slack-border pl-10 pr-4 py-2 text-sm focus:border-slack-focus focus:outline-none focus:ring-1 focus:ring-slack-focus"
+          placeholder={t('members.searchPlaceholder')}
+          aria-label={t('members.searchPlaceholder')}
+          className="w-full rounded-lg border border-slack-border ps-10 pe-4 py-2 text-sm focus:border-slack-focus focus:outline-none focus:ring-1 focus:ring-slack-focus"
         />
       </div>
 
@@ -62,11 +65,11 @@ export function AdminMembersTab() {
         <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="bg-gray-50 border-b border-slack-border">
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">User</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Email</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Role</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slack-secondary">Status</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slack-secondary">Actions</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.user')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.email')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.role')}</th>
+              <th className="text-start px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.status')}</th>
+              <th className="text-end px-4 py-2.5 font-medium text-slack-secondary">{t('members.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +86,7 @@ export function AdminMembersTab() {
                       <Avatar src={user.avatar} alt={user.name} fallback={user.name} size="sm" />
                       <span className="font-medium text-slack-primary">
                         {user.name}
-                        {isMe && <span className="ml-1 text-slack-hint text-xs">(you)</span>}
+                        {isMe && <span className="ms-1 text-slack-hint text-xs">{t('members.you')}</span>}
                       </span>
                     </div>
                   </td>
@@ -91,7 +94,7 @@ export function AdminMembersTab() {
                   <td className="px-4 py-2.5">
                     {!modifiable ? (
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
-                        {badge.label}
+                        {t(badge.labelKey)}
                       </span>
                     ) : (
                       <select
@@ -100,7 +103,7 @@ export function AdminMembersTab() {
                         className="rounded border border-slack-border px-2 py-1 text-xs focus:border-slack-focus focus:outline-none"
                       >
                         {getRoleOptions().map((r) => (
-                          <option key={r} value={r}>{ROLE_BADGE[r].label}</option>
+                          <option key={r} value={r}>{t(ROLE_BADGE[r].labelKey)}</option>
                         ))}
                       </select>
                     )}
@@ -109,17 +112,17 @@ export function AdminMembersTab() {
                     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       isDeactivated ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                     }`}>
-                      {isDeactivated ? 'Deactivated' : 'Active'}
+                      {isDeactivated ? t('members.status.deactivated') : t('members.status.active')}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-4 py-2.5 text-end">
                     <div className="flex items-center justify-end gap-2">
                       {isOwner && !isMe && user.role !== 'OWNER' && !isDeactivated && (
                         <button
                           onClick={() => setConfirmAction({ type: 'transfer', userId: user.id, userName: user.name })}
                           className="text-xs font-medium text-amber-600 hover:text-amber-700"
                         >
-                          Transfer ownership
+                          {t('members.actions.transfer')}
                         </button>
                       )}
                       {modifiable && (
@@ -128,14 +131,14 @@ export function AdminMembersTab() {
                             onClick={() => setConfirmAction({ type: 'reactivate', userId: user.id, userName: user.name })}
                             className="text-xs font-medium text-green-600 hover:text-green-700"
                           >
-                            Reactivate
+                            {t('members.actions.reactivate')}
                           </button>
                         ) : (
                           <button
                             onClick={() => setConfirmAction({ type: 'deactivate', userId: user.id, userName: user.name })}
                             className="text-xs font-medium text-red-600 hover:text-red-700"
                           >
-                            Deactivate
+                            {t('members.actions.deactivate')}
                           </button>
                         )
                       )}
@@ -147,29 +150,15 @@ export function AdminMembersTab() {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-slack-hint">No users found</div>
+          <div className="px-4 py-8 text-center text-sm text-slack-hint">{t('members.empty')}</div>
         )}
       </div>
 
       {confirmAction && (
         <ConfirmDialog
-          title={
-            confirmAction.type === 'transfer' ? 'Transfer workspace ownership'
-            : confirmAction.type === 'deactivate' ? 'Deactivate user'
-            : 'Reactivate user'
-          }
-          message={
-            confirmAction.type === 'transfer'
-              ? `Are you sure you want to transfer workspace ownership to ${confirmAction.userName}? You will be demoted to Admin.`
-              : confirmAction.type === 'deactivate'
-              ? `Are you sure you want to deactivate ${confirmAction.userName}? They will be logged out immediately and unable to sign in.`
-              : `Are you sure you want to reactivate ${confirmAction.userName}? They will be able to sign in again.`
-          }
-          confirmLabel={
-            confirmAction.type === 'transfer' ? 'Transfer'
-            : confirmAction.type === 'deactivate' ? 'Deactivate'
-            : 'Reactivate'
-          }
+          title={t(`members.dialogs.${confirmAction.type}.title`)}
+          message={t(`members.dialogs.${confirmAction.type}.message`, { name: confirmAction.userName })}
+          confirmLabel={t(`members.dialogs.${confirmAction.type}.confirm`)}
           onConfirm={() => {
             if (confirmAction.type === 'transfer') {
               transferOwnership(confirmAction.userId);

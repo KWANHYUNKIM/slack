@@ -44,7 +44,7 @@ test.describe('Mark as unread count', () => {
     await page.waitForTimeout(200);
 
     // Click "more" button in hover toolbar
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await expect(hoverToolbar.locator('button').last()).toBeVisible({ timeout: 3000 });
     await hoverToolbar.locator('button').last().click();
 

@@ -20,7 +20,7 @@ test.describe('Pinned Messages', () => {
     await messageRow.hover();
 
     // Click the more actions button (last button in hover toolbar)
-    const hoverToolbar = page.locator('.absolute.-top-4.right-5');
+    const hoverToolbar = page.locator('.absolute.-top-4.end-5');
     await hoverToolbar.locator('button').last().click();
 
     // Click "Pin message" from the dropdown
@@ -67,7 +67,7 @@ test.describe('Pinned Messages', () => {
     // User 1 pins the message via the dropdown
     const messageRow1 = page1.locator('.group.relative.flex.px-5').filter({ hasText: uniqueText }).first();
     await messageRow1.hover();
-    const hoverToolbar1 = page1.locator('.absolute.-top-4.right-5');
+    const hoverToolbar1 = page1.locator('.absolute.-top-4.end-5');
     await hoverToolbar1.locator('button').last().click();
     await page1.getByText('Pin message').click();
 
@@ -113,7 +113,7 @@ test.describe('Pinned Messages', () => {
     // User 1 pins the message
     const messageRow1 = page1.locator('.group.relative.flex.px-5').filter({ hasText: uniqueText }).first();
     await messageRow1.hover();
-    const hoverToolbar1 = page1.locator('.absolute.-top-4.right-5');
+    const hoverToolbar1 = page1.locator('.absolute.-top-4.end-5');
     await expect(hoverToolbar1).toBeVisible({ timeout: 3000 });
     await hoverToolbar1.locator('button').last().click();
     await page1.getByText('Pin message').click();
