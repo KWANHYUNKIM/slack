@@ -16,6 +16,7 @@ import { LaterPage } from '@/components/Messages/LaterPage';
 import { QuickSwitcher } from '@/components/QuickSwitcher/QuickSwitcher';
 import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
+import { preloadEmojiData } from '@/lib/emoji/emojiData';
 import { PermalinkNotFound } from '@/components/Messages/PermalinkNotFound';
 import { Toaster } from '@/components/ui/Toaster';
 import { SearchPage } from '@/components/Messages/SearchPage';
@@ -27,6 +28,9 @@ export function AppLayout() {
   const isConnected = useConnectionStore((s) => s.isConnected);
   const location = useLocation();
   useGlobalShortcuts();
+
+  // 이모지 데이터(lazy 청크)를 로그인 직후 한가한 때 미리 읽어 리액션·피커 깜박임을 줄인다
+  useEffect(() => preloadEmojiData(), []);
 
   // Prevent background scroll when mobile sidebar is open
   useEffect(() => {

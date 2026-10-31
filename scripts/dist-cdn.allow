@@ -4,5 +4,6 @@
 #  - i18n: lib/i18n/emojiI18n.ts가 번들의 번역 JSON을 넘기고 en은 내장본을 쓴다
 #  - 스프라이트/이미지: set='native'라 getImageURL, getSpritesheetURL 경로를 타지 않는다
 # 위 조건이 깨지면 tests/no-external-requests.spec.ts 가 잡는다.
-assets/.*\.js$	https://cdn\.jsdelivr\.net/npm/@emoji-mart/data@latest/(?:sets|i18n)/
-assets/.*\.js$	https://cdn\.jsdelivr\.net/npm/emoji-datasource-\$\{[^}]*\}@[0-9.]+/img/
+# 파일은 vite.config.ts manualChunks가 만드는 assets/emoji-mart-[hash].js 하나뿐이다. 앱 코드 청크에는 예외가 없다.
+assets/emoji-mart-[^/]*\.js$	https://cdn\.jsdelivr\.net/npm/@emoji-mart/data@latest/(?:sets|i18n)/
+assets/emoji-mart-[^/]*\.js$	https://cdn\.jsdelivr\.net/npm/emoji-datasource-\$\{[^}]*\}@[0-9.]+/img/

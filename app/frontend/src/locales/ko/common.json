@@ -18,6 +18,10 @@
     "next": "다음",
     "more": "더 보기"
   },
+  "emojiPicker": {
+    "loadFailed": "이모지를 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도"
+  },
   "status": {
     "loading": "불러오는 중...",
     "saving": "저장하는 중...",
