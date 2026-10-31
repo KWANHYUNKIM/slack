@@ -272,3 +272,6 @@
 | 2026-11-01 03:13 | QR 검토: 외부 라이브러리 없이 직접 구현, qr:test 12/12. 총괄 독립 검증으로 macOS CoreImage QR 인식기가 v1·v8·v10 출력을 원문대로 디코드 → PR #101, /code-review low |
 | 2026-11-01 03:14 | PR #101 /code-review low 지적 0 → 머지. E7c 완료 |
 | 2026-11-01 03:16 | 배정: dev-4 mcp-4 OAuth 2.1(opus, worktree, dev4 DB, 마이그레이션 080000, 새 패키지 금지). 진행 2명(dev-1 E6 리뷰 반영, dev-4). e2e-smoke는 감속 단계라 보류 |
+| 2026-11-01 03:22 | E6 리뷰 반영 검토: 커밋 2개를 하나로 합친 뒤 main(E10·#99·#101) 리베이스, 충돌 9파일 양쪽 보존(번역 JSON은 파싱 검증), dev1 DB에 070000 적용, legal-holds 10·ediscovery 8·retention 20·dlp 56·edit-delete 14·audit-logs 24, tsc, lint, i18n, 물리 방향 182, 외부 URL → 머지(PR #98, f63ebaf). 060000을 slackclone, slackclone_dev, dev2·3·5에 적용(dev4는 OAuth 진행 중이라 PR 검토 때) |
+| 2026-11-01 03:24 | main에서 error-code-coverage 실패 확인(code 포함 상수 객체 오탐, E7b·#97 이후) → dev-3 test/error-code-coverage-consts(haiku) 배정 |
+| 2026-11-01 03:25 | 배정: dev-1 feat/group-membership-history(opus, worktree, dev1 DB, 마이그레이션 090000). 진행 3명(dev-4 OAuth, dev-3, dev-1) |
