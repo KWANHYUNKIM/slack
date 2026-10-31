@@ -221,7 +221,8 @@
     "sendAt": "보낼 시간:",
     "edit": "수정",
     "sendNow": "지금 보내기",
-    "cancel": "예약 취소"
+    "cancel": "예약 취소",
+    "failedDlp": "데이터 보호 규칙({rule})에 걸려 보내지 못했습니다. 삭제한 뒤 새로 작성해 주세요."
   },
   "thread": {
     "replyCount": "답글 {count}개"

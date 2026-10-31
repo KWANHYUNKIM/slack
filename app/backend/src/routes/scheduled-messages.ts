@@ -97,13 +97,13 @@ router.post('/schedule', authMiddleware, async (req: AuthRequest, res: Response)
   }
 });
 
-// GET /messages/scheduled — list user's scheduled (unsent) messages
+// GET /messages/scheduled — list user's scheduled (unsent) messages, plus ones that failed at send time (failedAt set)
 router.get('/scheduled', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
 
     const messages = await prisma.scheduledMessage.findMany({
-      where: { userId, sent: false },
+      where: { userId, OR: [{ sent: false }, { failedAt: { not: null } }] },
       include: {
         channel: { select: { id: true, name: true } },
       },
@@ -141,7 +141,8 @@ router.delete('/scheduled/:id', authMiddleware, async (req: AuthRequest, res: Re
       return;
     }
 
-    if (scheduled.sent) {
+    // 발송에 실패한 예약(failedAt)은 목록에서 지울 수 있다
+    if (scheduled.sent && !scheduled.failedAt) {
       res.status(400).json({ error: 'Message has already been sent' });
       return;
     }

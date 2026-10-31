@@ -353,6 +353,9 @@ model ScheduledMessage {
   scheduledAt DateTime
   createdAt   DateTime @default(now())
   sent        Boolean  @default(false)
+  // 발송 시점에 막혀 보내지 못했을 때(예: DLP). sent는 true로 두어 다시 시도하지 않고, 목록에는 실패로 보인다.
+  failedAt    DateTime?
+  failReason  String?  @db.VarChar(200)
 
   user    User    @relation(fields: [userId], references: [id])
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)

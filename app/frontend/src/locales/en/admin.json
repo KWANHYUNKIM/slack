@@ -211,7 +211,9 @@
       "dlpWarned": "DLP warning",
       "dlpRuleCreated": "DLP rule created",
       "dlpRuleUpdated": "DLP rule changed",
-      "dlpRuleDeleted": "DLP rule deleted"
+      "dlpRuleDeleted": "DLP rule deleted",
+      "dlpRuleTimeout": "DLP rule timed out",
+      "dlpRuleAutoDisabled": "DLP rule turned off automatically"
     },
     "filters": {
       "allActions": "All actions",
@@ -367,7 +369,8 @@
       "sample": "Sample text",
       "run": "Test",
       "matched": "Matches. This text would be caught.",
-      "notMatched": "No match."
+      "notMatched": "No match.",
+      "timedOut": "The check took too long and was stopped. Simplify the pattern."
     },
     "confirmDelete": {
       "title": "Delete this rule?",

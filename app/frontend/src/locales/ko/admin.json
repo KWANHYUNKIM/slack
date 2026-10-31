@@ -211,7 +211,9 @@
       "dlpWarned": "DLP 경고",
       "dlpRuleCreated": "DLP 규칙 추가",
       "dlpRuleUpdated": "DLP 규칙 변경",
-      "dlpRuleDeleted": "DLP 규칙 삭제"
+      "dlpRuleDeleted": "DLP 규칙 삭제",
+      "dlpRuleTimeout": "DLP 규칙 시간 초과",
+      "dlpRuleAutoDisabled": "DLP 규칙 자동 꺼짐"
     },
     "filters": {
       "allActions": "모든 작업",
@@ -367,7 +369,8 @@
       "sample": "예시 글",
       "run": "테스트",
       "matched": "일치합니다. 이 글은 걸러집니다.",
-      "notMatched": "일치하지 않습니다."
+      "notMatched": "일치하지 않습니다.",
+      "timedOut": "검사가 너무 오래 걸려 중단했습니다. 패턴을 단순하게 바꿔 주세요."
     },
     "confirmDelete": {
       "title": "이 규칙을 삭제할까요?",

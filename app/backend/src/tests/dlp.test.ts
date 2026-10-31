@@ -11,7 +11,10 @@ import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { settleBackgroundWork } from '../services/mentionService.js';
 import { mcpWriteLimiter } from '../mcp/rateLimit.js';
-import { luhnValid, validatePattern, scanContent, invalidateDlpCache, ensureBuiltinRules } from '../services/dlpService.js';
+import { processDueScheduledMessages } from '../scheduler.js';
+import {
+  luhnValid, validatePattern, scanContent, invalidateDlpCache, ensureBuiltinRules, resetDlpStateForTests, shutdownDlpWorker, runPattern,
+} from '../services/dlpService.js';
 
 // 데이터 유출 방지(E10): 내장·사용자 정의 규칙 CRUD, 차단·경고, 모든 쓰기 경로, ReDoS 방어, 감사 로그
 
@@ -74,6 +77,7 @@ describe('DLP (E10)', () => {
   afterAll(async () => {
     await settleBackgroundWork();
     await resetRules();
+    await shutdownDlpWorker();
     sockets.forEach((s) => s.disconnect());
     await Promise.all(mcpClients.map((c) => c.close().catch(() => {})));
     io.close();
@@ -104,9 +108,19 @@ describe('DLP (E10)', () => {
       expect(await names('hello world')).toEqual([]);
     });
 
-    it('scans the whole content, not just the first chunk', async () => {
-      const padded = `${'x'.repeat(9000)} ${AWS_KEY}`;
+    it('scans the whole content in one pass', async () => {
+      const padded = `${'x'.repeat(39000)} ${AWS_KEY}`;
       expect((await scanContent(padded)).map((h) => h.name)).toEqual(['AWS access key']);
+    });
+
+    it('finds a card number hidden inside a longer digit run (Luhn of the whole run fails)', async () => {
+      const names = async (c: string) => (await scanContent(c)).map((h) => h.name);
+      expect(await names(`${CARD} 1`)).toEqual(['Credit card number']);
+      expect(await names(`9 ${CARD}`)).toEqual(['Credit card number']);
+      expect(await names('94111111111111111')).toEqual(['Credit card number']);
+      expect(await names('4111-1111-1111-1111-1234')).toEqual(['Credit card number']);
+      // 같은 길이라도 카드 번호가 아닌 긴 숫자열은 통과
+      expect(await names('1700000000000 1700000000001')).toEqual([]);
     });
   });
 
@@ -117,6 +131,8 @@ describe('DLP (E10)', () => {
       ['secret[_-]?key'],
       ['(?:ab){2,5}'],
       ['(\\d{3}-)?\\d{4}'],
+      ['\\w+\\s*=\\s*\\w+'],
+      ['^SECRET.*$'],
     ])('accepts %s', (p) => {
       expect(validatePattern(p)).toBeNull();
     });
@@ -129,6 +145,9 @@ describe('DLP (E10)', () => {
       ['((a{1,5}){1,5})', 'nestedQuantifier'],
       ['(a+){2,}', 'nestedQuantifier'],
       ['(.*a){10}', 'nestedQuantifier'],
+      ['(a?){30}a{30}', 'nestedQuantifier'],
+      ['(a|aa){1,200}x', 'nestedQuantifier'],
+      ['\\w*\\w*\\w*\\w*!', 'nestedQuantifier'],
       ['(a)\\1', 'backreference'],
       ['\\d{1,100000}', 'repeatTooLarge'],
       ['(unclosed', 'invalid'],
@@ -455,6 +474,134 @@ describe('DLP (E10)', () => {
       const now = await request(app).post(`/messages/scheduled/${good.body.id}/send`).set(auth(alice));
       expect(now.status).toBe(400);
       expect(now.body.code).toBe('DLP_BLOCKED');
+    });
+  });
+
+  describe('custom patterns run in a worker with a time limit', () => {
+    afterEach(async () => {
+      await resetRules();
+      resetDlpStateForTests();
+    });
+
+    // 검증을 통과하지만 긴 입력에서는 O(n^2)로 느려지는 패턴(인접한 무한 반복 2개)
+    const SLOW = '\\w*\\w*!';
+    const LONG = 'a'.repeat(30000);
+
+    it('anchors apply to the original message body', async () => {
+      await createRule({ name: 'Starts with SECRET', pattern: '^SECRET', action: 'BLOCK' });
+      expect((await sendMsg(alice, `${'x'.repeat(5000)}SECRET`)).status).toBe(201);
+      expect((await sendMsg(alice, 'SECRET stuff')).status).toBe(400);
+      // 4096자 넘는 본문에서도 끝 앵커가 원문 끝 기준
+      await createRule({ name: 'Ends with END', pattern: 'END$', action: 'BLOCK' });
+      expect((await sendMsg(alice, `${'x'.repeat(10000)}END`)).status).toBe(400);
+      expect((await sendMsg(alice, `END${'x'.repeat(10000)}`)).status).toBe(201);
+    });
+
+    it('lets the message through on timeout, audits the rule name, and recovers the worker', async () => {
+      const slow = await createRule({ name: 'Slow rule', pattern: SLOW, action: 'BLOCK' });
+      expect(slow.status).toBe(201);
+      const started = Date.now();
+      const res = await sendMsg(alice, LONG);
+      expect(res.status).toBe(201);
+      expect(Date.now() - started).toBeLessThan(5000);
+      const rows = await auditRows('dlp.rule_timeout');
+      expect(rows[rows.length - 1]).toMatchObject({ targetName: 'Slow rule', targetType: 'dlp_rule', targetId: slow.body.id, actorId: alice.id });
+      expect(JSON.stringify(rows[rows.length - 1])).not.toContain('aaaa');
+
+      // 워커가 다시 만들어져 다른 규칙은 계속 동작한다
+      await createRule({ name: 'Fast rule', pattern: 'ZEPPELIN', action: 'BLOCK' });
+      expect((await sendMsg(alice, 'a ZEPPELIN!')).status).toBe(400);
+      expect(await runPattern('abc', 'xxabcxx')).toEqual({ matched: true });
+    });
+
+    it('turns a rule off after three timeouts in a row and audits it', async () => {
+      const slow = await createRule({ name: 'Slow rule 2', pattern: SLOW, action: 'BLOCK' });
+      for (let i = 0; i < 3; i++) expect((await sendMsg(alice, LONG)).status).toBe(201);
+      expect((await auditRows('dlp.rule_timeout')).filter((r) => r.targetId === slow.body.id)).toHaveLength(3);
+      const disabled = (await auditRows('dlp.rule_auto_disabled')).filter((r) => r.targetId === slow.body.id);
+      expect(disabled).toHaveLength(1);
+      expect(disabled[0].targetName).toBe('Slow rule 2');
+      expect((await prisma.dlpRule.findUniqueOrThrow({ where: { id: slow.body.id } })).enabled).toBe(false);
+      // 꺼졌으니 더 이상 시간 초과가 쌓이지 않는다
+      await sendMsg(alice, LONG);
+      expect((await auditRows('dlp.rule_timeout')).filter((r) => r.targetId === slow.body.id)).toHaveLength(3);
+    });
+
+    it('resets the timeout streak when a check completes in time', async () => {
+      const slow = await createRule({ name: 'Slow rule 3', pattern: SLOW, action: 'BLOCK' });
+      await sendMsg(alice, LONG);
+      await sendMsg(alice, LONG);
+      expect((await sendMsg(alice, 'short message')).status).toBe(201); // 빨리 끝나면 연속 횟수가 0으로
+      await sendMsg(alice, LONG);
+      await sendMsg(alice, LONG);
+      expect((await prisma.dlpRule.findUniqueOrThrow({ where: { id: slow.body.id } })).enabled).toBe(true);
+    });
+
+    it('uses the same worker path for the test endpoint', async () => {
+      const t = await request(app).post('/admin/dlp-rules/test').set(auth(admin)).send({ pattern: SLOW, sample: 'a'.repeat(2000) });
+      expect(t.status).toBe(200);
+      expect(t.body.matched).toBe(false);
+    });
+  });
+
+  describe('built-in rule safety', () => {
+    afterEach(async () => {
+      await prisma.dlpRule.deleteMany({ where: { builtin: false } });
+      await ensureBuiltinRules();
+      await resetRules();
+      resetDlpStateForTests();
+    });
+
+    it('rejects custom rule names that collide with built-in names (case-insensitive)', async () => {
+      const dup = await createRule({ name: 'credit CARD number', pattern: 'zzz', action: 'WARN' });
+      expect(dup.status).toBe(409);
+      expect(dup.body.code).toBe('DLP_RULE_NAME_TAKEN');
+      const ok = await createRule({ name: 'mine', pattern: 'zzz', action: 'WARN' });
+      const rename = await request(app).patch(`/admin/dlp-rules/${ok.body.id}`).set(auth(admin)).send({ name: ' aws ACCESS key ' });
+      expect(rename.status).toBe(409);
+    });
+
+    it('still blocks (and never 500s) when a built-in row could not be created', async () => {
+      // 내장 규칙 이름을 선점한 행(API가 막는 상황을 DB로 직접 만든다)
+      await prisma.dlpRule.delete({ where: { key: 'aws_access_key' } });
+      await prisma.dlpRule.create({ data: { name: 'AWS access key', pattern: 'zzz', action: 'WARN' } });
+      resetDlpStateForTests();
+      const res = await sendMsg(alice, `k ${AWS_KEY}`);
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('DLP_BLOCKED');
+    });
+  });
+
+  describe('scheduled messages blocked at send time', () => {
+    afterEach(resetRules);
+
+    it('marks the schedule as failed, tells the sender and keeps it listed until deleted', async () => {
+      const when = new Date(Date.now() + 3600_000).toISOString();
+      const created = await request(app).post('/messages/schedule').set(auth(alice)).send({ content: 'launch BLUEBIRD tonight', channelId, scheduledAt: when });
+      expect(created.status).toBe(201);
+      // 예약한 뒤 규칙이 생기고 발송 시각이 지났다
+      await createRule({ name: 'Codename 2', pattern: 'BLUEBIRD', action: 'BLOCK' });
+      await prisma.scheduledMessage.update({ where: { id: created.body.id }, data: { scheduledAt: new Date(Date.now() - 1000) } });
+
+      const socket = SocketClient(baseUrl, { auth: { token: alice.token } });
+      sockets.push(socket);
+      await new Promise<void>((resolve) => socket.once('connect', () => resolve()));
+      const failed = new Promise<{ id: number; rule: string; code: string }>((resolve) => socket.once('scheduled:failed', resolve));
+      const before = await prisma.message.count({ where: { content: 'launch BLUEBIRD tonight' } });
+      await processDueScheduledMessages();
+      expect(await failed).toMatchObject({ id: created.body.id, code: 'DLP_BLOCKED', rule: 'Codename 2' });
+      expect(await prisma.message.count({ where: { content: 'launch BLUEBIRD tonight' } })).toBe(before);
+
+      const row = await prisma.scheduledMessage.findUniqueOrThrow({ where: { id: created.body.id } });
+      expect(row.sent).toBe(true);
+      expect(row.failedAt).not.toBeNull();
+      expect(row.failReason).toBe('Codename 2');
+
+      const list = await request(app).get('/messages/scheduled').set(auth(alice));
+      expect(list.body.find((m: { id: number }) => m.id === created.body.id)).toMatchObject({ failReason: 'Codename 2' });
+      expect((await request(app).post(`/messages/scheduled/${created.body.id}/send`).set(auth(alice))).status).toBe(400);
+      expect((await request(app).delete(`/messages/scheduled/${created.body.id}`).set(auth(alice))).status).toBe(200);
+      expect((await request(app).get('/messages/scheduled').set(auth(alice))).body.some((m: { id: number }) => m.id === created.body.id)).toBe(false);
     });
   });
 

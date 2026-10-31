@@ -13,9 +13,10 @@ import {
   NAME_MAX_LENGTH,
   PATTERN_MAX_LENGTH,
   TEST_SAMPLE_MAX,
-  builtinValidator,
-  ensureBuiltinRules,
+  ensureBuiltinRulesOnce,
   invalidateDlpCache,
+  isBuiltinName,
+  testBuiltin,
   testPattern,
   validatePattern,
 } from '../services/dlpService.js';
@@ -70,7 +71,7 @@ function nameTaken(res: Response): void {
 // GET /admin/dlp-rules - 내장 규칙(먼저) + 사용자 정의 규칙
 router.get('/dlp-rules', async (_req: AuthRequest, res: Response) => {
   try {
-    await ensureBuiltinRules();
+    await ensureBuiltinRulesOnce();
     const items = await prisma.dlpRule.findMany({ select: RULE_SELECT, orderBy: [{ builtin: 'desc' }, { id: 'asc' }] });
     res.json({ items, limits: { patternMax: PATTERN_MAX_LENGTH, nameMax: NAME_MAX_LENGTH, sampleMax: TEST_SAMPLE_MAX } });
   } catch (error) {
@@ -88,25 +89,28 @@ router.post('/dlp-rules/test', async (req: AuthRequest, res: Response) => {
       return;
     }
     const { sample, ruleId } = body.data;
-    let pattern = body.data.pattern;
-    let validate: ((m: string) => boolean) | undefined;
     if (ruleId !== undefined) {
       const rule = await prisma.dlpRule.findUnique({ where: { id: ruleId }, select: { pattern: true, key: true } });
       if (!rule) {
         res.status(404).json({ error: 'DLP rule not found' });
         return;
       }
-      pattern = rule.pattern;
-      validate = builtinValidator(rule.key);
-    } else {
-      // 저장 때와 같은 검증을 통과한 패턴만 실행한다(테스트 입력란이 ReDoS 통로가 되지 않게)
-      const problem = validatePattern(pattern!);
-      if (problem) {
-        invalidPattern(res, problem);
+      // 내장 규칙은 코드의 탐지기로, 사용자 정의 규칙은 워커에서 시간 상한 안에 돌린다
+      const builtinResult = rule.key ? testBuiltin(rule.key, sample) : null;
+      if (builtinResult !== null) {
+        res.json({ matched: builtinResult });
         return;
       }
+      res.json(await testPattern(rule.pattern, sample));
+      return;
     }
-    res.json(testPattern(pattern!, sample, validate));
+    // 저장 때와 같은 검증을 통과한 패턴만 실행한다(테스트 입력란이 ReDoS 통로가 되지 않게). 실행도 같은 워커 경로다.
+    const problem = validatePattern(body.data.pattern!);
+    if (problem) {
+      invalidPattern(res, problem);
+      return;
+    }
+    res.json(await testPattern(body.data.pattern!, sample));
   } catch (error) {
     logError('Admin test DLP rule error', error);
     res.status(500).json({ error: 'Failed to test DLP rule' });
@@ -124,6 +128,10 @@ router.post('/dlp-rules', async (req: AuthRequest, res: Response) => {
     const problem = validatePattern(body.data.pattern);
     if (problem) {
       invalidPattern(res, problem);
+      return;
+    }
+    if (isBuiltinName(body.data.name)) {
+      nameTaken(res);
       return;
     }
     if ((await prisma.dlpRule.count({ where: { builtin: false } })) >= CUSTOM_RULE_LIMIT) {
@@ -171,6 +179,10 @@ router.patch('/dlp-rules/:id', async (req: AuthRequest, res: Response) => {
     const { name, pattern, action, enabled } = body.data;
     if (existing.builtin && (name !== undefined || pattern !== undefined || action !== undefined)) {
       res.status(403).json({ error: 'Built-in rules can only be turned on or off', code: ERR.DLP_RULE_BUILTIN });
+      return;
+    }
+    if (name !== undefined && isBuiltinName(name)) {
+      nameTaken(res);
       return;
     }
     if (pattern !== undefined) {

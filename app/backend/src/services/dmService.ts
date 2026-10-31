@@ -108,6 +108,64 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
   return dm;
 }
 
+/**
+ * 1:1 DM 스레드 답글 전송의 단일 경로(그룹 DM의 답글은 sendGroupMessage). 답글은 같은 대화(보낸 사람·받는 사람 쌍)로 가고,
+ * 보낸 사람과 받는 사람의 user 룸에 dm:reply를 보낸다. 규칙은 sendDirectMessage와 같다.
+ */
+export async function sendDirectReply(sender: DmSender, parentDm: DirectMessage, input: SendDirectMessageInput) {
+  const fromUserId = sender.userId;
+  const parentId = parentDm.id;
+  const toUserId = parentDm.fromUserId === fromUserId ? parentDm.toUserId : parentDm.fromUserId;
+  if (toUserId === null) throw new ServiceError(400, UNABLE_TO_SEND);
+  if (!(await canSendDm(sender, toUserId))) throw new ServiceError(400, UNABLE_TO_SEND);
+  const { content, fileIds } = input;
+  const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
+
+  const reply = await prisma.$transaction(async (tx) => {
+    const created = await tx.directMessage.create({
+      data: {
+        content,
+        fromUserId,
+        toUserId,
+        threadId: parentId,
+        // Self-DMs are auto-read
+        ...(fromUserId === toUserId && { readAt: new Date() }),
+      },
+    });
+
+    if (fileIds && fileIds.length > 0) {
+      const updated = await tx.file.updateMany({
+        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        data: { dmId: created.id },
+      });
+      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+    }
+
+    return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
+  });
+
+  recordDlpWarnings(fromUserId, 'direct_message', reply.id, dlpWarned);
+
+  // Broadcast to both users so the thread updates in real-time
+  const io = getIO();
+  if (io) {
+    const payload = { ...reply, threadId: parentId };
+    io.to(`user:${fromUserId}`).emit('dm:reply', payload);
+    if (fromUserId !== toUserId) io.to(`user:${toUserId}`).emit('dm:reply', payload);
+  }
+
+  // Push notification for DM thread reply (fire-and-forget)
+  if (fromUserId !== toUserId && !isUserOnline(toUserId)) {
+    sendPushToUser(toUserId, {
+      titleKey: 'dmThread', sender: reply.fromUser?.name, content, plainBody: true,
+      url: `/d/${fromUserId}`,
+    }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
+  }
+
+  void createActivitiesForDm({ ...reply, threadId: parentId });
+  return reply;
+}
+
 /** 수정·삭제 공통 규칙: 지워진 메시지는 없는 것, 작성자만, 그룹 DM은 현재 멤버만 */
 async function assertCanModifyDm(userId: number, dm: DirectMessage): Promise<void> {
   if (dm.deletedAt !== null) throw new ServiceError(404, 'Message not found');

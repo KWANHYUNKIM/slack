@@ -75,8 +75,20 @@ async function runDueScheduledMessages(): Promise<void> {
           dlpWarned = await enforceDlp(scheduled.userId, scheduled.content, 'message');
         } catch (dlpError) {
           if (!(dlpError instanceof DlpBlockedError)) throw dlpError;
-          await prisma.scheduledMessage.update({ where: { id: scheduled.id }, data: { sent: true } });
-          console.log(`Scheduler: cancelled scheduled message ${scheduled.id} — blocked by a data loss prevention rule`);
+          // 조용히 버리지 않는다: 실패로 표시하고(sent:false일 때만, 다른 인스턴스가 먼저 보냈다면 건드리지 않는다) 보낸 사람에게 알린다
+          const failed = await prisma.scheduledMessage.updateMany({
+            where: { id: scheduled.id, sent: false },
+            data: { sent: true, failedAt: new Date(), failReason: dlpError.rule.slice(0, 200) },
+          });
+          if (failed.count > 0) {
+            io?.to(`user:${scheduled.userId}`).emit('scheduled:failed', {
+              id: scheduled.id,
+              channelId: scheduled.channelId,
+              code: 'DLP_BLOCKED',
+              rule: dlpError.rule,
+            });
+          }
+          console.log(`Scheduler: failed scheduled message ${scheduled.id} — blocked by a data loss prevention rule`);
           continue;
         }
 

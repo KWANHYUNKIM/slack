@@ -31,7 +31,7 @@ export function AdminDlpTab() {
   const [deleting, setDeleting] = useState<DlpRule | null>(null);
   const [testSource, setTestSource] = useState<TestSource>('draft');
   const [sample, setSample] = useState('');
-  const [testResult, setTestResult] = useState<boolean | null>(null);
+  const [testResult, setTestResult] = useState<boolean | 'timedOut' | null>(null);
   const saveAction = useAdminAction('admin:dlp.saveError');
   const toggleAction = useAdminAction('admin:dlp.toggleError');
   const deleteAction = useAdminAction('admin:dlp.deleteError');
@@ -87,6 +87,7 @@ export function AdminDlpTab() {
     setEditingId(rule.id);
     setDraft({ name: rule.name, pattern: rule.pattern, action: rule.action });
     setTestSource('draft');
+    setTestResult(null);
     saveAction.reset();
   };
 
@@ -110,7 +111,10 @@ export function AdminDlpTab() {
     const ok = await deleteAction.run(async () => {
       await api.adminDeleteDlpRule(target.id);
       if (editingId === target.id) resetForm();
-      if (testSource === target.id) setTestSource('draft');
+      if (testSource === target.id) {
+        setTestSource('draft');
+        setTestResult(null);
+      }
       await load();
     });
     if (ok) setDeleting(null);
@@ -119,7 +123,7 @@ export function AdminDlpTab() {
   const runTest = () => {
     void testAction.run(async () => {
       const result = await api.adminTestDlpRule(testSource === 'draft' ? { pattern: draft.pattern, sample } : { ruleId: testSource, sample });
-      setTestResult(result.matched);
+      setTestResult(result.timedOut ? 'timedOut' : result.matched);
     });
   };
 
@@ -155,7 +159,10 @@ export function AdminDlpTab() {
               spellCheck={false}
               maxLength={limits.patternMax}
               value={draft.pattern}
-              onChange={(e) => setDraft({ ...draft, pattern: e.target.value })}
+              onChange={(e) => {
+                setDraft({ ...draft, pattern: e.target.value });
+                setTestResult(null);
+              }}
               placeholder={t('dlp.form.patternPlaceholder')}
               className={`w-full font-mono ${FIELD_CLASS}`}
             />
@@ -237,8 +244,8 @@ export function AdminDlpTab() {
           </button>
         </div>
         {testResult !== null && (
-          <p role="status" className={`mt-2 text-sm ${testResult ? 'text-amber-700' : 'text-green-700'}`}>
-            {testResult ? t('dlp.test.matched') : t('dlp.test.notMatched')}
+          <p role="status" className={`mt-2 text-sm ${testResult === true || testResult === 'timedOut' ? 'text-amber-700' : 'text-green-700'}`}>
+            {testResult === 'timedOut' ? t('dlp.test.timedOut') : testResult ? t('dlp.test.matched') : t('dlp.test.notMatched')}
           </p>
         )}
         {testAction.error && <p role="alert" className="mt-2 text-sm text-slack-error">{testAction.error}</p>}

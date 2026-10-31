@@ -1128,6 +1128,9 @@ export interface ApiScheduledMessage {
   scheduledAt: string;
   createdAt: string;
   sent: boolean;
+  /** 발송 시점에 막혀 보내지 못한 예약(예: 데이터 유출 방지 규칙). failReason은 규칙 이름 */
+  failedAt?: string | null;
+  failReason?: string | null;
   channel: { id: number; name: string };
 }
 
@@ -1440,7 +1443,7 @@ export function adminDeleteDlpRule(id: number) {
 
 /** 저장하지 않은 패턴(pattern) 또는 저장된 규칙(ruleId)이 샘플 글과 일치하는지 */
 export function adminTestDlpRule(data: { pattern?: string; ruleId?: number; sample: string }) {
-  return request<{ matched: boolean }>('/admin/dlp-rules/test', { method: 'POST', body: JSON.stringify(data) });
+  return request<{ matched: boolean; timedOut?: boolean }>('/admin/dlp-rules/test', { method: 'POST', body: JSON.stringify(data) });
 }
 
 export function adminGetInvites() {

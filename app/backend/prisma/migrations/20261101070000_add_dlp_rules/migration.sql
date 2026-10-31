@@ -28,3 +28,7 @@ CREATE INDEX "DlpRule_enabled_idx" ON "DlpRule"("enabled");
 
 -- AddForeignKey
 ALTER TABLE "DlpRule" ADD CONSTRAINT "DlpRule_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "ScheduledMessage" ADD COLUMN     "failReason" VARCHAR(200),
+ADD COLUMN     "failedAt" TIMESTAMP(3);

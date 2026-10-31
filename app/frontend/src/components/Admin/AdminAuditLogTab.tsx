@@ -56,6 +56,8 @@ const ACTION_KEYS: Record<string, string> = {
   'dlp.rule_created': 'dlpRuleCreated',
   'dlp.rule_updated': 'dlpRuleUpdated',
   'dlp.rule_deleted': 'dlpRuleDeleted',
+  'dlp.rule_timeout': 'dlpRuleTimeout',
+  'dlp.rule_auto_disabled': 'dlpRuleAutoDisabled',
 };
 
 const TARGET_KEYS: Record<string, string> = {

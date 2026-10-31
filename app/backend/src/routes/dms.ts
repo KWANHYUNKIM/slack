@@ -12,9 +12,8 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
-import { sharesChannel, sendDirectMessage, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
+import { sharesChannel, sendDirectMessage, sendDirectReply, editDirectMessage, deleteDirectMessage, listDirectConversations } from '../services/dmService.js';
 import { ServiceError, serviceErrorBody } from '../services/messageService.js';
-import { enforceDlp, recordDlpWarnings } from '../services/dlpService.js';
 import {
   createActivitiesForDm,
   createReactionActivity,
@@ -323,84 +322,9 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       return;
     }
 
-    // Reply goes to the same conversation (same from/to pair)
-    const toUserId: number = parentDm.fromUserId === fromUserId ? parentDm.toUserId : parentDm.fromUserId;
-
-    // Block replies to deactivated users (same check as POST /dms)
-    if (fromUserId !== toUserId) {
-      const recipient = await prisma.user.findUnique({
-        where: { id: toUserId },
-        select: { id: true, deactivatedAt: true },
-      });
-      if (!recipient || recipient.deactivatedAt) {
-        res.status(400).json({ error: 'Unable to send message' });
-        return;
-      }
-
-      // Guests can only reply to DMs with shared-channel members
-      if (req.user!.role === 'GUEST') {
-        if (!(await sharesChannel(fromUserId, toUserId))) {
-          res.status(400).json({ error: 'Unable to send message' });
-          return;
-        }
-      }
-    }
-
-    const dlpWarned = await enforceDlp(fromUserId, content, 'direct_message');
-    const reply = await prisma.$transaction(async (tx) => {
-      const created = await tx.directMessage.create({
-        data: {
-          content,
-          fromUserId,
-          toUserId,
-          threadId: parentId,
-          // Self-DMs are auto-read
-          ...(fromUserId === toUserId && { readAt: new Date() }),
-        },
-      });
-
-      if (fileIds && fileIds.length > 0) {
-        const updated = await tx.file.updateMany({
-          where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
-          data: { dmId: created.id },
-        });
-        if (updated.count !== fileIds.length) {
-          throw new Error('Invalid file IDs or files already attached');
-        }
-      }
-
-      return tx.directMessage.findUnique({
-        where: { id: created.id },
-        include: DM_INCLUDE_USERS,
-      });
-    });
-
-    if (reply) recordDlpWarnings(fromUserId, 'direct_message', reply.id, dlpWarned);
-
-    // Broadcast to both users so the thread updates in real-time
-    const io = getIO();
-    if (io) {
-      const payload = { ...reply, threadId: parentId };
-      io.to(`user:${fromUserId}`).emit('dm:reply', payload);
-      if (fromUserId !== toUserId) {
-        io.to(`user:${toUserId}`).emit('dm:reply', payload);
-      }
-    }
-
-    // Push notification for DM thread reply (fire-and-forget)
-    if (reply && fromUserId !== toUserId) {
-      if (!isUserOnline(toUserId)) {
-        const senderName = reply.fromUser?.name;
-        sendPushToUser(toUserId, {
-          titleKey: 'dmThread', sender: senderName, content, plainBody: true,
-          url: `/d/${fromUserId}`,
-        }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
-      }
-    }
-
+    // 받는 사람 확인, 게스트 격리, DLP, 저장, 소켓, 푸시, 활동 생성은 dmService가 한다
+    const reply = await sendDirectReply({ userId: fromUserId, role: req.user!.role }, parentDm, { content, fileIds });
     res.status(201).json(reply);
-
-    if (reply) void createActivitiesForDm({ ...reply, threadId: parentId });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
