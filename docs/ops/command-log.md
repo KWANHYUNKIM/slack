@@ -153,3 +153,7 @@
 | 2026-10-31 19:55 | dev-2 완료 검토: CSP 외부 출처 제거, mocks 삭제, 외부 URL 검사 스크립트·CI. GCS가 서버 스트리밍인지(files.ts:389) 확인 후 승인 → PR #19, /code-review medium 실행. Playwright 미실행(포트 점유) |
 | 2026-10-31 19:58 | PR #19 리뷰 10건 → dev-2에게 반영 지시. 총괄 결정: 외부 아바타 URL은 API에서 거부(규칙 17), connect-src는 self만, 검사 스크립트 http·프로토콜 상대 URL·pipefail·allow 고정 매칭 |
 | 2026-10-31 20:08 | dev-2 리뷰 반영 확인(아바타 정규식, connect-src self, 스크립트 rc=0 직접 실행) → PR #19 squash 머지(055f230). Playwright no-external-requests는 포트 점유로 미실행, verify/e2e-smoke에서 실행. 머지된 worktree 11개 제거(수정 파일 남은 3개는 보존). 디스크 여유 7GB, 스왑 93%로 감속 한도 1, dev-3 진행 중이라 추가 배정 없음 |
+| 2026-10-31 20:15 | dev-3 완료 검토: main(058262de)에 리베이스, events.md에 channel:updated·star:updated 등록(총괄), tsc·i18n·외부 URL·테스트 36/36 재확인 → PR #21, /code-review medium. 마이그레이션은 머지 후 나머지 DB에 적용 예정 |
+| 2026-10-31 20:16 | PR #21 리뷰 9건 → dev-3 반영 지시. 총괄 결정: 이름 변경을 공용 서비스로 통합(관리자 경로도 channel:updated), 중복 이름 409+CHANNEL_NAME_TAKEN으로 통일(feat/channel-name-taken-code 흡수), 공개 채널 io.emit·비공개는 멤버 user 룸, 사이드바 설정 jsonb 원자 병합, 별표 요청 순번 |
+| 2026-10-31 20:23 | dev-3 리뷰 반영 확인(사이드바 raw SQL 파라미터 바인딩 확인, 4개 스위트 298 통과 보고) → PR #21 squash 머지(7d75e3d). POST /channels 중복은 400 유지+code 추가(기존 테스트 호환, 후속 판단). 마이그레이션 20261031130000을 dev1·dev2·dev4·dev5·slackclone·slackclone_dev에 migrate deploy 완료. dev-3 worktree 제거 |
+| 2026-10-31 20:25 | 배정: dev-4 02-group-dm(opus, 스키마·실시간·권한). 자원 감속(스왑 87%) 한도 1 |
