@@ -7,6 +7,10 @@ import webpush from 'web-push';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
+import { sendGroupMessage } from '../services/dmGroupService.js';
+import type { AddressInfo } from 'net';
+import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { settleBackgroundWork as settle } from '../services/mentionService.js';
 import { canonicalLocale, canonicalTimeZone } from '../utils/userPrefs.js';
 import { pickLocale, pushT, resolvePushLocale } from '../i18n/pushMessages.js';
@@ -30,6 +34,7 @@ describe('i18n backend', () => {
   let pushSpy: ReturnType<typeof jest.spyOn>;
   let httpServer: ReturnType<typeof createServer>;
   let io: Server;
+  let baseUrl = '';
 
   const patchMe = (u: TestUser, body: object) => request(app).patch('/users/me').set(auth(u)).send(body);
   const getMe = (u: TestUser) => request(app).get('/users/me').set(auth(u));
@@ -62,6 +67,8 @@ describe('i18n backend', () => {
     // DM 푸시는 소켓 서버가 떠 있어야 나간다(수신자는 연결하지 않아 오프라인)
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
+    await new Promise<void>((resolve) => httpServer.listen(0, '127.0.0.1', () => resolve()));
+    baseUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`;
     // 오프라인 수신자의 푸시 구독은 DB에 직접 넣는다
     for (const [u, endpoint] of [[kim, 'http://push.invalid/kim'], [lee, 'http://push.invalid/lee']] as const) {
       await prisma.pushSubscription.create({ data: { userId: u.id, endpoint, p256dh: 'p256dh-key', auth: 'auth-key' } });
@@ -197,6 +204,58 @@ describe('i18n backend', () => {
       await settle();
       expect(await pushWhere('http://push.invalid/kim', (p) => p.title === 'Alice')).toMatchObject({ body: 'hi kim' });
       expect(await pushWhere('http://push.invalid/lee', (p) => p.title === 'Alice')).toMatchObject({ body: 'hi lee' });
+    });
+
+    it('translates DM thread replies, group DMs, and MCP send_dm for ko and en users', async () => {
+      await patchMe(kim, { locale: 'ko' });
+      await patchMe(lee, { locale: 'en' });
+      const sentBy = async (u: TestUser, to: TestUser, content: string) =>
+        (await request(app).post('/dms').set(auth(u)).send({ toUserId: to.id, content })).body;
+
+      // DM 스레드 답글: 제목에 (스레드) / (thread)
+      const rootKim = await sentBy(kim, alice, 'root from kim');
+      const rootLee = await sentBy(lee, alice, 'root from lee');
+      pushSpy.mockClear();
+      await request(app).post(`/dms/messages/${rootKim.id}/reply`).set(auth(alice)).send({ content: 'reply kim' });
+      await request(app).post(`/dms/messages/${rootLee.id}/reply`).set(auth(alice)).send({ content: 'reply lee' });
+      expect(await pushWhere('http://push.invalid/kim', (p) => p.body === 'reply kim')).toMatchObject({ title: 'Alice (스레드)' });
+      expect(await pushWhere('http://push.invalid/lee', (p) => p.body === 'reply lee')).toMatchObject({ title: 'Alice (thread)' });
+
+      // 그룹 DM: 같은 메시지가 각자 언어로(제목은 보낸 사람, 첨부만 보내면 첨부 문구가 번역된다)
+      const group = await request(app).post('/dms/groups').set(auth(alice)).send({ userIds: [kim.id, lee.id] });
+      expect(group.status).toBe(201);
+      const gid = group.body.group.id;
+      pushSpy.mockClear();
+      expect((await request(app).post(`/dms/groups/${gid}/messages`).set(auth(alice)).send({ content: 'group hello' })).status).toBe(201);
+      expect(await pushWhere('http://push.invalid/kim', (p) => p.body === 'group hello')).toMatchObject({ title: 'Alice' });
+      expect(await pushWhere('http://push.invalid/lee', (p) => p.body === 'group hello')).toMatchObject({ title: 'Alice' });
+      // 그룹 스레드 답글은 제목이 언어를 따른다(서비스 직접 호출)
+      const root = await prisma.directMessage.findFirstOrThrow({ where: { groupId: gid, content: 'group hello' } });
+      pushSpy.mockClear();
+      // 스레드 푸시는 참여자에게만 간다. kim과 lee가 먼저 답글을 단다.
+      for (const u of [kim, lee]) await sendGroupMessage({ groupId: gid, fromUserId: u.id, content: 'joining', threadId: root.id });
+      await new Promise((r) => setTimeout(r, 300));
+      pushSpy.mockClear();
+      await sendGroupMessage({ groupId: gid, fromUserId: alice.id, content: 'group thread', threadId: root.id });
+      expect(await pushWhere('http://push.invalid/kim', (p) => p.body === 'group thread')).toMatchObject({ title: 'Alice (스레드)' });
+      expect(await pushWhere('http://push.invalid/lee', (p) => p.body === 'group thread')).toMatchObject({ title: 'Alice (thread)' });
+
+      // MCP send_dm: alice의 토큰으로 보내도 수신자 언어를 따른다. 빈 본문 대체 문구로 언어를 구분한다.
+      const pat = await request(app).post('/tokens').set(auth(alice)).send({ name: 'claude', scopes: ['users:read', 'im:read', 'im:history', 'im:write'] });
+      expect(pat.status).toBe(201);
+      const client = new McpClient({ name: 'jest', version: '1.0.0' });
+      await client.connect(new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`), { requestInit: { headers: { Authorization: `Bearer ${pat.body.token}` } } }));
+      try {
+        pushSpy.mockClear();
+        for (const [to, text] of [[kim, 'mcp to kim'], [lee, 'mcp to lee']] as const) {
+          const res = await client.callTool({ name: 'send_dm', arguments: { userId: to.id, content: text } });
+          expect(res.isError).not.toBe(true);
+        }
+        expect(await pushWhere('http://push.invalid/kim', (p) => p.body === 'mcp to kim')).toMatchObject({ title: 'Alice' });
+        expect(await pushWhere('http://push.invalid/lee', (p) => p.body === 'mcp to lee')).toMatchObject({ title: 'Alice' });
+      } finally {
+        await client.close().catch(() => {});
+      }
     });
 
     it('resolves the locale: User.locale wins, then the stored value, then ko', () => {
