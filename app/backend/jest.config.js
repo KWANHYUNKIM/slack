@@ -10,8 +10,6 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        // 타입 검사는 npm run build(tsc)가 맡는다. 테스트에서는 변환만 해 메모리(8GB 머신의 스왑)와 시간을 줄인다.
-        isolatedModules: true,
       },
     ],
   },
