@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
+import { attachableFiles } from './fileAttach.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
 import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
@@ -249,7 +250,7 @@ export async function sendGroupMessage(input: GroupMessageInput) {
 
     if (fileIds && fileIds.length > 0) {
       const updated = await tx.file.updateMany({
-        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
       if (updated.count !== fileIds.length) throw new InvalidFileIdsError();

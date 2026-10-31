@@ -1,5 +1,6 @@
 import { Prisma, type Message } from '@prisma/client';
 import { z } from 'zod';
+import { attachableFiles } from './fileAttach.js';
 import prisma from '../db.js';
 import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
 import { getIO } from '../websocket/index.js';
@@ -111,7 +112,7 @@ export async function sendChannelMessage(
 
     if (fileIds && fileIds.length > 0) {
       const updated = await tx.file.updateMany({
-        where: { id: { in: fileIds }, userId, messageId: null, dmId: null },
+        where: attachableFiles(userId, fileIds),
         data: { messageId: msg.id },
       });
       if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
