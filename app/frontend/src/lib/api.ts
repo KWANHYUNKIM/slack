@@ -1214,26 +1214,26 @@ function auditQuery(filter: AuditLogFilter): URLSearchParams {
   return q;
 }
 
-export function adminListAuditLogs(filter: AuditLogFilter, cursor?: number | null, limit = 50) {
+export function adminListAuditLogs(filter: AuditLogFilter, cursor?: number | null, limit = 50, signal?: AbortSignal) {
   const q = auditQuery(filter);
   q.set('limit', String(limit));
   if (cursor) q.set('cursor', String(cursor));
-  return request<AuditLogPage>(`/admin/audit-logs?${q.toString()}`);
+  return request<AuditLogPage>(`/admin/audit-logs?${q.toString()}`, { signal });
 }
 
-/** 같은 필터로 내보낸 파일을 Blob으로 받는다. 파일 응답이라 request()를 쓰지 않는다. */
-export async function adminExportAuditLogs(filter: AuditLogFilter, format: 'csv' | 'json'): Promise<Blob> {
+/**
+ * 내보내기 주소를 만든다. 60초짜리 1회용 토큰을 받아 주소에 붙인다. 브라우저가 이 주소로 파일을 디스크에 바로 받는다(메모리에 올리지 않는다).
+ * 토큰은 형식과 필터에 묶여 있어서 같은 값으로 URL을 만든다.
+ */
+export async function adminAuditExportUrl(filter: AuditLogFilter, format: 'csv' | 'json'): Promise<string> {
+  const { token } = await request<{ token: string }>('/admin/audit-logs/export-token', {
+    method: 'POST',
+    body: JSON.stringify({ ...filter, format }),
+  });
   const q = auditQuery(filter);
   q.set('format', format);
-  const token = localStorage.getItem('token');
-  const res = await fetch(`/admin/audit-logs/export?${q.toString()}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: t('errors:client.requestFailed') }));
-    throw new ApiError(typeof body.error === 'string' ? body.error : t('errors:client.requestFailed'), res.status, body.code, body.reason);
-  }
-  return res.blob();
+  q.set('token', token);
+  return `/admin/audit-logs/export?${q.toString()}`;
 }
 
 export function adminGetInvites() {

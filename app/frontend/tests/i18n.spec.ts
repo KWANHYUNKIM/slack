@@ -26,6 +26,14 @@ test.describe('i18n', () => {
     await expect(page.getByPlaceholder('Password')).toBeVisible();
   });
 
+  test('아랍어(번역 파일 없음)를 고르면 dir=rtl이 되고 문자열은 영어로 대체된다', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('locale', 'ar'));
+    await page.goto('/login');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    await expect(page.getByPlaceholder('Password')).toBeVisible();
+  });
+
   test('한국어 상태에서 메시지 작성, 수정, 삭제가 된다', async ({ page }) => {
     await register(page, 'I18n Tester', uniqueEmail(), TEST_PASSWORD);
     await page.evaluate(() => localStorage.setItem('locale', 'ko'));

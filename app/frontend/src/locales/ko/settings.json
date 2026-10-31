@@ -1,6 +1,7 @@
 {
   "language": {
-    "label": "언어"
+    "label": "언어",
+    "pending": "{name} (번역 준비 중)"
   },
   "avatar": {
     "alt": "프로필 사진",

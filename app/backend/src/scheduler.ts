@@ -138,15 +138,22 @@ async function runDueScheduledMessages(): Promise<void> {
   }
 }
 
-const AUDIT_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 일 1회
-let lastAuditPurgeAt = 0;
+const AUDIT_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 성공하면 하루 뒤
+const AUDIT_PURGE_RETRY_MS = 60 * 60 * 1000; // 실패하면 1시간 뒤 재시도(백오프)
+let nextAuditPurgeAt = 0;
 
-/** 틱마다 불러도 하루에 한 번만 오래된 감사 로그를 정리한다. 보존 기간이 0(무기한)이면 건너뛴다. */
+/** 틱마다 불러도 하루에 한 번만 오래된 감사 로그를 정리한다. 보존 기간이 0(무기한)이면 건너뛴다. 실패하면 1시간 뒤 다시 시도한다. */
 export async function purgeAuditLogsIfDue(now: number = Date.now()): Promise<number> {
   const days = getAuditRetentionDays();
-  if (days <= 0 || now - lastAuditPurgeAt < AUDIT_PURGE_INTERVAL_MS) return 0;
-  lastAuditPurgeAt = now;
-  return purgeOldAuditLogs(days, new Date(now));
+  if (days <= 0 || now < nextAuditPurgeAt) return 0;
+  try {
+    const removed = await purgeOldAuditLogs(days, new Date(now));
+    nextAuditPurgeAt = now + AUDIT_PURGE_INTERVAL_MS;
+    return removed;
+  } catch (err) {
+    nextAuditPurgeAt = now + AUDIT_PURGE_RETRY_MS;
+    throw err;
+  }
 }
 
 export function startScheduler(): NodeJS.Timeout {

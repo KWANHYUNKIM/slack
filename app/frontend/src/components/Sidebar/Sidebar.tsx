@@ -327,7 +327,7 @@ export function Sidebar() {
                 )}
                 <DesktopServerMenuItem onDone={() => setShowAvatarMenu(false)} />
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); logout(); }}>
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 rtl:-scale-x-100" />
                   {t('userMenu.signOut')}
                 </Button>
               </div>
@@ -372,7 +372,7 @@ export function Sidebar() {
               aria-label={sectionToggleLabel(starredExpanded, t('sections.starred'))}
               className="flex w-full items-center gap-1.5 ps-4 pe-2 py-[6px] text-[15px] hover:bg-slack-sidebar-hover/70"
             >
-              {starredExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {starredExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3 rtl:-scale-x-100" />}
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span>{t('sections.starred')}</span>
             </button>
@@ -424,7 +424,7 @@ export function Sidebar() {
               {channelsExpanded ? (
                 <ChevronDown className="h-3 w-3" />
               ) : (
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3 rtl:-scale-x-100" />
               )}
               <span>{t('sections.channels')}</span>
             </button>
@@ -473,7 +473,7 @@ export function Sidebar() {
               {dmsExpanded ? (
                 <ChevronDown className="h-3 w-3" />
               ) : (
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3 rtl:-scale-x-100" />
               )}
               <span>{t('sections.directMessages')}</span>
             </button>

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../db.js';
@@ -18,8 +19,10 @@ const isoDate = z
       ctx.addIssue({ code: 'custom', message: 'Invalid date' });
       return z.NEVER;
     }
-    return d;
+    return { date: d, dateOnly: !hasTime };
   });
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 // action은 ?action=a&action=b 또는 ?action=a,b 둘 다 받는다
 const actionList = z
@@ -32,7 +35,8 @@ export const auditFilterSchema = z.object({
   actorId: z.coerce.number().int().positive().optional(),
   targetType: z.string().max(50).optional(),
   targetId: z.coerce.number().int().positive().optional(),
-  from: isoDate.optional(),
+  from: isoDate.transform((v) => v.date).optional(),
+  // 날짜만 오면 그 날의 끝까지(다음 날 00:00 미만)로 본다
   to: isoDate.optional(),
 });
 
@@ -45,7 +49,10 @@ export function buildAuditWhere(f: AuditFilter): Prisma.AuditLogWhereInput {
   if (f.targetType) where.targetType = f.targetType;
   if (f.targetId !== undefined) where.targetId = f.targetId;
   if (f.from || f.to) {
-    where.createdAt = { ...(f.from ? { gte: f.from } : {}), ...(f.to ? { lte: f.to } : {}) };
+    where.createdAt = {
+      ...(f.from ? { gte: f.from } : {}),
+      ...(f.to ? (f.to.dateOnly ? { lt: new Date(f.to.date.getTime() + DAY_MS) } : { lte: f.to.date }) : {}),
+    };
   }
   return where;
 }
@@ -112,4 +119,75 @@ export async function* iterateAuditRows(f: AuditFilter): AsyncGenerator<ExportRo
 export function jsonRow(row: ExportRow) {
   const { actor, ...rest } = row;
   return { ...rest, actorName: actor?.name ?? null };
+}
+
+/** 쓰기 쪽 최소 인터페이스(http.ServerResponse가 만족한다). 테스트에서 가짜로 바꿀 수 있게 따로 둔다. */
+export interface WritableLike {
+  destroyed: boolean;
+  write(chunk: string): boolean;
+  once(event: 'drain' | 'close' | 'error', listener: () => void): unknown;
+  off(event: 'drain' | 'close' | 'error', listener: () => void): unknown;
+}
+
+/**
+ * 한 덩어리를 쓰고, 버퍼가 차면 drain을 기다린다. 기다리는 동안 연결이 끊기면(close·error) 영원히 기다리지 않고 false를 돌려준다.
+ * false면 호출자는 그만 쓰고 멈춘다.
+ */
+export async function writeWithBackpressure(res: WritableLike, chunk: string): Promise<boolean> {
+  if (res.destroyed) return false;
+  if (!res.write(chunk)) {
+    await new Promise<void>((resolve) => {
+      const done = () => {
+        res.off('drain', done);
+        res.off('close', done);
+        res.off('error', done);
+        resolve();
+      };
+      res.once('drain', done);
+      res.once('close', done);
+      res.once('error', done);
+    });
+  }
+  return !res.destroyed;
+}
+
+// ---- 내보내기 일회용 토큰 ----
+// 브라우저가 <a href>로 파일을 바로 받으려면 Authorization 헤더를 못 보내므로, 60초짜리 1회용 토큰으로 인증한다.
+// 토큰은 발급한 관리자와 (형식 + 필터)에 묶인다. 메모리에만 두며(단일 인스턴스 가정), 해시만 저장하고 어디에도 기록하지 않는다.
+export const EXPORT_TOKEN_TTL_MS = 60_000;
+const EXPORT_TOKEN_MAX = 1000;
+const exportTokens = new Map<string, { userId: number; binding: string; expiresAt: number }>();
+
+const hashToken = (token: string) => crypto.createHash('sha256').update(token).digest('hex');
+
+/** 형식과 필터를 정규화한 문자열. 발급 때와 사용 때 같은 값이어야 토큰이 통한다. */
+export function exportBinding(format: string, f: AuditFilter): string {
+  return JSON.stringify({
+    format,
+    action: [...(f.action ?? [])].sort(),
+    actorId: f.actorId ?? null,
+    targetType: f.targetType ?? null,
+    targetId: f.targetId ?? null,
+    from: f.from?.toISOString() ?? null,
+    to: f.to ? `${f.to.date.toISOString()}${f.to.dateOnly ? ':day' : ''}` : null,
+  });
+}
+
+export function issueExportToken(userId: number, binding: string, now = Date.now()): { token: string; expiresAt: number } | null {
+  for (const [k, v] of exportTokens) if (v.expiresAt <= now) exportTokens.delete(k);
+  if (exportTokens.size >= EXPORT_TOKEN_MAX) return null;
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = now + EXPORT_TOKEN_TTL_MS;
+  exportTokens.set(hashToken(token), { userId, binding, expiresAt });
+  return { token, expiresAt };
+}
+
+/** 한 번 꺼내면 맞든 틀리든 지운다(재사용 불가). 유효하면 발급한 사용자 id를 돌려준다. */
+export function consumeExportToken(token: string, binding: string, now = Date.now()): number | null {
+  const key = hashToken(token);
+  const entry = exportTokens.get(key);
+  if (!entry) return null;
+  exportTokens.delete(key);
+  if (entry.expiresAt <= now || entry.binding !== binding) return null;
+  return entry.userId;
 }

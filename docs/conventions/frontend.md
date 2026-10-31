@@ -23,6 +23,7 @@ tests/<기능>.spec.ts                 Playwright E2E
 - **낙관적 업데이트**: 메시지 전송, 리액션처럼 자주 쓰는 동작은 화면에 먼저 반영한다. 서버 응답이나 소켓 이벤트가 오면 확정하고, 실패하면 되돌리고 에러를 보여 준다.
 - **재연결 복구**: 소켓이 다시 연결되면 열려 있는 채널의 마지막 메시지 이후를 다시 요청해서 빈 구간을 채운다.
 - 스타일은 Tailwind 유틸리티로만 한다. 색과 간격은 `tailwind.config` 토큰을 쓰고 임의 값(`[13px]`)은 피한다. Slack 로고, 아이콘, 고유 색상은 쓰지 않는다.
+- **방향(RTL)**: 물리 방향 클래스(`ml-` `mr-` `pl-` `pr-` `left-` `right-` `text-left` `border-l` `rounded-l` 등)와 CSS `margin-left` 대신 논리 속성(`ms-` `me-` `ps-` `pe-` `start-` `end-` `text-start` `border-s` `rounded-s`, `border-inline-start`)을 쓴다. 방향이 뜻을 갖는 화살표·아이콘은 `rtl:-scale-x-100`으로 뒤집고, JS로 가로 위치를 잡을 때는 `lib/popoverPosition.ts`의 `alignInline`을 쓴다. `scripts/check-physical-direction.sh`가 CI에서 막는다(예외는 줄에 `physical-ok` 주석 또는 `scripts/physical-direction.allow`).
 - 접근성: 버튼에는 `aria-label`을 붙이고, 키보드만으로 조작할 수 있게 한다(포커스 이동, Esc로 닫기).
 - 이름 규칙: 컴포넌트는 PascalCase, 훅은 `useXxx`, 스토어는 `useXxxStore`, 이벤트 핸들러는 `handleXxx`, props 콜백은 `onXxx`
 

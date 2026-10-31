@@ -57,3 +57,31 @@ export async function purgeOldAuditLogs(retentionDays: number, now: Date = new D
   }
   return total;
 }
+
+// 존재하지 않는 이메일의 로그인 실패는 공격자가 마음대로 만들 수 있으므로 emailHash당 15분에 한 건만 기록한다.
+// 그 사이 시도 횟수는 다음 기록의 count로 남긴다. 메모리 맵이라 상한을 두고, 가득 차면 만료된 항목부터 치운다.
+const UNKNOWN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const UNKNOWN_LOGIN_MAX = 5000;
+const unknownLoginSeen = new Map<string, { lastLoggedAt: number; pending: number }>();
+
+/** 이번 시도를 기록해야 하면 그 사이 시도 횟수(이번 포함)를, 건너뛰어야 하면 null을 돌려준다. */
+export function throttleUnknownLogin(emailHash: string, now = Date.now()): number | null {
+  const entry = unknownLoginSeen.get(emailHash);
+  if (entry && now - entry.lastLoggedAt < UNKNOWN_LOGIN_WINDOW_MS) {
+    entry.pending++;
+    return null;
+  }
+  if (!entry && unknownLoginSeen.size >= UNKNOWN_LOGIN_MAX) {
+    for (const [k, v] of unknownLoginSeen) if (now - v.lastLoggedAt >= UNKNOWN_LOGIN_WINDOW_MS) unknownLoginSeen.delete(k);
+    // 그래도 가득 차면(전부 15분 안) 새 해시는 기록하지 않는다. 메모리가 무한히 늘지 않게 하는 쪽을 택한다.
+    if (unknownLoginSeen.size >= UNKNOWN_LOGIN_MAX) return null;
+  }
+  const count = (entry?.pending ?? 0) + 1;
+  unknownLoginSeen.set(emailHash, { lastLoggedAt: now, pending: 0 });
+  return count;
+}
+
+/** 테스트용: 집계 상태를 비운다 */
+export function resetUnknownLoginThrottle(): void {
+  unknownLoginSeen.clear();
+}

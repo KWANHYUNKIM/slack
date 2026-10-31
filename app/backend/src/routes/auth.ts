@@ -12,7 +12,7 @@ import { kickUser } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
-import { writeAuditLog, hashEmailForAudit } from '../utils/auditLog.js';
+import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -202,7 +202,12 @@ router.post('/login', async (req: Request, res: Response) => {
         loginAttempts.set(email, current);
       }
       // 이메일 원문은 남기지 않고 해시만 남긴다(사용자를 특정할 수 없으니 actorId는 비운다)
-      void writeAuditLog({ action: 'auth.login_failed', actorId: null, targetType: 'user', details: `reason=unknown_user; emailHash=${hashEmailForAudit(email)}` });
+      // 공격자가 마음대로 만들 수 있는 기록이라 emailHash당 15분에 한 건만 남기고, 그 사이 시도 횟수는 count로 합친다
+      const emailHash = hashEmailForAudit(email);
+      const logCount = throttleUnknownLogin(emailHash);
+      if (logCount !== null) {
+        void writeAuditLog({ action: 'auth.login_failed', actorId: null, targetType: 'user', details: `reason=unknown_user; emailHash=${emailHash}; count=${logCount}` });
+      }
       res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
@@ -223,7 +228,7 @@ router.post('/login', async (req: Request, res: Response) => {
         if (current.count >= MAX_FAILED_ATTEMPTS) {
           current.lockedUntil = now + LOCKOUT_DURATION_MS;
           // 잠김이 시작되는 순간 한 번만 기록한다(이후 429 시도는 기록하지 않아 폭주로 쌓이지 않는다)
-          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', details: `emailHash=${hashEmailForAudit(email)}` });
+          void writeAuditLog({ action: 'auth.login_locked', actorId: null, targetType: 'user', targetId: user.id, details: `emailHash=${hashEmailForAudit(email)}` });
           current.count = 0;
         }
         loginAttempts.set(email, current);
