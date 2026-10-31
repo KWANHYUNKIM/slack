@@ -7,6 +7,7 @@ import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
+import { createReactionActivity, removeReactionActivity } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -74,6 +75,16 @@ router.post('/:id/reactions', authMiddleware, requireMessageAccess, async (req: 
     }
 
     res.status(201).json(reaction);
+
+    void createReactionActivity({
+      actorId: userId,
+      targetUserId: req.message.userId,
+      emoji,
+      messageId,
+      channelId: req.channelId,
+      actor: reaction.user,
+    });
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -129,6 +140,8 @@ router.delete('/:id/reactions/:emoji', authMiddleware, requireMessageAccess, asy
     await prisma.reaction.delete({
       where: { id: reaction.id },
     });
+
+    await removeReactionActivity({ actorId: userId, emoji, messageId });
 
     // Broadcast to channel so other users see the removal in real-time
     const channelId = req.channelId;

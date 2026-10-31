@@ -22,8 +22,23 @@ interface PushPayload {
   url?: string;
 }
 
-export async function sendPushToUser(userId: number, payload: PushPayload): Promise<void> {
+// 알림 맥락. 05 상태/DND 파트가 이 값으로 억제 여부를 판단한다.
+export interface NotifyContext {
+  kind?: 'message' | 'mention' | 'dm' | 'thread';
+  channelId?: number;
+}
+
+/**
+ * 알림을 보내도 되는지 판단하는 훅 자리. 지금은 항상 true.
+ * 05 파트(상태/DND)가 방해 금지 시간, 채널 뮤트 등을 여기서 검사하도록 채운다.
+ */
+export async function shouldNotify(_userId: number, _ctx?: NotifyContext): Promise<boolean> {
+  return true;
+}
+
+export async function sendPushToUser(userId: number, payload: PushPayload, ctx?: NotifyContext): Promise<void> {
   if (!isConfigured) return;
+  if (!(await shouldNotify(userId, ctx))) return;
 
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId },

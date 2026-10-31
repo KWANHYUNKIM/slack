@@ -11,6 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { processNewChannelMessage, syncActivitiesOnEdit, deleteActivitiesForMessage, markThreadMentionsRead } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -81,37 +82,10 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
       io.to(`channel:${parentMessage.channelId}`).emit('message:new', { ...reply, threadId: parentId });
     }
 
-    // Push to thread participants (fire-and-forget)
-    if (reply) {
-      const channelInfo = await prisma.channel.findUnique({
-        where: { id: parentMessage.channelId },
-        select: { name: true },
-      });
-      const senderName = reply.user?.name || 'Someone';
-      const channelName = channelInfo?.name || 'channel';
-
-      // Get distinct thread participants (parent author + all repliers)
-      const participants = await prisma.message.findMany({
-        where: {
-          OR: [{ id: parentId }, { threadId: parentId }],
-          deletedAt: null,
-        },
-        select: { userId: true },
-        distinct: ['userId'],
-      });
-
-      for (const p of participants) {
-        if (p.userId === userId) continue;
-        if (isUserOnline(p.userId)) continue;
-        sendPushToUser(p.userId, {
-          title: `#${channelName} thread`,
-          body: `${senderName}: ${content.slice(0, 100)}`,
-          url: `/c/${parentMessage.channelId}`,
-        }).catch((err) => logError('Push notification dispatch failed', err));
-      }
-    }
-
     res.status(201).json(reply);
+
+    // 응답 뒤에: 스레드 답글·멘션 활동과 푸시(await하지 않는다)
+    if (reply) void processNewChannelMessage(reply);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -143,6 +117,9 @@ router.get('/:id/thread', authMiddleware, requirePublicMessageReadAccess, async 
       include: THREAD_REPLY_INCLUDE,
       orderBy: { createdAt: 'asc' },
     });
+
+    // 스레드를 열었으니 이 스레드 답글에 달린 내 멘션을 읽음 처리한다
+    markThreadMentionsRead(req.user!.userId, parentId).catch((err) => logError('Mark thread mentions read failed', err));
 
     res.json({
       parent: parentMessage,
@@ -187,6 +164,8 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
     });
 
     res.json(updatedMessage);
+
+    void syncActivitiesOnEdit(updatedMessage);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -230,6 +209,8 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
         data: { messageId: null },
       }),
     ]);
+
+    await deleteActivitiesForMessage(messageId);
 
     // Broadcast deletion to channel so other clients update in real-time
     const io = getIO();

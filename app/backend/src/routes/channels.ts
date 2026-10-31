@@ -10,6 +10,7 @@ import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -119,7 +120,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     // Batch: get memberships and unread counts in parallel (2 queries instead of N+1)
     const channelIds = channels.map(c => c.id);
 
-    const [memberships, unreadRows] = await Promise.all([
+    const [memberships, unreadRows, mentionMap] = await Promise.all([
       prisma.channelMember.findMany({
         where: { userId, channelId: { in: channelIds } },
         select: { channelId: true },
@@ -137,6 +138,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             GROUP BY m."channelId"
           `
         : Promise.resolve([]),
+      getMentionCountsByChannel(userId, channelIds),
     ]);
 
     const memberSet = new Set(memberships.map(m => m.channelId));
@@ -145,6 +147,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const channelsWithUnread = channels.map((channel) => ({
       ...channel,
       unreadCount: memberSet.has(channel.id) ? (unreadMap.get(channel.id) || 0) : 0,
+      mentionCount: memberSet.has(channel.id) ? (mentionMap.get(channel.id) || 0) : 0,
       isMember: memberSet.has(channel.id),
     }));
 
@@ -698,6 +701,9 @@ router.post('/:id/read', authMiddleware, requireChannelMembership, async (req: A
       create: { userId, channelId, lastReadMessageId: messageId },
       update: { lastReadMessageId: messageId },
     });
+
+    // 읽은 위치까지의 멘션은 읽음 처리한다(사이드바 멘션 배지가 줄어든다)
+    await markChannelMentionsRead(userId, channelId, messageId).catch((err) => logError('Mark channel mentions read failed', err));
 
     res.json({ success: true });
   } catch (error) {

@@ -8,8 +8,8 @@ import { AuthRequest } from '../types.js';
 import { USER_SELECT_BASIC, FILE_SELECT, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
-import { getIO, isUserOnline } from '../websocket/index.js';
-import { sendPushToUser } from '../services/pushService.js';
+import { getIO } from '../websocket/index.js';
+import { processNewChannelMessage } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -86,35 +86,12 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
     const io = getIO();
     if (io && finalMessage) {
       io.to(`channel:${channelId}`).emit('message:new', finalMessage);
-
-      // Push notifications (fire-and-forget) — skip for thread replies
-      if (!threadId) {
-        const channelInfo = await prisma.channel.findUnique({
-          where: { id: channelId },
-          select: { name: true },
-        });
-        const senderName = finalMessage.user?.name || 'Someone';
-        const channelName = channelInfo?.name || 'channel';
-        const body = `${senderName}: ${finalMessage.content.slice(0, 100) || 'Sent an attachment'}`;
-
-        prisma.channelMember.findMany({
-          where: { channelId },
-          select: { userId: true },
-        }).then((members) => {
-          for (const member of members) {
-            if (member.userId === userId) continue;
-            if (isUserOnline(member.userId)) continue;
-            sendPushToUser(member.userId, {
-              title: `#${channelName}`,
-              body,
-              url: `/c/${channelId}`,
-            }).catch((err) => logError('Push notification dispatch failed', err));
-          }
-        }).catch((err) => logError('Push notification dispatch failed', err));
-      }
     }
 
     res.status(201).json(finalMessage);
+
+    // 응답 뒤에: 활동 생성, 활동 이벤트, 푸시(await하지 않는다. 실패는 서비스가 로그로 남긴다)
+    if (finalMessage) void processNewChannelMessage(finalMessage, { generalPush: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });

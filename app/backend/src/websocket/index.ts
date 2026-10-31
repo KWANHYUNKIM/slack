@@ -18,6 +18,12 @@ import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
+import {
+  processNewChannelMessage,
+  syncActivitiesOnEdit,
+  deleteActivitiesForMessage,
+  createActivitiesForDm,
+} from '../services/mentionService.js';
 
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
@@ -394,31 +400,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
         // Ack success to the sender
         if (typeof ack === 'function') ack({});
 
-        // Fire push notifications (fire-and-forget)
-        if (finalMessage && !data.threadId) {
-          const channelInfo = await prisma.channel.findUnique({
-            where: { id: data.channelId },
-            select: { name: true },
-          });
-          const senderName = finalMessage.user?.name || 'Someone';
-          const channelName = channelInfo?.name || 'channel';
-          const body = `${senderName}: ${finalMessage.content.slice(0, 100) || 'Sent an attachment'}`;
-
-          prisma.channelMember.findMany({
-            where: { channelId: data.channelId },
-            select: { userId: true },
-          }).then((members) => {
-            for (const member of members) {
-              if (member.userId === socket.user!.userId) continue;
-              if (isUserOnline(member.userId)) continue;
-              sendPushToUser(member.userId, {
-                title: `#${channelName}`,
-                body,
-                url: `/c/${data.channelId}`,
-              }).catch((err) => logError('Push notification dispatch failed', err));
-            }
-          }).catch((err) => logError('Push notification dispatch failed', err));
-        }
+        // ack 뒤에: 활동 생성, 활동 이벤트, 푸시 (HTTP 경로와 같은 서비스, await하지 않는다)
+        if (finalMessage) void processNewChannelMessage(finalMessage, { generalPush: true });
       } catch (error) {
         logError('WebSocket message error', error);
         sendError('Failed to send message');
@@ -478,6 +461,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         });
 
         io.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
+        void syncActivitiesOnEdit(updatedMessage);
       } catch (error) {
         logError('WebSocket edit message error', error);
         socket.emit('error', { message: 'Failed to edit message' });
@@ -541,6 +525,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
             data: { messageId: null },
           }),
         ]);
+
+        await deleteActivitiesForMessage(data.messageId);
 
         io.to(`channel:${message.channelId}`).emit('message:deleted', {
           messageId: data.messageId,
@@ -716,6 +702,9 @@ export function initializeWebSocket(httpServer: HttpServer) {
             }).catch((err) => logError('Push notification dispatch failed', err));
           }
         }
+
+        // dm:new 뒤에 활동 생성(await하지 않는다)
+        void createActivitiesForDm(dm);
       } catch (error) {
         logError('WebSocket DM error', error);
         socket.emit('error', { message: 'Failed to send DM' });

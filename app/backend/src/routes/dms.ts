@@ -11,6 +11,15 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
+import {
+  createActivitiesForDm,
+  syncActivitiesOnDmEdit,
+  deleteActivitiesForDm,
+  createReactionActivity,
+  removeReactionActivity,
+  markDmMentionsRead,
+  getMentionCountsByDmPartner,
+} from '../services/mentionService.js';
 
 const router = Router();
 
@@ -105,6 +114,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     res.status(201).json(dm);
+
+    // dm:new 뒤, 응답 뒤에 활동 생성(await하지 않는다)
+    if (dm) void createActivitiesForDm(dm);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -187,6 +199,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
+    const mentionCounts = await getMentionCountsByDmPartner(userId);
+
     // Apply online status from WebSocket tracking
     const result = filteredConversations.map((conv) => ({
       otherUser: conv.otherUser ? {
@@ -195,6 +209,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       } : conv.otherUser,
       lastMessage: conv.lastMessage,
       unreadCount: Number(conv.unreadCount),
+      mentionCount: conv.otherUser ? mentionCounts.get(conv.otherUser.id) ?? 0 : 0,
     }));
 
     res.json(result);
@@ -328,6 +343,7 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
             readAt: new Date(),
           },
         }).catch((err) => logError('DM read-status update failed', err)),
+        markDmMentionsRead(currentUserId, otherUserId).catch((err) => logError('DM mention read update failed', err)),
       ]);
 
       const paginated = paginateResults(messages, limit);
@@ -452,6 +468,8 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
     }
 
     res.status(201).json(reply);
+
+    if (reply) void createActivitiesForDm({ ...reply, threadId: parentId });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -517,6 +535,8 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
     }
 
     res.json(updated);
+
+    void syncActivitiesOnDmEdit(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -536,6 +556,7 @@ router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: A
       where: { id: dm.id },
       data: { deletedAt: new Date() },
     });
+    await deleteActivitiesForDm(dm.id);
 
     // Broadcast to the other user so the deletion appears in real-time
     // (the sender's UI is already updated from the REST response)
@@ -585,8 +606,15 @@ router.post('/messages/:id/reactions', authMiddleware, requireDmAccess, async (r
       include: { user: { select: { id: true, name: true } } },
     });
 
-    // Broadcast to both DM participants
     const dm = req.dm;
+    await createReactionActivity({
+      actorId: userId,
+      targetUserId: dm.fromUserId,
+      emoji,
+      dmId,
+    });
+
+    // Broadcast to both DM participants
     const io = getIO();
     if (io) {
       const payload = { dmId, reaction: { id: reaction.id, emoji, userId, user: reaction.user } };
@@ -629,6 +657,7 @@ router.delete('/messages/:id/reactions/:emoji', authMiddleware, requireDmAccess,
     }
 
     await prisma.dMReaction.delete({ where: { id: reaction.id } });
+    await removeReactionActivity({ actorId: userId, emoji: rawEmoji, dmId });
 
     const dm = req.dm;
     const io = getIO();
@@ -695,6 +724,8 @@ router.post('/:userId/read', authMiddleware, async (req: AuthRequest, res: Respo
         readAt: new Date(),
       },
     });
+
+    await markDmMentionsRead(currentUserId, otherUserId).catch((err) => logError('DM mention read update failed', err));
 
     res.json({ markedAsRead: result.count });
   } catch (error) {
