@@ -29,6 +29,7 @@ import { useProfileStore } from '@/stores/useProfileStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Avatar } from '@/components/ui/avatar';
 import { UserMenuStatus } from '@/components/Profile/UserMenuStatus';
+import { DesktopServerMenuItem } from '@/components/Sidebar/DesktopServerMenuItem';
 import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
@@ -319,6 +320,7 @@ export function Sidebar() {
                     {isSubscribed ? t('userMenu.disableNotifications') : t('userMenu.enableNotifications')}
                   </Button>
                 )}
+                <DesktopServerMenuItem onDone={() => setShowAvatarMenu(false)} />
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); logout(); }}>
                   <LogOut className="h-4 w-4" />
                   {t('userMenu.signOut')}

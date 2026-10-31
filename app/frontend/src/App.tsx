@@ -20,6 +20,8 @@ import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { markDMGroupRead } from '@/lib/api';
 import { usePermalinkSync } from '@/hooks/usePermalinkSync';
+import { useDesktopBridge } from '@/hooks/useDesktopBridge';
+import { canShowNotification, getDesktop, showMessageNotification } from '@/lib/desktop';
 import { registerNavigate } from '@/lib/navigation';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
@@ -224,6 +226,8 @@ function AppShell() {
 
   // Track which channel/DM the user is viewing for smart push notifications
   useFocusTracking();
+  // 데스크톱 앱이면 배지 숫자와 알림 클릭 이동을 연결한다(웹에서는 아무것도 안 함)
+  useDesktopBridge();
 
   useEffect(() => {
     fetchChannels();
@@ -236,7 +240,8 @@ function AppShell() {
 
     // Auto-request push notification permission on first load
     const { permission, isSubscribed, subscribe } = useNotificationStore.getState();
-    if (permission !== 'unsupported' && permission !== 'denied' && !isSubscribed) {
+    // 데스크톱 앱은 웹 푸시 대신 네이티브 알림(window.desktop)을 쓴다
+    if (!getDesktop() && permission !== 'unsupported' && permission !== 'denied' && !isSubscribed) {
       subscribe();
     }
     return stopStatusTicker;
@@ -275,17 +280,14 @@ function AppShell() {
       if (msg.channelId !== activeChannelId) {
         incrementUnread(msg.channelId);
         // Show desktop notification when tab is hidden (visible tab uses in-app unread indicators)
-        if (document.hidden && msg.user?.id !== currentUserId && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+        if (document.hidden && msg.user?.id !== currentUserId && !isMyDndNow() && canShowNotification()) {
           const channelName = useChannelStore.getState().channels.find(c => c.id === msg.channelId)?.name;
           if (channelName) {
-            navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(`#${channelName}`, {
-                body: `${msg.user?.name || t('sidebar:notifications.someone')}: ${(msg.content || '').slice(0, 100)}`,
-                icon: '/favicon-192.png',
-                badge: '/favicon-192.png',
-                data: { url: `/c/${msg.channelId}` },
-              });
-            }).catch(() => {});
+            showMessageNotification({
+              title: `#${channelName}`,
+              body: `${msg.user?.name || t('sidebar:notifications.someone')}: ${(msg.content || '').slice(0, 100)}`,
+              url: `/c/${msg.channelId}`,
+            });
           }
         }
       }
@@ -308,15 +310,12 @@ function AppShell() {
         void fetchGroupDMs();
       } else if (activeGroupId !== dm.groupId && !isFromMe) {
         incrementGroupUnread(dm.groupId);
-        if (document.hidden && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification(dm.fromUser.name, {
-              body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
-              icon: '/favicon-192.png',
-              badge: '/favicon-192.png',
-              data: { url: `/g/${dm.groupId}` },
-            });
-          }).catch(() => {});
+        if (document.hidden && !isMyDndNow() && canShowNotification()) {
+          showMessageNotification({
+            title: dm.fromUser.name,
+            body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
+            url: `/g/${dm.groupId}`,
+          });
         }
       }
       // 보고 있는 그룹이면 읽음 커서를 바로 옮긴다(다른 기기·새로고침에서 안 읽음으로 남지 않게).
@@ -353,15 +352,12 @@ function AppShell() {
       if (activeDMId !== otherUserId && !isSelfDM) {
         incrementDMUnread(otherUserId);
         // Show desktop notification when tab is hidden (visible tab uses in-app unread indicators)
-        if (document.hidden && !isFromMe && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification(otherUser.name, {
-              body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
-              icon: '/favicon-192.png',
-              badge: '/favicon-192.png',
-              data: { url: `/d/${otherUserId}` },
-            });
-          }).catch(() => {});
+        if (document.hidden && !isFromMe && !isMyDndNow() && canShowNotification()) {
+          showMessageNotification({
+            title: otherUser.name,
+            body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
+            url: `/d/${otherUserId}`,
+          });
         }
       }
       // Add message to DM store if conversation is loaded
@@ -392,15 +388,12 @@ function AppShell() {
       // Show desktop notification for DM thread replies when tab is hidden
       const { activeDMId, activeGroupId } = useChannelStore.getState();
       const isViewing = reply.groupId ? activeGroupId === reply.groupId : activeDMId === otherUserId;
-      if (document.hidden && !isViewing && !isMyDndNow() && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification(t('sidebar:notifications.threadTitle', { name: reply.fromUser.name }), {
-            body: (reply.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
-            icon: '/favicon-192.png',
-            badge: '/favicon-192.png',
-            data: { url: reply.groupId ? `/g/${reply.groupId}` : `/d/${otherUserId}` },
-          });
-        }).catch(() => {});
+      if (document.hidden && !isViewing && !isMyDndNow() && canShowNotification()) {
+        showMessageNotification({
+          title: t('sidebar:notifications.threadTitle', { name: reply.fromUser.name }),
+          body: (reply.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
+          url: reply.groupId ? `/g/${reply.groupId}` : `/d/${otherUserId}`,
+        });
       }
     };
 
