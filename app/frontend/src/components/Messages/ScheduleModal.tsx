@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,23 @@ interface ScheduleModalProps {
   isScheduling: boolean;
 }
 
+// 1 minute from now as a datetime-local value (user's local timezone)
+function getLocalDatetimeOneMinuteAhead(): string {
+  const d = new Date(Date.now() + 60 * 1000);
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
 export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleModalProps) {
-  // Default to 1 minute from now (user's local timezone)
-  const [customScheduleAt, setCustomScheduleAt] = useState(() => {
-    const d = new Date(Date.now() + 60 * 1000);
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
-  });
+  // Earliest allowed time, refreshed while the modal stays open
+  const [minScheduleAt, setMinScheduleAt] = useState(getLocalDatetimeOneMinuteAhead);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setMinScheduleAt(getLocalDatetimeOneMinuteAhead()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+  const [customScheduleAt, setCustomScheduleAt] = useState(getLocalDatetimeOneMinuteAhead);
 
   return (
     <div
@@ -41,10 +51,16 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
             data-testid="custom-schedule-input"
             type="datetime-local"
             value={customScheduleAt}
-            onChange={(e) => setCustomScheduleAt(e.target.value)}
-            min={(() => { const d = new Date(Date.now() + 60 * 1000); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
+            onChange={(e) => {
+              setCustomScheduleAt(e.target.value);
+              setScheduleError(null);
+            }}
+            min={minScheduleAt}
             className="h-9 w-full rounded-md border border-slack-border-dark px-3 text-[14px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
           />
+          {scheduleError && (
+            <p role="alert" data-testid="schedule-error" className="text-[13px] text-slack-error">{scheduleError}</p>
+          )}
         </div>
         <div className="flex items-center justify-end gap-2 border-t border-slack-border-light px-5 py-3">
           <Button
@@ -63,7 +79,11 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
               const [year, month, day] = datePart.split('-').map(Number);
               const [hour, minute] = timePart.split(':').map(Number);
               const scheduled = new Date(year, month - 1, day, hour, minute);
-              if (scheduled <= new Date()) return;
+              if (scheduled <= new Date()) {
+                setScheduleError('Pick a time in the future.');
+                return;
+              }
+              setScheduleError(null);
               onSchedule(scheduled);
             }}
             className={cn(

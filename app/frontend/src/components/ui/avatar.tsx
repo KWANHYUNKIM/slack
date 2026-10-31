@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import type { UserStatus } from '@/lib/types';
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  src?: string;
+  src?: string | null;
   alt?: string;
   fallback?: string;
   size?: 'sm' | 'md' | 'lg';
-  status?: 'online' | 'away' | 'dnd' | 'offline';
+  status?: UserStatus;
 }
 
 const sizeClasses = {
@@ -38,7 +39,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       if (img && img.complete && img.naturalWidth === 0) {
         setImageError(true);
       }
-    });
+    }, [src, imageError]);
 
     const initials = fallback
       ? fallback

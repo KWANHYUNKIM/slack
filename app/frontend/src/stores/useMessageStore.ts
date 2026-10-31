@@ -9,7 +9,7 @@ function transformApiMessage(msg: api.ApiMessage): Message {
   const reactionMap = new Map<string, Reaction>();
   for (const r of msg.reactions ?? []) {
     const existing = reactionMap.get(r.emoji);
-    const userName = (r as any).user?.name ?? '';
+    const userName = r.user?.name ?? '';
     if (existing) {
       existing.count++;
       existing.userIds.push(r.userId);
@@ -40,7 +40,7 @@ function transformApiMessage(msg: api.ApiMessage): Message {
     files: (msg.files ?? []).map((f) => ({
       id: f.id,
       filename: f.filename,
-      originalName: (f as any).originalName ?? f.filename,
+      originalName: f.originalName ?? f.filename,
       mimetype: f.mimetype,
       size: f.size,
       url: f.url,
@@ -133,8 +133,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           messages: [...state.messages, message],
           sendError: null,
         }));
-      } catch (err: any) {
-        const msg = err?.message || 'Message failed to send. Please try again.';
+      } catch (err) {
+        const msg = (err instanceof Error && err.message) || 'Message failed to send. Please try again.';
         set({ sendError: msg });
         throw err;
       }
@@ -174,16 +174,17 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     set({
       messages: get().messages.map((msg) => {
         const isAuthor = msg.userId === userId;
-        const hasParticipant = msg.threadParticipants?.some((p) => p.id === userId);
+        const participants = msg.threadParticipants;
+        const hasParticipant = participants?.some((p) => p.id === userId) ?? false;
         if (!isAuthor && !hasParticipant) return msg;
         return {
           ...msg,
           user: isAuthor ? { ...msg.user, ...updates } : msg.user,
-          threadParticipants: hasParticipant
-            ? msg.threadParticipants.map((p) =>
+          threadParticipants: participants && hasParticipant
+            ? participants.map((p) =>
                 p.id === userId ? { ...p, ...updates } : p
               )
-            : msg.threadParticipants,
+            : participants,
         };
       }),
     });

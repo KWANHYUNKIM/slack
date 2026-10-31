@@ -1,4 +1,5 @@
 import { type Page, expect } from '@playwright/test';
+import type { Socket } from 'socket.io-client';
 
 if (!process.env.SEED_PASSWORD) {
   throw new Error('Missing SEED_PASSWORD in environment. Check your .env file.');
@@ -96,7 +97,7 @@ export async function waitForChannelReady(page: Page) {
     return new Promise<void>((resolve) => {
       const timeout = setTimeout(resolve, 5000);
       const check = () => {
-        const socket = (window as any).__socket;
+        const socket = (window as Window & { __socket?: Socket }).__socket;
         if (!socket?.connected) {
           setTimeout(check, 100);
           return;

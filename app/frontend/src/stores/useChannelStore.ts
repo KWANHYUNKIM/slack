@@ -34,6 +34,9 @@ interface ChannelState {
   activeDMId: number | null;
   scrollToMessageId: number | null;
   dmScrollToMessageId: number | null;
+  /** Message briefly highlighted after a jump-to-message (cleared after 2s) */
+  highlightedMessageId: number | null;
+  dmHighlightedMessageId: number | null;
   isLoading: boolean;
   loadError: string | null;
 
@@ -67,6 +70,8 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   activeDMId: null,
   scrollToMessageId: null,
   dmScrollToMessageId: null,
+  highlightedMessageId: null,
+  dmHighlightedMessageId: null,
   isLoading: false,
   loadError: null,
 

@@ -19,7 +19,7 @@ export function connectSocket(): Socket | null {
 
   socket.on('connect', () => {
     if (import.meta.env.DEV || import.meta.env.VITE_E2E) {
-      (window as any).__socket = socket;
+      (window as Window & { __socket?: Socket | null }).__socket = socket;
     }
   });
 

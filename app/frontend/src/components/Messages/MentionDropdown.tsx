@@ -1,12 +1,12 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
-import type { AuthUser } from '@/lib/api';
+import type { MentionUser } from '@/lib/types';
 
 interface MentionDropdownProps {
-  users: AuthUser[];
+  users: MentionUser[];
   selectedIndex: number;
-  onSelect: (user: AuthUser) => void;
+  onSelect: (user: MentionUser) => void;
 }
 
 export const MentionDropdown = forwardRef<HTMLDivElement, MentionDropdownProps>(
