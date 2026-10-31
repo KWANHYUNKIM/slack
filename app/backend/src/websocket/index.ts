@@ -18,10 +18,8 @@ import {
   wsUserIdSchema,
 } from '../middleware/authorize.js';
 // Huddle schemas imported by huddles.ts directly
-import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
-import { sendPushToUser } from '../services/pushService.js';
 import { ServiceError, sendChannelMessage, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
@@ -29,6 +27,8 @@ import {
 } from '../services/mentionService.js';
 import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import { useSecureTransport } from '../runtimeConfig.js';
+import { sendDirectMessage } from '../services/dmService.js';
+
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
 }
@@ -556,66 +556,17 @@ export function initializeWebSocket(httpServer: HttpServer) {
         }
         const data = parsed.data;
 
-        const isSelfDM = socket.user.userId === data.toUserId;
-
-        // Check if recipient exists and is active (self-DM is allowed)
-        if (!isSelfDM) {
-          const recipient = await prisma.user.findUnique({
-            where: { id: data.toUserId },
-            select: { id: true, deactivatedAt: true },
-          });
-
-          if (!recipient || recipient.deactivatedAt) {
-            socket.emit('error', { message: 'Unable to send message' });
-            return;
-          }
-
-          // Guests can only DM users who share a channel with them
-          if (socket.user!.role === 'GUEST') {
-            const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-              SELECT cm1."channelId" AS id
-              FROM "ChannelMember" cm1
-              JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-              WHERE cm1."userId" = ${socket.user!.userId} AND cm2."userId" = ${data.toUserId}
-              LIMIT 1
-            `;
-            if (sharedChannel.length === 0) {
-              socket.emit('error', { message: 'Unable to send message' });
-              return;
-            }
-          }
-        }
-
-        const dm = await prisma.directMessage.create({
-          data: {
-            content: data.content,
-            fromUserId: socket.user.userId,
-            toUserId: data.toUserId,
-            // Self-DMs are auto-read (no notifications)
-            ...(isSelfDM && { readAt: new Date() }),
-          },
-          include: DM_INCLUDE_USERS,
-        });
-
-        // Emit to both users' personal rooms (avoid duplicate for self-DM)
-        io.to(`user:${socket.user.userId}`).emit('dm:new', dm);
-        if (!isSelfDM) {
-          io.to(`user:${data.toUserId}`).emit('dm:new', dm);
-
-          // Fire push notification for DM (fire-and-forget)
-          if (!isUserOnline(data.toUserId)) {
-            const senderName = dm.fromUser?.name || 'Someone';
-            sendPushToUser(data.toUserId, {
-              title: senderName,
-              body: dm.content.slice(0, 100) || 'Sent an attachment',
-              url: `/d/${socket.user.userId}`,
-            }, { kind: 'dm' }).catch((err) => logError('Push notification dispatch failed', err));
-          }
-        }
-
-        // dm:new 뒤에 활동 생성(await하지 않는다)
-        void createActivitiesForDm(dm);
+        // 받는 사람 확인, 게스트 격리, 전송, 소켓, 푸시, 활동 생성은 REST·MCP와 같은 dmService가 한다
+        await sendDirectMessage(
+          { userId: socket.user.userId, role: socket.user.role },
+          data.toUserId,
+          { content: data.content },
+        );
       } catch (error) {
+        if (error instanceof ServiceError) {
+          socket.emit('error', { message: error.message });
+          return;
+        }
         logError('WebSocket DM error', error);
         socket.emit('error', { message: 'Failed to send DM' });
       }
