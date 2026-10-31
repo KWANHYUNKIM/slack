@@ -327,3 +327,7 @@
 | 2026-11-01 05:12 | i18n-5d 검토: tsc, lint, i18n:check 0, i18n:test 32, 외부 URL → PR #125, 리뷰 지적 0 → 머지(15/31) |
 | 2026-11-01 05:12 | 2FA E2E 조사: 재현 안 됨(2/2, 반복 6/6), TOTP 창 대기로 1~1.5분 소요 → 문서화 PR #126 머지. scratchpad 임시 비밀값 파일(env.sh) 삭제 |
 | 2026-11-01 05:13 | 배정: dev-5 i18n-5e vi·id·ms·fil(haiku). RTL(ar·he·fa)은 레이아웃 점검과 함께 후속. 진행 2명(dev-4 E1b, dev-5), 감속(스왑 92%) |
+| 2026-11-01 05:31 | E1b 검토: 리베이스 충돌 0, workspaces 27·auth 25·channels 14·admin 48·websocket 11·mcp 30·error-code-coverage 11, tsc, 외부 URL. 2등급 새 키 경고 240건은 후속 번역 → PR #128, /code-review high |
+| 2026-11-01 05:34 | i18n-5e 검토: tsc, lint, i18n:check 0, i18n:test 34, 외부 URL → PR #129, /code-review low. vi 복수형은 런타임 Intl(one/other)을 따르기로 결정 |
+| 2026-11-01 05:35 | PR #129 리뷰 지적 0 → 머지(19/31) |
+| 2026-11-01 05:36 | 배정: dev-5 i18n-5f hi·bn·th·nb(haiku). E1b 새 키 16개는 #128 머지 후 일괄. 진행: E1b 리뷰, dev-5 |
