@@ -1,0 +1,53 @@
+# release-please: main에 머지된 Conventional Commits로 릴리스 PR(버전 올림 + CHANGELOG)을 만들고,
+# 그 PR이 머지되면 태그와 GitHub Release를 만든 뒤 release.yml을 호출해 설치 파일을 올린다.
+# 규칙: docs/conventions/git.md 5절. 설정: release-please-config.json, .release-please-manifest.json
+#
+# 왜 release.yml을 직접 호출하나: GITHUB_TOKEN으로 만든 태그는 다른 워크플로의 push 트리거를 일으키지 않는다.
+# 개인 토큰(PAT)을 저장소 시크릿에 넣지 않아도 되도록 workflow_call로 이어 붙였다.
+#
+# 한 번 설정해야 하는 것: 저장소 Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests" 켜기.
+
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: release PR / tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # 태그, 릴리스, 브랜치
+      pull-requests: write # 릴리스 PR
+    outputs:
+      released: ${{ steps.rp.outputs['app/desktop--release_created'] }}
+      tag: ${{ steps.rp.outputs['app/desktop--tag_name'] }}
+    steps:
+      - name: Run release-please
+        id: rp
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # 릴리스가 새로 만들어진 실행에서만 빌드와 업로드를 부른다(릴리스 PR 갱신만 한 실행에서는 건너뜀).
+  build:
+    name: desktop installers
+    needs: release-please
+    if: needs.release-please.outputs.released == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag }}
+    secrets: inherit

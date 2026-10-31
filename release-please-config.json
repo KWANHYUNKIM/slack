@@ -1,0 +1,14 @@
+{
+  "packages": {
+    "app/desktop": {
+      "release-type": "node",
+      "package-name": "team-messenger-desktop",
+      "include-component-in-tag": false,
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false
+    }
+  },
+  "include-v-in-tag": true,
+  "pull-request-title-pattern": "chore: release${component} ${version}"
+}

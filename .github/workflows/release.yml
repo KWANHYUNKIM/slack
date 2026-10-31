@@ -1,0 +1,195 @@
+# 릴리스: v* 태그가 푸시되면 세 OS에서 데스크톱 설치 파일을 만들어 GitHub Releases에 올린다.
+# 구조: docs/architecture/enterprise-and-distribution.md 2절, 버전 규칙: docs/conventions/git.md 5절
+#
+# 호출 경로 두 가지
+#  1) 사람이 태그를 직접 푸시한다 (on.push.tags)
+#  2) release-please.yml이 릴리스를 만든 뒤 이 워크플로를 호출한다 (workflow_call).
+#     GITHUB_TOKEN으로 만든 태그는 push 이벤트를 일으키지 않으므로, 이렇게 직접 호출해야 빌드가 돈다.
+#
+# 서명: 인증서 시크릿이 없으면 서명 없이 빌드한다(처음 배포 방식). 시크릿 이름은 docs/ops/release.md 참고. 값은 저장소 시크릿에만 둔다.
+# 공급망: 모든 action은 커밋 SHA로 고정하고 주석에 버전을 적는다. 릴리스 업로드는 서드파티 action 없이 gh CLI로 한다.
+#
+# 자동 업데이트(electron-updater, latest.yml 피드)는 이 파트에 넣지 않았다:
+#  업데이트 피드는 앱이 실행 중에 외부 https(github.com)에서 받아 오는 것이라 규칙 17의 예외 목록(웹 푸시)에 없다.
+#  그래서 electron-builder.yml의 publish는 null로 두고 --publish never로 빌드한다(latest.yml 생성 안 함).
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_call:
+    inputs:
+      tag:
+        description: 릴리스 태그 (예 v0.2.0)
+        required: true
+        type: string
+
+# 기본 권한은 읽기 전용. 릴리스에 올리는 publish job만 contents: write를 따로 받는다.
+permissions:
+  contents: read
+
+# 같은 태그의 중복 실행(태그 푸시와 workflow_call이 겹치는 경우)을 한 줄로 세운다. 진행 중인 업로드는 취소하지 않는다.
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  # 태그 형식과 package.json 버전 일치를 검사한다. 통과 못 하면 빌드하지 않는다.
+  prepare:
+    name: validate tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+      prerelease: ${{ steps.tag.outputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      # 입력값은 env로만 넘긴다(스크립트에 ${{ }}를 직접 끼워 넣으면 명령 주입 위험).
+      - name: Validate tag against app/desktop/package.json
+        id: tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: node scripts/release-tag.mjs "$RELEASE_TAG" app/desktop/package.json | tee -a "$GITHUB_OUTPUT"
+
+  build:
+    name: build (${{ matrix.name }})
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false # 한 OS가 실패해도 나머지 설치 파일은 끝까지 만든다
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            script: dist:win
+            artifacts: |
+              app/desktop/release/*.exe
+          - name: macos
+            os: macos-latest
+            script: dist:mac
+            artifacts: |
+              app/desktop/release/*.dmg
+          - name: linux
+            os: ubuntu-latest
+            script: dist:linux
+            artifacts: |
+              app/desktop/release/*.AppImage
+    defaults:
+      run:
+        shell: bash
+        working-directory: app/desktop
+    # 시크릿은 값을 직접 출력하거나 if에 쓸 수 없어서 env로 받은 뒤 아래 단계에서 존재 여부만 본다.
+    # 이름 규칙은 electron-builder 문서의 환경변수와 같다(CSC_*, APPLE_*).
+    env:
+      CSC_LINK: ${{ secrets.CSC_LINK }} # 인증서(.p12/.pfx)의 base64 또는 URL. mac과 Windows 공용
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }} # mac notarization
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 설치 파일을 만들기 전에 같은 검사를 돌린다(tsc, 단위 테스트, electron-builder 설정 검증).
+      - name: Test
+        run: npm test
+
+      # 서명 여부 판정. 시크릿 값은 출력하지 않고 "있다/없다"만 기록한다.
+      - name: Detect signing credentials
+        id: sign
+        run: |
+          sign=false
+          notarize=false
+          if [ -n "$CSC_LINK" ] && [ -n "$CSC_KEY_PASSWORD" ]; then sign=true; fi
+          if [ "$sign" = true ] && [ -n "$APPLE_ID" ] && [ -n "$APPLE_APP_SPECIFIC_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then notarize=true; fi
+          echo "sign=$sign" >> "$GITHUB_OUTPUT"
+          echo "notarize=$notarize" >> "$GITHUB_OUTPUT"
+          echo "코드 서명: $sign, mac notarization: $notarize (OS: ${{ matrix.name }})"
+
+      # 서명 키 없음: 서명을 건너뛴다. CSC_IDENTITY_AUTO_DISCOVERY=false는 러너 키체인의 인증서를 멋대로 쓰지 않게 한다.
+      - name: Package (unsigned)
+        if: steps.sign.outputs.sign != 'true'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run ${{ matrix.script }} -- --publish never
+
+      # 서명 키 있음: CSC_LINK로 서명한다. mac은 Apple 시크릿까지 있을 때만 notarization을 켠다.
+      - name: Package (signed)
+        if: steps.sign.outputs.sign == 'true'
+        env:
+          NOTARIZE: ${{ steps.sign.outputs.notarize }}
+        run: |
+          extra=()
+          if [ "${{ matrix.name }}" = macos ] && [ "$NOTARIZE" = true ]; then extra+=("-c.mac.notarize=true"); fi
+          npm run ${{ matrix.script }} -- --publish never "${extra[@]}"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: installers-${{ matrix.name }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+          retention-days: 7
+
+  # 세 OS 산출물이 모두 있을 때만 릴리스에 올린다(하나라도 실패하면 올리지 않는다).
+  publish:
+    name: upload to GitHub Releases
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # 릴리스 생성과 파일 업로드. 토큰은 GITHUB_TOKEN뿐이다
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: installers-*
+          path: dist-installers
+          merge-multiple: true
+
+      - name: Checksums
+        working-directory: dist-installers
+        run: sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      # release-please가 이미 릴리스를 만들어 두었으면 그대로 쓰고, 없으면(태그 직접 푸시) 새로 만든다.
+      # --repo로 저장소를 지정하므로 체크아웃이 필요 없다.
+      - name: Create release if missing
+        run: |
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            flag=()
+            if [ "$PRERELEASE" = true ]; then flag+=(--prerelease); fi
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$RELEASE_TAG" --generate-notes "${flag[@]}"
+          fi
+
+      - name: Upload installers
+        run: gh release upload "$RELEASE_TAG" dist-installers/* --repo "$GITHUB_REPOSITORY" --clobber
