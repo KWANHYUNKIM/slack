@@ -184,6 +184,49 @@ router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => 
   }
 });
 
+// POST /admin/users/:id/force-logout - 사용자의 모든 세션을 끊는다(토큰 버전 증가 + 소켓 종료). 계정은 그대로 둔다.
+router.post('/users/:id/force-logout', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = parseIntParam(req.params.id);
+    if (!userId) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, role: true },
+    });
+    if (!target) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const actorRole = req.user!.role || 'MEMBER';
+    if (userId !== req.user!.userId && actorRole !== 'OWNER' && ROLE_RANK[target.role] >= ROLE_RANK[actorRole]) {
+      res.status(403).json({ error: 'Cannot force logout a user with equal or higher role' });
+      return;
+    }
+
+    await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
+    invalidateTokenCache(userId);
+    kickUser(userId);
+
+    writeAuditLog({
+      action: 'user.force_logout',
+      actorId: req.user!.userId,
+      targetType: 'user',
+      targetId: userId,
+      targetName: target.name,
+    });
+
+    res.json({ message: 'User logged out' });
+  } catch (error) {
+    logError('Admin force logout error', error);
+    res.status(500).json({ error: 'Failed to force logout' });
+  }
+});
+
 // POST /admin/users/:id/reactivate - Reactivate user
 router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => {
   try {
@@ -632,31 +675,6 @@ router.delete('/channels/:id/members/:userId', async (req: AuthRequest, res: Res
   } catch (error) {
     logError('Admin remove channel member error', error);
     res.status(500).json({ error: 'Failed to remove member' });
-  }
-});
-
-// GET /admin/audit-log - List audit log entries
-router.get('/audit-log', async (req: AuthRequest, res: Response) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
-    const offset = parseInt(req.query.offset as string) || 0;
-
-    const [entries, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        include: {
-          actor: { select: { id: true, name: true, avatar: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.auditLog.count(),
-    ]);
-
-    res.json({ entries, total });
-  } catch (error) {
-    logError('Admin audit log error', error);
-    res.status(500).json({ error: 'Failed to get audit log' });
   }
 });
 

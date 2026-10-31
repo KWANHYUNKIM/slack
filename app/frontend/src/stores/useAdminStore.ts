@@ -1,7 +1,7 @@
 import { t } from '@/lib/i18n';
 import { create } from 'zustand';
 import * as api from '@/lib/api';
-import type { AdminUser, AdminChannel, AdminInvite, AuditLogEntry, AdminWebhook } from '@/lib/api';
+import type { AdminUser, AdminChannel, AdminInvite, AdminWebhook } from '@/lib/api';
 import { patchById, pickFields, removeById, restoreItem } from '@/lib/adminRollback';
 
 interface AdminState {
@@ -9,15 +9,12 @@ interface AdminState {
   channels: AdminChannel[];
   invites: AdminInvite[];
   webhooks: AdminWebhook[];
-  auditLog: AuditLogEntry[];
-  auditLogTotal: number;
   isLoading: boolean;
   error: string | null;
   fetchUsers: () => Promise<void>;
   fetchChannels: () => Promise<void>;
   fetchInvites: () => Promise<void>;
   fetchWebhooks: () => Promise<void>;
-  fetchAuditLog: (limit?: number, offset?: number) => Promise<void>;
   // 아래 변경 액션은 실패하면 그 항목만 원래 상태로 되돌린 뒤 reject한다.
   // 같은 항목에 요청이 진행 중이면 두 번째 요청은 무시한다.
   // 호출한 쪽이 try/catch로 받아 apiErrorMessage로 번역해 그 화면이나 대화상자에 보여 준다.
@@ -67,8 +64,6 @@ export const useAdminStore = create<AdminState>((set, get) => {
     channels: [],
     invites: [],
     webhooks: [],
-    auditLog: [],
-    auditLogTotal: 0,
     isLoading: false,
     error: null,
 
@@ -244,18 +239,6 @@ export const useAdminStore = create<AdminState>((set, get) => {
       } catch (err) {
         set({ error: err instanceof Error ? err.message : t('admin:errors.removeChannelMember') });
         throw err;
-      }
-    },
-
-    fetchAuditLog: async (limit = 50, offset = 0) => {
-      try {
-        const data = await api.adminGetAuditLog(limit, offset);
-        set({
-          auditLog: offset > 0 ? [...get().auditLog, ...data.entries] : data.entries,
-          auditLogTotal: data.total,
-        });
-      } catch (err) {
-        set({ error: err instanceof Error ? err.message : t('admin:errors.fetchAuditLog') });
       }
     },
   };

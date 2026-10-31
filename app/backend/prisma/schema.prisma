@@ -109,17 +109,19 @@ model Channel {
 model AuditLog {
   id         Int      @id @default(autoincrement())
   action     String   @db.VarChar(100)
-  actorId    Int
+  actorId    Int? // 로그인 실패처럼 사용자를 특정할 수 없는 기록은 비운다
   targetType String   @db.VarChar(50)
   targetId   Int?
   targetName String?  @db.VarChar(200)
   details    String?
   createdAt  DateTime @default(now())
 
-  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([actorId])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
 }
 
 model ChannelMember {

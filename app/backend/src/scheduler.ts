@@ -5,6 +5,8 @@ import { logError } from './utils/logger.js';
 import { processNewChannelMessage } from './services/mentionService.js';
 import { clearExpired } from './services/statusService.js';
 import { processDueReminders } from './services/reminderService.js';
+import { getAuditRetentionDays } from './config.js';
+import { purgeOldAuditLogs } from './utils/auditLog.js';
 
 const INTERVAL_MS = 30_000; // 30 seconds
 
@@ -136,10 +138,29 @@ async function runDueScheduledMessages(): Promise<void> {
   }
 }
 
+const AUDIT_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 성공하면 하루 뒤
+const AUDIT_PURGE_RETRY_MS = 60 * 60 * 1000; // 실패하면 1시간 뒤 재시도(백오프)
+let nextAuditPurgeAt = 0;
+
+/** 틱마다 불러도 하루에 한 번만 오래된 감사 로그를 정리한다. 보존 기간이 0(무기한)이면 건너뛴다. 실패하면 1시간 뒤 다시 시도한다. */
+export async function purgeAuditLogsIfDue(now: number = Date.now()): Promise<number> {
+  const days = getAuditRetentionDays();
+  if (days <= 0 || now < nextAuditPurgeAt) return 0;
+  try {
+    const removed = await purgeOldAuditLogs(days, new Date(now));
+    nextAuditPurgeAt = now + AUDIT_PURGE_INTERVAL_MS;
+    return removed;
+  } catch (err) {
+    nextAuditPurgeAt = now + AUDIT_PURGE_RETRY_MS;
+    throw err;
+  }
+}
+
 export function startScheduler(): NodeJS.Timeout {
   console.log('Scheduler started — checking every 30s for due messages');
 
   const handle = setInterval(() => {
+    void purgeAuditLogsIfDue().catch((err) => logError('Scheduler: purgeAuditLogs failed', err));
     // 만료된 커스텀 상태와 방해금지 정리는 예약 메시지 처리를 막지 않게 기다리지 않고 돌린다.
     void clearExpired().catch((err) => logError('Scheduler: clearExpired failed', err));
     // 리마인더도 예약 메시지 처리를 막지 않게 따로 돌린다. 겹치는 틱은 firedAt 선점이 막는다.

@@ -1120,7 +1120,21 @@ export interface AuditLogEntry {
   targetName?: string | null;
   details?: string | null;
   createdAt: string;
-  actor: { id: number; name: string; avatar?: string | null };
+  actor: { id: number; name: string; avatar?: string | null } | null;
+}
+
+export interface AuditLogFilter {
+  action: string[];
+  actorId?: number;
+  targetType?: string;
+  /** ISO 8601 (UTC 기준으로 해석된다) */
+  from?: string;
+  to?: string;
+}
+
+export interface AuditLogPage {
+  items: AuditLogEntry[];
+  nextCursor: number | null;
 }
 
 export interface AdminInvite {
@@ -1190,8 +1204,36 @@ export function adminRemoveChannelMember(channelId: number, userId: number) {
   });
 }
 
-export function adminGetAuditLog(limit = 50, offset = 0) {
-  return request<{ entries: AuditLogEntry[]; total: number }>(`/admin/audit-log?limit=${limit}&offset=${offset}`);
+function auditQuery(filter: AuditLogFilter): URLSearchParams {
+  const q = new URLSearchParams();
+  for (const a of filter.action) q.append('action', a);
+  if (filter.actorId) q.set('actorId', String(filter.actorId));
+  if (filter.targetType) q.set('targetType', filter.targetType);
+  if (filter.from) q.set('from', filter.from);
+  if (filter.to) q.set('to', filter.to);
+  return q;
+}
+
+export function adminListAuditLogs(filter: AuditLogFilter, cursor?: number | null, limit = 50, signal?: AbortSignal) {
+  const q = auditQuery(filter);
+  q.set('limit', String(limit));
+  if (cursor) q.set('cursor', String(cursor));
+  return request<AuditLogPage>(`/admin/audit-logs?${q.toString()}`, { signal });
+}
+
+/**
+ * 내보내기 주소를 만든다. 60초짜리 1회용 토큰을 받아 주소에 붙인다. 브라우저가 이 주소로 파일을 디스크에 바로 받는다(메모리에 올리지 않는다).
+ * 토큰은 형식과 필터에 묶여 있어서 같은 값으로 URL을 만든다.
+ */
+export async function adminAuditExportUrl(filter: AuditLogFilter, format: 'csv' | 'json'): Promise<string> {
+  const { token } = await request<{ token: string }>('/admin/audit-logs/export-token', {
+    method: 'POST',
+    body: JSON.stringify({ ...filter, format }),
+  });
+  const q = auditQuery(filter);
+  q.set('format', format);
+  q.set('token', token);
+  return `/admin/audit-logs/export?${q.toString()}`;
 }
 
 export function adminGetInvites() {
