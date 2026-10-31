@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "יצירת ערוץ",
+    "tabBrowse": "עיון בערוצים",
+    "nameLabel": "שם הערוץ",
+    "namePlaceholder": "לדוגמה: plan-budget",
+    "visibility": "נראות",
+    "public": "ציבורי",
+    "private": "פרטי",
+    "publicHint": "כל מי שנמצא בסביבת העבודה יכול למצוא את הערוץ הזה ולהצטרף אליו.",
+    "privateHint": "רק חברים שהוזמנו יכולים למצוא את הערוץ הזה ולהצטרף אליו.",
+    "cancel": "ביטול",
+    "create": "יצירה",
+    "noChannels": "אין ערוצים זמינים להצטרפות",
+    "memberCount": "{count, plural, one {חבר אחד} two {שני חברים} other {# חברים}}",
+    "joined": "מצטרף",
+    "join": "הצטרפות",
+    "close": "סגירה",
+    "errors": {
+      "createFailed": "יצירת הערוץ נכשלה"
+    }
+  },
+  "errors": {
+    "loadConversations": "טעינת השיחות נכשלה.",
+    "loadChannels": "טעינת הערוצים נכשלה."
+  },
+  "membersPanel": {
+    "title": "חברים",
+    "addPeople": "הוספת אנשים",
+    "loadError": "טעינת החברים נכשלה.",
+    "removeError": "הסרת החבר נכשלה",
+    "online": "מחוברים — {count}",
+    "offline": "לא מחוברים — {count}",
+    "removeDialog": {
+      "title": "להסיר חבר?",
+      "message": "להסיר את <bold>{name}</bold> מהערוץ הזה?"
+    },
+    "removing": "מסיר...",
+    "searchByName": "חיפוש לפי שם...",
+    "noUsers": "לא נמצאו משתמשים",
+    "roles": {
+      "owner": "בעלים",
+      "moderator": "מנחה"
+    },
+    "removeMember": "הסרת חבר"
+  },
+  "dm": {
+    "messagePlaceholder": "הודעה ל-{name}",
+    "you": "(אתה)",
+    "star": "הוספה למסומנות בכוכב",
+    "unstar": "הסרה ממסומנות בכוכב",
+    "loadingMessages": "טוען הודעות...",
+    "selfSpace": "זה המרחב שלך. כתוב טיוטות, רשום משימות, ושמור קישורים וקבצים בהישג יד.",
+    "conversationStart": "תחילת השיחה שלך עם {name}",
+    "sendToBegin": "שלח הודעה כדי להתחיל.",
+    "edited": "(נערך)",
+    "pinnedMessages": "הודעות מוצמדות",
+    "noPins": "אין הודעות מוצמדות עדיין",
+    "files": "קבצים",
+    "noFiles": "עדיין לא שותפו קבצים",
+    "loadError": "טעינת ההודעות נכשלה.",
+    "sendError": "שליחת ההודעה נכשלה. נסה שוב."
+  },
+  "nameRules": {
+    "required": "יש להזין שם לערוץ.",
+    "tooLong": "שם הערוץ חייב להכיל עד {max} תווים.",
+    "invalidChars": "שם ערוץ יכול להכיל רק אותיות, מספרים, מקפים וקווים תחתונים, ועליו להתחיל באות או במספר.",
+    "tooManyMarks": "לא ניתן לרצף יותר מ-4 סימני ניקוד בשם הערוץ.",
+    "mixedScripts": "אי אפשר לערבב בשם הערוץ אלפביתים הדומים זה לזה (כמו לטינית עם קירילית או יוונית) או ספרות ממערכת מספור אחרת.",
+    "taken": "כבר קיים ערוץ בשם הזה."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {חבר אחד} two {שני חברים} other {# חברים}}",
+    "nameLabel": "שם השיחה",
+    "namePlaceholder": "הוסף שם",
+    "noName": "ללא שם (מוצגים שמות החברים)",
+    "rename": "שינוי שם השיחה",
+    "addPeople": "הוספת אנשים",
+    "add": "הוספה",
+    "createWith": "התחלת שיחה קבוצתית",
+    "leave": "יציאה מהשיחה",
+    "leaveConfirm": "לצאת מהשיחה הזו? לא תראה עוד את ההודעות בה.",
+    "conversationStart": "זו תחילת השיחה שלך עם {names}",
+    "addError": "לא ניתן להוסיף אנשים. נסה שוב.",
+    "renameError": "לא ניתן לשנות את שם השיחה. נסה שוב.",
+    "leaveError": "לא ניתן לצאת מהשיחה. נסה שוב."
+  }
+}

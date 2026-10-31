@@ -25,7 +25,7 @@
     "qr:test": "node --test scripts/qr.test.ts",
     "alsosend:test": "node --test scripts/also-send.test.ts",
     "vitedev:test": "node --test scripts/vite-dev-env.test.ts",
-    "rtl:test": "node --test scripts/popover-position.test.ts scripts/pick-locale.test.ts scripts/editor-rtl-css.test.ts ../../scripts/check-physical-direction.test.mjs"
+    "rtl:test": "node --test scripts/popover-position.test.ts scripts/pick-locale.test.ts scripts/editor-rtl-css.test.ts scripts/i18n-direction.test.ts ../../scripts/check-physical-direction.test.mjs"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",

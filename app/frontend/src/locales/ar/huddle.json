@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(مكتوم)",
+    "mute": "كتم الصوت",
+    "unmute": "إلغاء كتم الصوت",
+    "leave": "مغادرة الاجتماع السريع"
+  },
+  "button": {
+    "leaveFirstError": "غادر اجتماعك السريع الحالي أولًا",
+    "cancelInviteFirstError": "ألغِ دعوتك الحالية أولًا",
+    "cancelInvite": "إلغاء الدعوة",
+    "calling": "جارٍ الاتصال...",
+    "inHuddle": "في اجتماع سريع",
+    "leaveCurrentFirst": "غادر الاجتماع السريع الحالي أولًا",
+    "start": "بدء اجتماع سريع"
+  },
+  "incoming": {
+    "invite": "دعوة إلى اجتماع سريع",
+    "secondsLeft": "{count} ث",
+    "decline": "رفض",
+    "accept": "قبول"
+  },
+  "system": {
+    "youStarted": "بدأت اجتماعًا سريعًا.",
+    "started": "بدأ اجتماعًا سريعًا.",
+    "ended": "انتهى",
+    "youSentInvite": "أرسلت دعوة إلى اجتماع سريع.",
+    "sentInvite": "أرسل لك دعوة إلى اجتماع سريع.",
+    "huddleStarted": "بدأ الاجتماع السريع",
+    "huddleEnded": "انتهى الاجتماع السريع ({duration})",
+    "durationSeconds": "{seconds} ث",
+    "durationMinutesSeconds": "{minutes} د {seconds} ث"
+  },
+  "errors": {
+    "leaveFirst": "غادر اجتماعك السريع الحالي أولًا",
+    "cancelInviteFirst": "ألغِ دعوتك الحالية أولًا",
+    "micDenied": "تم رفض الوصول إلى الميكروفون",
+    "busy": "إنهم في اجتماع سريع آخر",
+    "declined": "تم رفض الدعوة",
+    "expired": "انتهت صلاحية الدعوة",
+    "rateLimited": "طلبات كثيرة جدًا. حاول مرة أخرى بعد قليل",
+    "invalidInvite": "طلب الدعوة غير صالح",
+    "cannotInviteSelf": "لا يمكنك دعوة نفسك",
+    "userNotFound": "المستخدم غير موجود",
+    "invalidAccept": "طلب القبول غير صالح",
+    "inviteNotFound": "الدعوة غير موجودة أو انتهت صلاحيتها",
+    "peerOffline": "إنهم غير متصلين",
+    "generic": "تعذّر بدء الاجتماع السريع. يرجى المحاولة مرة أخرى"
+  }
+}

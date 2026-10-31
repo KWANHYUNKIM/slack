@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "فعالیت",
+    "markAllRead": "علامت‌گذاری همه به‌عنوان خوانده‌شده",
+    "loading": "در حال بارگذاری...",
+    "loadingMore": "در حال بارگذاری بیشتر...",
+    "loadFailed": "بارگذاری فعالیت انجام نشد.",
+    "empty": "هنوز فعالیتی وجود ندارد.",
+    "unread": "خوانده‌نشده",
+    "menu": "منو",
+    "someone": "یک نفر",
+    "directMessage": "یک پیام مستقیم",
+    "messageDeleted": "پیام حذف‌شده"
+  },
+  "tabs": {
+    "all": "همه",
+    "mentions": "منشن‌ها",
+    "threads": "رشته‌ها",
+    "reactions": "واکنش‌ها"
+  },
+  "describe": {
+    "mention": "{actor} در {where} به شما منشن داد",
+    "channelMention": "{actor} در {where} به @channel منشن داد",
+    "hereMention": "{actor} در {where} به @here منشن داد",
+    "threadReply": "{actor} در {where} به یک رشته پاسخ داد",
+    "reaction": "{actor} در {where} با {emoji} به پیام شما واکنش نشان داد",
+    "reminder": "یادآور"
+  }
+}

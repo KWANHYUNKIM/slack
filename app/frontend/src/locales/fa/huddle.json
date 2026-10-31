@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(بی‌صدا)",
+    "mute": "بی‌صدا کردن",
+    "unmute": "باصدا کردن",
+    "leave": "ترک جلسه کوتاه"
+  },
+  "button": {
+    "leaveFirstError": "ابتدا از جلسه کوتاه فعلی خارج شوید",
+    "cancelInviteFirstError": "ابتدا دعوت فعلی را لغو کنید",
+    "cancelInvite": "لغو دعوت",
+    "calling": "در حال تماس...",
+    "inHuddle": "در جلسه کوتاه",
+    "leaveCurrentFirst": "ابتدا از جلسه کوتاه فعلی خارج شوید",
+    "start": "شروع جلسه کوتاه"
+  },
+  "incoming": {
+    "invite": "دعوت به جلسه کوتاه",
+    "secondsLeft": "{count} ث",
+    "decline": "رد کردن",
+    "accept": "پذیرفتن"
+  },
+  "system": {
+    "youStarted": "شما یک جلسه کوتاه شروع کردید.",
+    "started": "یک جلسه کوتاه شروع کرد.",
+    "ended": "پایان یافت",
+    "youSentInvite": "شما یک دعوت به جلسه کوتاه فرستادید.",
+    "sentInvite": "یک دعوت به جلسه کوتاه برای شما فرستاد.",
+    "huddleStarted": "جلسه کوتاه شروع شد",
+    "huddleEnded": "جلسه کوتاه پایان یافت ({duration})",
+    "durationSeconds": "{seconds} ث",
+    "durationMinutesSeconds": "{minutes} د {seconds} ث"
+  },
+  "errors": {
+    "leaveFirst": "ابتدا از جلسه کوتاه فعلی خارج شوید",
+    "cancelInviteFirst": "ابتدا دعوت فعلی را لغو کنید",
+    "micDenied": "دسترسی به میکروفون رد شد",
+    "busy": "آنها در جلسه کوتاه دیگری هستند",
+    "declined": "دعوت رد شد",
+    "expired": "مهلت دعوت گذشته است",
+    "rateLimited": "درخواست‌های زیادی فرستاده شد. کمی بعد دوباره تلاش کنید",
+    "invalidInvite": "درخواست دعوت نامعتبر بود",
+    "cannotInviteSelf": "نمی‌توانید خودتان را دعوت کنید",
+    "userNotFound": "کاربر پیدا نشد",
+    "invalidAccept": "درخواست پذیرش نامعتبر بود",
+    "inviteNotFound": "دعوت پیدا نشد یا منقضی شده است",
+    "peerOffline": "آنها آفلاین هستند",
+    "generic": "شروع جلسه کوتاه انجام نشد. لطفاً دوباره تلاش کنید"
+  }
+}

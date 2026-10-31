@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "פעילות",
+    "markAllRead": "סימון הכול כנקרא",
+    "loading": "טוען...",
+    "loadingMore": "טוען עוד...",
+    "loadFailed": "טעינת הפעילות נכשלה.",
+    "empty": "אין פעילות עדיין.",
+    "unread": "לא נקרא",
+    "menu": "תפריט",
+    "someone": "מישהו",
+    "directMessage": "הודעה פרטית",
+    "messageDeleted": "הודעה שנמחקה"
+  },
+  "tabs": {
+    "all": "הכול",
+    "mentions": "אזכורים",
+    "threads": "שרשורים",
+    "reactions": "תגובות"
+  },
+  "describe": {
+    "mention": "{actor} אזכר אותך ב-{where}",
+    "channelMention": "{actor} אזכר את @channel ב-{where}",
+    "hereMention": "{actor} אזכר את @here ב-{where}",
+    "threadReply": "{actor} הגיב לשרשור ב-{where}",
+    "reaction": "{actor} הגיב ב-{emoji} להודעה שלך ב-{where}",
+    "reminder": "תזכורת"
+  }
+}

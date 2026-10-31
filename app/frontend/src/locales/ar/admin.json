@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "لوحة المسؤول",
+    "openSidebar": "فتح الشريط الجانبي",
+    "tabs": {
+      "members": "الأعضاء",
+      "invites": "الدعوات",
+      "channels": "القنوات",
+      "webhooks": "Webhooks",
+      "audit": "سجل التدقيق",
+      "retention": "الاحتفاظ بالبيانات",
+      "security": "الأمان",
+      "dlp": "منع فقدان البيانات",
+      "legalHolds": "الحجوزات القانونية"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "القناة",
+      "members": "الأعضاء",
+      "messages": "الرسائل",
+      "created": "تاريخ الإنشاء"
+    },
+    "actions": {
+      "rename": "إعادة تسمية القناة",
+      "archive": "أرشفة القناة",
+      "delete": "حذف القناة",
+      "unarchive": "إلغاء أرشفة القناة",
+      "deletePermanently": "الحذف نهائيًا"
+    },
+    "emptyActive": "لا توجد قنوات نشطة",
+    "archivedHeading": "القنوات المؤرشفة ({count})",
+    "archivedOn": "أُرشفت في {date}",
+    "messageCount": "{count, plural, zero {لا رسائل} one {رسالة واحدة} two {رسالتان} few {# رسائل} many {# رسالة} other {# رسالة}}",
+    "deleteDialog": {
+      "title": "حذف القناة",
+      "message": "هل أنت متأكد من الحذف النهائي للقناة ⁨#{name}⁩؟ ستُفقد كل الرسائل. لا يمكن التراجع عن هذا الإجراء."
+    },
+    "archiveDialog": {
+      "title": "أرشفة القناة",
+      "confirm": "أرشفة",
+      "message": "أرشفة ⁨#{name}⁩؟ ستختفي من الشريط الجانبي لكن رسائلها ستُحفظ. يمكنك إلغاء الأرشفة لاحقًا."
+    },
+    "unarchiveDialog": {
+      "title": "إلغاء أرشفة القناة",
+      "confirm": "إلغاء الأرشفة",
+      "message": "إلغاء أرشفة ⁨#{name}⁩؟ ستظهر من جديد في الشريط الجانبي لجميع الأعضاء."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "البحث عن أعضاء...",
+    "columns": {
+      "user": "المستخدم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "you": "(أنت)",
+    "roles": {
+      "owner": "المالك",
+      "admin": "المسؤول",
+      "member": "عضو",
+      "guest": "ضيف"
+    },
+    "status": {
+      "active": "نشط",
+      "deactivated": "معطّل"
+    },
+    "actions": {
+      "transfer": "نقل الملكية",
+      "reactivate": "إعادة التفعيل",
+      "deactivate": "تعطيل",
+      "forceLogout": "فرض تسجيل الخروج",
+      "resetMfa": "إعادة تعيين المصادقة الثنائية"
+    },
+    "empty": "لم يُعثر على مستخدمين",
+    "dialogs": {
+      "transfer": {
+        "title": "نقل ملكية مساحة العمل",
+        "confirm": "نقل",
+        "message": "هل أنت متأكد من نقل ملكية مساحة العمل إلى {name}؟ سيتم تخفيض دورك إلى مسؤول."
+      },
+      "deactivate": {
+        "title": "تعطيل المستخدم",
+        "confirm": "تعطيل",
+        "message": "هل أنت متأكد من تعطيل {name}؟ سيتم تسجيل خروجه فورًا ولن يتمكن من تسجيل الدخول."
+      },
+      "reactivate": {
+        "title": "إعادة تفعيل المستخدم",
+        "confirm": "إعادة التفعيل",
+        "message": "هل أنت متأكد من إعادة تفعيل {name}؟ سيتمكن من تسجيل الدخول مرة أخرى."
+      },
+      "forceLogout": {
+        "title": "فرض تسجيل الخروج",
+        "confirm": "تسجيل الخروج",
+        "message": "هل تريد تسجيل خروج {name} من كل الأجهزة الآن؟ سيبقى حسابه نشطًا ويمكنه تسجيل الدخول مرة أخرى."
+      },
+      "resetMfa": {
+        "title": "إعادة تعيين المصادقة الثنائية",
+        "confirm": "إعادة التعيين",
+        "message": "هل تريد إزالة المصادقة الثنائية لـ {name}؟ سيتم تسجيل خروجه من كل الأجهزة، ويمكنه تسجيل الدخول بكلمة المرور وحدها."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "المصادقة الثنائية مفعّلة"
+    }
+  },
+  "invites": {
+    "createHeading": "إنشاء رابط دعوة",
+    "fields": {
+      "role": "الدور",
+      "maxUses": "أقصى عدد للاستخدامات",
+      "expiresIn": "تنتهي صلاحيته بعد"
+    },
+    "unlimited": "غير محدود",
+    "expiry": {
+      "1d": "يوم واحد",
+      "7d": "7 أيام",
+      "30d": "30 يومًا",
+      "never": "أبدًا"
+    },
+    "expired": "منتهي الصلاحية",
+    "columns": {
+      "url": "رابط الدعوة",
+      "uses": "الاستخدامات",
+      "expires": "تنتهي",
+      "createdBy": "أنشأها"
+    },
+    "copyUrl": "نسخ رابط الدعوة",
+    "full": "(مكتمل)",
+    "delete": "حذف الدعوة",
+    "empty": "لا توجد روابط دعوة بعد"
+  },
+  "webhooks": {
+    "createHeading": "إنشاء Webhook",
+    "fields": {
+      "name": "اسم Webhook",
+      "channel": "القناة"
+    },
+    "namePlaceholder": "تكاملي",
+    "selectChannel": "اختر قناة...",
+    "columns": {
+      "name": "الاسم",
+      "url": "رابط Webhook",
+      "lastUsed": "آخر استخدام"
+    },
+    "never": "أبدًا",
+    "justNow": "الآن",
+    "inactive": "غير نشط",
+    "copyUrl": "نسخ رابط Webhook",
+    "delete": "حذف Webhook",
+    "empty": "لا توجد Webhooks مهيأة بعد"
+  },
+  "audit": {
+    "empty": "لا توجد إدخالات مطابقة في سجل التدقيق. تظهر هنا الإجراءات المسجّلة.",
+    "loadMore": "تحميل المزيد",
+    "targets": {
+      "user": "المستخدم",
+      "channel": "القناة",
+      "invite": "الدعوة",
+      "webhook": "Webhook",
+      "message": "الرسالة",
+      "directMessage": "الرسالة المباشرة",
+      "token": "رمز الوصول",
+      "auditLog": "سجل التدقيق",
+      "mcpTool": "أداة MCP",
+      "workspace": "مساحة العمل",
+      "file": "الملف",
+      "dlpRule": "قاعدة منع فقدان البيانات",
+      "legalHold": "الحجز القانوني"
+    },
+    "action": {
+      "authLogin": "تم تسجيل الدخول",
+      "authLoginFailed": "فشل تسجيل الدخول",
+      "authLogout": "تم تسجيل الخروج",
+      "authPasswordChanged": "تم تغيير كلمة المرور",
+      "userRoleChanged": "تم تغيير الدور",
+      "userDeactivated": "تم التعطيل",
+      "userForceLogout": "تسجيل خروج إجباري",
+      "userReactivated": "أُعيد التفعيل",
+      "ownershipTransferred": "نُقلت الملكية",
+      "ownerBootstrapped": "أُنشئ المالك",
+      "channelCreated": "أُنشئت القناة",
+      "channelEdited": "عُدّلت القناة",
+      "channelArchived": "أُرشفت القناة",
+      "channelUnarchived": "أُلغيت أرشفة القناة",
+      "channelDeleted": "حُذفت القناة",
+      "channelMemberAdded": "أُضيف عضو",
+      "channelMemberRemoved": "أُزيل عضو",
+      "inviteCreated": "أُنشئت الدعوة",
+      "inviteDeleted": "حُذفت الدعوة",
+      "webhookCreated": "أُنشئ Webhook",
+      "webhookDeleted": "حُذف Webhook",
+      "tokenCreate": "أُنشئ رمز",
+      "tokenRevoke": "أُلغي رمز",
+      "mcpToolCall": "استدعاء أداة MCP",
+      "auditExported": "صُدّر سجل التدقيق",
+      "authLoginLocked": "قُفل الحساب",
+      "sessionRevoked": "تم تسجيل الخروج من جهاز",
+      "sessionRevokedAll": "تم تسجيل الخروج من كل الأجهزة",
+      "retentionPurged": "حُذفت البيانات المنتهية",
+      "retentionWorkspaceUpdated": "تغيّرت سياسة الاحتفاظ",
+      "retentionChannelUpdated": "تغيّر الاحتفاظ بالقناة",
+      "retentionChannelCleared": "أُعيد ضبط الاحتفاظ بالقناة",
+      "mfaEnabled": "فُعّلت المصادقة الثنائية",
+      "mfaDisabled": "أُوقفت المصادقة الثنائية",
+      "mfaRecoveryUsed": "استُخدم رمز استرداد",
+      "mfaRecoveryRegenerated": "أُنشئت رموز استرداد جديدة",
+      "mfaResetByAdmin": "أعاد المسؤول تعيين المصادقة الثنائية",
+      "mfaPolicyChanged": "تغيّر شرط المصادقة الثنائية",
+      "dlpBlocked": "حجبت منع فقدان البيانات رسالة",
+      "dlpWarned": "تحذير منع فقدان البيانات",
+      "dlpRuleCreated": "أُنشئت قاعدة منع فقدان البيانات",
+      "dlpRuleUpdated": "تغيّرت قاعدة منع فقدان البيانات",
+      "dlpRuleDeleted": "حُذفت قاعدة منع فقدان البيانات",
+      "dlpRuleTimeout": "انتهت مهلة قاعدة منع فقدان البيانات",
+      "dlpRuleAutoDisabled": "أُوقفت قاعدة منع فقدان البيانات تلقائيًا",
+      "legalHoldCreated": "أُنشئ حجز قانوني",
+      "legalHoldUpdated": "عُدّل الحجز القانوني",
+      "legalHoldCustodianAdded": "أُضيف شخص إلى الحجز القانوني",
+      "legalHoldCustodianRemoved": "أُزيل شخص من الحجز القانوني",
+      "legalHoldReleased": "رُفع الحجز القانوني",
+      "ediscoverySearched": "بحث eDiscovery",
+      "ediscoveryExportRequested": "طُلب تصدير eDiscovery",
+      "ediscoveryExported": "صُدّر eDiscovery"
+    },
+    "filters": {
+      "allActions": "كل الإجراءات",
+      "actionsSelected": "{count, plural, one {إجراء واحد} two {إجراءان} few {# إجراءات} many {# إجراءً} other {# إجراء}}",
+      "actor": "المنفّذ",
+      "allActors": "كل المنفّذين",
+      "targetType": "نوع الهدف",
+      "allTargets": "كل الأهداف",
+      "from": "من",
+      "to": "إلى",
+      "apply": "تطبيق",
+      "reset": "إعادة ضبط"
+    },
+    "export": {
+      "csv": "تصدير CSV",
+      "json": "تصدير JSON"
+    },
+    "unknownActor": "غير معروف"
+  },
+  "errors": {
+    "archiveChannel": "تعذّرت أرشفة القناة",
+    "createInvite": "تعذّر إنشاء الدعوة",
+    "createWebhook": "تعذّر إنشاء Webhook",
+    "deactivateUser": "تعذّر تعطيل المستخدم",
+    "deleteChannel": "تعذّر حذف القناة",
+    "deleteInvite": "تعذّر حذف الدعوة",
+    "deleteWebhook": "تعذّر حذف Webhook",
+    "editChannel": "تعذّر تعديل القناة",
+    "exportAuditLog": "تعذّر تصدير سجل التدقيق",
+    "fetchAuditLog": "تعذّر جلب سجل التدقيق",
+    "fetchChannels": "تعذّر جلب القنوات",
+    "fetchInvites": "تعذّر جلب الدعوات",
+    "fetchUsers": "تعذّر جلب المستخدمين",
+    "fetchWebhooks": "تعذّر جلب Webhooks",
+    "forceLogout": "تعذّر تسجيل خروج المستخدم",
+    "reactivateUser": "تعذّرت إعادة تفعيل المستخدم",
+    "removeChannelMember": "تعذّرت إزالة عضو القناة",
+    "transferOwnership": "تعذّر نقل الملكية",
+    "unarchiveChannel": "تعذّر إلغاء أرشفة القناة",
+    "updateRole": "تعذّر تحديث الدور",
+    "resetMfa": "تعذّرت إعادة تعيين المصادقة الثنائية"
+  },
+  "retention": {
+    "title": "الاحتفاظ بالبيانات",
+    "description": "حذف الرسائل تلقائيًا بعد عدد محدد من الأيام. تُحذف الملفات مع رسائلها. يعمل التنظيف مرة واحدة يوميًا. تُحفظ التذكيرات وتظهر عبارة \"رسالة محذوفة\".",
+    "loadError": "تعذّر تحميل سياسة الاحتفاظ",
+    "saveError": "تعذّر حفظ سياسة الاحتفاظ",
+    "resetError": "تعذّرت إعادة ضبط سياسة القناة",
+    "workspace": {
+      "heading": "الإعداد الافتراضي لمساحة العمل",
+      "hint": "ينطبق على كل قناة ليس لها إعداد خاص بها، وعلى الرسائل المباشرة والمحادثات الجماعية."
+    },
+    "mode": {
+      "forever": "الاحتفاظ إلى الأبد",
+      "days": "الحذف بعد عدد من الأيام",
+      "inherit": "استخدام الإعداد الافتراضي لمساحة العمل"
+    },
+    "daysLabel": "الأيام",
+    "daysHint": "من {min} إلى {max} يومًا",
+    "effective": {
+      "forever": "محفوظة إلى الأبد",
+      "days": "{count, plural, zero {لا أيام} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}"
+    },
+    "channels": {
+      "heading": "القنوات",
+      "columns": {
+        "channel": "القناة",
+        "policy": "السياسة",
+        "effective": "تُطبَّق"
+      },
+      "legalHold": "حجز قانوني",
+      "reset": "إعادة الضبط إلى الافتراضي",
+      "empty": "لا توجد قنوات"
+    },
+    "save": "حفظ",
+    "saved": "تم الحفظ",
+    "confirm": {
+      "title": "حذف الرسائل القديمة نهائيًا؟",
+      "message": "في التنظيف التالي، ستُحذف الرسائل الأقدم من {count, plural, one {يوم واحد} two {يومين} few {# أيام} many {# يومًا} other {# يوم}} نهائيًا مع ملفاتها. لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "تطبيق السياسة"
+    }
+  },
+  "security": {
+    "title": "المصادقة الثنائية",
+    "requireMfa": "اشتراط المصادقة الثنائية على الجميع",
+    "requireMfaHint": "لن يتمكن الأعضاء بدون مصادقة ثنائية من الوصول إلا إلى شاشة الإعداد حتى يفعّلوها.",
+    "unavailable": "المصادقة الثنائية متوقفة على هذا الخادم لأنه لم يُضبط مفتاح تشفير (TOTP_ENCRYPTION_KEY). لا يتم تطبيق هذا الشرط.",
+    "saved": "تم حفظ إعدادات الأمان",
+    "loading": "جارٍ التحميل...",
+    "errors": {
+      "loadFailed": "تعذّر تحميل إعدادات الأمان.",
+      "saveFailed": "تعذّر حفظ إعدادات الأمان."
+    },
+    "allowOAuthApps": "السماح للأعضاء بربط تطبيقات OAuth",
+    "allowOAuthAppsHint": "يتيح للأعضاء ربط تطبيقات مثل Claude عبر تسجيل الدخول بـ OAuth. إيقاف هذا الخيار يفصل كل التطبيقات فورًا."
+  },
+  "dlp": {
+    "title": "منع فقدان البيانات",
+    "description": "اكتشف الأنماط الحساسة مثل أرقام البطاقات في الرسائل. تمنع قاعدة الحجب حفظ الرسالة. تحفظ قاعدة التحذير الرسالة وتسجلها في سجل التدقيق. لا يُكتب نص الرسالة في السجل أبدًا.",
+    "loadError": "تعذّر تحميل قواعد منع فقدان البيانات",
+    "saveError": "تعذّر حفظ القاعدة",
+    "toggleError": "تعذّر تغيير القاعدة",
+    "deleteError": "تعذّر حذف القاعدة",
+    "testError": "تعذّر اختبار النمط",
+    "builtinBadge": "مدمجة",
+    "builtinPattern": "كاشف مدمج",
+    "builtin": {
+      "credit_card": "رقم بطاقة ائتمان",
+      "kr_rrn": "رقم التسجيل السكاني الكوري",
+      "aws_access_key": "مفتاح الوصول إلى AWS",
+      "private_key": "مفتاح خاص"
+    },
+    "action": {
+      "BLOCK": "حجب",
+      "WARN": "تحذير"
+    },
+    "columns": {
+      "name": "القاعدة",
+      "pattern": "النمط",
+      "action": "الإجراء",
+      "enabled": "الحالة"
+    },
+    "on": "مفعّلة",
+    "off": "متوقفة",
+    "toggleLabel": "تشغيل {name} أو إيقافها",
+    "edit": "تعديل",
+    "editLabel": "تعديل {name}",
+    "delete": "حذف",
+    "deleteLabel": "حذف {name}",
+    "form": {
+      "createHeading": "إضافة قاعدة",
+      "editHeading": "تعديل القاعدة",
+      "name": "الاسم",
+      "pattern": "النمط (تعبير نمطي)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "الإجراء",
+      "add": "إضافة قاعدة",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "hint": "حتى {max} حرفًا. يتم رفض التكرارات المتداخلة مثل (a+)+ والمراجع العكسية وأعداد التكرار الكبيرة جدًا."
+    },
+    "patternProblem": {
+      "empty": "أدخل نمطًا.",
+      "tooLong": "النمط طويل جدًا.",
+      "invalid": "هذا ليس تعبيرًا نمطيًا صالحًا.",
+      "backreference": "المراجع العكسية غير مسموح بها.",
+      "nestedQuantifier": "قد تجعل التكرارات المتداخلة الفحص بطيئًا جدًا، لذلك فهي غير مسموح بها.",
+      "repeatTooLarge": "عدد التكرار كبير جدًا (200 كحد أقصى)."
+    },
+    "test": {
+      "heading": "اختبار نمط",
+      "hint": "لا يُحفظ شيء. أدخل نمطًا أعلاه أو اختر قاعدة محفوظة، ثم اكتب نصًا تجريبيًا.",
+      "source": "النمط المراد اختباره",
+      "sourceDraft": "النمط الموجود في النموذج أعلاه",
+      "sample": "نص تجريبي",
+      "run": "اختبار",
+      "matched": "تطابق. سيتم اكتشاف هذا النص.",
+      "notMatched": "لا تطابق.",
+      "timedOut": "استغرق الفحص وقتًا طويلًا فتوقف. بسّط النمط."
+    },
+    "confirmDelete": {
+      "title": "حذف هذه القاعدة؟",
+      "message": "ستُزال القاعدة \"{name}\" ولن يتم فحصها بعد الآن."
+    }
+  },
+  "legalHolds": {
+    "description": "احفظ كل ما كتبه شخص أو تلقّاه، حتى لو كانت سياسة الاحتفاظ ستحذفه. يمكن للمسؤولين البحث في البيانات المحفوظة وتصديرها للمراجعة القانونية.",
+    "statusFilter": "عرض",
+    "status": {
+      "active": "نشط",
+      "released": "مرفوع",
+      "all": "الكل"
+    },
+    "empty": "لا توجد حجوزات قانونية",
+    "selectHint": "اختر حجزًا قانونيًا لإدارة أشخاصه والبحث في بياناته.",
+    "loadMore": "تحميل المزيد",
+    "custodianCount": "{count, plural, one {شخص واحد} two {شخصان} few {# أشخاص} many {# شخصًا} other {# شخص}}",
+    "createdOn": "أُنشئ في {date}",
+    "releasedOn": "رُفع في {date}",
+    "createdBy": "أنشأه {name} في {date}",
+    "releasedBy": "رفعه {name} في {date}",
+    "unknownUser": "مستخدم غير معروف",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "fields": {
+      "name": "الاسم",
+      "description": "الوصف (اختياري)"
+    },
+    "create": {
+      "open": "حجز جديد",
+      "submit": "إنشاء الحجز",
+      "hint": "يمكنك إضافة أشخاص بعد إنشاء الحجز."
+    },
+    "custodians": {
+      "heading": "الأشخاص المشمولون بالحجز",
+      "pick": "اختر شخصًا",
+      "add": "إضافة",
+      "remove": "إزالة {name} من هذا الحجز",
+      "empty": "لا يوجد أحد في هذا الحجز بعد.",
+      "deactivated": "معطّل"
+    },
+    "release": {
+      "open": "رفع الحجز",
+      "title": "رفع هذا الحجز القانوني؟",
+      "message": "سيتوقف \"{name}\" عن حفظ البيانات. سيعود الأشخاص الذين ليسوا في حجز نشط آخر إلى سياسة الاحتفاظ العادية، وقد تُحذف رسائلهم القديمة في التنظيف التالي. يبقى الحجز وقائمة أشخاصه مسجّلين. لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "رفع"
+    },
+    "discovery": {
+      "heading": "البحث والتصدير",
+      "hint": "يشمل الرسائل التي كتبها الأشخاص المشمولون بالحجز في أي قناة (بما فيها الخاصة)، والرسائل المباشرة والجماعية التي شاركوا فيها، وتفاصيل الملفات. تُدرج الرسائل المحذوفة وتُعلَّم.",
+      "query": "كلمة مفتاحية",
+      "from": "من",
+      "to": "إلى",
+      "search": "بحث",
+      "export": "تصدير (JSONL)",
+      "exportHint": "يصدّر نتائج آخر بحث. يُسجَّل كل بحث وتصدير في سجل التدقيق.",
+      "searchFirst": "ابحث بهذه المرشحات أولًا. يستخدم التصدير مرشحات البحث المعروضة أدناه.",
+      "kinds": {
+        "channel": "رسائل القنوات",
+        "dm": "الرسائل المباشرة",
+        "file": "الملفات"
+      },
+      "empty": "لا توجد نتائج",
+      "deleted": "محذوفة",
+      "edited": "معدّلة",
+      "reply": "رد في سلسلة رسائل",
+      "groupDm": "محادثة جماعية #{id}",
+      "directMessage": "{from} ← {to}"
+    },
+    "errors": {
+      "load": "تعذّر تحميل الحجوزات القانونية",
+      "create": "تعذّر إنشاء الحجز القانوني",
+      "update": "تعذّر تحديث الحجز القانوني",
+      "custodians": "تعذّر تغيير الأشخاص المشمولين بالحجز",
+      "release": "تعذّر رفع الحجز القانوني",
+      "search": "فشل البحث",
+      "export": "فشل التصدير"
+    }
+  }
+}

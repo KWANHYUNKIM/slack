@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "فعالیت",
+    "unreads": "خوانده‌نشده‌ها",
+    "later": "بعداً",
+    "files": "فایل‌ها",
+    "admin": "مدیریت",
+    "threads": "رشته‌ها"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "پیام جدید"
+  },
+  "userMenu": {
+    "profile": "نمایه",
+    "notificationsBlocked": "اعلان‌ها مسدود شده‌اند",
+    "disableNotifications": "غیرفعال کردن اعلان‌ها",
+    "enableNotifications": "فعال کردن اعلان‌ها",
+    "signOut": "خروج",
+    "updateStatus": "به‌روزرسانی وضعیت شما",
+    "pauseNotifications": "مکث اعلان‌ها",
+    "pausedUntil": "تا ساعت {time} متوقف است",
+    "pausedIndefinitely": "تا زمانی که وضعیت شما پاک شود، متوقف است",
+    "resumeNotifications": "ازسرگیری اعلان‌ها",
+    "pause": {
+      "m30": "۳۰ دقیقه",
+      "h1": "۱ ساعت",
+      "h2": "۲ ساعت",
+      "tomorrow": "تا فردا"
+    },
+    "pauseError": "تغییر مکث اعلان‌ها انجام نشد. لطفاً دوباره تلاش کنید.",
+    "accessTokens": "کلیدهای دسترسی شخصی",
+    "sessions": "دستگاه‌های واردشده",
+    "twoFactor": "احراز هویت دو مرحله‌ای",
+    "changePassword": "تغییر گذرواژه",
+    "connectedApps": "برنامه‌های متصل"
+  },
+  "sections": {
+    "starred": "ستاره‌دار",
+    "channels": "کانال‌ها",
+    "addChannels": "افزودن کانال‌ها",
+    "directMessages": "پیام‌های مستقیم",
+    "addTeammates": "افزودن همکاران",
+    "starredEmpty": "یک کانال یا گفتگو را ستاره‌دار کنید تا اینجا نگه داشته شود.",
+    "collapse": "جمع کردن {section}",
+    "expand": "باز کردن {section}"
+  },
+  "teammates": {
+    "title": "پیام مستقیم",
+    "subtitle": "پیدا کردن یا شروع یک گفتگو",
+    "searchPlaceholder": "جستجو بر اساس نام...",
+    "noUsers": "کاربری پیدا نشد",
+    "close": "بستن",
+    "pickSubtitle": "حداکثر {max, plural, one {# نفر} other {# نفر}} را انتخاب کنید",
+    "select": "انتخاب {name}",
+    "selectedCount": "{count} از {max} انتخاب شده",
+    "start": "شروع گفتگو",
+    "startGroup": "شروع گفتگوی گروهی"
+  },
+  "you": "(شما)",
+  "notifications": {
+    "someone": "یک نفر",
+    "sentAttachment": "یک پیوست فرستاد",
+    "threadTitle": "{name} (رشته)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# عضو} other {# عضو}}",
+    "createError": "شروع گفتگوی گروهی انجام نشد. لطفاً دوباره تلاش کنید."
+  },
+  "statusDialog": {
+    "title": "تنظیم وضعیت",
+    "emojiLabel": "انتخاب اموجی",
+    "textLabel": "وضعیت شما چیست؟",
+    "textPlaceholder": "وضعیت شما چیست؟",
+    "durationLabel": "پاک شدن بعد از",
+    "duration": {
+      "never": "پاک نشود",
+      "m30": "۳۰ دقیقه",
+      "h1": "۱ ساعت",
+      "h4": "۴ ساعت",
+      "today": "امروز",
+      "week": "این هفته"
+    },
+    "pauseCheckbox": "مکث اعلان‌ها تا زمان پاک شدن وضعیت",
+    "save": "ذخیره",
+    "clear": "پاک کردن وضعیت",
+    "cancel": "لغو",
+    "expiresAt": "پاک می‌شود در {time}",
+    "saveError": "ذخیره وضعیت انجام نشد. لطفاً دوباره تلاش کنید."
+  },
+  "findConversation": "یافتن یک گفتگو"
+}

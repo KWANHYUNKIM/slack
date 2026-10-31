@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "פעילות",
+    "unreads": "לא נקראו",
+    "later": "מאוחר יותר",
+    "files": "קבצים",
+    "admin": "ניהול",
+    "threads": "שרשורים"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "הודעה חדשה"
+  },
+  "userMenu": {
+    "profile": "פרופיל",
+    "notificationsBlocked": "ההתראות חסומות",
+    "disableNotifications": "כיבוי התראות",
+    "enableNotifications": "הפעלת התראות",
+    "signOut": "התנתקות",
+    "updateStatus": "עדכון הסטטוס שלך",
+    "pauseNotifications": "השהיית התראות",
+    "pausedUntil": "מושהה עד {time}",
+    "pausedIndefinitely": "מושהה עד שהסטטוס שלך יימחק",
+    "resumeNotifications": "חידוש התראות",
+    "pause": {
+      "m30": "30 דקות",
+      "h1": "שעה",
+      "h2": "שעתיים",
+      "tomorrow": "עד מחר"
+    },
+    "pauseError": "לא ניתן לשנות את השהיית ההתראות. נסה שוב.",
+    "accessTokens": "אסימוני גישה אישיים",
+    "sessions": "מכשירים מחוברים",
+    "twoFactor": "אימות דו-שלבי",
+    "changePassword": "שינוי סיסמה",
+    "connectedApps": "אפליקציות מחוברות"
+  },
+  "sections": {
+    "starred": "מסומנות בכוכב",
+    "channels": "ערוצים",
+    "addChannels": "הוספת ערוצים",
+    "directMessages": "הודעות פרטיות",
+    "addTeammates": "הוספת עמיתים",
+    "starredEmpty": "סמן ערוץ או שיחה בכוכב כדי שיופיעו כאן.",
+    "collapse": "כיווץ {section}",
+    "expand": "הרחבת {section}"
+  },
+  "teammates": {
+    "title": "הודעה פרטית",
+    "subtitle": "מציאת שיחה או התחלת שיחה",
+    "searchPlaceholder": "חיפוש לפי שם...",
+    "noUsers": "לא נמצאו משתמשים",
+    "close": "סגירה",
+    "pickSubtitle": "בחר עד {max, plural, one {אדם אחד} two {שני אנשים} other {# אנשים}}",
+    "select": "בחירת {name}",
+    "selectedCount": "נבחרו {count} מתוך {max}",
+    "start": "התחלת שיחה",
+    "startGroup": "התחלת שיחה קבוצתית"
+  },
+  "you": "(אתה)",
+  "notifications": {
+    "someone": "מישהו",
+    "sentAttachment": "שלח/ה קובץ מצורף",
+    "threadTitle": "{name} (שרשור)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {חבר אחד} two {שני חברים} other {# חברים}}",
+    "createError": "לא ניתן להתחיל את השיחה הקבוצתית. נסה שוב."
+  },
+  "statusDialog": {
+    "title": "הגדרת סטטוס",
+    "emojiLabel": "בחירת אימוג'י",
+    "textLabel": "מה הסטטוס שלך?",
+    "textPlaceholder": "מה הסטטוס שלך?",
+    "durationLabel": "מחיקה אחרי",
+    "duration": {
+      "never": "לא למחוק",
+      "m30": "30 דקות",
+      "h1": "שעה",
+      "h4": "4 שעות",
+      "today": "היום",
+      "week": "השבוע"
+    },
+    "pauseCheckbox": "השהיית התראות עד שהסטטוס יימחק",
+    "save": "שמירה",
+    "clear": "מחיקת הסטטוס",
+    "cancel": "ביטול",
+    "expiresAt": "יימחק ב-{time}",
+    "saveError": "לא ניתן לשמור את הסטטוס. נסה שוב."
+  },
+  "findConversation": "חיפוש שיחה"
+}

@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(מושתק)",
+    "mute": "השתקה",
+    "unmute": "ביטול השתקה",
+    "leave": "יציאה משיחת הצוות המהירה"
+  },
+  "button": {
+    "leaveFirstError": "קודם צא מהשיחה המהירה הנוכחית",
+    "cancelInviteFirstError": "קודם בטל את ההזמנה הנוכחית",
+    "cancelInvite": "ביטול הזמנה",
+    "calling": "מתקשר...",
+    "inHuddle": "בשיחה מהירה",
+    "leaveCurrentFirst": "קודם צא מהשיחה המהירה הנוכחית",
+    "start": "התחלת שיחה מהירה"
+  },
+  "incoming": {
+    "invite": "הזמנה לשיחה מהירה",
+    "secondsLeft": "{count} שנ׳",
+    "decline": "דחייה",
+    "accept": "קבלה"
+  },
+  "system": {
+    "youStarted": "התחלת שיחה מהירה.",
+    "started": "התחיל שיחה מהירה.",
+    "ended": "הסתיימה",
+    "youSentInvite": "שלחת הזמנה לשיחה מהירה.",
+    "sentInvite": "שלח לך הזמנה לשיחה מהירה.",
+    "huddleStarted": "השיחה המהירה התחילה",
+    "huddleEnded": "השיחה המהירה הסתיימה ({duration})",
+    "durationSeconds": "{seconds} שנ׳",
+    "durationMinutesSeconds": "{minutes} דק׳ {seconds} שנ׳"
+  },
+  "errors": {
+    "leaveFirst": "קודם צא מהשיחה המהירה הנוכחית",
+    "cancelInviteFirst": "קודם בטל את ההזמנה הנוכחית",
+    "micDenied": "הגישה למיקרופון נדחתה",
+    "busy": "הם נמצאים בשיחה מהירה אחרת",
+    "declined": "ההזמנה נדחתה",
+    "expired": "תוקף ההזמנה פג",
+    "rateLimited": "יותר מדי בקשות. נסה שוב בעוד רגע",
+    "invalidInvite": "בקשת ההזמנה לא תקינה",
+    "cannotInviteSelf": "לא ניתן להזמין את עצמך",
+    "userNotFound": "המשתמש לא נמצא",
+    "invalidAccept": "בקשת האישור לא תקינה",
+    "inviteNotFound": "ההזמנה לא נמצאה או שפג תוקפה",
+    "peerOffline": "הם לא מחוברים",
+    "generic": "לא ניתן להתחיל את השיחה המהירה. נסה שוב"
+  }
+}

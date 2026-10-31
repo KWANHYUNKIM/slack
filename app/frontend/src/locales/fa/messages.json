@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "اطلاع به همه کسانی که آنلاین هستند",
+    "channelLabel": "@channel",
+    "channelHint": "اطلاع به همه اعضای این کانال"
+  },
+  "deleteDialog": {
+    "title": "حذف پیام",
+    "body": "مطمئنید که می‌خواهید این پیام را حذف کنید؟ این کار قابل بازگشت نیست."
+  },
+  "editorToolbar": {
+    "attachFile": "پیوست فایل",
+    "emoji": "اموجی",
+    "mention": "منشن کردن کسی",
+    "stopRecording": "توقف ضبط",
+    "recordVoice": "ضبط کلیپ صوتی"
+  },
+  "emojiAutocomplete": {
+    "navigate": "برای جابه‌جایی",
+    "select": "برای انتخاب",
+    "dismiss": "برای بستن",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "حذف ⁨{name}⁩"
+  },
+  "fileModal": {
+    "download": "دانلود",
+    "loadFailed": "محتوای فایل بارگذاری نشد",
+    "truncated": "... (کوتاه‌شده)",
+    "noPreview": "پیش‌نمایشی در دسترس نیست",
+    "downloadToView": "برای مشاهده، فایل را دانلود کنید"
+  },
+  "files": {
+    "allFiles": "همه فایل‌ها",
+    "channelFiles": "فایل‌های کانال",
+    "loadFailed": "بارگذاری فایل‌ها انجام نشد.",
+    "empty": "هنوز فایلی بارگذاری نشده است",
+    "download": "دانلود",
+    "menu": "منو",
+    "unavailable": "فایل در دسترس نیست",
+    "preparing": "در حال آماده‌سازی فایل"
+  },
+  "format": {
+    "bold": "درشت",
+    "italic": "کج",
+    "strike": "خط‌خورده",
+    "link": "پیوند",
+    "orderedList": "فهرست شماره‌دار",
+    "bulletList": "فهرست گلوله‌ای",
+    "code": "کد",
+    "codeBlock": "بلوک کد",
+    "quote": "نقل قول"
+  },
+  "notifications": {
+    "title": "اعلان‌ها",
+    "empty": "اعلان جدیدی نیست",
+    "unreadCount": "{count, plural, one {# پیام خوانده‌نشده} other {# پیام خوانده‌نشده}}"
+  },
+  "search": {
+    "placeholder": "جستجو",
+    "searching": "در حال جستجو...",
+    "noResults": "نتیجه‌ای پیدا نشد",
+    "previewHint": "{count, plural, one {# نتیجه برتر} other {# نتیجه برتر}} · مشاهده همه (Enter)",
+    "truncatedNotice": "نتیجه‌های زیادی وجود دارد. برای محدود کردن آن‌ها فیلتر اضافه کنید.",
+    "retry": "تلاش دوباره",
+    "ignoredChip": "{token} (نادیده گرفته شد)",
+    "ignoredLimitChip": "{token} (نادیده گرفته شد: خیلی زیاد)",
+    "inChannel": "در ⁨#{channel}⁩",
+    "title": "نتایج جستجو",
+    "resultsFor": "نتایج برای ⁨{query}⁩",
+    "emptyQuery": "عبارت جستجو را بنویسید، یا از فیلترهایی مثل from:، in:، has:، before: و after: استفاده کنید.",
+    "noResultsHint": "کلیدواژه‌های دیگری امتحان کنید یا بعضی فیلترها را حذف کنید.",
+    "clearFilters": "پاک کردن همه فیلترها",
+    "removeFilter": "حذف فیلتر ⁨{filter}⁩",
+    "loadFailed": "جستجو انجام نشد. لطفاً دوباره تلاش کنید.",
+    "loadMore": "بارگذاری بیشتر",
+    "threadReply": "پاسخ در رشته",
+    "directMessage": "پیام مستقیم",
+    "groupMessage": "گفتگوی گروهی",
+    "joined": "پیوسته",
+    "privateChannel": "خصوصی",
+    "archivedChannel": "بایگانی‌شده",
+    "back": "بازگشت",
+    "tabs": {
+      "label": "نوع نتایج جستجو",
+      "messages": "پیام‌ها",
+      "files": "فایل‌ها",
+      "people": "افراد",
+      "channels": "کانال‌ها"
+    },
+    "sort": {
+      "label": "مرتب‌سازی بر اساس",
+      "relevance": "ارتباط",
+      "recent": "جدیدترین"
+    }
+  },
+  "headerTabs": {
+    "files": "فایل‌ها",
+    "pins": "سنجاق‌ها"
+  },
+  "lightbox": {
+    "close": "بستن"
+  },
+  "later": {
+    "title": "بعداً",
+    "saved": "ذخیره‌شده",
+    "scheduled": "زمان‌بندی‌شده",
+    "loadFailed": "بارگذاری پیام‌های ذخیره‌شده انجام نشد.",
+    "empty": "هنوز پیام ذخیره‌شده‌ای نیست. روی نشان کتاب در هر پیام کلیک کنید تا آن را ذخیره کنید.",
+    "removeSaved": "حذف از ذخیره‌شده‌ها",
+    "menu": "منو",
+    "reminders": "یادآورها"
+  },
+  "linkModal": {
+    "title": "افزودن پیوند",
+    "url": "نشانی",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "متن نمایشی",
+    "optional": "(اختیاری)",
+    "textPlaceholder": "متن پیوند",
+    "close": "بستن"
+  },
+  "actionsMenu": {
+    "noActions": "عملی در دسترس نیست",
+    "markUnread": "علامت‌گذاری به‌عنوان خوانده‌نشده",
+    "pin": "سنجاق کردن پیام",
+    "unpin": "برداشتن سنجاق پیام",
+    "edit": "ویرایش پیام",
+    "delete": "حذف پیام",
+    "copyLink": "کپی پیوند",
+    "remind": "درباره این پیام به من یادآوری کن"
+  },
+  "area": {
+    "selectChannel": "برای شروع پیام‌دادن، کانالی انتخاب کنید",
+    "openMenu": "باز کردن منو",
+    "placeholder": "پیام به ⁨#{channel}⁩",
+    "viewing": "شما <bold>⁨#{channel}⁩</bold> را مشاهده می‌کنید",
+    "joinChannel": "پیوستن به کانال"
+  },
+  "header": {
+    "menu": "منو",
+    "unstar": "حذف از ستاره‌دارها",
+    "star": "افزودن به ستاره‌دارها",
+    "members": "اعضا: {count}",
+    "search": "جستجو",
+    "channelMenu": "گزینه‌های کانال",
+    "leaveChannel": "ترک کانال",
+    "leaveLastMember": "نمی‌توانید کانال را ترک کنید — شما آخرین عضو هستید.",
+    "dismiss": "بستن",
+    "addTopic": "افزودن موضوع",
+    "editDetails": "ویرایش جزئیات کانال"
+  },
+  "message": {
+    "edited": "(ویرایش شد)",
+    "pinned": "سنجاق‌شده",
+    "showMore": "نمایش بیشتر",
+    "showLess": "نمایش کمتر",
+    "repliedToThread": "به یک رشته پاسخ داد: {excerpt}",
+    "deletedPlaceholder": "این پیام حذف شد.",
+    "sendToChannel": "به کانال هم بفرست",
+    "removeFromChannel": "حذف از کانال"
+  },
+  "input": {
+    "uploading": "در حال بارگذاری...",
+    "scheduleMessage": "زمان‌بندی پیام",
+    "send": "ارسال پیام",
+    "hint": "برای ارسال <kbd>Enter</kbd>، برای خط جدید <kbd>Shift + Enter</kbd> را فشار دهید",
+    "scheduledFor": "زمان‌بندی‌شده برای {time}",
+    "scheduleFailed": "زمان‌بندی پیام انجام نشد. لطفاً دوباره تلاش کنید."
+  },
+  "list": {
+    "loading": "در حال بارگذاری پیام‌ها...",
+    "empty": "هنوز پیامی نیست",
+    "emptyReadOnly": "این کانال هیچ پیامی ندارد.",
+    "emptyFirst": "اولین نفری باشید که پیام می‌فرستد!"
+  },
+  "reactions": {
+    "tooltip": "{names} با {emoji} واکنش نشان دادند",
+    "add": "افزودن واکنش",
+    "you": "شما"
+  },
+  "toolbar": {
+    "addReaction": "افزودن واکنش",
+    "replyInThread": "پاسخ در رشته",
+    "removeBookmark": "حذف نشانک",
+    "bookmark": "نشانک‌گذاری این پیام",
+    "moreActions": "عملیات بیشتر"
+  },
+  "mobileSearch": {
+    "placeholder": "جستجوی پیام...",
+    "hint": "پیام‌ها را در همه کانال‌ها و گفتگوها جستجو کنید",
+    "close": "بستن جستجو"
+  },
+  "pins": {
+    "title": "پیام‌های سنجاق‌شده",
+    "loadFailed": "بارگذاری پیام‌های سنجاق‌شده انجام نشد.",
+    "empty": "هنوز پیام سنجاق‌شده‌ای نیست"
+  },
+  "schedule": {
+    "menuTitle": "زمان‌بندی پیام",
+    "in20": "۲۰ دقیقه دیگر",
+    "in1h": "۱ ساعت دیگر",
+    "in3h": "۳ ساعت دیگر",
+    "tomorrow9": "فردا ساعت ۹:۰۰ صبح",
+    "custom": "زمان دلخواه...",
+    "modalTitle": "زمان‌بندی پیام",
+    "dateTime": "تاریخ و زمان",
+    "pickFuture": "زمانی در آینده انتخاب کنید.",
+    "submit": "زمان‌بندی",
+    "submitting": "در حال زمان‌بندی...",
+    "close": "بستن"
+  },
+  "scheduled": {
+    "loadFailed": "بارگذاری پیام‌های زمان‌بندی‌شده انجام نشد.",
+    "cancelFailed": "لغو پیام انجام نشد.",
+    "sendFailed": "ارسال پیام انجام نشد.",
+    "saveFailed": "ذخیره تغییرات انجام نشد.",
+    "empty": "پیام زمان‌بندی‌شده‌ای نیست. برای زمان‌بندی یک پیام، از نماد ساعت در ویرایشگر پیام استفاده کنید.",
+    "sendAt": "ارسال در:",
+    "edit": "ویرایش",
+    "sendNow": "ارسال همین حالا",
+    "cancel": "لغو",
+    "failedDlp": "این پیام ارسال نشد چون با یک قاعده حفاظت از داده ({rule}) مطابقت داشت. آن را حذف کنید و پیام جدیدی بنویسید."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# پاسخ} other {# پاسخ}}"
+  },
+  "unreads": {
+    "title": "خوانده‌نشده‌ها",
+    "loadFailed": "بارگذاری پیام‌های خوانده‌نشده انجام نشد.",
+    "empty": "پیام خوانده‌نشده‌ای نیست. همه‌چیز را دیده‌اید!",
+    "menu": "منو"
+  },
+  "threadPanel": {
+    "title": "رشته",
+    "replyPlaceholder": "پاسخ...",
+    "loadFailed": "بارگذاری رشته انجام نشد. لطفاً دوباره تلاش کنید.",
+    "loading": "در حال بارگذاری رشته...",
+    "replyFailed": "ارسال پاسخ انجام نشد. لطفاً دوباره تلاش کنید.",
+    "joinToReply": "برای پاسخ در رشته‌ها به کانال بپیوندید",
+    "alsoSendToChannel": "به کانال هم بفرست"
+  },
+  "errors": {
+    "messageEmpty": "پیام نمی‌تواند خالی باشد.",
+    "pasteUploadFailed": "بارگذاری تصویر چسبانده‌شده انجام نشد. لطفاً دوباره تلاش کنید.",
+    "dropUploadFailed": "بارگذاری فایل رها‌شده انجام نشد. لطفاً دوباره تلاش کنید.",
+    "uploadFailed": "بارگذاری فایل انجام نشد. لطفاً دوباره تلاش کنید.",
+    "voiceUploadFailed": "بارگذاری پیام صوتی انجام نشد.",
+    "micDenied": "دسترسی به میکروفون رد شد. لطفاً دسترسی میکروفون را مجاز کنید.",
+    "loadFailed": "بارگذاری پیام‌ها انجام نشد.",
+    "sendTimeout": "ارسال پیام زمان‌بر شد. لطفاً دوباره تلاش کنید.",
+    "sendFailed": "ارسال پیام انجام نشد. لطفاً دوباره تلاش کنید.",
+    "pushNotConfigured": "اعلان‌های push روی سرور تنظیم نشده‌اند",
+    "serviceWorkerUnavailable": "Service Worker در دسترس نیست",
+    "subscribeFailed": "ثبت اشتراک انجام نشد",
+    "editFailed": "ذخیره ویرایش انجام نشد. لطفاً دوباره تلاش کنید."
+  },
+  "details": {
+    "title": "جزئیات کانال",
+    "name": "نام",
+    "topic": "موضوع",
+    "topicPlaceholder": "این کانال درباره چیست؟",
+    "description": "توضیحات",
+    "descriptionPlaceholder": "توضیحات اضافه کنید",
+    "createdBy": "ایجادشده توسط {name}",
+    "readOnly": "فقط مالکان کانال، ناظمان و مدیران فضای کاری می‌توانند این جزئیات را ویرایش کنند.",
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "saveFailed": "ذخیره جزئیات کانال انجام نشد."
+  },
+  "intro": {
+    "title": "به ⁨#{name}⁩ خوش آمدید",
+    "noDescription": "هنوز توضیحی نیست.",
+    "editDescription": "ویرایش توضیحات"
+  },
+  "threads": {
+    "title": "رشته‌ها",
+    "menu": "منو",
+    "loadFailed": "بارگذاری رشته‌ها انجام نشد.",
+    "empty": "هنوز رشته‌ای نیست",
+    "emptyHint": "رشته‌هایی که شروع می‌کنید یا به آن‌ها پاسخ می‌دهید اینجا نشان داده می‌شوند.",
+    "newReplies": "{count, plural, one {# پاسخ جدید} other {# پاسخ جدید}}",
+    "replyCount": "{count, plural, one {# پاسخ} other {# پاسخ}}",
+    "olderReplies": "برای دیدن پاسخ‌های قبلی، رشته را باز کنید",
+    "replyPlaceholder": "پاسخ...",
+    "send": "ارسال",
+    "replyFailed": "ارسال پاسخ انجام نشد. لطفاً دوباره تلاش کنید.",
+    "alsoSendToChannel": "به کانال هم بفرست",
+    "openThread": "باز کردن رشته",
+    "loadMore": "بارگذاری بیشتر",
+    "loading": "در حال بارگذاری..."
+  },
+  "permalink": {
+    "copied": "پیوند کپی شد",
+    "notFound": "این پیام پیدا نمی‌شود یا اجازه مشاهده آن را ندارید",
+    "goHome": "رفتن به صفحه اصلی",
+    "copyManually": "کپی خودکار انجام نشد. این پیوند را کپی کنید: {url}"
+  },
+  "unread": {
+    "divider": "جدید",
+    "newMessagesBar": "{count, plural, one {# پیام جدید} other {# پیام جدید}}",
+    "newMessagesBarAtLeast": "{count, plural, one {حداقل # پیام جدید} other {حداقل # پیام جدید}}",
+    "markRead": "علامت‌گذاری به‌عنوان خوانده‌شده",
+    "jumpFailed": "موقعیت پیام‌های خوانده‌نشده بارگذاری نشد"
+  },
+  "reminder": {
+    "set": "تنظیم یادآور",
+    "customLabel": "تاریخ و زمان یادآور",
+    "preset": {
+      "in20": "۲۰ دقیقه دیگر",
+      "in1h": "۱ ساعت دیگر",
+      "in3h": "۳ ساعت دیگر",
+      "tomorrow": "فردا",
+      "nextWeek": "هفته آینده",
+      "custom": "دلخواه..."
+    },
+    "status": {
+      "pending": "پیش رو",
+      "done": "انجام شده"
+    },
+    "snooze": {
+      "m10": "۱۰ دقیقه",
+      "h1": "۱ ساعت",
+      "tomorrow": "فردا"
+    },
+    "loadFailed": "بارگذاری یادآورها انجام نشد.",
+    "empty": "یادآوری نیست. از منوی عملیات بیشتر روی یک پیام استفاده کنید یا /remind را تایپ کنید تا یادآوری اضافه شود.",
+    "emptyDone": "یادآور انجام‌شده‌ای نیست.",
+    "dueAt": "موعد: {time}",
+    "firedAt": "موعد آن {time} بود",
+    "completedAt": "انجام شد در {time}",
+    "messageDeleted": "پیام حذف‌شده",
+    "complete": "علامت‌گذاری به‌عنوان انجام‌شده",
+    "reopen": "علامت‌گذاری به‌عنوان انجام‌نشده",
+    "delete": "حذف یادآور",
+    "toast": {
+      "created": "یادآور تنظیم شد",
+      "due": "یادآور: {text}",
+      "createFailed": "تنظیم یادآور انجام نشد. لطفاً دوباره تلاش کنید."
+    },
+    "command": {
+      "syntax": "نحوه استفاده: /remind me [متن] in [عدد] [minutes|hours|days]",
+      "tooShort": "یادآور باید حداقل ۱ دقیقه دیگر باشد.",
+      "tooLong": "یادآور باید در عرض یک سال باشد.",
+      "created": "یادآور برای {time} تنظیم شد"
+    },
+    "pastTime": "زمانی در آینده انتخاب کنید.",
+    "loadMore": "بارگذاری بیشتر"
+  }
+}
