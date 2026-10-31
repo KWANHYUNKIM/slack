@@ -6,6 +6,7 @@ import { JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
 import { isSessionAlive, touchSession } from '../services/sessionService.js';
 import { validateAccessToken, AccessTokenResult } from '../middleware/auth.js';
+import { getWorkspaceState } from '../middleware/workspace.js';
 import {
   checkChannelMembership,
   checkDmGroupMembership,
@@ -176,6 +177,14 @@ export function initializeWebSocket(httpServer: HttpServer) {
     }
 
     socket.user = result.user;
+    // 활성 워크스페이스 room(ws:<id>) 목록(E1b). 연결 핸들러가 동기로 가입하도록 여기서 미리 읽는다
+    try {
+      const state = await getWorkspaceState(result.user.userId);
+      socket.data.workspaceIds = state?.memberships.map((m) => m.workspaceId) ?? [];
+    } catch (error) {
+      logError('Socket workspace lookup error', error);
+      return next(new Error('Server error'));
+    }
     next();
   });
 
@@ -518,6 +527,9 @@ export function initializeWebSocket(httpServer: HttpServer) {
     // Join user's personal room for DMs
     if (socket.user) {
       socket.join(`user:${socket.user.userId}`);
+      // 워크스페이스 room(E1b). 이후 참여·제거·보관은 REST가 io.in('user:<id>').socketsJoin/Leave로 맞춘다
+      const workspaceIds: number[] = Array.isArray(socket.data.workspaceIds) ? socket.data.workspaceIds : [];
+      if (workspaceIds.length > 0) socket.join(workspaceIds.map((id) => `ws:${id}`));
     }
 
     // Join DM conversation room

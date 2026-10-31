@@ -55,17 +55,17 @@ export function channelHostData(
   } satisfies Partial<Prisma.ChannelCreateInput>;
 }
 
-// 기본 워크스페이스가 아닌 워크스페이스 참여(MEMBER). 나갔던(leftAt) 사용자가 다시 들어오면 같은 행을 되살린다.
-// 기본 워크스페이스 멤버십과 역할은 setUserRole이 쓴다. 다른 워크스페이스의 역할 변경은 E1b API가 맡는다.
+// 기본 워크스페이스가 아닌 워크스페이스 참여. 나갔던(leftAt) 사용자가 다시 들어오면 같은 행을 되살리고 역할을 새로 정한다.
+// 기본 워크스페이스 멤버십과 역할은 setUserRole이 쓴다(joinWorkspace가 둘 중 하나를 고른다).
 export async function addWorkspaceMember(
   db: Prisma.TransactionClient,
-  params: { workspaceId: number; userId: number; invitedBy?: number | null },
+  params: { workspaceId: number; userId: number; invitedBy?: number | null; role?: Role },
 ): Promise<void> {
-  const { workspaceId, userId, invitedBy = null } = params;
+  const { workspaceId, userId, invitedBy = null, role = 'MEMBER' } = params;
   await db.workspaceMember.upsert({
     where: { workspaceId_userId: { workspaceId, userId } },
-    create: { workspaceId, userId, invitedBy },
-    update: { leftAt: null, joinedAt: new Date(), invitedBy },
+    create: { workspaceId, userId, invitedBy, role },
+    update: { leftAt: null, joinedAt: new Date(), invitedBy, role },
   });
 }
 
@@ -145,4 +145,242 @@ export async function normalizeChannelNameKeys(db: Prisma.TransactionClient): Pr
     fixed++;
   }
   return fixed;
+}
+
+// ─── 멤버십 해석(E1b) ───────────────────────────────────────────────
+// 역할의 원천: 기본 워크스페이스는 User.role(setUserRole이 WorkspaceMember.role과 함께 맞춘다. E1h 전까지 권한 판단의 원천),
+// 다른 워크스페이스는 WorkspaceMember.role. 테스트가 prisma로 User.role만 바꿔도 기본 워크스페이스 결과가 기존과 같다.
+// 멤버십 행이 하나도 없는 사용자(E1a 이전 경로나 테스트가 prisma로 직접 만든 사용자)는 기본 워크스페이스의 암묵 멤버로 본다.
+// 다른 워크스페이스로만 초대된 사용자는 그 행이 있으므로 기본 워크스페이스에 암묵 참여하지 않는다.
+
+export interface ActiveMembership {
+  workspaceId: number;
+  role: Role;
+  joinedAt: Date;
+}
+
+export interface UserWorkspaceState {
+  userId: number;
+  organizationId: number;
+  orgRole: OrgRole;
+  /** User.role. 기본 워크스페이스 역할과 같다 */
+  userRole: Role;
+  deactivated: boolean;
+  defaultWorkspaceId: number | null;
+  /** 활성(나가지 않음, 보관 안 됨) 멤버십. 참여한 순서 */
+  memberships: ActiveMembership[];
+}
+
+const ROLE_RANK: Record<Role, number> = { GUEST: 0, MEMBER: 1, ADMIN: 2, OWNER: 3 };
+
+export function roleRank(role: Role): number {
+  return ROLE_RANK[role];
+}
+
+export function isWorkspaceAdminRole(role: Role | null | undefined): boolean {
+  return role === 'ADMIN' || role === 'OWNER';
+}
+
+export function isOrgAdminRole(role: string | null | undefined): boolean {
+  return role === 'OWNER' || role === 'ADMIN';
+}
+
+export const MEMBERSHIP_USER_SELECT = {
+  id: true,
+  role: true,
+  orgRole: true,
+  organizationId: true,
+  defaultWorkspaceId: true,
+  deactivatedAt: true,
+  createdAt: true,
+  workspaces: {
+    select: {
+      workspaceId: true, role: true, joinedAt: true, leftAt: true,
+      workspace: { select: { archivedAt: true, organizationId: true } },
+    },
+  },
+} satisfies Prisma.UserSelect;
+
+type MembershipUser = Prisma.UserGetPayload<{ select: typeof MEMBERSHIP_USER_SELECT }>;
+
+/** 조회한 사용자 행에서 활성 멤버십을 계산한다. defaultWorkspaceArchived는 암묵 멤버십 판단에만 쓴다 */
+export function activeMembershipsOf(user: MembershipUser, defaultWorkspaceArchived: boolean): ActiveMembership[] {
+  const memberships: ActiveMembership[] = [];
+  for (const m of user.workspaces) {
+    if (m.leftAt || m.workspace.archivedAt || m.workspace.organizationId !== user.organizationId) continue;
+    memberships.push({
+      workspaceId: m.workspaceId,
+      role: m.workspaceId === DEFAULT_WORKSPACE_ID ? user.role : m.role,
+      joinedAt: m.joinedAt,
+    });
+  }
+  if (user.workspaces.length === 0 && user.organizationId === DEFAULT_ORGANIZATION_ID && !defaultWorkspaceArchived) {
+    memberships.push({ workspaceId: DEFAULT_WORKSPACE_ID, role: user.role, joinedAt: user.createdAt });
+  }
+  return memberships.sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime() || a.workspaceId - b.workspaceId);
+}
+
+export async function isDefaultWorkspaceArchived(db: Prisma.TransactionClient): Promise<boolean> {
+  const ws = await db.workspace.findUnique({ where: { id: DEFAULT_WORKSPACE_ID }, select: { archivedAt: true } });
+  return !ws || ws.archivedAt !== null;
+}
+
+export async function loadUserWorkspaceState(db: Prisma.TransactionClient, userId: number): Promise<UserWorkspaceState | null> {
+  const user = await db.user.findUnique({ where: { id: userId }, select: MEMBERSHIP_USER_SELECT });
+  if (!user) return null;
+  // 암묵 멤버십 후보일 때만 기본 워크스페이스 보관 여부를 따로 본다
+  const defaultArchived = user.workspaces.length === 0 ? await isDefaultWorkspaceArchived(db) : false;
+  return {
+    userId: user.id,
+    organizationId: user.organizationId,
+    orgRole: user.orgRole,
+    userRole: user.role,
+    deactivated: user.deactivatedAt !== null,
+    defaultWorkspaceId: user.defaultWorkspaceId,
+    memberships: activeMembershipsOf(user, defaultArchived),
+  };
+}
+
+export type WorkspacePick =
+  | { ok: true; workspaceId: number; role: Role }
+  | { ok: false; status: 400 | 403 | 404; code: 'INVALID_WORKSPACE_ID' | 'NO_WORKSPACE' | 'WORKSPACE_NOT_FOUND' };
+
+const INT32_MAX = 2_147_483_647;
+
+/** 워크스페이스 id 문자열(헤더·경로)을 양의 32비트 정수로. 아니면 null */
+export function parseWorkspaceId(raw: unknown): number | null {
+  if (typeof raw !== 'string' || !/^\d{1,10}$/.test(raw)) return null;
+  const n = Number(raw);
+  return n >= 1 && n <= INT32_MAX ? n : null;
+}
+
+/**
+ * 현재 워크스페이스 고르기(스펙 5.2). 헤더가 있으면 그 값(형식이 틀리면 400, 활성 멤버가 아니면 404로 존재를 숨긴다),
+ * 없으면 defaultWorkspaceId, 그것도 활성이 아니면 가장 먼저 참여한 활성 워크스페이스. 하나도 없으면 403 NO_WORKSPACE.
+ */
+export function pickWorkspace(state: UserWorkspaceState, header: string | string[] | undefined): WorkspacePick {
+  if (header !== undefined) {
+    const id = parseWorkspaceId(Array.isArray(header) ? undefined : header.trim());
+    if (id === null) return { ok: false, status: 400, code: 'INVALID_WORKSPACE_ID' };
+    const m = state.memberships.find((x) => x.workspaceId === id);
+    if (!m) return { ok: false, status: 404, code: 'WORKSPACE_NOT_FOUND' };
+    return { ok: true, workspaceId: m.workspaceId, role: m.role };
+  }
+  const preferred = state.memberships.find((x) => x.workspaceId === state.defaultWorkspaceId) ?? state.memberships[0];
+  if (!preferred) return { ok: false, status: 403, code: 'NO_WORKSPACE' };
+  return { ok: true, workspaceId: preferred.workspaceId, role: preferred.role };
+}
+
+/** 워크스페이스 활성 멤버를 고르는 User 조건(계정 비활성은 별개 축이라 여기서 거르지 않는다) */
+export function activeMemberWhere(workspaceId: number): Prisma.UserWhereInput {
+  if (workspaceId === DEFAULT_WORKSPACE_ID) {
+    return {
+      organizationId: DEFAULT_ORGANIZATION_ID,
+      OR: [{ workspaces: { some: { workspaceId, leftAt: null } } }, { workspaces: { none: {} } }],
+    };
+  }
+  return { workspaces: { some: { workspaceId, leftAt: null } } };
+}
+
+/** 워크스페이스의 활성 OWNER 수(비활성 계정 제외) */
+export async function countWorkspaceOwners(db: Prisma.TransactionClient, workspaceId: number): Promise<number> {
+  const ownerWhere: Prisma.UserWhereInput = workspaceId === DEFAULT_WORKSPACE_ID
+    ? { role: 'OWNER' }
+    : { workspaces: { some: { workspaceId, leftAt: null, role: 'OWNER' } } };
+  return db.user.count({ where: { AND: [activeMemberWhere(workspaceId), ownerWhere, { deactivatedAt: null }] } });
+}
+
+/**
+ * 워크스페이스에 넣는다(배정, 초대 수락, 공개 워크스페이스 참여). 기본 워크스페이스는 역할을 setUserRole로 쓰고
+ * 나갔던 행을 되살린다. 다른 워크스페이스는 WorkspaceMember 행만 쓴다.
+ */
+export async function joinWorkspace(
+  db: Prisma.TransactionClient,
+  params: { workspaceId: number; userId: number; role: Role; invitedBy?: number | null },
+): Promise<void> {
+  const { workspaceId, userId, role, invitedBy = null } = params;
+  if (workspaceId !== DEFAULT_WORKSPACE_ID) {
+    await addWorkspaceMember(db, { workspaceId, userId, role, invitedBy });
+    return;
+  }
+  await setUserRole(db, userId, role, { joinDefaultWorkspace: true, invitedBy });
+  await db.workspaceMember.updateMany({
+    where: { workspaceId, userId, leftAt: { not: null } },
+    data: { leftAt: null, joinedAt: new Date(), invitedBy },
+  });
+}
+
+/** 워크스페이스 역할 변경. 기본 워크스페이스는 setUserRole이라 조직 역할도 함께 바뀐다(E1a 규칙) */
+export async function changeWorkspaceRole(
+  db: Prisma.TransactionClient,
+  params: { workspaceId: number; userId: number; role: Role },
+): Promise<void> {
+  const { workspaceId, userId, role } = params;
+  if (workspaceId === DEFAULT_WORKSPACE_ID) {
+    await setUserRole(db, userId, role);
+    return;
+  }
+  await db.workspaceMember.update({ where: { workspaceId_userId: { workspaceId, userId } }, data: { role } });
+}
+
+/**
+ * 워크스페이스에서 뺀다(제거, 나가기). 행은 지우지 않고 leftAt을 채운다. 행이 없던 기본 워크스페이스 암묵 멤버는
+ * 나간 행을 새로 만든다(다시 암묵 멤버가 되지 않게). 그 워크스페이스를 기본으로 기억하고 있으면 비운다.
+ * 채널 정리(그 워크스페이스에만 보이는 채널의 ChannelMember 삭제)는 E1c가 붙인다.
+ */
+export async function leaveWorkspace(
+  db: Prisma.TransactionClient,
+  params: { workspaceId: number; userId: number; currentRole: Role },
+): Promise<void> {
+  const { workspaceId, userId, currentRole } = params;
+  const now = new Date();
+  await db.workspaceMember.upsert({
+    where: { workspaceId_userId: { workspaceId, userId } },
+    create: { workspaceId, userId, role: currentRole, leftAt: now },
+    update: { leftAt: now },
+  });
+  await db.user.updateMany({ where: { id: userId, defaultWorkspaceId: workspaceId }, data: { defaultWorkspaceId: null } });
+}
+
+/** 공개·미보관 기본 채널 가입(기본 워크스페이스가 아닌 곳). 기본 워크스페이스는 자리 채우기까지 하는 joinDefaultChannels를 쓴다 */
+export async function joinWorkspaceDefaultChannels(db: Prisma.TransactionClient, workspaceId: number, userId: number): Promise<void> {
+  const targets = await db.channel.findMany({
+    where: { isPrivate: false, archivedAt: null, workspaces: { some: { workspaceId, isDefault: true } } },
+    select: { id: true },
+  });
+  if (targets.length === 0) return;
+  await db.channelMember.createMany({
+    data: targets.map((c) => ({ userId, channelId: c.id })),
+    skipDuplicates: true,
+  });
+}
+
+/** 워크스페이스 주소(slug): 영문 소문자·숫자·하이픈 1~21자, 하이픈으로 시작하거나 끝나지 않는다 */
+export const WORKSPACE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,19}[a-z0-9])?$/;
+
+export const WORKSPACE_PUBLIC_SELECT = {
+  id: true, slug: true, name: true, description: true, icon: true, discoverability: true,
+} satisfies Prisma.WorkspaceSelect;
+
+/** 로그인 응답과 GET /users/me에 붙이는 조직·워크스페이스 정보 */
+export async function workspaceSummaryForUser(db: Prisma.TransactionClient, userId: number) {
+  const state = await loadUserWorkspaceState(db, userId);
+  if (!state) return null;
+  const [organization, workspaces] = await Promise.all([
+    db.organization.findUnique({ where: { id: state.organizationId }, select: { id: true, name: true } }),
+    db.workspace.findMany({
+      where: { id: { in: state.memberships.map((m) => m.workspaceId) } },
+      select: WORKSPACE_PUBLIC_SELECT,
+    }),
+  ]);
+  const byId = new Map(workspaces.map((w) => [w.id, w]));
+  return {
+    organization,
+    orgRole: state.orgRole,
+    defaultWorkspaceId: state.defaultWorkspaceId,
+    workspaces: state.memberships.flatMap((m) => {
+      const w = byId.get(m.workspaceId);
+      return w ? [{ ...w, role: m.role }] : [];
+    }),
+  };
 }

@@ -42,6 +42,8 @@ import mcpRoutes from './routes/mcp.js';
 import oauthRoutes from './routes/oauth.js';
 import wellKnownRoutes from './routes/wellKnown.js';
 import connectedAppRoutes from './routes/connectedApps.js';
+import workspaceRoutes from './routes/workspaces.js';
+import orgRoutes from './routes/org.js';
 import { warnIfOAuthUnconfigured } from './services/oauthService.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { errorCodeDefaults } from './middleware/errorCode.js';
@@ -79,7 +81,8 @@ app.use(helmet({
 const frontendDist = path.join(process.cwd(), 'public');
 
 const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173');
-app.use(cors({ origin: corsOrigin as string | boolean }));
+// X-Workspace-Id: 서버가 실제로 해석한 현재 워크스페이스(E1b). 개발 서버(다른 출처)에서도 프런트가 읽게 노출한다
+app.use(cors({ origin: corsOrigin as string | boolean, exposedHeaders: ['X-Workspace-Id'] }));
 app.use(compression());
 app.use(express.json({ limit: '100kb' }));
 // 오류 응답에 code가 없으면 상태 코드별 기본 code를 붙인다(i18n-3)
@@ -119,7 +122,7 @@ app.use((req, res, next) => {
       req.path.startsWith('/files') || req.path.startsWith('/users') || req.path.startsWith('/dms') ||
       req.path.startsWith('/search') || req.path.startsWith('/bookmarks') || req.path.startsWith('/admin') ||
       req.path.startsWith('/push') || req.path.startsWith('/threads') || req.path.startsWith('/tokens') ||
-      req.path.startsWith('/mcp')) {
+      req.path.startsWith('/mcp') || req.path.startsWith('/workspaces') || req.path.startsWith('/org')) {
     res.setHeader('Cache-Control', 'no-store');
   }
   next();
@@ -166,6 +169,9 @@ app.use('/activity', apiLimiter, activityRoutes);
 app.use('/huddles', apiLimiter, huddleRoutes);
 app.use('/reminders', apiLimiter, reminderRoutes);
 app.use('/tokens', apiLimiter, tokenRoutes);
+// 워크스페이스와 조직 관리(E1b). 현재 워크스페이스(X-Workspace-Id)는 authMiddleware가 해석한다(middleware/workspace.ts)
+app.use('/workspaces', apiLimiter, workspaceRoutes);
+app.use('/org', apiLimiter, orgRoutes);
 // OAuth 2.1 인가 서버와 메타데이터(mcp-4). 토큰 엔드포인트는 여러 사용자가 한 서버(IP)에서 부르므로
 // 일반 apiLimiter(IP 단위) 대신 라우터 안에서 client_id 단위로 제한한다.
 // 운영에서 PUBLIC_URL이 없으면 OAuth는 503, /mcp는 PAT만 받는다. 시작할 때 한 번 경고한다.

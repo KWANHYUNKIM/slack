@@ -73,6 +73,22 @@
     "OAUTH_INVALID_REQUEST": "This connection request is not valid. Start connecting from the app again.",
     "OAUTH_APPS_DISABLED": "Your workspace administrator has turned off app connections.",
     "OAUTH_CONNECTION_NOT_FOUND": "This app is not connected.",
-    "OAUTH_NOT_CONFIGURED": "App connections are not configured on this server. Ask your administrator to set the public server address."
+    "OAUTH_NOT_CONFIGURED": "App connections are not configured on this server. Ask your administrator to set the public server address.",
+    "INVALID_WORKSPACE_ID": "That workspace address is not valid.",
+    "WORKSPACE_NOT_FOUND": "Workspace not found, or you don't have access to it.",
+    "NO_WORKSPACE": "You aren't in any workspace yet. Join one or ask for an invitation.",
+    "WORKSPACE_NOT_OPEN": "This workspace is invite only.",
+    "WORKSPACE_ADMIN_REQUIRED": "Only workspace admins can do this.",
+    "ORG_ADMIN_REQUIRED": "Only organization admins can do this.",
+    "ORG_OWNER_REQUIRED": "Only organization owners can do this.",
+    "LAST_WORKSPACE_OWNER": "A workspace needs at least one owner. Make someone else an owner first.",
+    "LAST_WORKSPACE": "You can't archive the last active workspace.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "This person is already in the workspace.",
+    "USER_NOT_FOUND": "Person not found.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "The primary owner of the organization can't be removed.",
+    "WORKSPACE_SLUG_TAKEN": "That workspace URL is already taken.",
+    "WORKSPACE_NAME_TAKEN": "A workspace with this name already exists.",
+    "INVALID_WORKSPACE_SLUG": "Use 1 to 21 lowercase letters, numbers, or hyphens for the workspace URL.",
+    "WORKSPACE_ROLE_FORBIDDEN": "You can't give or change this role."
   }
 }

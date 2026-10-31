@@ -63,6 +63,19 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | `reminder:updated` | `{ reminder }` | `POST /reminders`, `PATCH /reminders/:id`(스누즈, 완료, 되돌리기) |
 | `reminder:removed` | `{ id }` | `DELETE /reminders/:id` |
 
+## 조직·워크스페이스 - 파트 E1b
+
+모두 서버 -> 클라이언트. 소켓은 연결할 때 활성 워크스페이스마다 `ws:<workspaceId>` room에 들어가고, 멤버십이 바뀌면 서버가 그 사용자의 모든 소켓을 room에 넣거나 뺀다(`io.in('user:<id>').socketsJoin/socketsLeave`). 대상이 `user:<id>`와 `ws:<id>` 둘이면 배열로 보내 본인은 한 번만 받는다. 공유 채널 이벤트(`channel:shared`/`channel:unshared`)는 E1g, 채널 이벤트의 `workspaceIds`와 `io.emit` 제거는 E1c가 더한다(`docs/specs/E1-multi-workspace.md` 5.4).
+
+| 이벤트 | 대상 room | payload | 시점 |
+|---|---|---|---|
+| `workspace:member:added` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId, role }` | 배정(`POST /workspaces/:id/members`), 초대 수락(`POST /auth/invite/:code/accept`), 공개 워크스페이스 참여(`POST /workspaces/:id/join`), 워크스페이스를 만든 사람(`POST /org/workspaces`, 본인에게만). 대상 소켓은 먼저 `ws:<id>`에 들어간다 |
+| `workspace:member:updated` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId, role }` | 역할 변경(`PATCH /workspaces/:id/members/:userId`) |
+| `workspace:member:removed` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId }` | 제거(`DELETE /workspaces/:id/members/:userId`), 나가기(`POST /workspaces/:id/leave`). 보낸 뒤 대상 소켓을 room에서 뺀다. 클라이언트는 그 워크스페이스를 전환기에서 뺀다 |
+| `workspace:updated` | `ws:<id>` | `{ id, slug, name, icon, description, discoverability }` | `PATCH /org/workspaces/:id` |
+| `workspace:archived` | `ws:<id>` | `{ id }` | `POST /org/workspaces/:id/archive`. 보낸 뒤 room을 비운다. 이후 그 워크스페이스 API는 404 |
+| `workspace:unarchived` | `ws:<id>` | `{ id }` | `POST /org/workspaces/:id/unarchive`. 남아 있던 활성 멤버의 소켓을 room에 다시 넣은 뒤 보낸다 |
+
 ## 기존 이벤트 (slawk에서 이어받음)
 
 | 이벤트 | 방향 | 비고 |
