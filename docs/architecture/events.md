@@ -36,6 +36,17 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | `dm:reaction:added` / `dm:reaction:removed` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | 1:1과 같은 모양 + `groupId` | 그룹 메시지 리액션 |
 | `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'group', id: groupId, isStarred }` | `PUT/DELETE /dms/groups/:id/star` |
 
+## 스레드 모아보기 - 파트 04
+
+채널 스레드만 다룬다(1:1·그룹 DM 스레드는 후속). 참여자 = 부모 작성자 + 삭제되지 않은 답글 작성자 중 지금도 그 채널 멤버인 사람.
+
+| 이벤트 | 방향 | 대상 room | payload | 시점 |
+|---|---|---|---|---|
+| `thread:updated` | 서버 -> 클라이언트 | 스레드 참여자 각자의 `user:<id>` (작성자 본인 포함) | `{ parentId, channelId, lastReplyId, replyCount, actorId }` | 답글 생성(HTTP 답글, 채널 메시지 POST, 소켓 `message:send`)과 답글 삭제 후. 삭제로 답글이 없어지면 `lastReplyId`는 null |
+| `thread:read` | 서버 -> 클라이언트 | `user:<본인>` | `{ parentId }` | `POST /threads/:id/read` (다른 탭 동기화) |
+| `message:send` (확장) | 클라이언트 -> 서버 | - | `alsoSendToChannel?: boolean` 추가 (`threadId`가 있을 때만 의미) | 채널에도 보내기 |
+| `message:new` / `message:updated` (확장) | 서버 -> 클라이언트 | `channel:<id>` | 스레드 답글에 `alsoSendToChannel`, `parent`(`{ id, content(100자 발췌), deletedAt, user }`) 포함 | `POST/DELETE /messages/:id/broadcast`는 `message:updated`로 알린다 |
+
 ## 기존 이벤트 (slawk에서 이어받음)
 
 | 이벤트 | 방향 | 비고 |

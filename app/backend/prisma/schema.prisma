@@ -57,6 +57,7 @@ model User {
   dmStarredBy        DMStar[]      @relation("DMStarTarget")
   sidebarPref        SidebarPref?
   dmGroups           DMGroupMember[]
+  threadReads        ThreadRead[]
 }
 
 model InviteLink {
@@ -123,6 +124,7 @@ model Message {
   userId    Int
   channelId Int
   threadId  Int?
+  alsoSendToChannel Boolean @default(false) // 스레드 답글을 채널 타임라인에도 보여 준다(답글에만 의미 있음)
   isPinned  Boolean   @default(false)
   pinnedBy  Int?
   pinnedAt  DateTime?
@@ -139,9 +141,26 @@ model Message {
   replies      Message[]     @relation("MessageThread")
   bookmarks    Bookmark[]
   channelReads ChannelRead[] @relation("ChannelReadMessage")
+  threadReads  ThreadRead[]  @relation("ThreadReadParent")
 
   @@index([channelId, createdAt])
   @@index([threadId])
+}
+
+// 스레드(부모 메시지)별 읽음 위치. 행이 없으면 다른 사람의 답글이 전부 안 읽음이다.
+model ThreadRead {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  threadId        Int
+  lastReadReplyId Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread Message @relation("ThreadReadParent", fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, threadId])
+  @@index([userId, updatedAt])
 }
 
 model Reaction {

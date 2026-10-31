@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireMessageAccess, requirePublicMessageReadAccess } from '../middleware/authorize.js';
+import { requireMessageAccess, requireThreadReadAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { getIO } from '../websocket/index.js';
 import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES, THREAD_REPLY_INCLUDE } from '../db/selects.js';
@@ -11,6 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, setReplyBroadcast } from '../services/threadService.js';
 import { processNewChannelMessage, syncActivitiesOnEdit, deleteActivitiesForMessage, markThreadMentionsRead } from '../services/mentionService.js';
 
 const router = Router();
@@ -18,6 +19,7 @@ const router = Router();
 const replySchema = z.object({
   content: z.string().min(1).max(MAX_MESSAGE_LENGTH)
     .refine(val => !val.includes('\u0000'), { message: 'Content cannot contain null bytes' }),
+  alsoSendToChannel: z.boolean().optional(),
   fileIds: z.array(z.number().int().positive()).max(10).optional(),
 });
 
@@ -31,7 +33,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
   try {
     const parentId = parseIntParam(req.params.id)!;
     const userId = req.user!.userId;
-    const { content, fileIds } = replySchema.parse(req.body);
+    const { content, fileIds, alsoSendToChannel } = replySchema.parse(req.body);
     const parentMessage = req.message;
 
     // Prevent nested threads - cannot reply to a reply
@@ -57,6 +59,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
           userId,
           channelId: parentMessage.channelId,
           threadId: parentId,
+          alsoSendToChannel: !!alsoSendToChannel,
         },
       });
 
@@ -72,9 +75,9 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
 
       return tx.message.findUnique({
         where: { id: msg.id },
-        include: THREAD_REPLY_INCLUDE,
+        include: { ...THREAD_REPLY_INCLUDE, ...PARENT_EXCERPT_INCLUDE },
       });
-    });
+    }).then((m) => (m ? withParentExcerpt(m) : m));
 
     // Broadcast to channel so other users see the thread count update
     const io = getIO();
@@ -85,7 +88,10 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
     res.status(201).json(reply);
 
     // 응답 뒤에: 스레드 답글·멘션 활동과 푸시(await하지 않는다)
-    if (reply) void processNewChannelMessage(reply);
+    if (reply) {
+      void processNewChannelMessage(reply);
+      void onThreadReplyCreated(reply);
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -97,7 +103,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
 });
 
 // GET /messages/:id/thread - Get thread messages
-router.get('/:id/thread', authMiddleware, requirePublicMessageReadAccess, async (req: AuthRequest, res: Response) => {
+router.get('/:id/thread', authMiddleware, requireThreadReadAccess, async (req: AuthRequest, res: Response) => {
   try {
     const parentId = parseIntParam(req.params.id)!;
 
@@ -122,7 +128,7 @@ router.get('/:id/thread', authMiddleware, requirePublicMessageReadAccess, async 
     markThreadMentionsRead(req.user!.userId, parentId).catch((err) => logError('Mark thread mentions read failed', err));
 
     res.json({
-      parent: parentMessage,
+      parent: blankIfDeleted(parentMessage),
       replies,
     });
   } catch (error) {
@@ -211,6 +217,7 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
     ]);
 
     void deleteActivitiesForMessage(messageId);
+    void onThreadReplyDeleted(message);
 
     // Broadcast deletion to channel so other clients update in real-time
     const io = getIO();
@@ -228,6 +235,24 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
     res.status(500).json({ error: 'Failed to delete message' });
   }
 });
+
+// POST /messages/:id/broadcast - 답글을 채널에도 보내기 (사후 켜기)
+// DELETE /messages/:id/broadcast - 채널에서 답글 복사본 지우기 (스레드 답글은 남는다)
+for (const [method, value] of [['post', true], ['delete', false]] as const) {
+  router[method]('/:id/broadcast', authMiddleware, requireMessageAccess, async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await setReplyBroadcast(req.message, req.user!.userId, value);
+      if (!result.ok) {
+        res.status(result.status).json({ error: result.error });
+        return;
+      }
+      res.json(result.message);
+    } catch (error) {
+      logError('Toggle broadcast error', error);
+      res.status(500).json({ error: 'Failed to update reply broadcast' });
+    }
+  });
+}
 
 // POST /messages/:id/pin - Pin a message
 router.post('/:id/pin', authMiddleware, requireMessageAccess, async (req: AuthRequest, res: Response) => {

@@ -308,10 +308,23 @@ export async function requirePublicChannelReadAccess(
  * Allows non-members to read messages in public channels.
  * Attaches req.message and req.channelId.
  */
-export async function requirePublicMessageReadAccess(
+export function requirePublicMessageReadAccess(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  return messageReadAccess(req, res, next, false);
+}
+
+/**
+ * requirePublicMessageReadAccess와 같지만, 삭제된 스레드 부모도 살아 있는 답글이 남아 있으면 통과시킨다
+ * (삭제 자리표시자 카드에서 스레드를 열 수 있어야 한다).
+ */
+export function requireThreadReadAccess(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  return messageReadAccess(req, res, next, true);
+}
+
+async function messageReadAccess(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
+  allowDeletedParent: boolean,
 ): Promise<void> {
   const messageId = parseIntParam(req.params.id);
   if (!messageId) {
@@ -323,7 +336,9 @@ export async function requirePublicMessageReadAccess(
     where: { id: messageId },
   });
 
-  if (!message || message.deletedAt) {
+  const hasLiveReplies = !!message && !!message.deletedAt && allowDeletedParent && message.threadId === null
+    && (await prisma.message.count({ where: { threadId: message.id, deletedAt: null } })) > 0;
+  if (!message || (message.deletedAt && !hasLiveReplies)) {
     res.status(404).json({ error: 'Message not found' });
     return;
   }
@@ -391,6 +406,7 @@ export const wsMessageSendSchema = z.object({
   channelId: z.number().int().positive(),
   content: optionalContentSchema,
   threadId: z.number().int().positive().optional(),
+  alsoSendToChannel: z.boolean().optional(),
   fileIds: z.array(z.number().int().positive()).max(10).optional(),
 }).refine(
   (data) => (data.content?.trim().length ?? 0) > 0 || (data.fileIds && data.fileIds.length > 0),

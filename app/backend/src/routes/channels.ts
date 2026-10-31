@@ -124,7 +124,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             JOIN "ChannelMember" cm ON cm."channelId" = m."channelId" AND cm."userId" = ${userId}
             LEFT JOIN "ChannelRead" cr ON cr."channelId" = m."channelId" AND cr."userId" = ${userId}
             WHERE m."channelId" = ANY(${channelIds})
-              AND m."threadId" IS NULL
+              AND (m."threadId" IS NULL OR m."alsoSendToChannel")
               AND m."deletedAt" IS NULL
               AND (cr."lastReadMessageId" IS NULL OR m.id > cr."lastReadMessageId")
             GROUP BY m."channelId"
@@ -858,7 +858,7 @@ router.post('/:id/read/baseline', authMiddleware, requireChannelMembership, asyn
 
     // No record yet — find the latest message to use as the baseline
     const latestMessage = await prisma.message.findFirst({
-      where: { channelId, threadId: null, deletedAt: null },
+      where: { channelId, OR: [{ threadId: null }, { alsoSendToChannel: true }], deletedAt: null },
       orderBy: { id: 'desc' },
       select: { id: true },
     });
@@ -912,7 +912,7 @@ router.post('/:id/unread', authMiddleware, requireChannelMembership, async (req:
     const previousMessage = await prisma.message.findFirst({
       where: {
         channelId,
-        threadId: null,
+        OR: [{ threadId: null }, { alsoSendToChannel: true }],
         deletedAt: null,
         id: { lt: messageId },
       },

@@ -10,6 +10,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
 import { getIO } from '../websocket/index.js';
 import { processNewChannelMessage } from '../services/mentionService.js';
+import { PARENT_EXCERPT_INCLUDE, blankIfDeleted, toParentExcerpt, withParentExcerpt, onThreadReplyCreated } from '../services/threadService.js';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ const createMessageSchema = z.object({
       { message: 'Message content cannot contain null bytes' }
     ),
   threadId: z.number().int().positive().optional(),
+  alsoSendToChannel: z.boolean().optional(),
   fileIds: z.array(z.number().int().positive()).max(10).optional(),
 }).refine(
   (data) => (data.content?.trim().length ?? 0) > 0 || (data.fileIds && data.fileIds.length > 0),
@@ -32,7 +34,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
   try {
     const channelId = req.channelId!;
     const userId = req.user!.userId;
-    const { content, threadId, fileIds } = createMessageSchema.parse(req.body);
+    const { content, threadId, alsoSendToChannel, fileIds } = createMessageSchema.parse(req.body);
 
     // Block messaging in archived channels
     const channelRecord = await prisma.channel.findUnique({
@@ -63,6 +65,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
           userId,
           channelId,
           threadId,
+          alsoSendToChannel: !!threadId && !!alsoSendToChannel,
         },
       });
 
@@ -78,9 +81,9 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
 
       return tx.message.findUnique({
         where: { id: msg.id },
-        include: MESSAGE_INCLUDE_FULL,
+        include: { ...MESSAGE_INCLUDE_FULL, ...PARENT_EXCERPT_INCLUDE },
       });
-    });
+    }).then((m) => (m ? withParentExcerpt(m) : m));
 
     // Broadcast via WebSocket so other users see the message in real-time
     const io = getIO();
@@ -91,7 +94,10 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
     res.status(201).json(finalMessage);
 
     // 응답 뒤에: 활동 생성, 활동 이벤트, 푸시(await하지 않는다. 실패는 서비스가 로그로 남긴다)
-    if (finalMessage) void processNewChannelMessage(finalMessage, { generalPush: true });
+    if (finalMessage) {
+      void processNewChannelMessage(finalMessage, { generalPush: true });
+      void onThreadReplyCreated(finalMessage);
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -114,8 +120,19 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
     const aroundRaw = req.query.around ? parseInt(req.query.around as string) : undefined;
     const around = aroundRaw !== undefined && !isNaN(aroundRaw) && aroundRaw > 0 ? aroundRaw : undefined;
 
+    // 채널 타임라인: 최상위 메시지 + "채널에도 보내기"로 보낸 스레드 답글
+    // 답글이 남은 삭제된 부모도 자리표시자로 포함한다.
+    const timelineWhere = {
+      channelId,
+      OR: [
+        { deletedAt: null, OR: [{ threadId: null }, { alsoSendToChannel: true }] },
+        { deletedAt: { not: null }, threadId: null, replies: { some: { deletedAt: null } } },
+      ],
+    };
+
     const messageInclude = {
       ...MESSAGE_INCLUDE_FULL,
+      ...PARENT_EXCERPT_INCLUDE,
       replies: {
         select: {
           user: {
@@ -129,11 +146,11 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
 
     const enrichMessages = (msgs: any[]) =>
       msgs.map((msg) => {
-        const { replies, ...rest } = msg;
+        const { replies, parent, ...rest } = msg;
         const threadParticipants = replies
           ? replies.map((r: { user: { id: number; name: string; avatar: string | null } }) => r.user)
           : [];
-        return { ...rest, threadParticipants };
+        return { ...blankIfDeleted(rest), parent: toParentExcerpt(parent), threadParticipants };
       });
 
     // "around" mode: fetch messages surrounding a target message ID
@@ -141,18 +158,18 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
       const half = Math.floor(limit / 2);
       const [before, target, after] = await Promise.all([
         prisma.message.findMany({
-          where: { channelId, threadId: null, deletedAt: null, id: { lt: around } },
+          where: { ...timelineWhere, id: { lt: around } },
           include: messageInclude,
           orderBy: { createdAt: 'desc' },
           take: half,
         }),
         prisma.message.findMany({
-          where: { channelId, threadId: null, deletedAt: null, id: around },
+          where: { ...timelineWhere, id: around },
           include: messageInclude,
           take: 1,
         }),
         prisma.message.findMany({
-          where: { channelId, threadId: null, deletedAt: null, id: { gt: around } },
+          where: { ...timelineWhere, id: { gt: around } },
           include: messageInclude,
           orderBy: { createdAt: 'asc' },
           take: half,
@@ -168,11 +185,7 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
     }
 
     const messages = await prisma.message.findMany({
-      where: {
-        channelId,
-        threadId: null, // Only get top-level messages
-        deletedAt: null, // Exclude deleted messages
-      },
+      where: timelineWhere,
       include: messageInclude,
       orderBy: { createdAt: 'desc' },
       take: limit + 1,

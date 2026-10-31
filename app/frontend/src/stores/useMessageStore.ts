@@ -48,6 +48,10 @@ function transformApiMessage(msg: api.ApiMessage): Message {
     })),
     threadCount: msg._count?.replies ?? 0,
     threadParticipants: msg.threadParticipants ?? [],
+    threadId: msg.threadId ?? null,
+    alsoSendToChannel: msg.alsoSendToChannel ?? false,
+    parentExcerpt: msg.parent && !msg.parent.deletedAt ? msg.parent : null,
+    isDeleted: !!msg.deletedAt,
     isEdited: !!msg.editedAt,
     isPinned: msg.isPinned ?? false,
   };
@@ -160,9 +164,13 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   deleteMessage: async (messageId: number) => {
     try {
       await api.deleteMessage(messageId);
-      set({
-        messages: get().messages.filter((msg) => msg.id !== messageId),
-      });
+      // 답글의 개수 감소는 message:deleted 이벤트가 맡는다(여기서도 줄이면 두 번 줄어든다)
+      const target = get().messages.find((m) => m.id === messageId);
+      if (target?.threadId) {
+        set({ messages: get().messages.filter((m) => m.id !== messageId) });
+      } else {
+        get().onMessageDeleted({ messageId, threadId: null });
+      }
     } catch (err) {
       console.error('Failed to delete message:', err);
       throw err;
@@ -201,6 +209,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       // If this is a reply, update the parent message's threadCount and threadParticipants
       if (msg.threadId) {
         const currentUserId = getUserId();
+        // "채널에도 보내기" 답글은 타임라인에도 나타난다
+        if (msg.alsoSendToChannel) set((state) => ({ messages: [...state.messages, message] }));
         const isOwnReply = msg.userId === currentUserId;
         set((state) => ({
           messages: state.messages.map((m) => {
@@ -225,6 +235,18 @@ export const useMessageStore = create<MessageState>((set, get) => ({
 
   onMessageUpdated: (msg: api.ApiMessage) => {
     const updated = transformApiMessage(msg);
+    // 스레드 답글의 "채널에도 보내기"가 사후에 켜지거나 꺼진 경우: 타임라인에 넣거나 뺀다
+    if (msg.threadId) {
+      const exists = get().messages.some((m) => m.id === updated.id);
+      if (msg.alsoSendToChannel && !exists && updated.channelId === get().loadedChannelId) {
+        set({ messages: [...get().messages, updated].sort((a, b) => a.id - b.id) });
+      } else if (!msg.alsoSendToChannel) {
+        set({ messages: get().messages.filter((m) => m.id !== updated.id) });
+      } else {
+        set({ messages: get().messages.map((m) => (m.id === updated.id ? { ...updated, threadCount: m.threadCount } : m)) });
+      }
+      return;
+    }
     set({
       messages: get().messages.map((m) => (m.id === updated.id ? updated : m)),
     });
@@ -233,17 +255,20 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   onMessageDeleted: (data: { messageId: number; threadId?: number | null }) => {
     if (data.threadId) {
       // A thread reply was deleted — decrement the parent message's threadCount
+      // 채널에도 보냈던 답글의 타임라인 복사본도 함께 지운다. 답글이 모두 사라진 삭제된 부모(자리표시자)도 치운다.
       set({
-        messages: get().messages.map((m) =>
-          m.id === data.threadId
-            ? { ...m, threadCount: Math.max(0, m.threadCount - 1) }
-            : m,
-        ),
+        messages: get().messages
+          .filter((m) => m.id !== data.messageId)
+          .map((m) => (m.id === data.threadId ? { ...m, threadCount: Math.max(0, m.threadCount - 1) } : m))
+          .filter((m) => !(m.id === data.threadId && m.isDeleted && m.threadCount === 0)),
       });
     } else {
-      // A top-level message was deleted — remove it from the list
+      // 답글이 남은 부모는 자리표시자로 남기고, 답글이 없으면 목록에서 뺀다
       set({
-        messages: get().messages.filter((m) => m.id !== data.messageId),
+        messages: get().messages.flatMap((m) => {
+          if (m.id !== data.messageId) return [m];
+          return m.threadCount > 0 ? [{ ...m, content: '', files: [], reactions: [], isDeleted: true }] : [];
+        }),
       });
     }
   },

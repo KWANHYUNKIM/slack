@@ -120,7 +120,11 @@
     "edited": "(edited)",
     "pinned": "Pinned",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "repliedToThread": "Replied to a thread: {excerpt}",
+    "deletedPlaceholder": "This message was deleted.",
+    "sendToChannel": "Also send to channel",
+    "removeFromChannel": "Remove from channel"
   },
   "input": {
     "uploading": "Uploading...",
@@ -198,7 +202,8 @@
     "loadFailed": "Failed to load thread. Please try again.",
     "loading": "Loading thread...",
     "replyFailed": "Failed to send reply. Please try again.",
-    "joinToReply": "Join the channel to reply in threads"
+    "joinToReply": "Join the channel to reply in threads",
+    "alsoSendToChannel": "Also send to the channel"
   },
   "errors": {
     "messageEmpty": "Message cannot be empty.",
@@ -231,5 +236,22 @@
     "title": "Welcome to #{name}",
     "noDescription": "No description yet.",
     "editDescription": "Edit description"
+  },
+  "threads": {
+    "title": "Threads",
+    "menu": "Menu",
+    "loadFailed": "Failed to load threads.",
+    "empty": "No threads yet",
+    "emptyHint": "Threads you start or reply to will show up here.",
+    "newReplies": "{count, plural, one {# new reply} other {# new replies}}",
+    "replyCount": "{count, plural, one {# reply} other {# replies}}",
+    "olderReplies": "Open the thread to see earlier replies",
+    "replyPlaceholder": "Reply...",
+    "send": "Send",
+    "replyFailed": "Failed to send reply. Please try again.",
+    "alsoSendToChannel": "Also send to the channel",
+    "openThread": "Open thread",
+    "loadMore": "Load more",
+    "loading": "Loading..."
   }
 }

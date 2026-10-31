@@ -35,9 +35,13 @@ interface MessageProps {
   onDeleteMessage?: (id: number) => Promise<void>;
   onAddReaction?: (id: number, emoji: string) => void;
   onRemoveReaction?: (id: number, emoji: string) => void;
+  /** 스레드 패널에서 ?reply=로 지정된 답글을 강조한다 */
+  highlighted?: boolean;
+  /** 스레드 답글의 "채널에도 보내기"를 켜고 끈다(본인 답글에만 표시) */
+  onToggleBroadcast?: (id: number, on: boolean) => void;
 }
 
-export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction }: MessageProps) {
+export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction, highlighted, onToggleBroadcast }: MessageProps) {
   const { t } = useTranslation(['messages', 'common']);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -65,6 +69,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
   const isOwner = currentUser?.id === message.userId;
   const isMentionedMe = !!currentUser && !isOwner && mentionsUser(message.content, currentUser.id);
   const isEditing = editingId === message.id;
+  const isDeleted = !!message.isDeleted;
 
   // Collapsible long messages
   const MAX_COLLAPSED_HEIGHT = 150;
@@ -105,10 +110,12 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
     <div
       className={cn(
         'group relative flex px-5',
+        highlighted && 'ring-2 ring-inset ring-slack-link',
         message.isPinned ? 'bg-slack-pinned hover:bg-slack-pinned' : isMentionedMe ? 'bg-slack-mention hover:bg-slack-mention-hover' : 'hover:bg-slack-hover',
         showAvatar ? 'pt-2 pb-px' : 'py-px'
       )}
       data-mentioned-me={isMentionedMe || undefined}
+      data-message-id={message.id}
       onMouseEnter={onMouseEnter}
       onMouseLeave={() => onMouseLeave(() => setShowMoreMenu(false))}
       onTouchStart={onTouchStart}
@@ -134,6 +141,16 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
 
       {/* Flex-grow right content column */}
       <div className="flex-1 min-w-0">
+        {!isThread && message.alsoSendToChannel && message.parentExcerpt && (
+          <button
+            type="button"
+            data-testid="thread-reply-label"
+            onClick={() => onOpenThread?.(message.parentExcerpt!.id)}
+            className="block max-w-full truncate text-start text-[12px] text-slack-secondary hover:underline"
+          >
+            {t('messages:message.repliedToThread', { excerpt: message.parentExcerpt.content })}
+          </button>
+        )}
         {showAvatar && (
           <div className="flex items-center gap-2">
             <button
@@ -204,7 +221,9 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                 if (id) openProfile(Number(id));
               }}
             >
-              {renderMessageContent(message.content)}
+              {isDeleted ? (
+                <span data-testid="deleted-placeholder" className="italic text-slack-secondary">{t('messages:message.deletedPlaceholder')}</span>
+              ) : renderMessageContent(message.content)}
               {!showAvatar && message.isEdited && (
                 <span className="text-[12px] text-slack-secondary ms-1">{t('messages:message.edited')}</span>
               )}
@@ -353,6 +372,17 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
           />
         )}
 
+        {isThread && isOwner && !isDeleted && message.threadId && onToggleBroadcast && !readOnly && (
+          <button
+            type="button"
+            data-testid="toggle-broadcast"
+            onClick={() => onToggleBroadcast(message.id, !message.alsoSendToChannel)}
+            className="mt-0.5 text-[12px] text-slack-link hover:underline"
+          >
+            {message.alsoSendToChannel ? t('messages:message.removeFromChannel') : t('messages:message.sendToChannel')}
+          </button>
+        )}
+
         {/* Thread indicator */}
         {message.threadCount > 0 && (
           <ThreadIndicator
@@ -365,7 +395,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       </div>
 
       {/* Hover Actions */}
-      {!readOnly && (isHovered || keepOpen) && (
+      {!readOnly && !isDeleted && (isHovered || keepOpen) && (
         <MessageToolbar
           className="absolute -top-4 end-5"
           onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}

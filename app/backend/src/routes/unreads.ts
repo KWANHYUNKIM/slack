@@ -69,8 +69,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     // Query unread messages
     const messages = await prisma.message.findMany({
       where: {
-        OR: channelConditions,
-        threadId: null, // Only top-level messages
+        AND: [{ OR: channelConditions }, { OR: [{ threadId: null }, { alsoSendToChannel: true }] }], // 최상위 + 채널에도 보낸 답글
         deletedAt: null, // Exclude deleted messages
       },
       include: {

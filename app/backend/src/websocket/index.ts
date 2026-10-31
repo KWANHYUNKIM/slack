@@ -21,6 +21,7 @@ import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted } from '../services/threadService.js';
 import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
   processNewChannelMessage,
@@ -390,6 +391,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
               userId: socket.user!.userId,
               channelId: data.channelId,
               threadId: data.threadId,
+              alsoSendToChannel: !!data.threadId && !!data.alsoSendToChannel,
             },
           });
 
@@ -406,9 +408,9 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
           return tx.message.findUnique({
             where: { id: msg.id },
-            include: MESSAGE_INCLUDE_FULL,
+            include: { ...MESSAGE_INCLUDE_FULL, ...PARENT_EXCERPT_INCLUDE },
           });
-        });
+        }).then((m) => (m ? withParentExcerpt(m) : m));
 
         // Always emit to the sender so they see their own message immediately,
         // even if their socket hasn't joined the channel room yet.
@@ -420,7 +422,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
         if (typeof ack === 'function') ack({});
 
         // ack 뒤에: 활동 생성, 활동 이벤트, 푸시 (HTTP 경로와 같은 서비스, await하지 않는다)
-        if (finalMessage) void processNewChannelMessage(finalMessage, { generalPush: true });
+        if (finalMessage) {
+          void processNewChannelMessage(finalMessage, { generalPush: true });
+          void onThreadReplyCreated(finalMessage);
+        }
       } catch (error) {
         logError('WebSocket message error', error);
         sendError('Failed to send message');
@@ -546,6 +551,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
         ]);
 
         void deleteActivitiesForMessage(data.messageId);
+        void onThreadReplyDeleted(message);
 
         io.to(`channel:${message.channelId}`).emit('message:deleted', {
           messageId: data.messageId,

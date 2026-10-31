@@ -4,7 +4,8 @@
     "unreads": "읽지 않음",
     "later": "나중에",
     "files": "파일",
-    "admin": "관리자"
+    "admin": "관리자",
+    "threads": "스레드"
   },
   "workspace": {
     "name": "Slawk",
