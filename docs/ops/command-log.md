@@ -216,3 +216,6 @@
 | 2026-11-01 00:18 | 자원 감속(여유 29%, 스왑 92%). 진행 2명(dev-2 mcp-3, dev-4 i18n-3). 남은 후보 i18n-4 RTL은 화면 파일 전반을 건드려 i18n-3과 충돌 위험, verify/e2e-smoke는 무거워 스왑 회복 후로 보류 |
 | 2026-11-01 00:22 | mcp-3 검토: main 리베이스(충돌 없음, 별도 확인), tsc·eslint·i18n·외부 URL·mcp-search-files 12·search 33·files 52 → PR #68, /code-review. 총괄 결정 예정: files:read는 파일 본문 접근이라 토큰 화면 기본 해제(search:read는 기본 선택 유지) |
 | 2026-11-01 00:27 | PR #68 리뷰 9건 → dev-2 반영 지시. 총괄 결정: files:read 기본 해제, search 결과를 scope별로 거름(channels:history·users:read·channels:read·files:read·im:history), 리소스·프롬프트도 공통 오류 처리와 Int 상한, 파일 바이트 읽기 공용 함수로 REST와 통일 |
+| 2026-11-01 00:32 | i18n-3 완료 보고 검토: 커밋 후 main 리베이스에서 dms.ts·websocket/index.ts 충돌(PR #63 dmService 이동과 겹침). 의미 충돌이라 총괄이 기계적으로 합치지 않고 dev-4에게 dmService 기준으로 푸시 i18n 이식·리베이스 완료 지시. 푸시·머지는 리베이스 완료 확인 뒤 별도 단계 |
+| 2026-11-01 00:35 | PR #68(mcp-3) 머지: 리베이스(충돌 없음 확인) 후 mcp-search-files 16·files 52·search 33·tsc·eslint 통과, 변경 20파일 확인 후 푸시 |
+| 2026-11-01 00:36 | dev-4에 추가 안내: PR #68이 search 로직을 searchService로 옮겨 i18n-3의 tz·code 변경도 서비스 기준으로 이식 필요, 최신 main 재리베이스 지시. 자원 감속(스왑 95%) → 새 배정 없음 |
