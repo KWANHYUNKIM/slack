@@ -93,6 +93,13 @@ test('DM: 안 읽은 메시지를 지우면 선이 다음 안 읽은 메시지�
   assert.equal(computeUnread(list.filter((m) => m.id > 10 && m.id !== 11 && m.id !== 12 && m.id !== 13), 10, ME).dividerBeforeId, null);
 });
 
+test('전부 안 읽음(기준점 null)이 로드 범위보다 많으면 범위 밖이고, 가장 오래된 구간을 불러오면 범위 안이 된다', () => {
+  const recent = Array.from({ length: 50 }, (_, i) => msg(100 + i));
+  assert.equal(hasUnreadOutOfRange(recent, null, 60), true);
+  const oldest = Array.from({ length: 50 }, (_, i) => msg(1 + i));
+  assert.equal(computeUnread(oldest, null, ME).dividerBeforeId, 1);
+});
+
 test('dmUnreadScope: 채널 id와 겹치지 않고 1:1·그룹 대화끼리도 겹치지 않는다', () => {
   const scopes = new Set<number>();
   for (let n = 1; n <= 50; n++) {

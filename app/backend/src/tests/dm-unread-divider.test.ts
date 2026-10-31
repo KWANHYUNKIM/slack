@@ -78,7 +78,7 @@ describe('DM unread baseline', () => {
       // 삭제된 첫 메시지는 건너뛴다: 안 읽음 2
       const res = await openDM(a, b);
       expect(res.unreadCount).toBe(2);
-      expect(res.messages.map((m) => m.id).sort()).toEqual([ids[1], ids[2]]);
+      expect(res.messages.map((m) => m.id).sort((x, y) => x - y)).toEqual([ids[1], ids[2]]);
     });
 
     it('읽지 않음으로 표시하면 기준점이 그 앞 메시지로 돌아간다', async () => {
@@ -97,6 +97,35 @@ describe('DM unread baseline', () => {
       expect(around.body.unreadCount).toBeUndefined();
       const paged = await request(app).get(`/dms/${b.id}?withUnread=1&cursor=${ids[1]}`).set(auth(a));
       expect(paged.body.unreadCount).toBeUndefined();
+    });
+
+    it('처음 여는 DM에 60개가 안 읽음이어도 센 값은 60이고 기준점은 null이다(범위 밖 점프용)', async () => {
+      for (let i = 0; i < 60; i++) await sendDM(b, a, `m${i}`);
+      const res = await openDM(a, b);
+      expect(res).toMatchObject({ lastReadId: null, unreadCount: 60 });
+      expect(res.messages.length).toBeLessThan(60); // 한 페이지에 다 오지 않는다
+      // around=1은 가장 오래된 구간을 돌려준다(상단 바의 전부 안 읽음 점프)
+      const oldest = await request(app).get(`/dms/${b.id}?around=1`).set(auth(a));
+      expect(oldest.status).toBe(200);
+      expect(oldest.body.messages.length).toBeGreaterThan(0);
+      const ids = oldest.body.messages.map((m: { id: number }) => m.id);
+      expect(ids[0]).toBe(Math.min(...ids));
+    });
+
+    it('around로 열면 읽음 처리를 하지 않는다: 프런트가 조회 뒤에 /read를 부른다', async () => {
+      const ids = [await sendDM(b, a, 'x'), await sendDM(b, a, 'y')];
+      await request(app).get(`/dms/${b.id}?around=${ids[0]}`).set(auth(a));
+      expect((await openDM(a, b)).unreadCount).toBe(2);
+      // 점프 뒤 서버 읽음
+      const read = await request(app).post(`/dms/${b.id}/read`).set(auth(a));
+      expect(read.status).toBe(200);
+      expect((await openDM(a, b)).unreadCount).toBe(0);
+    });
+
+    it('내 메시지는 안 읽음으로 표시할 수 없다(프런트가 항목을 숨기는 서버 규칙)', async () => {
+      const mine = await sendDM(a, b, 'mine');
+      const res = await request(app).post(`/dms/${b.id}/unread`).set(auth(a)).send({ messageId: mine });
+      expect(res.status).toBe(404);
     });
 
     it('나와의 대화와 빈 대화는 안 읽음 0이다', async () => {
@@ -146,6 +175,18 @@ describe('DM unread baseline', () => {
       const res = await openGroup(a, groupId);
       expect(res.unreadCount).toBe(1);
       expect(res.messages.map((m) => m.id)).toEqual([ids[1]]);
+    });
+
+    it('열린 그룹에서 점프(around) 뒤 /read를 부르면 커서가 옮겨진다', async () => {
+      await openGroup(a, groupId);
+      const ids = [await sendGroup(b, groupId, 'one'), await sendGroup(b, groupId, 'two')];
+      const around = await request(app).get(`/dms/groups/${groupId}/messages?around=${ids[0]}`).set(auth(a));
+      expect(around.status).toBe(200);
+      expect((await openGroup(a, groupId)).unreadCount).toBe(2); // around는 읽음 처리를 하지 않았다
+      await sendGroup(b, groupId, 'three');
+      const read = await request(app).post(`/dms/groups/${groupId}/read`).set(auth(a)).send({});
+      expect(read.status).toBe(200);
+      expect((await openGroup(a, groupId)).unreadCount).toBe(0);
     });
 
     it('비멤버가 기준점을 요청하면 거부된다', async () => {

@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isToday, isYesterday, isSameDay } from 'date-fns';
 import { t } from '@/lib/i18n';
@@ -8,9 +7,9 @@ import { useMessageStore } from '@/stores/useMessageStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useUnreadStore } from '@/stores/useUnreadStore';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useToastStore } from '@/stores/useToastStore';
 import { getChannel, markChannelRead, markChannelReadBaseline } from '@/lib/api';
-import { computeUnread, hasUnreadOutOfRange } from '@/lib/unread';
+import { useUnreadDivider } from '@/hooks/useUnreadDivider';
+import type { UnreadCandidate } from '@/lib/unread';
 import { Message } from './Message';
 import { ChannelIntro } from './ChannelIntro';
 import { UnreadDivider } from './UnreadDivider';
@@ -67,25 +66,32 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   const isAtBottom = useRef(true); // Start true since we auto-scroll on load
   const myUserId = useAuthStore((s) => s.user?.id);
 
-  // 안 읽음 구분선 기준점: 열 때 한 번 받아 고정한다. 아직 받기 전(또는 다른 채널 값)이면 ready가 false다.
-  const unread = useUnreadStore(useShallow((s) => ({
-    channelId: s.channelId, ready: s.ready, lastReadId: s.lastReadId, total: s.total, pinnedBeforeId: s.pinnedBeforeId,
-  })));
-  const unreadReady = unread.ready && unread.channelId === channelId;
-  const lastReadId = unreadReady ? unread.lastReadId : null;
-  const unreadInfo = unreadReady ? computeUnread(messages, lastReadId, myUserId) : { dividerBeforeId: null, unreadLoaded: 0 };
-  // 열 때 안 읽음이 없었다면(false) 보는 중에 온 새 메시지로 구분선을 새로 만들지 않는다. 열 때 있었으면 계속 유지한다.
-  const [dividerAllowed, setDividerAllowed] = useState<boolean | null>(null);
-  const pinnedLoaded = unreadReady && unread.pinnedBeforeId !== null && messages.some((m) => m.id === unread.pinnedBeforeId);
-  // 안 읽음이 로드 범위 밖인가: 열 때(첫 로드 직후) 한 번만 판정해 고정한다. 실시간 메시지가 와도 바뀌지 않는다.
-  // 범위 밖인 동안은 구분선을 숨기고 상단 바만 보인다.
-  const [outOfRange, setOutOfRange] = useState(false);
-  const dividerBeforeId = pinnedLoaded
-    ? unread.pinnedBeforeId
-    : dividerAllowed === false || outOfRange ? null : unreadInfo.dividerBeforeId;
-  const dividerRef = useRef<HTMLDivElement>(null);
-  const initialScrollDone = useRef(false);
-  const [dividerAbove, setDividerAbove] = useState(false);
+  const candidates = useMemo<UnreadCandidate[]>(
+    () => messages.map((m) => ({ id: m.id, userId: m.userId, isDeleted: m.isDeleted, threadId: m.threadId, alsoSendToChannel: m.alsoSendToChannel })),
+    [messages],
+  );
+  const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
+  const divider = useUnreadDivider({
+    scope: channelId,
+    candidates,
+    myUserId,
+    loaded: !isLoading && messages.length > 0,
+    hasJumpTarget: !!scrollToMessageId,
+    containerRef,
+    endRef: messagesEndRef,
+    isAtBottom,
+    fetchAround: async (id) => {
+      await fetchMessages(channelId, id);
+      const state = useMessageStore.getState();
+      if (state.loadError) return null;
+      return state.messages.find((m) => m.channelId === channelId)?.id ?? null;
+    },
+    markRead: (lastId) => {
+      markChannelAsRead(channelId);
+      markChannelRead(channelId, lastId).catch(() => {});
+    },
+  });
+  const { ready: unreadReady, dividerBeforeId, dividerRef, initialScrollDone, resetOpen } = divider;
 
   // Check if user is at/near bottom of message list
   const handleScroll = () => {
@@ -97,30 +103,12 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
     isAtBottom.current = distanceFromBottom < 100; // Within 100px of bottom
   };
 
-  // 구분선이 화면 위로 벗어났는지(바를 보일지)는 IntersectionObserver로 본다
-  useEffect(() => {
-    const divider = dividerRef.current;
-    const container = containerRef.current;
-    if (!divider || !container) {
-      setDividerAbove(false);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      const rootTop = entry.rootBounds?.top ?? 0;
-      setDividerAbove(!entry.isIntersecting && entry.boundingClientRect.bottom <= rootTop);
-    }, { root: container });
-    observer.observe(divider);
-    return () => observer.disconnect();
-  }, [dividerBeforeId]);
-
   // Fetch when the channel changes. The jump target is read once from the store (not a dep),
   // so clearing it later never triggers another fetch.
   const requestedAroundRef = useRef<number | null>(null);
   useEffect(() => {
     isAtBottom.current = true; // Reset to true when switching channels
-    initialScrollDone.current = false;
-    setDividerAllowed(null);
-    setOutOfRange(false);
+    resetOpen();
     const target = useChannelStore.getState().scrollToMessageId;
     requestedAroundRef.current = target;
     fetchMessages(channelId, target ?? undefined);
@@ -148,7 +136,6 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   // After messages load, persist the read state to the backend so the
   // unread badge does not reappear on page reload.
   // Only mark as read if user is at/near the bottom of the message list.
-  const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
   useEffect(() => {
     if (readOnly || lastMessageId === null || !unreadReady) return;
     // Update in-memory unread count immediately (clears badge)
@@ -196,77 +183,18 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   // Auto-scroll to bottom on new messages (only when not targeting a specific message)
   useEffect(() => {
     if (scrollToMessageId) return;
-    if (!initialScrollDone.current) return; // 첫 위치 잡기는 아래 효과가 한다
+    if (!initialScrollDone.current) return; // 첫 위치 잡기는 훅이 한다
     if (didScrollToTarget.current) {
       didScrollToTarget.current = false;
       return;
     }
+    // 구분선에서 읽는 중이면(바닥이 아니면) 새 메시지가 와도 끌어내리지 않는다. 내가 보낸 메시지는 바닥으로 간다.
+    if (!isAtBottom.current && messages[messages.length - 1]?.userId !== myUserId) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     isAtBottom.current = true; // Mark as at bottom after auto-scroll
-  }, [messages.length, scrollToMessageId]);
-
-  // 처음 열 때의 위치: 구분선이 있으면 첫 안 읽음이 맨 위에 오게(최신이 한 화면이면 바닥에 닿는다), 없으면 바닥
-  useEffect(() => {
-    if (initialScrollDone.current || !unreadReady || isLoading || messages.length === 0) return;
-    initialScrollDone.current = true;
-    const openOutOfRange = hasUnreadOutOfRange(messages, lastReadId, unread.total);
-    setOutOfRange(openOutOfRange);
-    setDividerAllowed(dividerBeforeId !== null || openOutOfRange);
-    if (scrollToMessageId) return; // 점프 대상이 있으면 그쪽 효과가 위치를 잡는다
-    if (dividerRef.current && !openOutOfRange) {
-      dividerRef.current.scrollIntoView({ block: 'start' });
-      isAtBottom.current = false;
-      handleScroll();
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      isAtBottom.current = true;
-    }
+    // 마지막 메시지 작성자만 읽는다: 길이가 바뀔 때만 실행한다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadReady, isLoading, messages.length, scrollToMessageId, dividerBeforeId]);
-
-  // 범위 밖 안 읽음에서 바를 눌러 기준점 주변을 불러온 뒤에는 구분선으로 한 번 스크롤한다
-  const [pendingDividerScroll, setPendingDividerScroll] = useState(false);
-  useEffect(() => {
-    if (!pendingDividerScroll || !dividerRef.current) return;
-    dividerRef.current.scrollIntoView({ block: 'start' });
-    setPendingDividerScroll(false);
-  }, [pendingDividerScroll, dividerBeforeId]);
-
-  const jumping = useRef(false);
-  const jumpToDivider = async () => {
-    if (!outOfRange || lastReadId === null) {
-      dividerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-    // 안 읽음이 로드 범위 밖: 기준점 주변을 불러온 뒤 구분선으로 간다
-    if (jumping.current) return;
-    jumping.current = true;
-    let ok = false;
-    try {
-      await fetchMessages(channelId, lastReadId);
-      const state = useMessageStore.getState();
-      const first = state.messages.find((m) => m.channelId === channelId);
-      // 실패했거나 같은 창을 돌려줘서 기준점이 여전히 창 밖이면 이동하지 않는다
-      ok = !state.loadError && !!first && first.id <= lastReadId;
-    } finally {
-      jumping.current = false;
-      if (ok) {
-        setOutOfRange(false);
-        setPendingDividerScroll(true);
-      } else {
-        useToastStore.getState().show(t('unread.jumpFailed'), 'error');
-      }
-    }
-  };
-
-  const markAllRead = () => {
-    if (lastMessageId === null) return;
-    useUnreadStore.getState().markReadUpTo(channelId, lastMessageId);
-    setDividerAllowed(false); // 읽은 뒤 새로 온 메시지로 구분선이 다시 생기지 않게 한다
-    setOutOfRange(false);
-    markChannelAsRead(channelId);
-    markChannelRead(channelId, lastMessageId).catch(() => {});
-  };
+  }, [messages.length, scrollToMessageId]);
 
   if (isLoading && messages.length === 0) {
     return (
@@ -298,12 +226,12 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
 
   return (
     <div className="relative flex flex-1 min-h-0 flex-col">
-    {(outOfRange || (dividerBeforeId !== null && dividerAbove)) && (
+    {divider.showBar && (
       <NewMessagesBar
-        count={outOfRange ? unread.total : unreadInfo.unreadLoaded}
-        atLeast={outOfRange}
-        onJump={jumpToDivider}
-        onMarkRead={markAllRead}
+        count={divider.barCount}
+        atLeast={divider.barAtLeast}
+        onJump={divider.jumpToDivider}
+        onMarkRead={divider.markAllRead}
       />
     )}
     <div ref={containerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto pt-5 pb-4 bg-white">

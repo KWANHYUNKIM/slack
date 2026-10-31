@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import type { Prisma } from '@prisma/client';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
@@ -291,31 +290,31 @@ router.delete('/:userId/star', authMiddleware, async (req: AuthRequest, res: Res
 });
 
 /**
- * 1:1 DM의 읽음 기준점. DM은 메시지별 readAt이라, 내 앞으로 온 첫 안 읽음 메시지 바로 앞 메시지가 기준점이다.
+ * 1:1 DM의 읽음 기준점(쿼리 1번). DM은 메시지별 readAt이라, 내 앞으로 온 첫 안 읽음 메시지 바로 앞 메시지가 기준점이다.
  * 안 읽음이 없으면 최신 메시지가 기준점이다. unreadCount는 기준점 이후 최상위 메시지 수(내 것 포함, 채널 응답과 같은 규칙).
+ * 읽기 전용이다: 호출하는 쪽이 읽음 처리(readAt)보다 먼저 끝내야 열기 직전 값이 된다.
  */
 async function getDmUnreadBaseline(
   currentUserId: number,
   otherUserId: number,
-  dmWhere: Prisma.DirectMessageWhereInput,
 ): Promise<{ lastReadId: number | null; unreadCount: number }> {
-  const firstUnread = currentUserId === otherUserId
-    ? null // 나와의 대화는 안 읽음이 없다
-    : await prisma.directMessage.findFirst({
-        where: { ...dmWhere, fromUserId: otherUserId, toUserId: currentUserId, readAt: null },
-        orderBy: { id: 'asc' },
-        select: { id: true },
-      });
-  const previous = await prisma.directMessage.findFirst({
-    where: { ...dmWhere, ...(firstUnread && { id: { lt: firstUnread.id } }) },
-    orderBy: { id: 'desc' },
-    select: { id: true },
-  });
-  const lastReadId = previous?.id ?? null;
-  const unreadCount = firstUnread
-    ? await prisma.directMessage.count({ where: { ...dmWhere, id: { gte: firstUnread.id } } })
-    : 0;
-  return { lastReadId, unreadCount };
+  const [row] = await prisma.$queryRaw<Array<{ lastReadId: number | null; unreadCount: number }>>`
+    WITH conv AS (
+      SELECT id, "fromUserId", "readAt" FROM "DirectMessage"
+      WHERE "groupId" IS NULL AND "deletedAt" IS NULL AND "threadId" IS NULL
+        AND (("fromUserId" = ${currentUserId} AND "toUserId" = ${otherUserId})
+          OR ("fromUserId" = ${otherUserId} AND "toUserId" = ${currentUserId}))
+    ),
+    first_unread AS (
+      -- 나와의 대화는 안 읽음이 없다
+      SELECT CASE WHEN ${currentUserId}::int = ${otherUserId}::int THEN NULL ELSE MIN(id) END AS id
+      FROM conv WHERE "fromUserId" = ${otherUserId} AND "readAt" IS NULL
+    )
+    SELECT
+      (SELECT MAX(c.id) FROM conv c, first_unread f WHERE f.id IS NULL OR c.id < f.id)::int AS "lastReadId",
+      (SELECT COUNT(*) FROM conv c, first_unread f WHERE f.id IS NOT NULL AND c.id >= f.id)::int AS "unreadCount"
+  `;
+  return { lastReadId: row?.lastReadId ?? null, unreadCount: row?.unreadCount ?? 0 };
 }
 
 // GET /dms/:userId - Get DM conversation with specific user
@@ -421,21 +420,17 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
       nextCursor = undefined;
       hasMore = false;
     } else {
-      if (req.query.withUnread === '1' && !cursor) {
-        unreadBaseline = await getDmUnreadBaseline(currentUserId, otherUserId, dmWhere);
-      }
-      // Run message fetch and mark-read in parallel — saves one DB round-trip
-      const [messages] = await Promise.all([
-        prisma.directMessage.findMany({
-          where: dmWhere,
-          include: dmInclude,
-          orderBy: { createdAt: 'desc' },
-          take: limit + 1,
-          ...(cursor && {
-            cursor: { id: cursor },
-            skip: 1,
-          }),
+      const messagesQuery = prisma.directMessage.findMany({
+        where: dmWhere,
+        include: dmInclude,
+        orderBy: { createdAt: 'desc' },
+        take: limit + 1,
+        ...(cursor && {
+          cursor: { id: cursor },
+          skip: 1,
         }),
+      });
+      const markRead = () => Promise.all([
         prisma.directMessage.updateMany({
           where: {
             fromUserId: otherUserId,
@@ -449,6 +444,17 @@ router.get('/:userId', authMiddleware, async (req: AuthRequest, res: Response) =
         }).catch((err) => logError('DM read-status update failed', err)),
         markDmMentionsRead(currentUserId, otherUserId).catch((err) => logError('DM mention read update failed', err)),
       ]);
+      let messages;
+      if (req.query.withUnread === '1' && !cursor) {
+        // 기준점 계산은 읽기 전용이라 메시지 조회와 병렬로 돌리고, 둘 다 끝난 뒤에 읽음 처리한다
+        let baseline;
+        [messages, baseline] = await Promise.all([messagesQuery, getDmUnreadBaseline(currentUserId, otherUserId)]);
+        unreadBaseline = baseline;
+        await markRead();
+      } else {
+        // Run message fetch and mark-read in parallel — saves one DB round-trip
+        [messages] = await Promise.all([messagesQuery, markRead()]);
+      }
 
       const paginated = paginateResults(messages, limit);
       enrichedMessages = enrichDMMessages(paginated.results);
