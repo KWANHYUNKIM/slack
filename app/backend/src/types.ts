@@ -18,4 +18,6 @@ export interface AuthRequest extends Request {
   file?: any;
   dm?: any;
   dmGroupId?: number;
+  /** /mcp에서 개인 액세스 토큰으로 인증했을 때만 채워진다 */
+  accessToken?: { tokenId: number; scopes: string[] };
 }

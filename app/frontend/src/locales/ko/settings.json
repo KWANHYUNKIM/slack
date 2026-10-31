@@ -44,5 +44,49 @@
     "save": "저장",
     "saving": "저장하는 중...",
     "failed": "사진을 자르지 못했습니다."
+  },
+  "accessTokens": {
+    "title": "개인 액세스 토큰",
+    "description": "토큰이 있으면 Claude 같은 MCP 클라이언트가 내 권한으로 워크스페이스를 읽을 수 있습니다. 비밀번호처럼 다루세요.",
+    "nameLabel": "토큰 이름",
+    "namePlaceholder": "예: 노트북의 Claude Code",
+    "scopesLabel": "권한",
+    "scope": {
+      "channelsRead": "채널 목록 보기",
+      "channelsHistory": "메시지, 스레드, 활동 읽기",
+      "usersRead": "사람 보기"
+    },
+    "expiryLabel": "만료",
+    "expiryDays": "{count}일",
+    "expiryNever": "만료 없음",
+    "neverWarning": "만료 없는 토큰은 직접 폐기할 때까지 계속 유효합니다.",
+    "create": "토큰 만들기",
+    "createdNotice": "새 토큰을 지금 복사하세요. 다시 볼 수 없습니다.",
+    "copy": "토큰 복사",
+    "copyCommand": "명령 복사",
+    "copied": "클립보드에 복사했습니다",
+    "connectHint": "Claude Code에서 연결하기:",
+    "dismiss": "완료, 토큰 숨기기",
+    "loading": "불러오는 중...",
+    "empty": "개인 액세스 토큰이 없습니다.",
+    "expires": "{date}에 만료",
+    "expired": "만료됨",
+    "noExpiry": "만료 없음",
+    "lastUsed": "마지막 사용 {date}",
+    "neverUsed": "사용한 적 없음",
+    "rename": "이름 바꾸기",
+    "renameLabel": "{name} 토큰 이름 바꾸기",
+    "revoke": "폐기",
+    "revokeLabel": "{name} 토큰 폐기",
+    "revokeConfirm": "지금 폐기",
+    "cancel": "취소",
+    "close": "닫기",
+    "errors": {
+      "loadFailed": "토큰을 불러오지 못했습니다.",
+      "createFailed": "토큰을 만들지 못했습니다. 다시 시도해 주세요.",
+      "renameFailed": "토큰 이름을 바꾸지 못했습니다.",
+      "revokeFailed": "토큰을 폐기하지 못했습니다.",
+      "copyFailed": "복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요."
+    }
   }
 }

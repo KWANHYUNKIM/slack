@@ -66,6 +66,7 @@ model User {
   sidebarPref        SidebarPref?
   dmGroups           DMGroupMember[]
   threadReads        ThreadRead[]
+  accessTokens       PersonalAccessToken[]
 
   @@index([dndUntil])
   @@index([customStatusExpiresAt])
@@ -449,4 +450,23 @@ model Reminder {
 
   @@index([userId, completedAt, remindAt])
   @@index([remindAt, firedAt])
+}
+
+// MCP용 개인 액세스 토큰(mcp-1). 원문은 발급 응답에서 한 번만 보여 주고 DB에는 sha256 해시만 둔다.
+// publicId는 토큰 안에 들어 있는 조회 키다. 비밀 부분은 해시를 상수 시간으로 비교한다.
+model PersonalAccessToken {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  name       String    @db.VarChar(100)
+  publicId   String    @unique @db.VarChar(16)
+  tokenHash  String    @db.Char(64)
+  scopes     String[]
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
 }

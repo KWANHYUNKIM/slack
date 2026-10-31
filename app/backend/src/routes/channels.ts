@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireChannelMembership, requirePublicChannelReadAccess } from '../middleware/authorize.js';
+import { requireChannelMembership, requirePublicChannelReadAccess, listableChannelsWhere } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { isUserOnline, getIO } from '../websocket/index.js';
 import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
@@ -89,18 +89,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const isGuest = req.user!.role === 'GUEST';
 
     const channels = await prisma.channel.findMany({
-      where: isGuest
-        ? { members: { some: { userId } }, archivedAt: null }
-        : {
-            archivedAt: null,
-            OR: [
-              { isPrivate: false },
-              { members: { some: { userId } } },
-            ],
-          },
+      where: listableChannelsWhere(userId, req.user!.role),
       include: {
         _count: {
           select: { members: true, messages: true },

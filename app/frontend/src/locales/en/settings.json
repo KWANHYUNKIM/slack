@@ -44,5 +44,49 @@
     "save": "Save",
     "saving": "Saving...",
     "failed": "Failed to crop"
+  },
+  "accessTokens": {
+    "title": "Personal access tokens",
+    "description": "Tokens let Claude and other MCP clients read your workspace with your permissions. Treat them like a password.",
+    "nameLabel": "Token name",
+    "namePlaceholder": "e.g. Claude Code on my laptop",
+    "scopesLabel": "Permissions",
+    "scope": {
+      "channelsRead": "List channels",
+      "channelsHistory": "Read messages, threads and activity",
+      "usersRead": "View people"
+    },
+    "expiryLabel": "Expires",
+    "expiryDays": "{count, plural, one {# day} other {# days}}",
+    "expiryNever": "No expiration",
+    "neverWarning": "Tokens without an expiration stay valid until you revoke them.",
+    "create": "Generate token",
+    "createdNotice": "Copy your new token now. You won't be able to see it again.",
+    "copy": "Copy token",
+    "copyCommand": "Copy command",
+    "copied": "Copied to clipboard",
+    "connectHint": "Connect from Claude Code:",
+    "dismiss": "Done, hide token",
+    "loading": "Loading...",
+    "empty": "You have no personal access tokens.",
+    "expires": "Expires {date}",
+    "expired": "Expired",
+    "noExpiry": "No expiration",
+    "lastUsed": "Last used {date}",
+    "neverUsed": "Never used",
+    "rename": "Rename",
+    "renameLabel": "Rename token {name}",
+    "revoke": "Revoke",
+    "revokeLabel": "Revoke token {name}",
+    "revokeConfirm": "Revoke now",
+    "cancel": "Cancel",
+    "close": "Close",
+    "errors": {
+      "loadFailed": "Failed to load tokens.",
+      "createFailed": "Failed to create the token. Please try again.",
+      "renameFailed": "Failed to rename the token.",
+      "revokeFailed": "Failed to revoke the token.",
+      "copyFailed": "Couldn't copy. Select the text and copy it manually."
+    }
   }
 }

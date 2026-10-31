@@ -1289,3 +1289,41 @@ export function adminDeleteWebhook(webhookId: number) {
 export function getHuddleConfig() {
   return request<{ iceServers: RTCIceServer[] }>('/huddles/config');
 }
+
+// ---- Personal access tokens (MCP) ----
+
+export type AccessTokenScope = 'channels:read' | 'channels:history' | 'users:read';
+
+export interface AccessToken {
+  id: number;
+  name: string;
+  /** 목록에 보여 주는 앞부분(scpat_xxxxxxxxxxxx). 비밀 부분은 서버도 모른다. */
+  prefix: string;
+  scopes: AccessTokenScope[];
+  expiresAt: string | null;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  expired: boolean;
+}
+
+/** 발급 응답에만 원문 token이 들어 있다. 다시 받을 수 없다. */
+export interface CreatedAccessToken extends AccessToken {
+  token: string;
+}
+
+export function listAccessTokens() {
+  return request<{ items: AccessToken[]; nextCursor: null }>('/tokens');
+}
+
+export function createAccessToken(data: { name: string; scopes: AccessTokenScope[]; expiresInDays: number | null }) {
+  return request<CreatedAccessToken>('/tokens', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function renameAccessToken(id: number, name: string) {
+  return request<AccessToken>(`/tokens/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) });
+}
+
+export function revokeAccessToken(id: number) {
+  return request<AccessToken>(`/tokens/${id}`, { method: 'DELETE' });
+}

@@ -18,6 +18,7 @@ import {
   Inbox,
   MessagesSquare,
   Search,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -29,6 +30,7 @@ import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Avatar } from '@/components/ui/avatar';
 import { UserMenuStatus } from '@/components/Profile/UserMenuStatus';
 import { StatusDialog } from '@/components/Profile/StatusDialog';
+import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
@@ -64,6 +66,7 @@ export function Sidebar() {
   const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/threads' ? 'threads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [showTokensDialog, setShowTokensDialog] = useState(false);
   const myCustomStatus = useCustomStatus(user?.id);
   const myDndOn = useIsDnd(user?.id);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
@@ -208,6 +211,7 @@ export function Sidebar() {
     <div className="flex h-full">
       {/* 상태 대화상자는 아바타 메뉴 밖에 둔다(메뉴의 바깥 클릭 처리에 휘말려 닫히지 않게) */}
       {showStatusDialog && <StatusDialog onClose={() => setShowStatusDialog(false)} />}
+      {showTokensDialog && <AccessTokensDialog onClose={() => setShowTokensDialog(false)} />}
       {/* Nav Rail - 70px wide, darker purple */}
       <div className="flex w-[70px] flex-col items-center bg-slack-sidebar-dark pt-[max(0.5rem,env(safe-area-inset-top))] gap-0">
         {/* Workspace Icon - 36x36px */}
@@ -299,6 +303,10 @@ export function Sidebar() {
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); openProfile(); }}>
                   <User className="h-4 w-4" />
                   {t('userMenu.profile')}
+                </Button>
+                <Button variant="menu-item" data-testid="access-tokens-menu-item" onClick={() => { setShowAvatarMenu(false); setShowTokensDialog(true); }}>
+                  <KeyRound className="h-4 w-4" />
+                  {t('userMenu.accessTokens')}
                 </Button>
                 {permission === 'unsupported' ? null : permission === 'denied' ? (
                   <Button variant="menu-item" className="text-slack-hint cursor-default" onClick={() => setShowAvatarMenu(false)}>
