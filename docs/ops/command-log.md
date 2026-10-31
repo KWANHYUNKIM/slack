@@ -30,6 +30,9 @@
 | 09:23 | 2 | dev-1 | sonnet | fix/baseline-failing-tests (원인 분류 필요, 디버깅이라 sonnet) | 완료, PR #5 | 96,134 |
 | 09:36 | 3 | planner-2 | sonnet | 04, 05 스펙 + 테스트 채널 CRUD 실습(사용자 08:59 지시를 명시) | 진행 중 | |
 | 09:36 | 3 | dev-3 | sonnet | 프런트 의존성 보안 업그레이드(백엔드는 dev-1과 충돌해 분리) | 진행 중 | |
+| 09:58 | 4 | dev-4 | sonnet | 백엔드 의존성 보안(critical 1) | 진행 중 | |
+| 09:58 | 4 | dev-5 | sonnet | 프런트 tsc·lint 수정(덮기 금지 지시) | 진행 중 | |
+| 09:58 | 4 | planner-1 | sonnet | #claude-test CRUD 실습, 04·05 스펙 보완 | 진행 중 | |
 | 09:23 | 2 | dev-2 | haiku | ci.yml (정형화된 설정 작업이라 haiku) | 완료, PR #3 | 72,961 |
 
 ## 총괄 실행 명령
@@ -63,3 +66,4 @@
 | 09:50 | `/code-review medium 5` | 규칙 13: 코드 PR 리뷰 | 지적 8건(52,615 토큰) |
 | 09:52 | 리뷰 반영 결정 | 이번 PR에서 고침: 다른 사용자 토큰 거부 테스트, rateLimitKey 공용화와 단위 테스트, purpose/tokenVersion 없는 토큰은 IP 키, 전체 타임아웃 10초 복구와 느린 파일만 30초. 별도 파트로: 범위 없는 토큰, 채널 이름. 기록만: JWT 이중 검증 | dev-1에게 되돌림 |
 | 09:55 | Chrome: Slack에서 비공개 채널 `#claude-test` 생성, 초대 없음 | CRUD 실습 전용 채널 | C0CDUKV338U |
+| 09:57 | PR #5에 리뷰 반영 커밋 d40b1c4, 리뷰 결과 코멘트 | 규칙 13 | 383 tests 통과 |
