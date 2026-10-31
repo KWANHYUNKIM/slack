@@ -11,6 +11,7 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { createActivitiesForMessage, syncActivitiesOnEdit, deleteActivitiesForMessage } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -81,6 +82,10 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
       io.to(`channel:${parentMessage.channelId}`).emit('message:new', { ...reply, threadId: parentId });
     }
 
+    // 스레드 답글·멘션 활동 생성
+    const activities = reply ? await createActivitiesForMessage(reply) : [];
+    const mentionedIds = new Set(activities.filter((a) => a.type !== 'THREAD_REPLY').map((a) => a.userId));
+
     // Push to thread participants (fire-and-forget)
     if (reply) {
       const channelInfo = await prisma.channel.findUnique({
@@ -101,7 +106,7 @@ router.post('/:id/reply', authMiddleware, requireMessageAccess, async (req: Auth
       });
 
       for (const p of participants) {
-        if (p.userId === userId) continue;
+        if (p.userId === userId || mentionedIds.has(p.userId)) continue;
         if (isUserOnline(p.userId)) continue;
         sendPushToUser(p.userId, {
           title: `#${channelName} thread`,
@@ -186,6 +191,8 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
       },
     });
 
+    await syncActivitiesOnEdit(updatedMessage);
+
     res.json(updatedMessage);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -230,6 +237,8 @@ router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequ
         data: { messageId: null },
       }),
     ]);
+
+    await deleteActivitiesForMessage(messageId);
 
     // Broadcast deletion to channel so other clients update in real-time
     const io = getIO();

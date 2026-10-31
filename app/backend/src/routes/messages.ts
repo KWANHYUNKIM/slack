@@ -10,6 +10,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { createActivitiesForMessage } from '../services/mentionService.js';
 
 const router = Router();
 
@@ -82,6 +83,10 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
       });
     });
 
+    // 멘션·스레드 답글 활동 생성 (멘션 푸시는 서비스가 보내므로 아래 일반 푸시에서는 뺀다)
+    const activities = finalMessage ? await createActivitiesForMessage(finalMessage) : [];
+    const mentionedIds = new Set(activities.map((a) => a.userId));
+
     // Broadcast via WebSocket so other users see the message in real-time
     const io = getIO();
     if (io && finalMessage) {
@@ -102,7 +107,7 @@ router.post('/:id/messages', authMiddleware, requireChannelMembership, async (re
           select: { userId: true },
         }).then((members) => {
           for (const member of members) {
-            if (member.userId === userId) continue;
+            if (member.userId === userId || mentionedIds.has(member.userId)) continue;
             if (isUserOnline(member.userId)) continue;
             sendPushToUser(member.userId, {
               title: `#${channelName}`,

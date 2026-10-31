@@ -50,6 +50,8 @@ model User {
   auditLogs          AuditLog[]
   pushSubscriptions  PushSubscription[]
   webhooks           Webhook[]
+  activitiesReceived Activity[] @relation("ActivityRecipient")
+  activitiesSent     Activity[] @relation("ActivityActor")
 }
 
 model InviteLink {
@@ -283,4 +285,37 @@ model Webhook {
 
   @@index([channelId])
   @@index([token])
+}
+
+enum ActivityType {
+  MENTION
+  CHANNEL_MENTION
+  HERE_MENTION
+  THREAD_REPLY
+  REACTION
+}
+
+// 내 활동 탭의 항목. messageId/dmId는 FK 없이 두고(채널 메시지와 DM 둘 다 가리킴) 삭제는 서비스에서 정리한다.
+model Activity {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  actorId   Int
+  type      ActivityType
+  messageId Int?
+  dmId      Int?
+  channelId Int?
+  emoji     String?      @db.VarChar(50)
+  readAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  user  User @relation("ActivityRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("ActivityActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  // NULL 컬럼이 들어가면 Postgres는 NULL끼리 다르다고 보므로 이 unique는 중복을 못 막는다.
+  // 그래서 mentionService가 생성 전에 기존 행을 먼저 조회해 중복을 거른다.
+  @@unique([userId, type, messageId, dmId, actorId, emoji])
+  @@index([userId, readAt, createdAt])
+  @@index([messageId])
+  @@index([dmId])
+  @@index([userId, channelId, readAt])
 }

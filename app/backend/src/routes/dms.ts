@@ -11,6 +11,15 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
+import {
+  createActivitiesForDm,
+  syncActivitiesOnDmEdit,
+  deleteActivitiesForDm,
+  createReactionActivity,
+  removeReactionActivity,
+  markDmMentionsRead,
+  getMentionCountsByDmPartner,
+} from '../services/mentionService.js';
 
 const router = Router();
 
@@ -84,6 +93,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         include: DM_INCLUDE_USERS,
       });
     });
+
+    if (dm) await createActivitiesForDm(dm);
 
     // Broadcast via WebSocket so the recipient sees the DM in real-time
     const io = getIO();
@@ -187,6 +198,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       );
     }
 
+    const mentionCounts = await getMentionCountsByDmPartner(userId);
+
     // Apply online status from WebSocket tracking
     const result = filteredConversations.map((conv) => ({
       otherUser: conv.otherUser ? {
@@ -195,6 +208,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       } : conv.otherUser,
       lastMessage: conv.lastMessage,
       unreadCount: Number(conv.unreadCount),
+      mentionCount: conv.otherUser ? mentionCounts.get(conv.otherUser.id) ?? 0 : 0,
     }));
 
     res.json(result);
@@ -429,6 +443,8 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       });
     });
 
+    if (reply) await createActivitiesForDm({ ...reply, threadId: parentId });
+
     // Broadcast to both users so the thread updates in real-time
     const io = getIO();
     if (io) {
@@ -509,6 +525,8 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
       },
     });
 
+    await syncActivitiesOnDmEdit(updated);
+
     // Broadcast to the other user so the edit appears in real-time
     // (the sender's UI is already updated from the REST response)
     const io = getIO();
@@ -536,6 +554,7 @@ router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: A
       where: { id: dm.id },
       data: { deletedAt: new Date() },
     });
+    await deleteActivitiesForDm(dm.id);
 
     // Broadcast to the other user so the deletion appears in real-time
     // (the sender's UI is already updated from the REST response)
@@ -585,8 +604,15 @@ router.post('/messages/:id/reactions', authMiddleware, requireDmAccess, async (r
       include: { user: { select: { id: true, name: true } } },
     });
 
-    // Broadcast to both DM participants
     const dm = req.dm;
+    await createReactionActivity({
+      actorId: userId,
+      targetUserId: dm.fromUserId,
+      emoji,
+      dmId,
+    });
+
+    // Broadcast to both DM participants
     const io = getIO();
     if (io) {
       const payload = { dmId, reaction: { id: reaction.id, emoji, userId, user: reaction.user } };
@@ -629,6 +655,7 @@ router.delete('/messages/:id/reactions/:emoji', authMiddleware, requireDmAccess,
     }
 
     await prisma.dMReaction.delete({ where: { id: reaction.id } });
+    await removeReactionActivity({ actorId: userId, emoji: rawEmoji, dmId });
 
     const dm = req.dm;
     const io = getIO();
@@ -695,6 +722,8 @@ router.post('/:userId/read', authMiddleware, async (req: AuthRequest, res: Respo
         readAt: new Date(),
       },
     });
+
+    await markDmMentionsRead(currentUserId, otherUserId);
 
     res.json({ markedAsRead: result.count });
   } catch (error) {

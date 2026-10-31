@@ -24,6 +24,7 @@ import unreadRoutes from './routes/unreads.js';
 import scheduledMessageRoutes from './routes/scheduled-messages.js';
 import adminRoutes from './routes/admin.js';
 import pushRoutes from './routes/push.js';
+import activityRoutes from './routes/activity.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitKey } from './middleware/rateLimitKey.js';
@@ -126,6 +127,7 @@ app.use('/unreads', apiLimiter, unreadRoutes);
 app.use('/messages', apiLimiter, scheduledMessageRoutes);
 app.use('/admin', apiLimiter, adminRoutes);
 app.use('/push', apiLimiter, pushRoutes);
+app.use('/activity', apiLimiter, activityRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
