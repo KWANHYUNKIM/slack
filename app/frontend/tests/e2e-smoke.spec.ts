@@ -488,6 +488,11 @@ test.describe('E2E smoke', () => {
     await expect(page).toHaveURL(/\/admin$/);
     const main = page.locator('main');
     await expect(main.getByText(tr('en', 'admin', 'page.title'))).toBeVisible();
+    // 새로고침 경로도 확인한다: 검색 화면을 쿼리스트링과 함께 새로고침한 뒤 관리자 주소를 직접 연다
+    await page.goto('/search?q=smoke');
+    await expect(page.getByTestId('search-page')).toBeVisible();
+    await page.goto('/admin');
+    await expect(main.getByText(tr('en', 'admin', 'page.title'))).toBeVisible();
 
     // 탭 열림: 보존, 보안, 법적 보존, DLP
     await main.getByRole('button', { name: tr('en', 'admin', 'page.tabs.retention') }).click();

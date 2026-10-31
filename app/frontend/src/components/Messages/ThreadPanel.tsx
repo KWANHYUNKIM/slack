@@ -27,6 +27,7 @@ import { LinkModal } from './LinkModal';
 import { PanelHeader } from './PanelHeader';
 import { EditorToolbar } from './EditorToolbar';
 import { useQuillEditor } from '@/hooks/useQuillEditor';
+import { shouldClearAlsoSend } from '@/lib/alsoSend';
 import { Message } from './Message';
 import type { Message as MessageType, Reaction } from '@/lib/types';
 
@@ -100,6 +101,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   const [isSending, setIsSending] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [alsoSend, setAlsoSend] = useState(false);
+  // 사용자가 체크를 바꾼 횟수. 전송 응답이 올 때 그사이 바뀌었는지 확인하는 데 쓴다
+  const alsoSendVersion = useRef(0);
   const repliesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSendRef = useRef<() => void>(() => {});
@@ -317,6 +320,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
 
     // 이번 전송에 쓴 체크 상태를 잡아 둔다. 응답이 오기 전에 사용자가 다시 체크했을 수 있다
     const sentAlsoSend = alsoSend;
+    const sentAlsoSendVersion = alsoSendVersion.current;
     setIsSending(true);
     setReplyError(null);
     didSendReply.current = true;
@@ -327,7 +331,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       if (isDM) {
         apiReply = await replyToDM(messageId, content, fileIdsParam);
       } else {
-        apiReply = await replyToMessage(messageId, content, fileIdsParam, alsoSend);
+        apiReply = await replyToMessage(messageId, content, fileIdsParam, sentAlsoSend);
       }
       const reply = normalizeToMessage(apiReply);
       setReplies((prev) => {
@@ -335,8 +339,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         return [...prev, reply];
       });
       editor.clearEditor();
-      // 이 전송에 쓴 값일 때만 되돌린다. 응답을 기다리는 사이 사용자가 바꾼 체크는 지킨다
-      setAlsoSend((current) => (current === sentAlsoSend ? false : current));
+      // 응답을 기다리는 사이 사용자가 체크를 바꾸지 않았을 때만 푼다
+      if (shouldClearAlsoSend(sentAlsoSendVersion, alsoSendVersion.current)) setAlsoSend(false);
     } catch (err) {
       didSendReply.current = false;
       console.error('Failed to send reply:', err);
@@ -472,7 +476,10 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 type="checkbox"
                 data-testid="thread-also-send"
                 checked={alsoSend}
-                onChange={(e) => setAlsoSend(e.target.checked)}
+                onChange={(e) => {
+                  alsoSendVersion.current += 1;
+                  setAlsoSend(e.target.checked);
+                }}
               />
               {t('threadPanel.alsoSendToChannel')}
             </label>
