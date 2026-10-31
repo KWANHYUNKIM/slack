@@ -112,3 +112,5 @@
 | 2026-11-01 00:05 | dev-1 | sonnet | fix/emoji-cdn-runtime | 90,745 |
 | 2026-11-01 00:10 | code-review | (리뷰) | PR #64 medium | 67,599 |
 | 2026-11-01 00:14 | dev-1 | sonnet | PR #64 리뷰 반영 | 35,680 |
+| 2026-11-01 00:20 | dev-2 | sonnet | mcp-3 search+files | 147,153 |
+| 2026-11-01 00:26 | code-review | (리뷰) | PR #68 medium | 93,012 |
