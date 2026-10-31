@@ -295,6 +295,10 @@ export function getActivityUnreadCount() {
   return request<{ total: number; mentions: number }>('/activity/unread-count');
 }
 
+export function getMentionCounts() {
+  return request<{ channels: Record<string, number>; dms: Record<string, number> }>('/activity/mention-counts');
+}
+
 export function markActivityRead(body: { ids: number[] } | { all: true }) {
   return request<{ updated: number; ids: number[] }>('/activity/read', {
     method: 'POST',

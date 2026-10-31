@@ -34,9 +34,6 @@ interface ChannelState {
   activeDMId: number | null;
   scrollToMessageId: number | null;
   dmScrollToMessageId: number | null;
-  /** Message briefly highlighted after a jump-to-message (cleared after 2s) */
-  highlightedMessageId: number | null;
-  dmHighlightedMessageId: number | null;
   isLoading: boolean;
   loadError: string | null;
 
@@ -60,6 +57,8 @@ interface ChannelState {
   markChannelAsRead: (channelId: number) => void;
   /** Re-fetch only the mention counts (after activity read/removed events) */
   refreshMentionCounts: () => Promise<void>;
+  /** Lower a channel or DM mention badge by one (an activity was read or removed) */
+  decrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
   /** A new mention arrived for a channel (channelId) or DM partner (dmUserId) */
   incrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
   markDMAsRead: (dmId: number) => void;
@@ -74,8 +73,6 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   activeDMId: null,
   scrollToMessageId: null,
   dmScrollToMessageId: null,
-  highlightedMessageId: null,
-  dmHighlightedMessageId: null,
   isLoading: false,
   loadError: null,
 
@@ -318,16 +315,26 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
 
   refreshMentionCounts: async () => {
     try {
-      const [apiChannels, conversations] = await Promise.all([api.getChannels(), api.getDirectMessages()]);
-      const channelCounts = new Map(apiChannels.map((c) => [c.id, c.mentionCount ?? 0]));
-      const dmCounts = new Map(conversations.filter((c) => c?.otherUser).map((c) => [c.otherUser.id, c.mentionCount ?? 0]));
+      // Lightweight endpoint: only counts, not the full channel and DM lists
+      const counts = await api.getMentionCounts();
       set((state) => ({
-        channels: state.channels.map((ch) => ({ ...ch, mentionCount: channelCounts.get(ch.id) ?? ch.mentionCount })),
-        directMessages: state.directMessages.map((dm) => ({ ...dm, mentionCount: dmCounts.get(dm.userId) ?? dm.mentionCount })),
+        channels: state.channels.map((ch) => ({ ...ch, mentionCount: counts.channels[ch.id] ?? 0 })),
+        directMessages: state.directMessages.map((dm) => ({ ...dm, mentionCount: counts.dms[dm.userId] ?? 0 })),
       }));
     } catch {
       // Badge refresh is best-effort; the next full fetch corrects it
     }
+  },
+
+  decrementMention: ({ channelId, dmUserId }) => {
+    set((state) => ({
+      channels: channelId === undefined ? state.channels : state.channels.map((ch) =>
+        ch.id === channelId ? { ...ch, mentionCount: Math.max(0, ch.mentionCount - 1) } : ch,
+      ),
+      directMessages: dmUserId === undefined ? state.directMessages : state.directMessages.map((dm) =>
+        dm.userId === dmUserId ? { ...dm, mentionCount: Math.max(0, dm.mentionCount - 1) } : dm,
+      ),
+    }));
   },
 
   incrementMention: ({ channelId, dmUserId }) => {

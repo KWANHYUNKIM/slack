@@ -122,6 +122,20 @@ describe('Activity: mentions, thread replies, reactions', () => {
       expect((await request(app).post('/activity/read').send({ all: true })).status).toBe(401);
     });
 
+    it('GET /activity/mention-counts returns unread mention counts per channel and DM partner', async () => {
+      expect((await request(app).get('/activity/mention-counts')).status).toBe(401);
+      const before = (await request(app).get('/activity/mention-counts').set(auth(carol))).body;
+      const baseline = before.channels[pubId] ?? 0;
+      await post(bob, pubId, `${mention(carol)} counts`);
+      await settle();
+      const after = await request(app).get('/activity/mention-counts').set(auth(carol));
+      expect(after.status).toBe(200);
+      expect(after.body.channels[pubId]).toBe(baseline + 1);
+      await request(app).post('/activity/read').set(auth(carol)).send({ all: true });
+      const cleared = (await request(app).get('/activity/mention-counts').set(auth(carol))).body;
+      expect(cleared.channels[pubId] ?? 0).toBe(0);
+    });
+
     it('rejects invalid query and body with 400', async () => {
       expect((await activityOf(alice, '?type=bogus')).status).toBe(400);
       expect((await activityOf(alice, '?limit=0')).status).toBe(400);

@@ -78,7 +78,6 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [isStarred, setIsStarred] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const highlightedId = useChannelStore((s) => s.dmHighlightedMessageId);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -103,27 +102,44 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
 
   const dmScrollToMessageId = useChannelStore((s) => s.dmScrollToMessageId);
 
+  // Fetch when the conversation changes. The jump target is read once from the store (not a dep),
+  // so clearing it later never triggers another fetch.
+  const requestedAroundRef = useRef<number | null>(null);
   useEffect(() => {
-    messageRefs.current = new Map();
-    fetchConversation(userId, dmScrollToMessageId ?? undefined);
-  }, [userId, fetchConversation, dmScrollToMessageId]);
+    const target = useChannelStore.getState().dmScrollToMessageId;
+    requestedAroundRef.current = target;
+    fetchConversation(userId, target ?? undefined);
+  }, [userId, fetchConversation]);
 
-  // Scroll to target message from search result
+  // Jump to a target message (search result, activity item). While the target is set and
+  // loaded it is also the highlighted message; the store clears it after 2s.
+  const hasMessages = messages.length > 0;
+  const targetLoaded = dmScrollToMessageId !== null && messages.some((m) => m.id === dmScrollToMessageId);
+  const highlightedId = targetLoaded ? dmScrollToMessageId : null;
+  const scrolledTargetRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!dmScrollToMessageId || messages.length === 0) return;
-    const el = messageRefs.current.get(dmScrollToMessageId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      didScrollToTarget.current = true;
-      useChannelStore.setState({ dmScrollToMessageId: null, dmHighlightedMessageId: dmScrollToMessageId });
+    if (dmScrollToMessageId === null) {
+      scrolledTargetRef.current = null;
+      return;
     }
-  // Re-run when the messages array changes: the refs are reset on re-fetch around the target.
-  }, [dmScrollToMessageId, messages]);
+    if (scrolledTargetRef.current === dmScrollToMessageId) return;
+    if (targetLoaded) {
+      const el = messageRefs.current.get(dmScrollToMessageId);
+      if (!el) return;
+      scrolledTargetRef.current = dmScrollToMessageId;
+      didScrollToTarget.current = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (hasMessages && !isLoading && requestedAroundRef.current !== dmScrollToMessageId) {
+      // Target is older than what is loaded: fetch the page around it once
+      requestedAroundRef.current = dmScrollToMessageId;
+      fetchConversation(userId, dmScrollToMessageId);
+    }
+  }, [dmScrollToMessageId, targetLoaded, hasMessages, isLoading, userId, fetchConversation]);
 
-  // Auto-clear highlight after 2s
+  // Clear the target (and so the highlight) 2s after it was reached
   useEffect(() => {
     if (!highlightedId) return;
-    const timer = setTimeout(() => useChannelStore.setState({ dmHighlightedMessageId: null }), 2000);
+    const timer = setTimeout(() => useChannelStore.setState({ dmScrollToMessageId: null }), 2000);
     return () => clearTimeout(timer);
   }, [highlightedId]);
 

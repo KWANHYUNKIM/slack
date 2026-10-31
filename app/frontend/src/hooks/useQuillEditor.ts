@@ -19,7 +19,7 @@ class MentionBlot extends Embed {
     node.setAttribute('data-mention-id', String(data.id));
     node.setAttribute('data-mention-name', data.name);
     node.textContent = `@${data.name}`;
-    const isHere = (data.id === -1 && data.name === 'here') || (data.id === -2 && data.name === 'channel');
+    const isHere = (data.id === MENTION_HERE_ID && data.name === 'here') || (data.id === MENTION_CHANNEL_ID && data.name === 'channel');
     node.style.cssText = isHere
       ? 'background:rgba(255,183,77,0.3);color:#b25e00;border-radius:3px;padding:0 2px;font-weight:500;cursor:pointer;'
       : 'background:rgba(29,155,209,0.1);color:#1264a3;border-radius:3px;padding:0 2px;font-weight:500;cursor:pointer;';

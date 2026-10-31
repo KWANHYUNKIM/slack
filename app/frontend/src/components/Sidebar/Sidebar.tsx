@@ -145,6 +145,16 @@ export function Sidebar() {
   };
 
   // Navigate and close sidebar on mobile
+  // Rail item click: open the page, or go back to the first channel when it is already open
+  const toggleNav = (path: string) => {
+    if (location.pathname === path) {
+      const firstChannel = channels.find((ch) => ch.isMember);
+      if (firstChannel) navTo(`/c/${firstChannel.id}`);
+    } else {
+      navTo(path);
+    }
+  };
+
   const navTo = (path: string) => {
     navigate(path);
     closeSidebar();
@@ -170,36 +180,10 @@ export function Sidebar() {
             key={item.id}
             data-testid={`nav-item-${item.id}`}
             onClick={() => {
-              if (item.id === 'activity') {
-                if (activeNav === 'activity') {
-                  const firstChannel = channels.find((ch) => ch.isMember);
-                  if (firstChannel) navTo(`/c/${firstChannel.id}`);
-                } else {
-                  navTo('/activity');
-                }
-              } else if (item.id === 'unreads') {
-                if (activeNav === 'unreads') {
-                  const firstChannel = channels.find((ch) => ch.isMember);
-                  if (firstChannel) navTo(`/c/${firstChannel.id}`);
-                } else {
-                  navTo('/unreads');
-                }
-              } else if (item.id === 'files') {
-                if (activeNav === 'files') {
-                  const firstChannel = channels.find((ch) => ch.isMember);
-                  if (firstChannel) navTo(`/c/${firstChannel.id}`);
-                } else {
-                  navTo('/files');
-                }
-              } else if (item.id === 'later') {
-                if (activeNav === 'later') {
-                  const firstChannel = channels.find((ch) => ch.isMember);
-                  if (firstChannel) navTo(`/c/${firstChannel.id}`);
-                } else {
-                  navTo('/later');
-                }
-              } else if (item.id === 'dms') {
+              if (item.id === 'dms') {
                 handleOpenAddTeammates();
+              } else {
+                toggleNav(`/${item.id}`);
               }
             }}
             className={cn(

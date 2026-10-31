@@ -1,4 +1,5 @@
 import type Quill from 'quill';
+import { MENTION_CHANNEL_ID, MENTION_HERE_ID } from '@/lib/types';
 
 function isSafeUrl(url: string): boolean {
   try {
@@ -41,9 +42,9 @@ export function serializeDelta(quill: Quill): string {
     // Handle mention embeds: { insert: { mention: { id, name } } }
     if (typeof op.insert === 'object' && op.insert !== null && 'mention' in op.insert) {
       const m = op.insert.mention as { id: number; name: string };
-      if (m.id === -1 && m.name === 'here') {
+      if (m.id === MENTION_HERE_ID && m.name === 'here') {
         pendingText += '<@here>';
-      } else if (m.id === -2 && m.name === 'channel') {
+      } else if (m.id === MENTION_CHANNEL_ID && m.name === 'channel') {
         pendingText += '<@channel>';
       } else {
         pendingText += `<@${m.id}|${m.name}>`;
