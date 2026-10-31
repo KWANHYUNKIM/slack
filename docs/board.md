@@ -12,7 +12,7 @@
 | 규칙 문서(git, FE, BE, 보안, 기술 스택, 엔터프라이즈·배포) | 총괄 | - | 완료 | 30분 | 2026-10-31 09:15 | 2026-10-31 09:35 | |
 | fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | 완료(PR #5 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:48 | security, files, edge-cases, admin |
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 완료(PR #3 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
-| D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | PR #45 리뷰 중 | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
+| D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | PR #45 리뷰 반영 중 | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
 | D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | - | sonnet | 대기 | 1.5h | | | D1 이후 |
 | E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
@@ -36,7 +36,7 @@
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만, no-external-requests.spec 포함) | 1h | | | PR #7 수동 확인 항목 |
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #8 남은 이슈 |
 | i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | dev-2 | sonnet | 완료(PR #11 머지) | 2.5h | | | docs/architecture/i18n.md |
-| i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 진행 | 1.5h | 2026-10-31 23:23 | | 1등급 |
+| i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | - | sonnet | 대기(스키마 순서) | 2h | | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
 | i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI | - | haiku | 대기 | 2h | | | |
