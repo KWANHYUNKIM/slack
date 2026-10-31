@@ -19,6 +19,9 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@google-cloud/storage": "^8.4.0",
     "@prisma/client": "^5.22.0",
@@ -62,8 +65,8 @@
     "bcrypt@6.0.0": true,
     "fsevents@2.3.3": true,
     "prisma@5.22.0": true,
-    "esbuild@0.27.2": true,
     "unrs-resolver@1.12.2": true,
-    "@parcel/watcher": false
+    "esbuild@0.27.7": true,
+    "@parcel/watcher@2.6.0": false
   }
 }
