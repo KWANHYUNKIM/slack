@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { isToday, isYesterday } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -77,6 +78,7 @@ const NO_GROUP = { name: null, members: [] };
 
 export function DMConversation(props: DMConversationProps) {
   const { t } = useTranslation('channels');
+  useFileTokens();
   const navigate = useNavigate();
   const groupId = props.groupId;
   const isGroup = groupId !== undefined;

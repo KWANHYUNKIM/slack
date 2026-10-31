@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { FileText, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, DATE_MEDIUM } from '@/lib/i18n/format';
-import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
+import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, type ApiFileWithUser } from '@/lib/api';
 import { ImageLightbox } from './ImageLightbox';
 import { PanelHeader } from './PanelHeader';
 import { formatBytes } from '@/lib/fileUtils';
@@ -17,6 +18,7 @@ interface FilesPanelProps {
 
 export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   const { t } = useTranslation(['messages', 'common']);
+  useFileTokens();
   const [files, setFiles] = useState<ApiFileWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -26,8 +28,8 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   useEffect(() => {
     let cancelled = false;
     const fetchFn = channelId ? getChannelFiles(channelId) : getUserFiles();
-    Promise.all([fetchFn, refreshDownloadToken()])
-      .then(([data]) => {
+    fetchFn
+      .then((data) => {
         if (cancelled) return;
         setFiles(data);
         setLoadError(null);

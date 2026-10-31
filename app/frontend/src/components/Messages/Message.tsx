@@ -1,4 +1,5 @@
 import { mentionsUser } from '@/lib/mentions';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTime, formatTimeShort, formatDateTime, DATE_TIME_FULL, formatFileSize } from '@/lib/i18n/format';
@@ -48,6 +49,7 @@ interface MessageProps {
 
 export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction, highlighted, onToggleBroadcast, permalinkBase }: MessageProps) {
   const { t } = useTranslation(['messages', 'common']);
+  useFileTokens();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

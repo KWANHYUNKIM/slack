@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useFileTokens } from '@/hooks/useFileTokens';
 import { FileIcon, X } from 'lucide-react';
 import { getFileUrl } from '@/lib/api';
 import type { ApiFile } from '@/lib/api';
@@ -10,6 +11,7 @@ interface FilePreviewProps {
 
 export function FilePreview({ files, onRemove }: FilePreviewProps) {
   const { t } = useTranslation('messages');
+  useFileTokens();
 
   if (files.length === 0) return null;
 

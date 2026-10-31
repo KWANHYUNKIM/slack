@@ -323,10 +323,25 @@ router.get('/:id', authMiddleware, requireFileAccess, async (req: AuthRequest, r
   }
 });
 
-// POST /files/download-token - Issue a short-lived, file-scoped download token
-const downloadTokenSchema = z.object({
-  fileId: z.number().int().positive().optional(),
-});
+// 다운로드 토큰: <img>·<a>처럼 Authorization 헤더를 못 붙이는 요청용이다.
+// 파일 하나(fileId)에 묶이고 수명이 짧다. 파일 id가 없는 구형 토큰은 받지 않는다.
+const DOWNLOAD_TOKEN_TTL = '5m';
+const MAX_TOKENS_PER_REQUEST = 50;
+const downloadTokenSchema = z.union([
+  z.object({ fileId: z.number().int().positive() }).strict(),
+  z.object({ fileIds: z.array(z.number().int().positive()).min(1).max(MAX_TOKENS_PER_REQUEST) }).strict(),
+]);
+
+function signDownloadToken(userId: number, tokenVersion: number, fileId: number): string {
+  return jwt.sign(
+    { userId, tokenVersion, purpose: 'file-download', fileId },
+    JWT_SECRET,
+    { algorithm: 'HS256', expiresIn: DOWNLOAD_TOKEN_TTL },
+  );
+}
+
+// POST /files/download-token - Issue short-lived, file-scoped download tokens
+// body: { fileId } -> { token }, { fileIds } -> { tokens: { [fileId]: token } } (접근 못 하는 파일은 빠진다)
 router.post('/download-token', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const parsed = downloadTokenSchema.safeParse(req.body);
@@ -334,43 +349,67 @@ router.post('/download-token', authMiddleware, async (req: AuthRequest, res: Res
       res.status(400).json({ error: 'Invalid request' });
       return;
     }
-    const { fileId } = parsed.data;
-    // If fileId provided, verify access before issuing a scoped token
-    if (fileId !== undefined) {
-      const file = await verifyFileAccess(req.user!.userId, fileId);
+    const userId = req.user!.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { tokenVersion: true } });
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    if ('fileId' in parsed.data) {
+      const { fileId } = parsed.data;
+      const file = await verifyFileAccess(userId, fileId);
       if (!file) {
         res.status(404).json({ error: 'File not found' });
         return;
       }
+      res.json({ token: signDownloadToken(userId, user.tokenVersion, fileId) });
+      return;
     }
-    const downloadToken = jwt.sign(
-      { userId: req.user!.userId, purpose: 'file-download', ...(fileId !== undefined && { fileId }) },
-      JWT_SECRET,
-      { algorithm: 'HS256', expiresIn: '5m' },
-    );
-    res.json({ token: downloadToken });
+
+    const tokens: Record<number, string> = {};
+    for (const fileId of new Set(parsed.data.fileIds)) {
+      if (await verifyFileAccess(userId, fileId)) {
+        tokens[fileId] = signDownloadToken(userId, user.tokenVersion, fileId);
+      }
+    }
+    res.json({ tokens });
   } catch (error) {
     logError('Generate download token error', error);
     res.status(500).json({ error: 'Failed to generate download token' });
   }
 });
 
-// GET /files/:id/download - Download file content (authenticated via header, or scoped download token)
-router.get('/:id/download', (req: AuthRequest, res: Response, next) => {
-  // Accept scoped download token via query parameter for <img>/<a> tags
+// GET /files/:id/download - Download file content (authenticated via header, or file-scoped download token)
+router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
+  // 쿼리 토큰은 파일 하나에 묶인 purpose=file-download 토큰만 받는다.
+  // 로그에 남아도 피해가 그 파일·몇 분으로 제한되고, 응답은 Referrer-Policy: no-referrer(helmet)로 Referer 유출을 막는다.
   if (!req.headers.authorization && req.query.token) {
     try {
-      const payload = jwt.verify(req.query.token as string, JWT_SECRET, { algorithms: ['HS256'] }) as any;
+      const raw = req.query.token;
+      if (typeof raw !== 'string') {
+        res.status(401).json({ error: 'Invalid or expired download token' });
+        return;
+      }
+      const payload = jwt.verify(raw, JWT_SECRET, { algorithms: ['HS256'] }) as any;
       if (payload.purpose !== 'file-download') {
         res.status(403).json({ error: 'Invalid download token' });
         return;
       }
-      // If token is scoped to a specific file, verify it matches
-      if (payload.fileId !== undefined && payload.fileId !== parseIntParam(req.params.id)) {
+      // 범위 없는(fileId 없는) 구형 토큰과 다른 파일의 토큰은 거부한다
+      if (!Number.isInteger(payload.fileId) || payload.fileId !== parseIntParam(req.params.id)) {
         res.status(403).json({ error: 'Token not valid for this file' });
         return;
       }
-      // Set user directly — authMiddleware rejects scoped tokens
+      // 발급 뒤 비활성화·로그아웃(tokenVersion 증가)된 사용자는 막는다
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { tokenVersion: true, deactivatedAt: true },
+      });
+      if (!user || user.deactivatedAt || user.tokenVersion !== payload.tokenVersion) {
+        res.status(401).json({ error: 'Invalid or expired download token' });
+        return;
+      }
       req.user = { userId: payload.userId };
     } catch {
       res.status(401).json({ error: 'Invalid or expired download token' });
