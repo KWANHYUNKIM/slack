@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types.js';
 import { checkAccessToken, looksLikeAccessToken } from '../services/accessTokenService.js';
 import {
-  checkOAuthAccessToken, looksLikeOAuthAccessToken, mcpResourceUrl, protectedResourceMetadataUrl, publicOrigin,
+  checkOAuthAccessToken, configuredOrigin, looksLikeOAuthAccessToken, protectedResourceMetadataUrl, publicOrigin,
 } from '../services/oauthService.js';
 import { ERR } from '../utils/errorCodes.js';
 import { isMfaPolicyEnforced } from '../services/mfaService.js';
@@ -11,8 +11,10 @@ import { markMcpAuthFailure } from '../mcp/rateLimit.js';
 function reject(req: AuthRequest, res: Response, hasToken: boolean): void {
   // RFC 6750·RFC 9728: 401에는 보호 리소스 메타데이터 주소를 붙여 OAuth 클라이언트가 인가 서버를 찾게 한다.
   // 토큰이 왔는데 틀렸으면 error="invalid_token". 실패 이유는 구분하지 않는다.
-  const metadata = protectedResourceMetadataUrl(publicOrigin(req));
-  res.setHeader('WWW-Authenticate', `Bearer realm="mcp", resource_metadata="${metadata}"${hasToken ? ', error="invalid_token"' : ''}`);
+  // 출처는 publicOrigin과 같은 규칙(PUBLIC_URL만, 개발에서만 Host). 운영에서 PUBLIC_URL이 없으면 OAuth가 꺼져 있으므로 메타데이터 주소를 붙이지 않는다.
+  const origin = publicOrigin(req);
+  const metadata = origin ? `, resource_metadata="${protectedResourceMetadataUrl(origin)}"` : '';
+  res.setHeader('WWW-Authenticate', `Bearer realm="mcp"${metadata}${hasToken ? ', error="invalid_token"' : ''}`);
   res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
 }
 
@@ -54,8 +56,12 @@ export async function accessTokenAuth(req: AuthRequest, res: Response, next: Nex
         unknown = result.unknown;
       }
     } else {
-      // audience: 이 서버의 /mcp용으로 발급한 토큰만 받는다
-      const result = await checkOAuthAccessToken(token, mcpResourceUrl(publicOrigin(req)));
+      // 운영에서 PUBLIC_URL이 없으면 OAuth 토큰은 받지 않는다(PAT만). 알려진 토큰일 수 있으니 IP 실패로 세지 않는다.
+      // audience는 요청 Host가 아니라 서버의 정식 resource와 비교한다(checkOAuthAccessToken).
+      const configured = configuredOrigin();
+      const result = !configured && process.env.NODE_ENV === 'production'
+        ? { ok: false as const, unknown: false }
+        : await checkOAuthAccessToken(token, configured);
       if (result.ok) {
         verified = result.token;
         // 리프레시로 토큰 행이 바뀌어도 한 연결(계열)을 같은 버킷으로 센다

@@ -29,15 +29,15 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
       return;
     }
     const userId = req.user!.userId;
-    const revoked = await disconnectApp(userId, clientId);
-    // 남의 앱이나 없는 앱, 이미 끊은 앱은 같은 404
-    if (revoked === 0) {
+    const { tokens, codes } = await disconnectApp(userId, clientId);
+    // 살아 있는 토큰도 교환 전 코드도 없으면(남의 앱, 없는 앱, 이미 끊은 앱) 같은 404
+    if (tokens === 0 && codes === 0) {
       res.status(404).json({ error: 'Connected app not found', code: ERR.OAUTH_CONNECTION_NOT_FOUND });
       return;
     }
     void writeAuditLog({
       action: 'oauth.token_revoked', actorId: userId, targetType: 'oauth_client', targetId: clientId,
-      details: JSON.stringify({ via: 'user', revoked }),
+      details: JSON.stringify({ via: 'user', revoked: tokens, codes }),
     });
     res.json({ disconnected: true });
   } catch (error) {

@@ -84,7 +84,7 @@ function rpc(token: string | null, method = 'tools/list', params: object = {}) {
 describe('OAuth 2.1 authorization server (mcp-4)', () => {
   const savedPublicUrl = process.env.PUBLIC_URL;
   const savedKey = process.env.TOTP_ENCRYPTION_KEY;
-  let alice: TestUser, bob: TestUser, admin: TestUser;
+  let alice: TestUser, bob: TestUser, carol: TestUser, admin: TestUser;
   let clientId: string;
   let clientRowId: number;
   const rawSecrets: string[] = [];
@@ -108,6 +108,7 @@ describe('OAuth 2.1 authorization server (mcp-4)', () => {
     await prisma.oAuthClient.deleteMany();
     alice = await register('Alice');
     bob = await register('Bob');
+    carol = await register('Carol');
     admin = await register('Admin');
     await prisma.user.update({ where: { id: admin.id }, data: { role: 'ADMIN' } });
   });
@@ -449,6 +450,109 @@ describe('OAuth 2.1 authorization server (mcp-4)', () => {
       }
       expect((await rpc(tokens.access_token)).status).toBe(200);
     });
+
+    it('PUBLIC_URL wins over the Host header; metadata is publicly cacheable only then', async () => {
+      const res = await request(app).get('/.well-known/oauth-authorization-server').set('Host', 'evil.example');
+      expect(res.body.issuer).toBe(ORIGIN);
+      expect(res.headers['cache-control']).toBe('public, max-age=300');
+      const unauth = await rpc(null).set('Host', 'evil.example');
+      expect(unauth.headers['www-authenticate']).toContain(`resource_metadata="${ORIGIN}/`);
+    });
+
+    it('development without PUBLIC_URL: Host-based, not cached; audience ignores the host but checks the /mcp path', async () => {
+      delete process.env.PUBLIC_URL;
+      try {
+        const meta = await request(app).get('/.well-known/oauth-protected-resource/mcp').set('Host', 'a.local:1111');
+        expect(meta.body.resource).toBe('http://a.local:1111/mcp');
+        expect(meta.headers['cache-control']).toBe('no-store');
+
+        // Host a로 동의·교환한 토큰이 Host b로 와도 동작한다(개발 환경은 호스트를 보지 않는다)
+        const { verifier, challenge } = pkce();
+        const params = authorizeParams(clientId, challenge, { resource: 'http://a.local:1111/mcp' });
+        const dec = await request(app).post('/oauth/authorize/decision').set('Host', 'a.local:1111').set(auth(alice))
+          .send({ params, approve: true });
+        expect(dec.status).toBe(200);
+        const code = new URL(dec.body.redirectTo).searchParams.get('code')!;
+        rawSecrets.push(code);
+        const tok = await request(app).post('/oauth/token').set('Host', 'a.local:1111').type('form')
+          .send({ grant_type: 'authorization_code', code, code_verifier: verifier, client_id: clientId });
+        expect(tok.status).toBe(200);
+        rawSecrets.push(tok.body.access_token, tok.body.refresh_token);
+        expect((await rpc(tok.body.access_token).set('Host', 'b.local:2222')).status).toBe(200);
+
+        // 경로가 /mcp가 아닌 리소스용 토큰은 거부한다
+        await prisma.oAuthToken.update({ where: { accessTokenHash: hashSecret(tok.body.access_token) }, data: { resource: 'http://a.local:1111/other' } });
+        expect((await rpc(tok.body.access_token)).status).toBe(401);
+      } finally {
+        process.env.PUBLIC_URL = ORIGIN;
+      }
+    });
+
+    it('production without PUBLIC_URL: OAuth endpoints 503, /mcp takes PATs only', async () => {
+      const tokens = await fullGrant(alice);
+      const pat = await request(app).post('/tokens').set(auth(alice)).send({ name: 'prod-check' });
+      expect(pat.status).toBe(201);
+      const savedEnv = process.env.NODE_ENV;
+      delete process.env.PUBLIC_URL;
+      process.env.NODE_ENV = 'production';
+      try {
+        for (const path of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource/mcp']) {
+          const res = await request(app).get(path);
+          expect(res.status).toBe(503);
+          expect(res.body.code).toBe('OAUTH_NOT_CONFIGURED');
+          expect(res.headers['cache-control']).toBe('no-store');
+        }
+        expect((await registerClient()).status).toBe(503);
+        expect((await request(app).get('/oauth/authorize').query({ client_id: clientId })).status).toBe(503);
+        expect((await tokenRequest({ grant_type: 'refresh_token', refresh_token: tokens.refresh_token, client_id: clientId })).status).toBe(503);
+        const oauthCall = await rpc(tokens.access_token);
+        expect(oauthCall.status).toBe(401);
+        expect(oauthCall.headers['www-authenticate']).toBe('Bearer realm="mcp", error="invalid_token"');
+        expect((await rpc(pat.body.token)).status).toBe(200);
+      } finally {
+        process.env.NODE_ENV = savedEnv;
+        process.env.PUBLIC_URL = ORIGIN;
+      }
+      expect((await rpc(tokens.access_token)).status).toBe(200);
+      await request(app).delete(`/tokens/${pat.body.id}`).set(auth(alice));
+    });
+
+    it('writes lastIssuedAt only on the first issuance', async () => {
+      const before = await prisma.oAuthClient.findUniqueOrThrow({ where: { id: clientRowId } });
+      expect(before.lastIssuedAt).not.toBeNull();
+      await fullGrant(alice);
+      const after = await prisma.oAuthClient.findUniqueOrThrow({ where: { id: clientRowId } });
+      expect(after.lastIssuedAt!.getTime()).toBe(before.lastIssuedAt!.getTime());
+    });
+
+    it('a revoked family does not raise reuse events; only a live family\'s rotated token does', async () => {
+      const first = await fullGrant(bob);
+      const r1 = await tokenRequest({ grant_type: 'refresh_token', refresh_token: first.refresh_token, client_id: clientId });
+      rawSecrets.push(r1.body.access_token, r1.body.refresh_token);
+      expect((await request(app).delete(`/users/me/connected-apps/${clientRowId}`).set(auth(bob))).status).toBe(200);
+      const countReuse = () => prisma.auditLog.count({ where: { action: 'oauth.refresh_reuse_detected' } });
+      const before = await countReuse();
+      // 회전된 옛 토큰과 현재 토큰 모두: 폐기된 계열이라 재사용 이벤트 없이 거부
+      for (const t of [first.refresh_token, r1.body.refresh_token]) {
+        const res = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t, client_id: clientId });
+        expect(res.body.error).toBe('invalid_grant');
+      }
+      expect(await countReuse()).toBe(before);
+    });
+
+    it('turning OAuth apps off while refreshing never leaves a live token', async () => {
+      for (let round = 0; round < 4; round++) {
+        const tokens = await fullGrant(alice);
+        const [, refresh] = await Promise.all([
+          request(app).patch('/admin/settings/security').set(auth(admin)).send({ allowOAuthApps: false }),
+          tokenRequest({ grant_type: 'refresh_token', refresh_token: tokens.refresh_token, client_id: clientId }),
+        ]);
+        if (refresh.status === 200) rawSecrets.push(refresh.body.access_token, refresh.body.refresh_token);
+        expect(await prisma.oAuthToken.count({ where: { revokedAt: null } })).toBe(0);
+        if (refresh.status === 200) expect((await rpc(refresh.body.access_token)).status).toBe(401);
+        await request(app).patch('/admin/settings/security').set(auth(admin)).send({ allowOAuthApps: true });
+      }
+    });
   });
 
   describe('connected apps (settings)', () => {
@@ -617,6 +721,21 @@ describe('OAuth 2.1 authorization server (mcp-4)', () => {
         const refresh = await tokenRequest({ grant_type: 'refresh_token', refresh_token: winners[0].body.refresh_token, client_id: clientId });
         expect(refresh.body.error).toBe('invalid_grant');
       }
+    });
+
+    it('disconnect counts live tokens or pending codes; rotated/expired rows alone give 404', async () => {
+      // 교환 전 코드만 있어도 200(코드를 지운다)
+      const pending = await approvedCode(carol);
+      const onlyCode = await request(app).delete(`/users/me/connected-apps/${clientRowId}`).set(auth(carol));
+      expect(onlyCode.status).toBe(200);
+      expect(await prisma.oAuthAuthorizationCode.findUnique({ where: { codeHash: hashSecret(pending.code) } })).toBeNull();
+      // 회전·만료된 행만 남은 경우: 목록에 안 보이므로 404
+      const t = await fullGrant(carol);
+      await prisma.oAuthToken.updateMany({
+        where: { accessTokenHash: hashSecret(t.access_token) }, data: { refreshExpiresAt: new Date(Date.now() - 1000) },
+      });
+      expect((await request(app).get('/users/me/connected-apps').set(auth(carol))).body.items).toEqual([]);
+      expect((await request(app).delete(`/users/me/connected-apps/${clientRowId}`).set(auth(carol))).status).toBe(404);
     });
 
     it('disconnecting an app deletes its unexchanged codes', async () => {

@@ -6,6 +6,7 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { shouldWriteLastUsed } from '../utils/lastUsed.js';
 import { ALLOWED_SCOPES, READ_SCOPES, hashSecret } from './accessTokenService.js';
 import { isMfaPolicyEnforced } from './mfaService.js';
+import { getPolicySettings, invalidateSettingsCache } from './settingsCache.js';
 
 // OAuth 2.1 인가 서버(mcp-4). MCP 인가 사양(2025-06-18)을 따른다:
 // RFC 8414 인가 서버 메타데이터, RFC 9728 보호 리소스 메타데이터, RFC 7591 동적 클라이언트 등록,
@@ -46,20 +47,53 @@ const randomSecret = () => crypto.randomBytes(32).toString('base64url');
 
 // ---- 출처와 메타데이터 ----
 
-/**
- * 이 서버의 공개 출처. PUBLIC_URL이 있으면 그 출처를, 없으면 요청의 프로토콜과 Host를 쓴다.
- * 운영에서는 PUBLIC_URL을 정해 둔다(Host 헤더에 기대지 않게). 개발에서는 vite proxy가 Host를 바꾸지 않게 해 둔다.
- */
-export function publicOrigin(req: Pick<Request, 'protocol' | 'get'>): string {
+/** PUBLIC_URL의 출처. 없거나 형식이 틀리면 null. 환경 변수는 호출 시점에 읽는다(테스트가 바꿔 가며 확인한다). */
+export function configuredOrigin(): string | null {
   const env = (process.env.PUBLIC_URL ?? '').trim();
-  if (env) {
-    try {
-      return new URL(env).origin;
-    } catch {
-      // 형식이 틀리면 요청 기준으로 대신한다
-    }
+  if (!env) return null;
+  try {
+    const url = new URL(env);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.origin : null;
+  } catch {
+    return null;
   }
+}
+
+const isProduction = () => process.env.NODE_ENV === 'production';
+
+/**
+ * 이 서버의 공개 출처(issuer, 리소스, 메타데이터 주소의 기준).
+ * - PUBLIC_URL이 있으면 그것만 쓴다. Host 헤더는 믿지 않는다(메타데이터·redirect·audience를 공격자가 바꾸지 못하게).
+ * - 운영(production)에서 PUBLIC_URL이 없으면 null: OAuth 엔드포인트는 503, /mcp는 PAT만 받는다.
+ * - 개발에서만 요청의 프로토콜과 Host로 대신한다(vite proxy가 Host를 바꾸지 않게 해 둔다). 이때 메타데이터는 캐시하지 않는다.
+ */
+export function publicOrigin(req: Pick<Request, 'protocol' | 'get'>): string | null {
+  const configured = configuredOrigin();
+  if (configured) return configured;
+  if (isProduction()) return null;
   return `${req.protocol}://${req.get('host')}`;
+}
+
+let warnedUnconfigured = false;
+/** 운영에서 PUBLIC_URL이 없으면 서버 시작 때 한 번 경고한다(app.ts가 부른다). */
+export function warnIfOAuthUnconfigured(): void {
+  if (warnedUnconfigured || !isProduction() || configuredOrigin()) return;
+  warnedUnconfigured = true;
+  console.warn('WARNING: PUBLIC_URL is not set (or invalid). OAuth endpoints are disabled (503) and /mcp accepts personal access tokens only.');
+}
+
+/**
+ * OAuth 액세스 토큰의 audience(resource)가 이 서버의 /mcp인지.
+ * PUBLIC_URL이 있으면 정식 resource와 정확히 같아야 한다. 개발(PUBLIC_URL 없음)에서는 Host가 요청마다 달라질 수 있어
+ * (localhost, 127.0.0.1, vite proxy) 호스트는 보지 않고 경로가 /mcp인지만 본다. 다른 경로(다른 리소스)용 토큰은 거부한다.
+ */
+export function audienceMatches(tokenResource: string, configured: string | null): boolean {
+  if (configured) return tokenResource === mcpResourceUrl(configured);
+  try {
+    return new URL(tokenResource).pathname === '/mcp';
+  } catch {
+    return false;
+  }
 }
 
 export const mcpResourceUrl = (origin: string) => `${origin}/mcp`;
@@ -104,39 +138,49 @@ export function normalizeResource(resource: string | undefined, origin: string):
 export function parseScopes(scope: string | undefined): string[] | null {
   if (scope === undefined || scope.trim() === '') return [...READ_SCOPES];
   const list = [...new Set(scope.trim().split(/\s+/))];
-  if (list.length > ALLOWED_SCOPES.length || list.some((s) => !ALLOWED_SCOPES.includes(s))) return null;
+  if (list.some((s) => !ALLOWED_SCOPES.includes(s))) return null;
   return list;
 }
 
 // ---- 조직 정책 ----
 
-// mfaService의 requireMfa 캐시와 같은 5초 TTL. 바꾸면 바로 비운다.
-const POLICY_CACHE_TTL = process.env.NODE_ENV === 'test' ? 0 : 5_000;
-let policyCache: { allow: boolean; cachedUntil: number } | null = null;
-
+/** 화면·인증 판단용(공용 5초 캐시). 토큰 발급은 이 값 대신 트랜잭션 안에서 lockPolicyForIssue로 다시 확인한다. */
 export async function getAllowOAuthApps(): Promise<boolean> {
-  const now = Date.now();
-  if (policyCache && policyCache.cachedUntil > now) return policyCache.allow;
-  const row = await prisma.workspaceSetting.findUnique({ where: { id: 1 }, select: { allowOAuthApps: true } });
-  policyCache = { allow: row?.allowOAuthApps ?? true, cachedUntil: now + POLICY_CACHE_TTL };
-  return policyCache.allow;
+  return (await getPolicySettings()).allowOAuthApps;
+}
+
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+/** 설정 행이 없으면 기본값으로 만든다(잠글 행이 있어야 끄기와 발급이 서로를 기다린다). */
+async function ensureSettingRow(tx: Tx): Promise<void> {
+  await tx.$executeRaw`INSERT INTO "WorkspaceSetting" ("id", "updatedAt") VALUES (1, NOW()) ON CONFLICT ("id") DO NOTHING`;
+}
+
+/**
+ * 토큰을 넣는 트랜잭션 안에서 부른다. 설정 행을 FOR SHARE로 잡고 캐시 없이 허용 여부를 읽는다.
+ * 끄기(setAllowOAuthApps)는 같은 행을 FOR UPDATE로 잡으므로, 끄기가 먼저면 여기서 false를 보고,
+ * 발급이 먼저면 끄기가 이 트랜잭션의 커밋을 기다린 뒤 새 토큰까지 폐기한다. 어느 순서든 끈 뒤 살아 있는 토큰이 남지 않는다.
+ */
+async function lockPolicyForIssue(tx: Tx): Promise<boolean> {
+  await ensureSettingRow(tx);
+  const rows = await tx.$queryRaw<{ allowOAuthApps: boolean }[]>`SELECT "allowOAuthApps" FROM "WorkspaceSetting" WHERE "id" = 1 FOR SHARE`;
+  return rows[0]?.allowOAuthApps ?? true;
 }
 
 /** 끄면 살아 있는 OAuth 토큰을 모두 폐기한다(다시 켜도 예전 연결이 살아나지 않게). 폐기한 행 수를 돌려준다. */
 export async function setAllowOAuthApps(allow: boolean): Promise<number> {
-  await prisma.workspaceSetting.upsert({
-    where: { id: 1 },
-    create: { id: 1, allowOAuthApps: allow },
-    update: { allowOAuthApps: allow },
+  const revoked = await prisma.$transaction(async (tx) => {
+    await ensureSettingRow(tx);
+    await tx.$queryRaw`SELECT "id" FROM "WorkspaceSetting" WHERE "id" = 1 FOR UPDATE`;
+    await tx.workspaceSetting.update({ where: { id: 1 }, data: { allowOAuthApps: allow } });
+    if (allow) return 0;
+    // 아직 교환하지 않은 인가 코드도 지운다(끈 뒤에 토큰으로 바꾸지 못하게)
+    const { count } = await tx.oAuthToken.updateMany({ where: { revokedAt: null }, data: { revokedAt: new Date() } });
+    await tx.oAuthAuthorizationCode.deleteMany({ where: { usedAt: null } });
+    return count;
   });
-  policyCache = null;
-  if (allow) return 0;
-  // 아직 교환하지 않은 인가 코드도 지운다(끈 뒤에 토큰으로 바꾸지 못하게)
-  const [{ count }] = await prisma.$transaction([
-    prisma.oAuthToken.updateMany({ where: { revokedAt: null }, data: { revokedAt: new Date() } }),
-    prisma.oAuthAuthorizationCode.deleteMany({ where: { usedAt: null } }),
-  ]);
-  return count;
+  invalidateSettingsCache();
+  return revoked;
 }
 
 // ---- 동적 클라이언트 등록(RFC 7591) ----
@@ -379,7 +423,8 @@ async function issueTokenPair(tx: Pick<typeof prisma, 'oAuthToken' | 'oAuthClien
   const accessToken = `${ACCESS_TOKEN_PREFIX}${randomSecret()}`;
   const refreshToken = `${REFRESH_TOKEN_PREFIX}${randomSecret()}`;
   const now = Date.now();
-  await tx.oAuthClient.update({ where: { id: input.clientId }, data: { lastIssuedAt: new Date(now) } });
+  // 첫 발급 때만 쓴다(정리 작업은 "한 번도 받지 않음"만 본다). 발급마다 같은 행을 갱신하지 않게.
+  await tx.oAuthClient.updateMany({ where: { id: input.clientId, lastIssuedAt: null }, data: { lastIssuedAt: new Date(now) } });
   await tx.oAuthToken.create({
     data: {
       ...input,
@@ -470,6 +515,7 @@ export async function exchangeAuthorizationCode(
   const familyId = crypto.randomBytes(16).toString('hex');
   const familyCreatedAt = new Date();
   const result = await prisma.$transaction(async (tx) => {
+    if (!(await lockPolicyForIssue(tx))) return 'disabled' as const;
     const claimed = await tx.oAuthAuthorizationCode.updateMany({
       where: { id: row.id, usedAt: null }, data: { usedAt: familyCreatedAt, familyId },
     });
@@ -479,6 +525,7 @@ export async function exchangeAuthorizationCode(
       tokenVersion: user.tokenVersion,
     });
   });
+  if (result === 'disabled') throw new OAuthError('invalid_grant', 'The authorization is no longer valid');
   if (!result) {
     await handleCodeReuse(row.id);
     throw new OAuthError('invalid_grant', 'Invalid authorization code');
@@ -502,9 +549,10 @@ export async function refreshAccessToken(client: { id: number }, body: Record<st
     });
     return new OAuthError('invalid_grant', 'Invalid refresh token');
   };
-  // 이미 회전된 리프레시 토큰이 다시 왔다(RFC 9700 4.14.2): 계열 전체를 폐기한다
-  if (row.rotatedAt) throw await reuse();
+  // 이미 폐기된 계열(연결 해제, 정책 끄기, 앞선 재사용 탐지)의 토큰은 회전된 것이어도 재사용 이벤트를 남기지 않는다
   if (row.revokedAt) throw new OAuthError('invalid_grant', 'Invalid refresh token');
+  // 살아 있는 계열의 이미 회전된 리프레시 토큰이 다시 왔다(RFC 9700 4.14.2): 계열 전체를 폐기한다
+  if (row.rotatedAt) throw await reuse();
   if (!row.refreshExpiresAt || row.refreshExpiresAt.getTime() <= Date.now()) throw new OAuthError('invalid_grant', 'Refresh token expired');
 
   let scopes = row.scopes;
@@ -524,6 +572,7 @@ export async function refreshAccessToken(client: { id: number }, body: Record<st
 
   // 회전: 옛 행에 rotatedAt을 찍는 것과 새 행을 만드는 것을 한 트랜잭션으로. 동시에 두 번 오면 하나만 통과하고 나머지는 재사용으로 본다.
   const result = await prisma.$transaction(async (tx) => {
+    if (!(await lockPolicyForIssue(tx))) return 'disabled' as const;
     const claimed = await tx.oAuthToken.updateMany({ where: { id: row.id, rotatedAt: null, revokedAt: null }, data: { rotatedAt: new Date() } });
     if (claimed.count === 0) return null;
     return issueTokenPair(tx, {
@@ -531,7 +580,13 @@ export async function refreshAccessToken(client: { id: number }, body: Record<st
       resource: row.resource, tokenVersion: user.tokenVersion,
     });
   });
-  if (!result) throw await reuse();
+  if (result === 'disabled') throw new OAuthError('invalid_grant', 'The authorization is no longer valid');
+  if (!result) {
+    // claim 실패: 그 사이에 폐기됐으면(연결 해제·정책 끄기) 재사용이 아니다. 동시에 회전된 경우만 재사용으로 본다.
+    const now = await prisma.oAuthToken.findUnique({ where: { id: row.id }, select: { revokedAt: true } });
+    if (!now || now.revokedAt) throw new OAuthError('invalid_grant', 'Invalid refresh token');
+    throw await reuse();
+  }
   return result;
 }
 
@@ -574,7 +629,7 @@ export type OAuthTokenCheck = { ok: true; token: VerifiedOAuthToken } | { ok: fa
  * 액세스 토큰 확인. 폐기, 회전(리프레시로 바뀜), 만료, 리소스 불일치, 비활성 사용자, tokenVersion 변경, 조직 정책 꺼짐은 모두 실패다.
  * 실패 이유는 밖으로 알리지 않는다. 2FA 필수 정책은 호출한 쪽이 mfaEnabled로 따로 판단한다(PAT와 같은 403 응답을 주려고).
  */
-export async function checkOAuthAccessToken(token: string, expectedResource: string): Promise<OAuthTokenCheck> {
+export async function checkOAuthAccessToken(token: string, configured: string | null): Promise<OAuthTokenCheck> {
   if (!looksLikeOAuthAccessToken(token) || !SECRET_PATTERN.test(token.slice(ACCESS_TOKEN_PREFIX.length))) return { ok: false, unknown: true };
   const row = await prisma.oAuthToken.findUnique({
     where: { accessTokenHash: sha256(token) },
@@ -585,8 +640,9 @@ export async function checkOAuthAccessToken(token: string, expectedResource: str
   const now = Date.now();
   // 리프레시하면 옛 액세스 토큰은 바로 쓸 수 없다
   if (row.revokedAt || row.rotatedAt || row.accessExpiresAt.getTime() <= now) return fail;
-  // audience 확인: 이 서버의 /mcp용으로 발급한 토큰만 받는다(다른 리소스용 토큰을 넘겨받아 쓰는 것을 막는다)
-  if (row.resource !== expectedResource) return fail;
+  // audience 확인: 이 서버의 /mcp용으로 발급한 토큰만 받는다(다른 리소스용 토큰을 넘겨받아 쓰는 것을 막는다).
+  // 요청 Host가 아니라 서버의 정식 resource(PUBLIC_URL)와 비교한다. 개발 환경 규칙은 audienceMatches 참고.
+  if (!audienceMatches(row.resource, configured)) return fail;
   if (row.user.deactivatedAt || row.user.tokenVersion !== row.tokenVersion) return fail;
   if (!(await getAllowOAuthApps())) return fail;
 
@@ -604,21 +660,20 @@ export async function checkOAuthAccessToken(token: string, expectedResource: str
   };
 }
 
-export async function verifyOAuthAccessToken(token: string, expectedResource: string): Promise<VerifiedOAuthToken | null> {
-  const result = await checkOAuthAccessToken(token, expectedResource);
-  return result.ok ? result.token : null;
-}
-
 // ---- 사용자 설정: 연결된 앱 ----
+
+/**
+ * 목록에 보이는 살아 있는 토큰 행: 폐기·회전되지 않았고 리프레시 수명이 남았다.
+ * 리프레시 토큰은 항상 액세스 토큰보다 늦게 끝나므로 리프레시 만료만 보면 된다.
+ */
+function liveTokenWhere(now: Date) {
+  return { revokedAt: null, rotatedAt: null, refreshExpiresAt: { gt: now } };
+}
 
 /** 살아 있는 연결(폐기 안 됨, 리프레시나 액세스가 아직 유효)을 클라이언트별로 묶는다. */
 export async function listConnectedApps(userId: number) {
-  const now = new Date();
   const rows = await prisma.oAuthToken.findMany({
-    where: {
-      userId, revokedAt: null, rotatedAt: null,
-      OR: [{ refreshExpiresAt: { gt: now } }, { accessExpiresAt: { gt: now } }],
-    },
+    where: { userId, ...liveTokenWhere(new Date()) },
     include: { client: { select: { id: true, clientName: true, redirectUris: true } } },
     orderBy: { id: 'desc' },
   });
@@ -645,13 +700,19 @@ export async function listConnectedApps(userId: number) {
   }));
 }
 
-/** 이 사용자가 이 클라이언트에 준 모든 연결을 끊는다. 아직 교환하지 않은 코드도 지운다. 끊은 토큰 행 수(0이면 연결이 없었다). */
-export async function disconnectApp(userId: number, clientId: number): Promise<number> {
-  const [{ count }] = await prisma.$transaction([
-    prisma.oAuthToken.updateMany({ where: { userId, clientId, revokedAt: null }, data: { revokedAt: new Date() } }),
-    prisma.oAuthAuthorizationCode.deleteMany({ where: { userId, clientId, usedAt: null } }),
-  ]);
-  return count;
+/**
+ * 이 사용자가 이 클라이언트에 준 모든 연결을 끊는다. 아직 교환하지 않은 코드도 지운다.
+ * 돌려주는 값은 목록에 보이던 살아 있는 토큰 수와 지운 코드 수다. 둘 다 0이면 끊을 것이 없었다(라우트가 404).
+ * 목록에 안 보이는 회전·만료 행도 함께 폐기하지만 세지는 않는다.
+ */
+export async function disconnectApp(userId: number, clientId: number): Promise<{ tokens: number; codes: number }> {
+  const now = new Date();
+  return prisma.$transaction(async (tx) => {
+    const live = await tx.oAuthToken.updateMany({ where: { userId, clientId, ...liveTokenWhere(now) }, data: { revokedAt: now } });
+    await tx.oAuthToken.updateMany({ where: { userId, clientId, revokedAt: null }, data: { revokedAt: now } });
+    const codes = await tx.oAuthAuthorizationCode.deleteMany({ where: { userId, clientId, usedAt: null } });
+    return { tokens: live.count, codes: codes.count };
+  });
 }
 
 // ---- 정리(스케줄러) ----

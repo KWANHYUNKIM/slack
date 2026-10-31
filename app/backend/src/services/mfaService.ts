@@ -4,6 +4,7 @@ import { getTotpEncryptionKey, getMfaIssuer } from '../config.js';
 import { sealSecret, openSecret } from '../utils/secretBox.js';
 import { base32Encode, buildOtpauthUri, verifyTotp } from '../utils/totp.js';
 import { createAttemptLimiter } from '../utils/attemptLimiter.js';
+import { getPolicySettings, invalidateSettingsCache } from './settingsCache.js';
 
 // 2단계 인증(E7b). TOTP 비밀은 암호화해 두고, 복구 코드는 해시만 둔다. 라우트(auth, mfa, admin, tokens)가 함께 쓴다.
 
@@ -25,16 +26,9 @@ const aadFor = (userId: number) => `mfa:user:${userId}`;
 
 // ---- 조직 정책 ----
 
-// 요청마다 설정 행을 읽지 않게 5초 캐시한다(tokenVersion 캐시와 같은 TTL). 바꾸면 바로 비운다.
-const SETTINGS_CACHE_TTL = process.env.NODE_ENV === 'test' ? 0 : 5_000;
-let settingsCache: { requireMfa: boolean; cachedUntil: number } | null = null;
-
+// 요청마다 설정 행을 읽지 않게 공용 설정 캐시(5초)를 쓴다. 바꾸면 바로 비운다.
 export async function getRequireMfa(): Promise<boolean> {
-  const now = Date.now();
-  if (settingsCache && settingsCache.cachedUntil > now) return settingsCache.requireMfa;
-  const row = await prisma.workspaceSetting.findUnique({ where: { id: 1 }, select: { requireMfa: true } });
-  settingsCache = { requireMfa: row?.requireMfa ?? false, cachedUntil: now + SETTINGS_CACHE_TTL };
-  return settingsCache.requireMfa;
+  return (await getPolicySettings()).requireMfa;
 }
 
 export async function setRequireMfa(requireMfa: boolean): Promise<void> {
@@ -43,7 +37,7 @@ export async function setRequireMfa(requireMfa: boolean): Promise<void> {
     create: { id: 1, requireMfa },
     update: { requireMfa },
   });
-  settingsCache = null;
+  invalidateSettingsCache();
 }
 
 /**

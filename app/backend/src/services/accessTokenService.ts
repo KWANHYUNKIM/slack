@@ -110,8 +110,3 @@ export async function checkAccessToken(token: string): Promise<AccessTokenCheck>
     },
   };
 }
-
-export async function verifyAccessToken(token: string): Promise<VerifiedAccessToken | null> {
-  const result = await checkAccessToken(token);
-  return result.ok ? result.token : null;
-}

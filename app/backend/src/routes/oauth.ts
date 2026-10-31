@@ -40,6 +40,19 @@ router.use((_req, res, next) => {
   res.setHeader('Pragma', 'no-cache');
   next();
 });
+// issuer·redirect·resource의 기준 출처. 운영에서 PUBLIC_URL이 없으면 Host를 믿지 않고 OAuth 전체를 503으로 막는다.
+router.use((req, res, next) => {
+  const origin = publicOrigin(req);
+  if (!origin) {
+    res.status(503).json({
+      error: 'server_error', error_description: 'OAuth is not configured on this server (PUBLIC_URL)', code: ERR.OAUTH_NOT_CONFIGURED,
+    });
+    return;
+  }
+  res.locals.oauthOrigin = origin;
+  next();
+});
+const originOf = (res: Response): string => res.locals.oauthOrigin as string;
 
 const isTest = process.env.NODE_ENV === 'test';
 const passThrough = (_req: Request, _res: Response, next: () => void) => next();
@@ -127,7 +140,7 @@ function errorRedirect(check: Extract<AuthorizeCheck, { redirect: true }>, issue
 // 클라이언트나 redirect_uri가 틀리면 그 주소로 돌려보내지 않는다(오픈 리다이렉트 방지).
 router.get('/authorize', browserLimiter, async (req: Request, res: Response) => {
   try {
-    const origin = publicOrigin(req);
+    const origin = originOf(res);
     const params = pickAuthorizeParams(req.query as Record<string, unknown>);
     const check = await checkAuthorizeRequest(params, origin);
     if (!check.ok) {
@@ -186,7 +199,7 @@ function invalidRequest(res: Response, check: Extract<AuthorizeCheck, { ok: fals
 // GET /oauth/authorize/details - 동의 화면에 보여 줄 클라이언트 이름, redirect 호스트, 범위
 router.get('/authorize/details', browserLimiter, authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const origin = publicOrigin(req);
+    const origin = originOf(res);
     const check = await checkAuthorizeRequest(pickAuthorizeParams(req.query as Record<string, unknown>), origin);
     if (!check.ok) {
       invalidRequest(res, check, origin);
@@ -211,7 +224,7 @@ const decisionSchema = z.object({
 router.post('/authorize/decision', browserLimiter, authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { params, approve, code } = decisionSchema.parse(req.body);
-    const origin = publicOrigin(req);
+    const origin = originOf(res);
     const userId = req.user!.userId;
     const check = await checkAuthorizeRequest(pickAuthorizeParams(params), origin);
     if (!check.ok) {
@@ -281,7 +294,7 @@ router.post('/token', ...tokenLimiter, async (req: Request, res: Response) => {
   try {
     const b = body(req);
     const client = await authenticateClient(req.headers.authorization, b);
-    const origin = publicOrigin(req);
+    const origin = originOf(res);
     if (b.grant_type === 'authorization_code') {
       res.json(await exchangeAuthorizationCode(client, b, origin));
     } else if (b.grant_type === 'refresh_token') {
