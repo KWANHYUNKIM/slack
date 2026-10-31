@@ -1,17 +1,16 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
-import { JWT_SECRET } from '../config.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
-import { kickUser } from '../websocket/index.js';
+import { kickUser, kickSession } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
+import { createSessionToken, revokeUserSessions, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 
 const router = Router();
@@ -138,10 +137,7 @@ router.post('/register', async (req: Request, res: Response) => {
       }
     }
 
-    const token = jwt.sign({ userId: user.id, tokenVersion: 0 }, JWT_SECRET, {
-      algorithm: 'HS256',
-      expiresIn: '7d',
-    });
+    const { token } = await createSessionToken({ id: user.id, tokenVersion: 0 }, req);
 
     res.status(201).json({ user, token });
   } catch (error) {
@@ -242,10 +238,7 @@ router.post('/login', async (req: Request, res: Response) => {
     loginAttempts.delete(email);
     void writeAuditLog({ action: 'auth.login', actorId: user.id, targetType: 'user', targetId: user.id });
 
-    const token = jwt.sign({ userId: user.id, tokenVersion: user.tokenVersion }, JWT_SECRET, {
-      algorithm: 'HS256',
-      expiresIn: '7d',
-    });
+    const { token } = await createSessionToken({ id: user.id, tokenVersion: user.tokenVersion }, req);
 
     res.json({
       user: {
@@ -270,9 +263,18 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-// POST /auth/logout - 토큰은 상태가 없어서 서버가 끊는 것은 없다. 로그아웃 사실만 감사 로그에 남긴다.
+// POST /auth/logout - 이 기기의 세션을 폐기한다(sid 없는 옛 토큰은 서버가 끊을 것이 없다). 로그아웃 사실은 감사 로그에 남긴다.
 router.post('/logout', authMiddleware, async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
+  const sid = req.user!.sid;
+  if (sid) {
+    try {
+      await revokeSession(userId, sid);
+      kickSession(userId, sid);
+    } catch (error) {
+      logError('Logout session revoke error', error);
+    }
+  }
   await writeAuditLog({ action: 'auth.logout', actorId: userId, targetType: 'user', targetId: userId });
   res.json({ message: 'Logged out' });
 });
@@ -363,10 +365,9 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     kickUser(userId);
 
     // Issue a fresh token with the new tokenVersion
-    const token = jwt.sign({ userId: updated.id, tokenVersion: updated.tokenVersion }, JWT_SECRET, {
-      algorithm: 'HS256',
-      expiresIn: '7d',
-    });
+    // 세션 행도 함께 정리한다(tokenVersion이 이미 이전 토큰을 막지만, 목록에 죽은 기기가 남지 않게 한다)
+    await revokeUserSessions(userId);
+    const { token } = await createSessionToken({ id: updated.id, tokenVersion: updated.tokenVersion }, req);
 
     void writeAuditLog({ action: 'auth.password_changed', actorId: userId, targetType: 'user', targetId: userId });
 

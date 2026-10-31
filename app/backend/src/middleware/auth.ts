@@ -5,6 +5,7 @@ import { JWT_SECRET } from '../config.js';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
+import { checkSession } from '../services/sessionService.js';
 
 // Short-lived cache for tokenVersion checks to avoid a DB round-trip on every request.
 // TTL is 5 seconds — revoked tokens may work for up to 5s after revocation.
@@ -73,6 +74,12 @@ export async function validateAccessToken(token: string): Promise<AccessTokenRes
 
   if (cached.tokenVersion !== decoded.tokenVersion) return { ok: false };
   if (cached.deactivatedAt) return { ok: false };
+
+  // 세션이 있는 토큰(E7)은 세션이 살아 있어야 한다. sid 없는 토큰(세션 도입 전 발급)은 tokenVersion 규칙만 따르고 만료되면 사라진다.
+  if (decoded.sid !== undefined) {
+    if (typeof decoded.sid !== 'string' || decoded.sid.length === 0 || decoded.sid.length > 32) return { ok: false };
+    if (!(await checkSession(decoded.sid, decoded.userId))) return { ok: false };
+  }
 
   return { ok: true, user: { ...decoded, role: cached.role } };
 }

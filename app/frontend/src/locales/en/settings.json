@@ -97,5 +97,26 @@
       "copyFailed": "Couldn't copy. Select the text and copy it manually.",
       "limitReached": "You can have up to {max} active tokens. Revoke one you no longer use and try again."
     }
+  },
+  "sessions": {
+    "title": "Signed-in devices",
+    "description": "These devices are signed in to your account. Sign out any you do not recognize or no longer use.",
+    "loading": "Loading...",
+    "empty": "No signed-in devices.",
+    "thisDevice": "This device",
+    "unknownDevice": "Unknown device",
+    "signedInAt": "Signed in {date}",
+    "lastActive": "Last active {date}",
+    "signOut": "Sign out",
+    "signOutLabel": "Sign out {device}",
+    "signOutThisLabel": "Sign out this device ({device})",
+    "signOutOthers": "Sign out of all other devices",
+    "signOutOthersConfirm": "{count, plural, one {Sign out # other device} other {Sign out # other devices}}",
+    "revoked": "Device signed out",
+    "revokedOthers": "Signed out of all other devices",
+    "errors": {
+      "loadFailed": "Failed to load devices.",
+      "revokeFailed": "Failed to sign out. Please try again."
+    }
   }
 }

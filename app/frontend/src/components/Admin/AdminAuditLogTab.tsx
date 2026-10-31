@@ -23,6 +23,8 @@ const ACTION_KEYS: Record<string, string> = {
   'user.deactivated': 'userDeactivated',
   'user.reactivated': 'userReactivated',
   'user.force_logout': 'userForceLogout',
+  'session.revoked': 'sessionRevoked',
+  'session.revoked_all': 'sessionRevokedAll',
   'workspace.ownership_transferred': 'ownershipTransferred',
   'owner.bootstrapped': 'ownerBootstrapped',
   'channel.created': 'channelCreated',

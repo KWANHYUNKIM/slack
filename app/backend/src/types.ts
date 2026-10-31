@@ -3,6 +3,8 @@ import { Request } from 'express';
 export interface JwtPayload {
   userId: number;
   tokenVersion?: number;
+  /** 세션 id(E7). 없으면 세션 도입 전에 발급된 토큰이다. */
+  sid?: string;
   role?: string;
   iat?: number;
   exp?: number;

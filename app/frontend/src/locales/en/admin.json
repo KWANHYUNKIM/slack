@@ -66,7 +66,8 @@
     "actions": {
       "transfer": "Transfer ownership",
       "reactivate": "Reactivate",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "forceLogout": "Force sign-out"
     },
     "empty": "No users found",
     "dialogs": {
@@ -84,6 +85,11 @@
         "title": "Reactivate user",
         "confirm": "Reactivate",
         "message": "Are you sure you want to reactivate {name}? They will be able to sign in again."
+      },
+      "forceLogout": {
+        "title": "Force sign-out",
+        "confirm": "Sign out",
+        "message": "Sign {name} out of every device now? Their account stays active and they can sign in again."
       }
     }
   },
@@ -173,7 +179,9 @@
       "tokenRevoke": "Token revoked",
       "mcpToolCall": "MCP tool call",
       "auditExported": "Audit log exported",
-      "authLoginLocked": "Account locked"
+      "authLoginLocked": "Account locked",
+      "sessionRevoked": "Device signed out",
+      "sessionRevokedAll": "All devices signed out"
     },
     "filters": {
       "allActions": "All actions",
@@ -208,6 +216,7 @@
     "fetchInvites": "Failed to fetch invites",
     "fetchUsers": "Failed to fetch users",
     "fetchWebhooks": "Failed to fetch webhooks",
+    "forceLogout": "Failed to sign the user out",
     "reactivateUser": "Failed to reactivate user",
     "removeChannelMember": "Failed to remove channel member",
     "transferOwnership": "Failed to transfer ownership",

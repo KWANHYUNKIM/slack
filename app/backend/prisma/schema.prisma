@@ -71,6 +71,7 @@ model User {
   dmGroups           DMGroupMember[]
   threadReads        ThreadRead[]
   accessTokens       PersonalAccessToken[]
+  sessions           Session[]
 
   @@index([dndUntil])
   @@index([customStatusExpiresAt])
@@ -475,4 +476,23 @@ model PersonalAccessToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
+}
+
+// 로그인 세션(E7). 로그인마다 한 행을 만들고 JWT의 sid가 가리킨다. 폐기(revokedAt)하면 그 토큰만 무효가 된다.
+// 전체 무효화(tokenVersion)와 별개 축이다. id는 추측할 수 없는 랜덤 hex라 목록 API에서 그대로 보여 줘도 된다.
+// ip는 앞부분만 남긴 마스킹 값이고 원문 IP는 저장하지 않는다.
+model Session {
+  id         String    @id @db.VarChar(32)
+  userId     Int
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  userAgent  String?   @db.VarChar(120)
+  ip         String?   @db.VarChar(64)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
 }
