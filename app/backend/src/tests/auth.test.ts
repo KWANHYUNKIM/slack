@@ -289,6 +289,56 @@ describe('Authentication', () => {
         .set('Authorization', `Bearer ${newToken}`);
       expect(newTokenRes.status).toBe(200);
     });
+
+    it('keeps the session when the current password is wrong, and allows retry with the same token', async () => {
+      const loginRes = await request(app)
+        .post('/auth/login')
+        .send({ email: testUser.email, password: testUser.password });
+      const token = loginRes.body.token;
+      const auth = { Authorization: `Bearer ${token}` };
+
+      // Create: a wrong current password is a 400 validation-style failure, not a 401 logout signal
+      const wrongRes = await request(app)
+        .post('/auth/change-password')
+        .set(auth)
+        .send({ currentPassword: 'definitely-wrong', newPassword: 'newpassword123' });
+      expect(wrongRes.status).toBe(400);
+      expect(wrongRes.body).toMatchObject({ code: 'AUTH_CURRENT_PASSWORD_INCORRECT' });
+      expect(typeof wrongRes.body.error).toBe('string');
+
+      // Read: the same token is still valid after the failure
+      const meAfterWrong = await request(app).get('/users/me').set(auth);
+      expect(meAfterWrong.status).toBe(200);
+      expect(meAfterWrong.body.email).toBe(testUser.email);
+
+      // Update: retry with the wrong password again, then succeed with the correct one using the same token
+      const wrongAgain = await request(app)
+        .post('/auth/change-password')
+        .set(auth)
+        .send({ currentPassword: 'still-wrong', newPassword: 'newpassword123' });
+      expect(wrongAgain.status).toBe(400);
+      const okRes = await request(app)
+        .post('/auth/change-password')
+        .set(auth)
+        .send({ currentPassword: testUser.password, newPassword: 'newpassword123' });
+      expect(okRes.status).toBe(200);
+      expect(okRes.body).toHaveProperty('token');
+
+      // Delete: the old token is revoked by the successful change, the new token works
+      const oldRes = await request(app).get('/users/me').set(auth);
+      expect(oldRes.status).toBe(401);
+      const newRes = await request(app).get('/users/me').set('Authorization', `Bearer ${okRes.body.token}`);
+      expect(newRes.status).toBe(200);
+
+      // After the change, the old password is now a wrong guess (400), with the new token still valid
+      const staleRes = await request(app)
+        .post('/auth/change-password')
+        .set('Authorization', `Bearer ${okRes.body.token}`)
+        .send({ currentPassword: testUser.password, newPassword: 'another123' });
+      expect(staleRes.status).toBe(400);
+      const stillRes = await request(app).get('/users/me').set('Authorization', `Bearer ${okRes.body.token}`);
+      expect(stillRes.status).toBe(200);
+    });
   });
 
   describe('Auth error message uniformity', () => {
@@ -450,7 +500,8 @@ describe('Authentication', () => {
           .post('/auth/change-password')
           .set('Authorization', `Bearer ${token}`)
           .send({ currentPassword: `wrong-${i}`, newPassword: 'newpass123' });
-        expect(res.status).toBe(401);
+        expect(res.status).toBe(400);
+        expect(res.body.code).toBe('AUTH_CURRENT_PASSWORD_INCORRECT');
       }
 
       // 6th attempt should be locked out (429), even with the correct password
@@ -485,7 +536,7 @@ describe('Authentication', () => {
           .post('/auth/change-password')
           .set('Authorization', `Bearer ${newToken}`)
           .send({ currentPassword: `wrong-${i}`, newPassword: 'anotherpass123' });
-        expect(res.status).toBe(401); // rejected but not locked
+        expect(res.status).toBe(400); // rejected but not locked
       }
     });
   });
