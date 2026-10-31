@@ -1,7 +1,10 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import { jest } from '@jest/globals';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import app from '../app.js';
 import prisma from '../db.js';
+import { JWT_SECRET } from '../config.js';
 
 describe('Authentication', () => {
   const testUser = {
@@ -329,6 +332,73 @@ describe('Authentication', () => {
       expect(deactRes.body.error).toBe('Invalid token');
       // Same message — attacker can't distinguish the reason
       expect(revokedRes.body.error).toBe(deactRes.body.error);
+    });
+  });
+
+  describe('Auth middleware error classes', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('returns 401 for a malformed token', async () => {
+      const res = await request(app)
+        .get('/users/me')
+        .set('Authorization', 'Bearer not-a-jwt');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+    });
+
+    it('returns 401 for a token signed with another secret', async () => {
+      const regRes = await request(app).post('/auth/register').send(testUser);
+      const forged = jwt.sign(
+        { userId: regRes.body.user.id, tokenVersion: 0 },
+        'some-other-secret-that-is-long-enough-for-test',
+        { algorithm: 'HS256' },
+      );
+
+      const res = await request(app)
+        .get('/users/me')
+        .set('Authorization', `Bearer ${forged}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+    });
+
+    it('returns 401 for an expired token', async () => {
+      const regRes = await request(app).post('/auth/register').send(testUser);
+      const expired = jwt.sign(
+        { userId: regRes.body.user.id, tokenVersion: 0, exp: Math.floor(Date.now() / 1000) - 60 },
+        JWT_SECRET,
+        { algorithm: 'HS256' },
+      );
+
+      const res = await request(app)
+        .get('/users/me')
+        .set('Authorization', `Bearer ${expired}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+    });
+
+    it('returns 500 (not 401), logs the error, and hides internals when the tokenVersion lookup fails', async () => {
+      const regRes = await request(app).post('/auth/register').send(testUser);
+      const token = regRes.body.token;
+
+      const dbSpy = jest
+        .spyOn(prisma.user, 'findUnique')
+        .mockRejectedValueOnce(new Error('connection to db refused (secret host)'));
+      const logSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const res = await request(app)
+        .get('/users/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(dbSpy).toHaveBeenCalled();
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: 'Internal server error' });
+      expect(JSON.stringify(res.body)).not.toContain('secret host');
+      expect(logSpy).toHaveBeenCalledWith('Auth middleware error', expect.anything());
     });
   });
 

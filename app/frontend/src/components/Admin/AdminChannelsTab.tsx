@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Lock, Hash, Trash2, Archive, ArchiveRestore, Pencil, X, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import { CHANNEL_NAME_ADMIN_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -32,11 +33,11 @@ export function AdminChannelsTab() {
         setEditError(channelNameErrorMessage(t, reason, CHANNEL_NAME_ADMIN_MAX));
         return;
       }
-      await editChannel(id, { name });
-      // 스토어는 실패를 삼키고 error만 남긴다. 이름이 바뀌지 않았으면 실패로 보고 편집 행을 열어 둔다.
-      const state = useAdminStore.getState();
-      if (state.channels.find((c) => c.id === id)?.name !== name) {
-        setEditError(state.error || t('errors.editChannel'));
+      try {
+        await editChannel(id, { name });
+      } catch (err) {
+        // 실패하면 편집 행을 그대로 열어 두고, 서버 코드(예: 중복 이름)에 맞는 번역 문구를 보여 준다.
+        setEditError(apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_ADMIN_MAX));
         return;
       }
     }
