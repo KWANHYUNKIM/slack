@@ -97,3 +97,5 @@
 | 2026-10-31 23:38 | code-review | (리뷰) | PR #51 medium | 64,163 |
 | 2026-10-31 23:41 | code-review | (리뷰) | PR #52 medium | 71,548 |
 | 2026-10-31 23:41 | dev-4 | sonnet | PR #51 리뷰 반영 | 24,515 |
+| 2026-10-31 23:42 | dev-5 | sonnet | build/docker-self-contained | 100,835 |
+| 2026-10-31 23:44 | code-review | (리뷰) | PR #55 medium | 68,535 |
