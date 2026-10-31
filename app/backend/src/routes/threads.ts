@@ -11,8 +11,9 @@ import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from '../services/pushService.js';
-import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, onThreadReplyDeleted, onThreadParentDeleted, setReplyBroadcast } from '../services/threadService.js';
-import { processNewChannelMessage, syncActivitiesOnEdit, deleteActivitiesForMessage, markThreadMentionsRead } from '../services/mentionService.js';
+import { blankIfDeleted, PARENT_EXCERPT_INCLUDE, withParentExcerpt, onThreadReplyCreated, setReplyBroadcast } from '../services/threadService.js';
+import { processNewChannelMessage, markThreadMentionsRead } from '../services/mentionService.js';
+import { ServiceError, editChannelMessage, deleteChannelMessage } from '../services/messageService.js';
 
 const router = Router();
 
@@ -140,45 +141,15 @@ router.get('/:id/thread', authMiddleware, requireThreadReadAccess, async (req: A
 // PATCH /messages/:id - Edit message
 router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequest, res: Response) => {
   try {
-    const messageId = parseIntParam(req.params.id)!;
-    const userId = req.user!.userId;
     const { content } = editMessageSchema.parse(req.body);
-    const message = req.message;
-
-    if (message.userId !== userId) {
-      res.status(403).json({ error: 'You can only edit your own messages' });
-      return;
-    }
-
-    // Block edits in archived channels
-    const channel = await prisma.channel.findUnique({
-      where: { id: message.channelId },
-      select: { archivedAt: true },
-    });
-    if (channel?.archivedAt) {
-      res.status(403).json({ error: 'This channel has been archived' });
-      return;
-    }
-
-    const edited = await prisma.message.update({
-      where: { id: messageId },
-      data: { content, editedAt: new Date() },
-      include: {
-        user: { select: USER_SELECT_BASIC },
-        reactions: { include: { user: { select: { id: true, name: true } } } },
-        ...PARENT_EXCERPT_INCLUDE,
-      },
-    });
-    // 채널에도 보낸 답글의 "스레드에 답글" 머리글이 유지되도록 부모 발췌를 함께 보낸다
-    const updatedMessage = withParentExcerpt(edited);
-
-    res.json(updatedMessage);
-    getIO()?.to(`channel:${message.channelId}`).emit('message:updated', updatedMessage);
-
-    void syncActivitiesOnEdit(updatedMessage);
+    res.json(await editChannelMessage(req.user!.userId, req.message, content));
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
+      return;
+    }
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
       return;
     }
     logError('Edit message error', error);
@@ -189,53 +160,13 @@ router.patch('/:id', authMiddleware, requireMessageAccess, async (req: AuthReque
 // DELETE /messages/:id - Soft delete message
 router.delete('/:id', authMiddleware, requireMessageAccess, async (req: AuthRequest, res: Response) => {
   try {
-    const messageId = parseIntParam(req.params.id)!;
-    const userId = req.user!.userId;
-    const message = req.message;
-
-    if (message.userId !== userId) {
-      res.status(403).json({ error: 'You can only delete your own messages' });
-      return;
-    }
-
-    // Block deletes in archived channels
-    const channel = await prisma.channel.findUnique({
-      where: { id: message.channelId },
-      select: { archivedAt: true },
-    });
-    if (channel?.archivedAt) {
-      res.status(403).json({ error: 'This channel has been archived' });
-      return;
-    }
-
-    // Soft-delete message and detach its files so they don't become orphaned
-    await prisma.$transaction([
-      prisma.message.update({
-        where: { id: messageId },
-        data: { deletedAt: new Date() },
-      }),
-      prisma.file.updateMany({
-        where: { messageId },
-        data: { messageId: null },
-      }),
-    ]);
-
-    void deleteActivitiesForMessage(messageId);
-    if (message.threadId) void onThreadReplyDeleted(message);
-    else void onThreadParentDeleted(message);
-
-    // Broadcast deletion to channel so other clients update in real-time
-    const io = getIO();
-    if (io) {
-      io.to(`channel:${message.channelId}`).emit('message:deleted', {
-        messageId,
-        threadId: message.threadId ?? null,
-        channelId: message.channelId,
-      });
-    }
-
+    await deleteChannelMessage(req.user!.userId, req.message);
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
     logError('Delete message error', error);
     res.status(500).json({ error: 'Failed to delete message' });
   }

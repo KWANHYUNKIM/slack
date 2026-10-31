@@ -1292,7 +1292,7 @@ export function getHuddleConfig() {
 
 // ---- Personal access tokens (MCP) ----
 
-export type AccessTokenScope = 'channels:read' | 'channels:history' | 'users:read';
+export type AccessTokenScope = 'channels:read' | 'channels:history' | 'users:read' | 'chat:write' | 'reactions:write';
 
 export interface AccessToken {
   id: number;

@@ -10,10 +10,12 @@ import { logError } from '../utils/logger.js';
 export const TOKEN_PREFIX = 'scpat_';
 const TOKEN_PATTERN = /^scpat_([0-9a-f]{12})_([A-Za-z0-9_-]{43})$/;
 
-/** mcp-1은 읽기 범위만 발급한다. 쓰기(chat:write 등)는 mcp-2에서 추가한다. */
+/** 읽기 범위. 토큰을 만들 때 범위를 안 주면 이것만 준다(쓰기는 명시적으로 고른 경우에만). */
 export const READ_SCOPES = ['channels:read', 'channels:history', 'users:read'] as const;
-export const ALLOWED_SCOPES: readonly string[] = READ_SCOPES;
-export type TokenScope = (typeof READ_SCOPES)[number];
+/** 쓰기 범위(mcp-2). chat:write는 메시지 작성·수정·삭제, reactions:write는 리액션. */
+export const WRITE_SCOPES = ['chat:write', 'reactions:write'] as const;
+export const ALLOWED_SCOPES: readonly string[] = [...READ_SCOPES, ...WRITE_SCOPES];
+export type TokenScope = (typeof READ_SCOPES)[number] | (typeof WRITE_SCOPES)[number];
 
 export const MAX_ACTIVE_TOKENS = 20;
 

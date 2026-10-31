@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
 import { channelTimelineWhere } from '../db/timeline.js';
 import { authMiddleware } from '../middleware/auth.js';
@@ -9,19 +8,13 @@ import { AuthRequest } from '../types.js';
 import { USER_SELECT_BASIC, FILE_SELECT, MESSAGE_INCLUDE_FULL, MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
-import { getIO } from '../websocket/index.js';
-import { processNewChannelMessage } from '../services/mentionService.js';
+import { ServiceError, messageContentSchema, sendChannelMessage } from '../services/messageService.js';
 import { PARENT_EXCERPT_INCLUDE, blankIfDeleted, toParentExcerpt, withParentExcerpt, onThreadReplyCreated } from '../services/threadService.js';
 
 const router = Router();
 
 const createMessageSchema = z.object({
-  content: z.string()
-    .max(MAX_MESSAGE_LENGTH)
-    .refine(
-      (val) => !val.includes('\u0000'),
-      { message: 'Message content cannot contain null bytes' }
-    ),
+  content: messageContentSchema,
   threadId: z.number().int().positive().optional(),
   alsoSendToChannel: z.boolean().optional(),
   fileIds: z.array(z.number().int().positive()).max(10).optional(),
@@ -33,83 +26,17 @@ const createMessageSchema = z.object({
 // POST /channels/:id/messages - Send message
 router.post('/:id/messages', authMiddleware, requireChannelMembership, async (req: AuthRequest, res: Response) => {
   try {
-    const channelId = req.channelId!;
-    const userId = req.user!.userId;
-    const { content, threadId, alsoSendToChannel, fileIds } = createMessageSchema.parse(req.body);
-
-    // Block messaging in archived channels
-    const channelRecord = await prisma.channel.findUnique({
-      where: { id: channelId },
-      select: { archivedAt: true },
-    });
-    if (channelRecord?.archivedAt) {
-      res.status(403).json({ error: 'This channel has been archived' });
-      return;
-    }
-
-    // Validate threadId belongs to the same channel and is not deleted
-    if (threadId) {
-      const parentMessage = await prisma.message.findUnique({
-        where: { id: threadId },
-      });
-      if (!parentMessage || parentMessage.deletedAt || parentMessage.channelId !== channelId) {
-        res.status(400).json({ error: 'Thread parent must belong to the same channel' });
-        return;
-      }
-      if (parentMessage.threadId !== null) {
-        res.status(400).json({ error: 'Cannot reply to a reply. Reply to the parent message instead.' });
-        return;
-      }
-    }
-
-    // Create message and atomically attach files in a transaction
-    const finalMessage = await prisma.$transaction(async (tx) => {
-      const msg = await tx.message.create({
-        data: {
-          content,
-          userId,
-          channelId,
-          threadId,
-          alsoSendToChannel: !!threadId && !!alsoSendToChannel,
-        },
-      });
-
-      if (fileIds && fileIds.length > 0) {
-        const updated = await tx.file.updateMany({
-          where: { id: { in: fileIds }, userId, messageId: null, dmId: null },
-          data: { messageId: msg.id },
-        });
-        if (updated.count !== fileIds.length) {
-          throw new Error('Invalid file IDs or files already attached');
-        }
-      }
-
-      return tx.message.findUnique({
-        where: { id: msg.id },
-        include: { ...MESSAGE_INCLUDE_FULL, ...PARENT_EXCERPT_INCLUDE },
-      });
-    }).then((m) => (m ? withParentExcerpt(m) : m));
-
-    // Broadcast via WebSocket so other users see the message in real-time
-    const io = getIO();
-    if (io && finalMessage) {
-      io.to(`channel:${channelId}`).emit('message:new', finalMessage);
-    }
-
-    res.status(201).json(finalMessage);
-
-    // 응답 뒤에: 활동 생성, 활동 이벤트, 푸시(await하지 않는다. 실패는 서비스가 로그로 남긴다)
-    if (finalMessage) {
-      void processNewChannelMessage(finalMessage, { generalPush: true });
-      void onThreadReplyCreated(finalMessage);
-    }
+    const input = createMessageSchema.parse(req.body);
+    // 보관 채널·스레드 검증, 저장, 소켓 이벤트, 멘션 활동·푸시는 MCP 쓰기 도구와 같은 서비스가 처리한다
+    const message = await sendChannelMessage(req.user!.userId, req.channelId!, input);
+    res.status(201).json(message);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
       return;
     }
-    if (error instanceof Error && error.message.includes('Invalid file IDs')) {
-      res.status(400).json({ error: error.message });
+    if (error instanceof ServiceError) {
+      res.status(error.status).json({ error: error.message });
       return;
     }
     logError('Send message error', error);
