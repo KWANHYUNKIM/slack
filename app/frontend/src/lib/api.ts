@@ -189,6 +189,28 @@ export function disableMfa(password: string, code: string) {
   });
 }
 
+/**
+ * 복구 코드 다시 만들기(E7c). 끄기와 같은 재확인(비밀번호 + 인증 코드 또는 복구 코드)을 받는다.
+ * 기존 코드는 모두 무효가 되고 새 코드는 이 응답에서 한 번만 받는다. 세션은 그대로다.
+ */
+export function regenerateRecoveryCodes(password: string, code: string) {
+  return request<{ recoveryCodes: string[]; recoveryCodesRemaining: number }>('/users/me/2fa/recovery-codes', {
+    method: 'POST',
+    body: JSON.stringify({ password, code }),
+  });
+}
+
+/**
+ * 비밀번호 바꾸기. 성공하면 다른 기기는 로그아웃되고 이전 토큰은 모두 무효라 응답의 token으로 바꿔야 한다.
+ * 현재 비밀번호가 틀리면 400 AUTH_CURRENT_PASSWORD_INCORRECT(401이 아니라 로그아웃되지 않는다), 5번 틀리면 429 AUTH_TOO_MANY_ATTEMPTS.
+ */
+export function changePassword(currentPassword: string, newPassword: string) {
+  return request<{ message: string; token: string }>('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 export function register(name: string, email: string, password: string, inviteCode?: string) {
   return request<AuthResponse>('/auth/register', {
     method: 'POST',

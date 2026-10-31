@@ -130,6 +130,22 @@
       "unknownOn": "Unknown device on {os}"
     }
   },
+  "changePassword": {
+    "title": "Change password",
+    "description": "Enter your current password and choose a new one.",
+    "currentLabel": "Current password",
+    "newLabel": "New password",
+    "confirmLabel": "Confirm new password",
+    "sessionsNote": "When you change your password, your other signed-in devices are signed out.",
+    "submit": "Change password",
+    "submitting": "Changing...",
+    "cancel": "Cancel",
+    "successToast": "Your password was changed",
+    "errors": {
+      "currentRequired": "Enter your current password.",
+      "failed": "Could not change your password. Try again."
+    }
+  },
   "twoFactor": {
     "title": "Two-factor authentication",
     "description": "Ask for a code from your authenticator app in addition to your password when you sign in.",
@@ -169,15 +185,28 @@
       "confirmSaved": "I saved my recovery codes",
       "fileName": "recovery-codes.txt"
     },
+    "reauth": {
+      "passwordLabel": "Password",
+      "codeLabel": "Authentication or recovery code",
+      "cancel": "Cancel",
+      "passwordInvalid": "Enter a valid password.",
+      "codeInvalid": "Enter a valid authentication or recovery code."
+    },
+    "regenerate": {
+      "start": "Make new recovery codes",
+      "title": "Make new recovery codes",
+      "description": "Your old recovery codes stop working as soon as you make new ones. Enter your password and a code from your authenticator app (or a recovery code).",
+      "submit": "Make new codes",
+      "submitting": "Making...",
+      "lowNotice": "{count, plural, one {Only # recovery code is left} other {Only # recovery codes are left}}. Make new ones before you run out.",
+      "toast": "New recovery codes are ready"
+    },
     "disable": {
       "title": "Turn off two-factor authentication",
       "description": "Enter your password and a code from your authenticator app (or a recovery code).",
       "start": "Turn off",
-      "passwordLabel": "Password",
-      "codeLabel": "Authentication or recovery code",
       "submit": "Turn off two-factor authentication",
       "submitting": "Turning off...",
-      "cancel": "Cancel",
       "blockedByPolicy": "Your organization requires two-factor authentication, so you cannot turn it off. If you lost your device, ask an administrator to reset it."
     },
     "enabledToast": "Two-factor authentication is on",
@@ -186,6 +215,7 @@
       "loadFailed": "Could not load two-factor settings.",
       "setupFailed": "Could not start setup. Try again.",
       "enableFailed": "Could not turn on two-factor authentication.",
+      "regenerateFailed": "Could not make new recovery codes.",
       "disableFailed": "Could not turn off two-factor authentication.",
       "copyFailed": "Could not copy to the clipboard."
     }

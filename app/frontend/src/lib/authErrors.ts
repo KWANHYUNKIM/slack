@@ -52,3 +52,30 @@ export function isSessionEndingError(status: number, code?: string | null): bool
   if (!code || code === 'UNAUTHORIZED') return true;
   return SESSION_ENDING_CODES.has(code);
 }
+
+/** 비밀번호 변경 입력을 보내기 전에 검사한다. 새 비밀번호 규칙은 가입과 같다. 어긋나면 번역 키를, 괜찮으면 null을 돌려준다. */
+export function changePasswordInputErrorKey(current: string, next: string, confirm: string): string | null {
+  if (!current) return 'settings:changePassword.errors.currentRequired';
+  if (next.length < PASSWORD_MIN) return 'auth:register.errors.passwordTooShort';
+  if (next.length > PASSWORD_MAX) return 'auth:register.errors.passwordTooLong';
+  if (next !== confirm) return 'auth:register.errors.passwordMismatch';
+  return null;
+}
+
+/** 서버가 VALIDATION_FAILED와 함께 준 fields에서 비밀번호 변경 화면 문구 키를 고른다. 알 수 없으면 null. */
+export function changePasswordFieldErrorKey(fields: FieldError[] | undefined): string | null {
+  for (const f of fields ?? []) {
+    if (f.path === 'newPassword') return f.reason === 'too_big' ? 'auth:register.errors.passwordTooLong' : 'auth:register.errors.passwordTooShort';
+    if (f.path === 'currentPassword') return 'settings:changePassword.errors.currentRequired';
+  }
+  return null;
+}
+
+/** 비밀번호 + 2단계 코드 재확인(2FA 끄기, 복구 코드 다시 만들기)에서 VALIDATION_FAILED fields로 구체 문구 키를 고른다. 알 수 없으면 null. */
+export function reauthFieldErrorKey(fields: FieldError[] | undefined): string | null {
+  for (const f of fields ?? []) {
+    if (f.path === 'password') return 'settings:twoFactor.reauth.passwordInvalid';
+    if (f.path === 'code') return 'settings:twoFactor.reauth.codeInvalid';
+  }
+  return null;
+}

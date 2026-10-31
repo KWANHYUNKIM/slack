@@ -31,7 +31,8 @@
     "pauseError": "Could not change notification pause. Please try again.",
     "accessTokens": "Personal access tokens",
     "sessions": "Signed-in devices",
-    "twoFactor": "Two-factor authentication"
+    "twoFactor": "Two-factor authentication",
+    "changePassword": "Change password"
   },
   "sections": {
     "starred": "Starred",

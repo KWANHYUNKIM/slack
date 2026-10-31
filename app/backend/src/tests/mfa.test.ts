@@ -486,6 +486,124 @@ describe('2단계 인증 API (E7b)', () => {
     expect(status.body.recoveryCodesRemaining).toBe(8);
   });
 
+  it('복구 코드 다시 만들기: 옛 코드는 거부되고 새 코드로 로그인된다 (E7c)', async () => {
+    const email = 'regen-mfa@example.com';
+    const { id, token } = await register(email);
+    const { secret, recoveryCodes: oldCodes, token: t1 } = await enroll(token);
+    const url = '/users/me/2fa/recovery-codes';
+    const nextTotp = () => totp(secret, Date.now() + 30_000); // 등록에 쓴 창 다음 창(재사용 거부 회피)
+
+    // 인증 없음, 입력 오류
+    expect((await request(app).post(url).send({ password: TEST_PASSWORD, code: '000000' })).status).toBe(401);
+    expect((await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD })).status).toBe(400);
+    expect((await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: '123456', extra: 1 })).body.code).toBe('VALIDATION_FAILED');
+
+    // 비밀번호가 틀리면 코드는 확인하지 않는다(복구 코드를 쓰지 않는다)
+    const badPw = await request(app).post(url).set(auth(t1)).send({ password: 'wrong-password', code: oldCodes[5] });
+    expect(badPw.status).toBe(403);
+    expect(badPw.body.code).toBe('AUTH_CURRENT_PASSWORD_INCORRECT');
+    // 코드가 틀리면 거부
+    const badCode = await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: '000000' === nextTotp() ? '111111' : '000000' });
+    expect(badCode.status).toBe(403);
+    expect(badCode.body.code).toBe('MFA_INVALID_CODE');
+    // 거부되는 동안 옛 코드는 그대로다
+    expect((await request(app).get('/users/me/2fa').set(auth(t1))).body.recoveryCodesRemaining).toBe(10);
+
+    // Create/Update: 맞는 재확인이면 새 10개를 준다. 세션은 그대로다.
+    const first = await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: nextTotp() });
+    expect(first.status).toBe(200);
+    expect(first.headers['cache-control']).toContain('no-store');
+    const newCodes: string[] = first.body.recoveryCodes;
+    secretsSeen.push(...newCodes);
+    expect(newCodes).toHaveLength(10);
+    expect(new Set(newCodes).size).toBe(10);
+    expect(newCodes.some((c) => oldCodes.includes(c))).toBe(false);
+    expect(first.body.recoveryCodesRemaining).toBe(10);
+    expect((await request(app).get('/channels').set(auth(t1))).status).toBe(200);
+
+    // Read: DB에는 해시만 10개 있고 원문은 없다
+    const rows = await prisma.mfaRecoveryCode.findMany({ where: { userId: id } });
+    expect(rows).toHaveLength(10);
+    expect(rows.every((r) => r.usedAt === null)).toBe(true);
+    expect(JSON.stringify(rows)).not.toContain(normalizeRecoveryCode(newCodes[0])!);
+
+    // 옛 코드는 로그인에서 거부, 새 코드는 통과
+    const s1 = await passwordStep(email);
+    const oldTry = await request(app).post('/auth/login/2fa').send({ mfaToken: s1.mfaToken, code: oldCodes[0] });
+    expect(oldTry.status).toBe(401);
+    expect(oldTry.body.code).toBe('MFA_INVALID_CODE');
+    const newTry = await request(app).post('/auth/login/2fa').send({ mfaToken: s1.mfaToken, code: newCodes[0] });
+    expect(newTry.status).toBe(200);
+
+    // 쓴 코드도 지우고 새로 만든다: 복구 코드로 재확인해도 되고, 결과는 다시 10개다
+    const viaRecovery = await request(app).post(url).set(auth(newTry.body.token)).send({ password: TEST_PASSWORD, code: newCodes[1] });
+    expect(viaRecovery.status).toBe(200);
+    secretsSeen.push(...viaRecovery.body.recoveryCodes);
+    expect(viaRecovery.body.recoveryCodes).toHaveLength(10);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(10);
+    // 방금 재확인에 쓴 코드와 직전 세트는 모두 무효
+    const s2 = await passwordStep(email);
+    for (const stale of [newCodes[1], newCodes[2]]) {
+      const r = await request(app).post('/auth/login/2fa').send({ mfaToken: s2.mfaToken, code: stale });
+      expect(r.status).toBe(401);
+    }
+    const s3 = await passwordStep(email);
+    expect((await request(app).post('/auth/login/2fa').send({ mfaToken: s3.mfaToken, code: viaRecovery.body.recoveryCodes[0] })).status).toBe(200);
+    // 상태 API의 남은 개수
+    expect((await request(app).get('/users/me/2fa').set(auth(newTry.body.token))).body.recoveryCodesRemaining).toBe(9);
+
+    // 감사 로그: 방법만 남고 코드 원문은 없다
+    const logs = await prisma.auditLog.findMany({ where: { action: 'mfa.recovery_regenerated', targetId: id }, orderBy: { id: 'asc' } });
+    expect(logs.map((l) => l.details)).toEqual(['method=totp', 'method=recovery']);
+    const dump = JSON.stringify(logs).toLowerCase();
+    for (const c of [...newCodes, ...viaRecovery.body.recoveryCodes]) expect(dump).not.toContain(c.toLowerCase().replace(/-/g, ''));
+
+    // 2FA가 꺼져 있으면 400 MFA_NOT_ENABLED
+    const plain = await register('regen-off-mfa@example.com');
+    const off = await request(app).post(url).set(auth(plain.token)).send({ password: TEST_PASSWORD, code: '123456' });
+    expect(off.status).toBe(400);
+    expect(off.body.code).toBe('MFA_NOT_ENABLED');
+  });
+
+  it('복구 코드 다시 만들기: 동시에 두 번 요청해도 유효한 코드는 10개뿐이다', async () => {
+    const email = 'regen-race-mfa@example.com';
+    const { id, token } = await register(email);
+    const { recoveryCodes, token: t1 } = await enroll(token);
+    const url = '/users/me/2fa/recovery-codes';
+    // 서로 다른 복구 코드로 재확인해 TOTP 재사용 거부에 걸리지 않게 한다
+    const [a, b] = await Promise.all([
+      request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: recoveryCodes[0] }),
+      request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: recoveryCodes[1] }),
+    ]);
+    expect([a.status, b.status]).toEqual([200, 200]);
+    secretsSeen.push(...a.body.recoveryCodes, ...b.body.recoveryCodes);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id } })).toBe(10);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(10);
+    // 나중에 끝난 쪽의 세트만 유효하다: 두 세트 중 정확히 하나로만 로그인된다
+    const statuses: number[] = [];
+    for (const set of [a.body.recoveryCodes, b.body.recoveryCodes] as string[][]) {
+      const s = await passwordStep(email);
+      statuses.push((await request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: set[0] })).status);
+    }
+    expect(statuses.sort()).toEqual([200, 401]);
+  });
+
+  it('복구 코드 다시 만들기: 시도 제한은 다른 재확인과 공유한다 (잠금 429, 맞는 입력도 거부)', async () => {
+    const { token } = await register('regen-lock-mfa@example.com');
+    const { secret, token: t1 } = await enroll(token);
+    const url = '/users/me/2fa/recovery-codes';
+    for (let i = 0; i < 5; i++) {
+      const r = await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: '000000' === totp(secret, Date.now() + 30_000) ? '111111' : '000000' });
+      expect(r.status).toBe(403);
+    }
+    const locked = await request(app).post(url).set(auth(t1)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now() + 30_000) });
+    expect(locked.status).toBe(429);
+    expect(locked.body.code).toBe('AUTH_TOO_MANY_ATTEMPTS');
+    // 기존 mfa 재확인(끄기)도 같은 잠금을 쓴다
+    const disable = await request(app).post('/users/me/2fa/disable').set(auth(t1)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now() + 30_000) });
+    expect(disable.status).toBe(429);
+  });
+
   it('관리자 필수 정책: 등록 전에는 등록 API만 쓸 수 있다', async () => {
     const email = 'policy-mfa@example.com';
     const { token } = await register(email);
@@ -740,7 +858,7 @@ describe('2단계 인증 API (E7b)', () => {
   it('감사 로그에 비밀 값과 코드가 남지 않는다', async () => {
     const logs = await prisma.auditLog.findMany();
     const actions = new Set(logs.map((l) => l.action));
-    for (const a of ['mfa.enabled', 'mfa.disabled', 'mfa.recovery_used', 'mfa.reset_by_admin', 'auth.login_failed']) {
+    for (const a of ['mfa.enabled', 'mfa.disabled', 'mfa.recovery_used', 'mfa.recovery_regenerated', 'mfa.reset_by_admin', 'auth.login_failed']) {
       expect(actions.has(a)).toBe(true);
     }
     expect(secretsSeen.length).toBeGreaterThan(20);

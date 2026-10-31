@@ -3,14 +3,15 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
-import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
-import { kickUser, kickSession } from '../websocket/index.js';
+import { kickSession } from '../websocket/index.js';
+import { rotateSessions } from '../services/sessionRotation.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
-import { createSessionToken, revokeUserSessions, revokeSession } from '../services/sessionService.js';
+import { createSessionToken, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 import {
   createMfaChallenge, findMfaChallenge, claimMfaChallengeAttempt, consumeMfaChallenge,
@@ -407,28 +408,8 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
 
     const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 
-    // Increment tokenVersion to invalidate all existing sessions
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: hashedPassword,
-        tokenVersion: { increment: 1 },
-      },
-      select: { id: true, tokenVersion: true },
-    });
-
-    // Invalidate cached auth so the revoked token is rejected immediately
-    invalidateTokenCache(userId);
-
-    // Immediately disconnect all WebSocket connections for this user
-    // (don't wait for the 5-minute periodic revalidation — the password
-    // change may be in response to a compromised account)
-    kickUser(userId);
-
-    // Issue a fresh token with the new tokenVersion
-    // 세션 행도 함께 정리한다(tokenVersion이 이미 이전 토큰을 막지만, 목록에 죽은 기기가 남지 않게 한다)
-    await revokeUserSessions(userId);
-    const { token } = await createSessionToken({ id: updated.id, tokenVersion: updated.tokenVersion }, req);
+    // tokenVersion 증가, 세션 폐기, 다른 기기 소켓 끊기, 이 기기에 새 토큰(2FA 켜기·끄기와 같은 절차)
+    const { token } = await rotateSessions(req, userId, req.user!.sid, { password: hashedPassword });
 
     void writeAuditLog({ action: 'auth.password_changed', actorId: userId, targetType: 'user', targetId: userId });
 

@@ -28,6 +28,7 @@ const ACTION_KEYS: Record<string, string> = {
   'mfa.enabled': 'mfaEnabled',
   'mfa.disabled': 'mfaDisabled',
   'mfa.recovery_used': 'mfaRecoveryUsed',
+  'mfa.recovery_regenerated': 'mfaRecoveryRegenerated',
   'mfa.reset_by_admin': 'mfaResetByAdmin',
   'workspace.mfa_policy_changed': 'mfaPolicyChanged',
   'workspace.ownership_transferred': 'ownershipTransferred',
