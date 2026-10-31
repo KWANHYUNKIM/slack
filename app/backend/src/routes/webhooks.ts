@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import crypto from 'crypto';
 import prisma from '../db.js';
@@ -11,8 +11,20 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { getIO } from '../websocket/index.js';
 import { MESSAGE_INCLUDE_WITH_FILES } from '../db/selects.js';
 import { processNewChannelMessage } from '../services/mentionService.js';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
+
+// 웹훅 토큰 하나당 분당 60회. 공개 엔드포인트라 토큰 단위로 묶어 한 웹훅이 다른 웹훅 채널을 막지 않게 한다.
+// 테스트 환경에서도 켜 둔다(제한 동작을 테스트로 확인하려고).
+const webhookSendLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+  keyGenerator: (req) => `webhook:${req.params.token}`,
+});
 
 // Validation schemas
 const createWebhookSchema = z.object({
@@ -146,7 +158,7 @@ router.delete('/:id', authMiddleware, requireAdmin, async (req: AuthRequest, res
 });
 
 // POST /webhooks/:token - Incoming webhook endpoint (no auth, uses token)
-router.post('/:token', async (req, res: Response) => {
+router.post('/:token', webhookSendLimiter, async (req: Request<{ token: string }>, res: Response) => {
   try {
     const token = req.params.token;
     const { content } = incomingWebhookSchema.parse(req.body);
@@ -156,7 +168,7 @@ router.post('/:token', async (req, res: Response) => {
       where: { token },
       include: {
         channel: { select: { id: true, name: true, archivedAt: true } },
-        creator: { select: { id: true, name: true } },
+        creator: { select: { id: true, name: true, deactivatedAt: true } },
       },
     });
 
@@ -167,6 +179,20 @@ router.post('/:token', async (req, res: Response) => {
 
     if (webhook.channel.archivedAt) {
       res.status(403).json({ error: 'Channel is archived' });
+      return;
+    }
+
+    // 예약 발송과 같은 정책: 생성자가 비활성화됐거나 채널 멤버가 아니면 메시지를 만들지 않는다
+    if (webhook.creator.deactivatedAt) {
+      res.status(403).json({ error: 'Webhook creator is deactivated' });
+      return;
+    }
+    const creatorMembership = await prisma.channelMember.findUnique({
+      where: { userId_channelId: { userId: webhook.createdBy, channelId: webhook.channelId } },
+      select: { userId: true },
+    });
+    if (!creatorMembership) {
+      res.status(403).json({ error: 'Webhook creator is not a channel member' });
       return;
     }
 
@@ -200,6 +226,7 @@ router.post('/:token', async (req, res: Response) => {
 
     res.status(201).json({ message: 'Message sent', messageId: finalMessage?.id });
 
+    // 웹훅 메시지는 일반 푸시를 보내지 않는다. 멘션된 사람에게만 알린다(generalPush를 켜지 않는다).
     if (finalMessage) void processNewChannelMessage(finalMessage);
   } catch (error) {
     if (error instanceof z.ZodError) {

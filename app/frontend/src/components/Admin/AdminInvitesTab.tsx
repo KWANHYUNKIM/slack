@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Copy, Trash2, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
+import { useAdminAction } from '@/hooks/useAdminAction';
 
 const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
   ADMIN: { labelKey: 'members.roles.admin', className: 'bg-purple-100 text-purple-700' },
@@ -32,13 +33,20 @@ export function AdminInvitesTab() {
   const [maxUses, setMaxUses] = useState('');
   const [expiry, setExpiry] = useState('7d');
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  // 만들기와 삭제는 인스턴스를 나눈다. 만들기는 진행 중에 다시 누르지 못하게 busy로 막는다.
+  const createAction = useAdminAction('admin:errors.createInvite');
+  const deleteAction = useAdminAction('admin:errors.deleteInvite');
 
-  const handleCreate = async () => {
-    await createInvite({
+  const handleCreate = () => {
+    void createAction.run(() => createInvite({
       role,
       maxUses: maxUses ? parseInt(maxUses) : null,
       expiresAt: getExpiresAt(expiry),
-    });
+    }));
+  };
+
+  const handleDelete = (inviteId: number) => {
+    void deleteAction.run(() => deleteInvite(inviteId));
   };
 
   const copyUrl = (code: string, id: number) => {
@@ -97,12 +105,20 @@ export function AdminInvitesTab() {
           </div>
           <button
             onClick={handleCreate}
+            disabled={createAction.busy}
             className="rounded-lg bg-slack-btn px-4 py-1.5 text-sm font-medium text-white hover:bg-slack-btn-hover"
           >
             {t('common:actions.create')}
           </button>
         </div>
       </div>
+
+      {createAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{createAction.error}</p>
+      )}
+      {deleteAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{deleteAction.error}</p>
+      )}
 
       {/* Invite List */}
       <div className="rounded-lg border border-slack-border overflow-hidden">
@@ -160,7 +176,7 @@ export function AdminInvitesTab() {
                   <td className="px-4 py-2.5 text-slack-secondary">{invite.creator.name}</td>
                   <td className="px-4 py-2.5 text-end">
                     <button
-                      onClick={() => deleteInvite(invite.id)}
+                      onClick={() => handleDelete(invite.id)}
                       className="text-slack-hint hover:text-red-600"
                       title={t('invites.delete')} aria-label={t('invites.delete')}
                     >
