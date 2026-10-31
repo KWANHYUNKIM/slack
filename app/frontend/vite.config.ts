@@ -90,7 +90,11 @@ export default defineConfig({
       '/health': { target: 'http://localhost:3000', changeOrigin: true },
       // 개인 액세스 토큰 API와 MCP 엔드포인트(mcp-1). 화면 경로와 겹치지 않아 bypass가 필요 없다.
       '/tokens': { target: 'http://localhost:3000', changeOrigin: true },
-      '/mcp': { target: 'http://localhost:3000', changeOrigin: true },
+      // OAuth 인가 서버와 메타데이터(mcp-4). 백엔드가 Host로 issuer·리소스 주소(http://localhost:5173/mcp)를 만들므로
+      // changeOrigin을 끈다(켜면 :3000으로 바뀌어 토큰의 리소스가 맞지 않는다). '/oauth/'로 끝을 맞춰 화면 경로 /oauth-consent와 겹치지 않게 한다.
+      '/mcp': { target: 'http://localhost:3000', changeOrigin: false },
+      '/oauth/': { target: 'http://localhost:3000', changeOrigin: false },
+      '/.well-known/oauth-': { target: 'http://localhost:3000', changeOrigin: false },
       '/socket.io': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
     },
   },

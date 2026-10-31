@@ -32,7 +32,8 @@
     "accessTokens": "Personal access tokens",
     "sessions": "Signed-in devices",
     "twoFactor": "Two-factor authentication",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "connectedApps": "Connected apps"
   },
   "sections": {
     "starred": "Starred",

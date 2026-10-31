@@ -18,6 +18,11 @@ export interface ToolContext {
   role: string | undefined;
   tokenId: number;
   scopes: string[];
+  /** 없으면 PAT. OAuth(mcp-4)면 tokenId는 OAuthToken id다. */
+  tokenKind?: 'pat' | 'oauth';
+  /** 쓰기 제한 버킷 키(OAuth는 연결 계열 단위). 없으면 PAT id로 센다. */
+  rateKey?: string;
+  oauthClientId?: number;
 }
 
 /** 도구 결과로 돌려줄 수 있는, 권한 없음·없음을 구분하지 않는 오류 */

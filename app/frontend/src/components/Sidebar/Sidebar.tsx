@@ -20,6 +20,7 @@ import {
   Search,
   KeyRound,
   Laptop,
+  PlugZap,
   ShieldCheck,
   Lock,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ import { getDesktop } from '@/lib/desktop';
 import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
 import { SessionsDialog } from '@/components/Profile/SessionsDialog';
+import { ConnectedAppsDialog } from '@/components/Profile/ConnectedAppsDialog';
 import { TwoFactorDialog } from '@/components/Profile/TwoFactorDialog';
 import { ChangePasswordDialog } from '@/components/Profile/ChangePasswordDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
@@ -77,6 +79,7 @@ export function Sidebar() {
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showTokensDialog, setShowTokensDialog] = useState(false);
   const [showSessionsDialog, setShowSessionsDialog] = useState(false);
+  const [showConnectedAppsDialog, setShowConnectedAppsDialog] = useState(false);
   const [showTwoFactorDialog, setShowTwoFactorDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const myCustomStatus = useCustomStatus(user?.id);
@@ -225,6 +228,7 @@ export function Sidebar() {
       {showStatusDialog && <StatusDialog onClose={() => setShowStatusDialog(false)} />}
       {showTokensDialog && <AccessTokensDialog onClose={() => setShowTokensDialog(false)} />}
       {showSessionsDialog && <SessionsDialog onClose={() => setShowSessionsDialog(false)} />}
+      {showConnectedAppsDialog && <ConnectedAppsDialog onClose={() => setShowConnectedAppsDialog(false)} />}
       {showTwoFactorDialog && <TwoFactorDialog onClose={() => setShowTwoFactorDialog(false)} />}
       {showPasswordDialog && <ChangePasswordDialog onClose={() => setShowPasswordDialog(false)} />}
       {/* Nav Rail - 70px wide, darker purple */}
@@ -322,6 +326,10 @@ export function Sidebar() {
                 <Button variant="menu-item" data-testid="access-tokens-menu-item" onClick={() => { setShowAvatarMenu(false); setShowTokensDialog(true); }}>
                   <KeyRound className="h-4 w-4" />
                   {t('userMenu.accessTokens')}
+                </Button>
+                <Button variant="menu-item" data-testid="connected-apps-menu-item" onClick={() => { setShowAvatarMenu(false); setShowConnectedAppsDialog(true); }}>
+                  <PlugZap className="h-4 w-4" />
+                  {t('userMenu.connectedApps')}
                 </Button>
                 <Button variant="menu-item" data-testid="sessions-menu-item" onClick={() => { setShowAvatarMenu(false); setShowSessionsDialog(true); }}>
                   <Laptop className="h-4 w-4" />

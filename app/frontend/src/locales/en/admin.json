@@ -317,7 +317,9 @@
     "errors": {
       "loadFailed": "Could not load security settings.",
       "saveFailed": "Could not save security settings."
-    }
+    },
+    "allowOAuthApps": "Allow members to connect OAuth apps",
+    "allowOAuthAppsHint": "Lets members connect apps such as Claude through the OAuth sign-in flow. Turning this off disconnects every app right away."
   },
   "dlp": {
     "title": "Data loss prevention",

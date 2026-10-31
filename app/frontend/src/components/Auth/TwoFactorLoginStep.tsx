@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { peekOAuthReturn } from '@/lib/oauthReturn';
 
 // 로그인 2단계(E7b): 인증 앱 6자리 코드 또는 복구 코드. mfaToken은 스토어 메모리에만 있고 5분 뒤 만료된다.
 interface TwoFactorLoginStepProps {
@@ -25,7 +26,7 @@ export function TwoFactorLoginStep({ onExpired }: TwoFactorLoginStepProps) {
     setError('');
     try {
       await completeMfaLogin(code.trim());
-      navigate('/');
+      navigate(peekOAuthReturn() ?? '/');
     } catch (err) {
       // 대기가 끝났으면 스토어가 mfaToken을 지워 비밀번호 화면으로 돌아간다
       if (err instanceof ApiError && err.code === 'MFA_TOKEN_INVALID') {

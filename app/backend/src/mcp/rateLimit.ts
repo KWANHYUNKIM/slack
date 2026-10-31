@@ -29,7 +29,10 @@ export function createMcpTokenLimiter(max = 120) {
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later' },
-    keyGenerator: (req: Request) => `pat:${(req as AuthRequest).accessToken?.tokenId ?? 'none'}`,
+    keyGenerator: (req: Request) => {
+      const token = (req as AuthRequest).accessToken;
+      return token?.rateKey ?? `pat:${token?.tokenId ?? 'none'}`;
+    },
   });
 }
 
@@ -79,9 +82,9 @@ export class WriteRateLimiter {
     private readonly store: WriteRateStore = new MemoryWriteStore(),
   ) {}
 
-  /** 허용되면 null, 막히면 다시 시도할 때까지 남은 초 */
-  async consume(tokenId: number): Promise<number | null> {
-    const { totalHits, resetTime } = await this.store.increment(`pat:${tokenId}`, this.windowMs);
+  /** 허용되면 null, 막히면 다시 시도할 때까지 남은 초. 숫자는 PAT id, 문자열은 버킷 키 그대로(OAuth는 `oauth:<계열>`). */
+  async consume(key: number | string): Promise<number | null> {
+    const { totalHits, resetTime } = await this.store.increment(typeof key === 'number' ? `pat:${key}` : key, this.windowMs);
     if (totalHits <= this.max) return null;
     return Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
   }

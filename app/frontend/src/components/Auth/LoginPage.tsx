@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { peekOAuthReturn } from '@/lib/oauthReturn';
 import { loginFieldErrorKey } from '@/lib/authErrors';
 import { SESSION_ENDED_FLAG } from '@/lib/socket';
 import { TwoFactorLoginStep } from './TwoFactorLoginStep';
@@ -30,7 +31,8 @@ export function LoginPage() {
     setError('');
     try {
       // 2FA 사용자는 같은 화면에서 2단계 코드 입력으로 넘어간다
-      if ((await login(email, password)) === 'done') navigate('/');
+      // OAuth 동의 화면에서 로그인하러 왔으면 그리로 돌아간다(mcp-4)
+      if ((await login(email, password)) === 'done') navigate(peekOAuthReturn() ?? '/');
       else setPassword('');
     } catch (err) {
       // 서버 code로 문구를 고른다(영어 원문 비교 금지). 검증 실패는 이메일 필드일 때만 이메일 안내를 보인다.

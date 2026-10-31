@@ -317,7 +317,9 @@
     "errors": {
       "loadFailed": "보안 설정을 불러오지 못했습니다.",
       "saveFailed": "보안 설정을 저장하지 못했습니다."
-    }
+    },
+    "allowOAuthApps": "구성원의 OAuth 앱 연결 허용",
+    "allowOAuthAppsHint": "구성원이 OAuth 로그인 절차로 Claude 같은 앱을 연결할 수 있습니다. 끄면 연결된 앱이 모두 바로 끊깁니다."
   },
   "dlp": {
     "title": "데이터 유출 방지",

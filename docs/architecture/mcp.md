@@ -20,9 +20,34 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
    - 권한 범위: `channels:read`, `channels:history`, `chat:write`, `reactions:write`, `search:read`, `users:read`, `files:read`, `im:read`, `im:history`, `im:write`
    - DM 범위(`im:*`)는 개인 대화를 다루므로 토큰 생성 화면에서 기본으로 해제되어 있고, 범위를 주지 않고 만든 토큰에도 들어가지 않는다.
    - `files:read`는 파일 본문 접근 권한이라 토큰 생성 화면에서 기본 해제한다(직접 켜야 함). `search:read`는 기본 선택을 유지한다. 서버 기본 범위(범위를 안 준 토큰)에는 둘 다 들어가지 않는다.
-2. **OAuth 2.1**: 2단계, claude.ai 커넥터용
-   - MCP 인가 사양을 따른다: Authorization Server Metadata, Protected Resource Metadata, PKCE, Dynamic Client Registration.
-   - 사용자가 동의 화면에서 권한 범위를 승인한다. 엔터프라이즈 관리자는 조직 단위로 MCP 사용을 끄거나 범위를 제한할 수 있다(E8 관리자 역할과 연동).
+2. **OAuth 2.1**: 2단계, claude.ai 커넥터용 (**구현됨, mcp-4**)
+   - MCP 인가 사양(2025-06-18)을 따른다: RFC 8414 인가 서버 메타데이터, RFC 9728 보호 리소스 메타데이터, RFC 7636 PKCE(S256만), RFC 7591 동적 클라이언트 등록, RFC 8707 리소스 지시자, RFC 7009 폐기, RFC 9207 `iss` 응답 파라미터.
+   - 인가 서버는 백엔드 안에 있다(`routes/oauth.ts`, `routes/wellKnown.ts`, `services/oauthService.ts`). 새 npm 패키지 없이 Node 내장 `crypto`로 구현했다.
+   - 사용자가 동의 화면(`/oauth-consent`)에서 권한 범위를 승인한다. 관리자는 조직 정책 "OAuth 앱 연결 허용"(`WorkspaceSetting.allowOAuthApps`, 기본 켜짐)으로 끌 수 있고, 끄면 살아 있는 OAuth 토큰을 모두 폐기한다. 범위 제한 정책은 아직 없다(남은 일).
+
+### 3.1 OAuth 엔드포인트 (mcp-4)
+| 메서드·경로 | 인증 | 설명 |
+|---|---|---|
+| `GET /.well-known/oauth-protected-resource/mcp` (루트 `/.well-known/oauth-protected-resource`도 같은 값) | 없음 | 보호 리소스 메타데이터. `resource = <origin>/mcp`, `authorization_servers = [<origin>]` |
+| `GET /.well-known/oauth-authorization-server` | 없음 | 인가 서버 메타데이터. `issuer = <origin>`, `code_challenge_methods_supported = [S256]`, 지원 범위 |
+| `POST /oauth/register` | 없음(IP당 시간 30회) | 동적 클라이언트 등록. `redirect_uris`는 https 또는 loopback(`localhost`, `127.0.0.1`, `[::1]`)의 http만, fragment·사용자 정보 금지. `token_endpoint_auth_method`는 `none`, `client_secret_basic`(생략 시 기본), `client_secret_post`. 비밀은 응답에서 한 번만, DB에는 sha256 해시 |
+| `GET /oauth/authorize` | 없음(브라우저) | 요청 확인 후 `/oauth-consent?...`로 302. 모르는 client_id나 등록되지 않은 redirect_uri면 리다이렉트하지 않고 400. 나머지 오류(PKCE 없음, `plain`, 모르는 범위, 다른 resource, 정책 꺼짐)는 redirect_uri로 `error`, `state`, `iss`를 붙여 돌려보낸다 |
+| `GET /oauth/authorize/details` | 로그인 JWT | 동의 화면용: 앱 이름, redirect 호스트, loopback 여부, 범위, 2FA 코드 필요 여부. 오류는 `{ error, code: OAUTH_INVALID_REQUEST \| OAUTH_APPS_DISABLED }` |
+| `POST /oauth/authorize/decision` | 로그인 JWT | `{ params, approve, code? }` → `{ redirectTo }`. 허용하면 1회용 코드(10분, 해시 저장), 거부하면 `error=access_denied`. 2FA 사용자는 허용할 때 코드를 다시 확인한다(PAT 발급과 같은 이유) |
+| `POST /oauth/token` | 클라이언트 인증 | `authorization_code`(+`code_verifier`, `redirect_uri` 일치, `resource` 일치), `refresh_token`(회전, 범위 축소만 가능). 응답 `access_token`(`scoat_`, 1시간), `refresh_token`(`scort_`, 30일). `Cache-Control: no-store`. client_id 단위로 15분 300회 |
+| `POST /oauth/revoke` | 클라이언트 인증 | RFC 7009. 액세스·리프레시 어느 쪽이든 그 연결(계열) 전체를 폐기한다. 없는 토큰도 200 |
+| `GET /users/me/connected-apps` | 로그인 JWT | 설정 "연결된 앱": 앱별 이름, redirect 호스트, 범위, 연결한 때, 마지막 사용 |
+| `DELETE /users/me/connected-apps/:id` | 로그인 JWT | 이 앱에 준 모든 토큰 폐기. 없거나 남의 앱이면 404 `OAUTH_CONNECTION_NOT_FOUND` |
+| `GET/PATCH /admin/settings/security` | 관리자 | `allowOAuthApps` 추가(기존 `requireMfa`와 함께, 바꿀 값만 보낸다) |
+
+- 프로토콜 엔드포인트(register, authorize, token, revoke)의 오류는 RFC 6749 형식 `{ error, error_description }`이다. 동의 화면·설정 API는 `{ error, code }`다.
+- **저장**: `OAuthClient`, `OAuthAuthorizationCode`(코드 해시, 1회용, 10분, PKCE challenge, 리소스), `OAuthToken`(액세스·리프레시 해시, 범위, 리소스, 발급 시 `tokenVersion`, 계열 `familyId`, `rotatedAt`, `revokedAt`). 마이그레이션 `20261101080000_add_oauth`.
+- **회전과 재사용 탐지**: 리프레시하면 같은 계열로 새 행을 만들고 옛 행에 `rotatedAt`을 찍는다(한 트랜잭션, 동시 요청은 하나만 통과). 회전된 리프레시 토큰이 다시 오면 탈취로 보고 계열 전체를 폐기하고 `oauth.refresh_reuse_detected`를 남긴다. 이미 쓴 인가 코드가 다시 와도 그 코드로 만든 계열을 폐기한다(`oauth.code_reuse_detected`).
+- **/mcp 인증**: `accessTokenAuth`가 PAT(`scpat_`)와 OAuth 액세스 토큰(`scoat_`)을 함께 받는다. OAuth 토큰은 리소스(audience)가 `<origin>/mcp`와 같아야 하고, 사용자 비활성·`tokenVersion` 변경(비밀번호 변경, 2FA 변경, 관리자 강제 로그아웃)·조직 정책 꺼짐이면 401, 조직 2FA 필수인데 미등록이면 PAT와 같은 403(JSON-RPC)이다. 401에는 `WWW-Authenticate: Bearer realm="mcp", resource_metadata="<origin>/.well-known/oauth-protected-resource/mcp"`(토큰이 왔으면 `error="invalid_token"`도)를 붙인다. rate limit 버킷은 PAT는 토큰, OAuth는 연결 계열 단위다. 감사 로그 `mcp.tool_call`의 details에 OAuth면 `tokenKind: 'oauth'`, `oauthClientId`가 붙는다.
+- **출처(origin)**: `PUBLIC_URL`이 있으면 그 출처, 없으면 요청의 프로토콜과 Host. 운영에서는 `PUBLIC_URL`을 반드시 정한다. 개발에서는 vite proxy가 `/mcp`, `/oauth/`, `/.well-known/oauth-`를 `changeOrigin: false`로 넘겨 issuer가 `http://localhost:5173`이 된다.
+- **감사 로그**: `oauth.client_registered`, `oauth.authorized`, `oauth.token_revoked`(via client/user), `oauth.refresh_reuse_detected`, `oauth.code_reuse_detected`, `workspace.oauth_policy_changed`. 토큰·코드·비밀 원문은 남기지 않는다.
+- **동의 화면**: 앱 이름은 등록할 때 누구나 정할 수 있으므로, 허용하면 이동할 redirect 호스트를 강조 상자에 크게 보여 주고 "검토되지 않은 앱" 안내를 붙인다. 로그인 전이면 돌아올 주소를 sessionStorage에 적어 두고 로그인 뒤 돌아온다(`lib/oauthReturn.ts`).
+- **연결 방법(claude.ai, Claude Code)**: 서버 주소 `https://<서버>/mcp`만 넣으면 클라이언트가 401의 `resource_metadata`로 메타데이터를 찾고, 등록 → 브라우저 동의 → 토큰 교환을 스스로 한다. 헤더에 PAT를 넣는 방식도 그대로 쓸 수 있다.
 
 ## 4. 도구(Tools)
 모든 도구는 **토큰 소유자의 권한으로만** 동작한다. 기존 인가 미들웨어를 같이 쓰고, 비공개 채널과 DM은 멤버일 때만 접근할 수 있다.
@@ -69,7 +94,7 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | mcp-1 server+PAT | `/mcp` Streamable HTTP, PAT 발급·폐기 API와 설정 화면, 읽기 도구(list_channels, read_channel, read_thread, list_users, get_activity) | opus | 2.5h | 01a 머지 후. PAT 테이블이 있어 스키마 순서에 따름 |
 | mcp-2 write tools | send_message, send_dm, edit/delete, 리액션, 감사 로그, MCP rate limit | sonnet | 2h | mcp-1 |
 | mcp-3 search+files | search_messages, read_file, 리소스, 프롬프트 | sonnet | 1.5h | 06 search-v2 |
-| mcp-4 oauth | OAuth 2.1 인가 서버(PKCE, DCR, 메타데이터), 동의 화면, 조직 정책 | opus | 3h | mcp-1, E2 SSO와 함께 설계 |
+| mcp-4 oauth | OAuth 2.1 인가 서버(PKCE, DCR, 메타데이터), 동의 화면, 조직 정책 (**구현됨**, 3.1절) | opus | 3h | mcp-1, E2 SSO와 함께 설계 |
 
 ## 8. 완료 기준
 - Claude Code에서 `claude mcp add`로 연결하면 `#claude-test`와 같은 테스트 채널을 읽고, 메시지를 보내고, 고치고, 지울 수 있다(CRUD). 결과가 웹 화면에 실시간으로 반영된다.
