@@ -7,6 +7,7 @@ import { logError } from '../utils/logger.js';
 import { ERR } from '../utils/errorCodes.js';
 import { checkSession } from '../services/sessionService.js';
 import { isMfaPolicyEnforced } from '../services/mfaService.js';
+import { applyWorkspaceContext, clearWorkspaceCache, invalidateWorkspaceCache } from './workspace.js';
 
 // Short-lived cache for tokenVersion checks to avoid a DB round-trip on every request.
 // TTL is 5 seconds — revoked tokens may work for up to 5s after revocation.
@@ -25,12 +26,15 @@ if (process.env.NODE_ENV !== 'test') {
   }, 10 * 60 * 1000).unref();
 }
 
+// 역할·계정 상태가 바뀌면 워크스페이스 멤버십 캐시(E1b)도 같이 비운다. 기본 워크스페이스 역할은 User.role이 원천이다.
 export function invalidateTokenCache(userId: number) {
   tokenCache.delete(userId);
+  invalidateWorkspaceCache(userId);
 }
 
 export function clearTokenCache() {
   tokenCache.clear();
+  clearWorkspaceCache();
 }
 
 export type AccessTokenResult =
@@ -129,5 +133,14 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   }
 
   req.user = result.user;
+
+  // 현재 워크스페이스(X-Workspace-Id, 없으면 기본)를 req.workspace에 둔다. req.user.role은 바꾸지 않는다. 스펙 5.2
+  try {
+    if (!(await applyWorkspaceContext(req, res))) return;
+  } catch (error) {
+    logError('Resolve workspace error', error);
+    res.status(500).json({ error: 'Internal server error', code: ERR.INTERNAL_ERROR });
+    return;
+  }
   next();
 }

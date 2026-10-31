@@ -8,6 +8,8 @@ import sharp from 'sharp';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { guestVisibleUserIds } from '../middleware/authorize.js';
+import { invalidateWorkspaceCache, requestWorkspaceState } from '../middleware/workspace.js';
+import { workspaceSummaryForUser } from '../services/workspaceService.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -104,10 +106,15 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     // Enrich with real-time WebSocket presence
     const online = isUserOnline(userId);
+    // 조직·워크스페이스(E1b). authMiddleware가 읽은 멤버십 상태를 그대로 쓴다(다시 조회하지 않음).
+    // 응답의 role은 호환을 위해 기본 워크스페이스 역할(User.role) 그대로다
+    const state = await requestWorkspaceState(req);
+    const workspaceInfo = state ? await workspaceSummaryForUser(prisma, state) : null;
     res.json({
       ...toPublicUser(user, { self: true }),
       status: online ? 'online' : (user.status || 'offline'),
       isOnline: online,
+      ...(workspaceInfo ?? {}),
     });
   } catch (error) {
     logError('Get profile error', error);
@@ -132,6 +139,31 @@ function normalizeCollapsed(raw: unknown) {
     dms: obj.dms === true,
   };
 }
+
+const defaultWorkspaceSchema = z.object({ workspaceId: z.number().int().positive().max(2_147_483_647) });
+
+// PUT /users/me/default-workspace - 헤더 없는 요청이 쓸 워크스페이스를 기억한다(전환기에서 바꿀 때, E1b)
+router.put('/me/default-workspace', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const { workspaceId } = defaultWorkspaceSchema.parse(req.body);
+    const state = await requestWorkspaceState(req);
+    if (!state?.memberships.some((m) => m.workspaceId === workspaceId)) {
+      res.status(404).json({ error: 'Workspace not found', code: ERR.WORKSPACE_NOT_FOUND });
+      return;
+    }
+    await prisma.user.update({ where: { id: userId }, data: { defaultWorkspaceId: workspaceId } });
+    invalidateWorkspaceCache(userId);
+    res.json({ defaultWorkspaceId: workspaceId });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
+      return;
+    }
+    logError('Set default workspace error', error);
+    res.status(500).json({ error: 'Failed to set default workspace', code: ERR.INTERNAL_ERROR });
+  }
+});
 
 // GET /users/me/sidebar - 섹션 접기 상태 조회
 router.get('/me/sidebar', authMiddleware, async (req: AuthRequest, res: Response) => {

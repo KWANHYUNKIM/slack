@@ -71,6 +71,8 @@ model Workspace {
   @@unique([organizationId, slug])
   @@unique([organizationId, name])
   @@index([organizationId, archivedAt])
+  // 마이그레이션에만 있는 함수 유니크 인덱스 "Workspace_organizationId_lower_name_key"(organizationId, lower(name))가
+  // 이름을 대소문자 무시로 유일하게 한다(20261102015000). Prisma로 표현할 수 없으니 migrate dev가 지우는 diff를 만들면 그 줄을 빼야 한다.
 }
 
 // 사용자의 워크스페이스 참여. 나가거나 제거되면 행을 지우지 않고 leftAt을 채운다(재참여 시 갱신, 감사·eDiscovery용).

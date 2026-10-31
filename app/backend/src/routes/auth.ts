@@ -11,7 +11,12 @@ import { rotateSessions } from '../services/sessionRotation.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
-import { DEFAULT_WORKSPACE_ID, addWorkspaceMember, setUserRole } from '../services/workspaceService.js';
+import {
+  DEFAULT_WORKSPACE_ID, WORKSPACE_PUBLIC_SELECT, addWorkspaceMember, joinWorkspaceDefaultChannels, setUserRole,
+  AlreadyWorkspaceMemberError, loadUserWorkspaceState, workspaceSummaryForUser,
+} from '../services/workspaceService.js';
+import { requestWorkspaceState } from '../middleware/workspace.js';
+import { addMember } from '../services/workspaceMemberService.js';
 import { createSessionToken, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 import {
@@ -73,8 +78,11 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Pre-validate invite code format (early rejection before hashing)
     if (inviteCode) {
-      const invite = await prisma.inviteLink.findUnique({ where: { code: inviteCode } });
-      if (!invite) {
+      const invite = await prisma.inviteLink.findUnique({
+        where: { code: inviteCode }, include: { workspace: { select: { archivedAt: true } } },
+      });
+      // 보관된 워크스페이스의 초대는 없는 초대와 같게 거부한다(E1b)
+      if (!invite || invite.workspace.archivedAt) {
         res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
         return;
       }
@@ -108,6 +116,7 @@ router.post('/register', async (req: Request, res: Response) => {
           WHERE "code" = ${inviteCode}
             AND ("expiresAt" IS NULL OR "expiresAt" >= NOW())
             AND ("maxUses" IS NULL OR "useCount" < "maxUses")
+            AND EXISTS (SELECT 1 FROM "Workspace" w WHERE w."id" = "InviteLink"."workspaceId" AND w."archivedAt" IS NULL)
           RETURNING id, role, "workspaceId", "createdBy"
         `;
         if (claimed.length === 0) {
@@ -133,7 +142,7 @@ router.post('/register', async (req: Request, res: Response) => {
       // 역할과 기본 워크스페이스 멤버십은 setUserRole 하나로 쓴다. 다른 워크스페이스 초대(E1b 이후)는 그 워크스페이스 멤버십만 만든다.
       const inDefault = workspaceId === DEFAULT_WORKSPACE_ID;
       await setUserRole(tx, created.id, assignedRole, { joinDefaultWorkspace: inDefault, invitedBy });
-      if (!inDefault) await addWorkspaceMember(tx, { workspaceId, userId: created.id, invitedBy });
+      if (!inDefault) await addWorkspaceMember(tx, { workspaceId, userId: created.id, invitedBy, role: assignedRole });
       return tx.user.findUniqueOrThrow({
         where: { id: created.id },
         select: {
@@ -141,6 +150,7 @@ router.post('/register', async (req: Request, res: Response) => {
           name: true,
           role: true,
           createdAt: true,
+          defaultWorkspaceId: true,
         },
       });
     });
@@ -148,7 +158,12 @@ router.post('/register', async (req: Request, res: Response) => {
     // Auto-join default channels — guests get NO auto-join (admin assigns channels)
     if (user.role !== 'GUEST') {
       try {
-        await joinDefaultChannels(prisma, user.id);
+        // 초대받은 워크스페이스의 기본 채널(기본 워크스페이스는 자리 채우기까지 하는 기존 경로)
+        if (user.defaultWorkspaceId && user.defaultWorkspaceId !== DEFAULT_WORKSPACE_ID) {
+          await joinWorkspaceDefaultChannels(prisma, user.defaultWorkspaceId, user.id);
+        } else {
+          await joinDefaultChannels(prisma, user.id);
+        }
       } catch (error) {
         // Non-critical: don't fail registration if auto-join fails
         logError('Default channel join error', error);
@@ -264,6 +279,9 @@ async function sendLoginSuccess(
 ): Promise<void> {
   const { token } = await createSessionToken({ id: user.id, tokenVersion: user.tokenVersion }, req);
   const mfaEnrollmentRequired = !user.mfaEnabledAt && (await isMfaPolicyEnforced());
+  // 조직·워크스페이스 정보(E1b). role은 호환을 위해 기본 워크스페이스 역할(User.role) 그대로다
+  const state = await loadUserWorkspaceState(prisma, user.id);
+  const workspaceInfo = state ? await workspaceSummaryForUser(prisma, state) : null;
   res.json({
     user: {
       id: user.id,
@@ -274,6 +292,7 @@ async function sendLoginSuccess(
       createdAt: user.createdAt,
       locale: user.locale,
       timeZone: user.timeZone,
+      ...(workspaceInfo ?? {}),
     },
     token,
     ...(mfaEnrollmentRequired ? { mfaEnrollmentRequired: true } : {}),
@@ -450,10 +469,14 @@ router.get('/invite/:code', async (req: Request, res: Response) => {
 
     const invite = await prisma.inviteLink.findUnique({
       where: { code },
-      select: { role: true, expiresAt: true, maxUses: true, useCount: true },
+      select: {
+        role: true, expiresAt: true, maxUses: true, useCount: true,
+        workspace: { select: { id: true, slug: true, name: true, icon: true, archivedAt: true } },
+      },
     });
 
-    if (!invite) {
+    // 보관된 워크스페이스의 초대는 없는 초대처럼 다룬다(E1b)
+    if (!invite || invite.workspace.archivedAt) {
       res.status(404).json({ error: 'Invite not found', code: ERR.INVITE_NOT_FOUND });
       return;
     }
@@ -468,10 +491,84 @@ router.get('/invite/:code', async (req: Request, res: Response) => {
       return;
     }
 
-    res.json({ valid: true, role: invite.role });
+    const { archivedAt: _archivedAt, ...workspace } = invite.workspace;
+    res.json({ valid: true, role: invite.role, workspace });
   } catch (error) {
     logError('Validate invite error', error);
     res.status(500).json({ error: 'Failed to validate invite', code: ERR.INTERNAL_ERROR });
+  }
+});
+
+// POST /auth/invite/:code/accept - 로그인한 기존 사용자가 초대로 워크스페이스에 참여한다(E1b).
+// 이미 멤버면 초대 사용 횟수를 쓰지 않고 409. 보관된 워크스페이스·만료·소진 초대는 가입과 같은 400 오류다.
+// 역할은 가입처럼 MEMBER·GUEST까지만 받는다. 기본 워크스페이스에 다시 들어오면 역할이 초대 역할로 정해진다(setUserRole).
+router.post('/invite/:code/accept', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const code = req.params.code as string;
+    if (!code || code.length > 64) {
+      res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
+      return;
+    }
+    const invite = await prisma.inviteLink.findUnique({
+      where: { code },
+      select: {
+        role: true, expiresAt: true, maxUses: true, useCount: true, createdBy: true, workspaceId: true,
+        workspace: { select: { ...WORKSPACE_PUBLIC_SELECT, organizationId: true, archivedAt: true } },
+      },
+    });
+    const userId = req.user!.userId;
+    const state = await requestWorkspaceState(req);
+    if (!invite || !state || invite.workspace.archivedAt || invite.workspace.organizationId !== state.organizationId) {
+      res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
+      return;
+    }
+    if (invite.expiresAt && invite.expiresAt < new Date()) {
+      res.status(400).json({ error: 'Invite code has expired', code: ERR.INVITE_EXPIRED });
+      return;
+    }
+    if (invite.maxUses !== null && invite.useCount >= invite.maxUses) {
+      res.status(400).json({ error: 'Invite code has reached its usage limit', code: ERR.INVITE_EXHAUSTED });
+      return;
+    }
+    if (state.memberships.some((m) => m.workspaceId === invite.workspaceId)) {
+      res.status(409).json({ error: 'Already a member of this workspace', code: ERR.USER_ALREADY_WORKSPACE_MEMBER });
+      return;
+    }
+
+    const role = invite.role === 'GUEST' ? 'GUEST' : 'MEMBER';
+    await addMember({
+      workspaceId: invite.workspaceId, userId, role, actorId: userId, invitedBy: invite.createdBy, source: 'invite',
+      // 초대 행을 잠근 뒤 멤버십 확인 → 사용 횟수 증가 → (addMember가) 멤버십 생성. 같은 사용자가 동시에 두 번 수락해도
+      // 두 번째는 잠금이 풀린 뒤 멤버십을 보고 409가 되어 사용 횟수가 한 번만 는다. 마지막 한 번을 다른 사람이 가져가면 참여하지 않는다
+      claim: async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "InviteLink" WHERE "code" = ${code} FOR UPDATE`;
+        const current = await loadUserWorkspaceState(tx, userId);
+        if (current?.memberships.some((m) => m.workspaceId === invite.workspaceId)) throw new AlreadyWorkspaceMemberError();
+        const claimed = await tx.$queryRaw<Array<{ id: number }>>`
+          UPDATE "InviteLink"
+          SET "useCount" = "useCount" + 1
+          WHERE "code" = ${code}
+            AND ("expiresAt" IS NULL OR "expiresAt" >= NOW())
+            AND ("maxUses" IS NULL OR "useCount" < "maxUses")
+            AND EXISTS (SELECT 1 FROM "Workspace" w WHERE w."id" = "InviteLink"."workspaceId" AND w."archivedAt" IS NULL)
+          RETURNING id
+        `;
+        return claimed.length > 0;
+      },
+    });
+    const { organizationId: _org, archivedAt: _archivedAt, ...workspace } = invite.workspace;
+    res.json({ workspace: { ...workspace, role } });
+  } catch (error) {
+    if (error instanceof AlreadyWorkspaceMemberError) {
+      res.status(409).json({ error: 'Already a member of this workspace', code: ERR.USER_ALREADY_WORKSPACE_MEMBER });
+      return;
+    }
+    if (error instanceof Error && error.message === 'INVITE_INVALID') {
+      res.status(400).json({ error: 'Invite code is no longer valid', code: ERR.INVITE_INVALID });
+      return;
+    }
+    logError('Accept invite error', error);
+    res.status(500).json({ error: 'Failed to accept invite', code: ERR.INTERNAL_ERROR });
   }
 });
 
