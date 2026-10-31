@@ -39,7 +39,7 @@
 | i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 완료(PR #71 머지) | 2h | 2026-11-01 00:07 | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | dev-3 | sonnet | 완료(PR #74 머지) | 1.5h | 2026-11-01 00:48 | | |
-| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a~5e 완료(19/31), 5f(hi·bn·th·nb) 진행 | 2h | 2026-11-01 04:29 | | |
+| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a~5f 완료(23/31), 5g(fi·cs·el·hu·ro) 진행 | 2h | 2026-11-01 04:29 | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
@@ -82,7 +82,7 @@
 | fix/channel-purge-order: 채널 메시지 정리(deleteMessages, blankParents)도 DB 처리 행(RETURNING) 기준으로 저장소 파일을 사후 삭제할지, 본체 삭제 실패 재시도 방식 통일 | dev-3 | sonnet | 완료(PR #112 머지) | 45분 | 2026-11-01 04:14 | | PR #106 남은 이슈 |
 | spec/E1-multi-workspace: E1 조직·멀티 워크스페이스 스펙과 파트 분할(E2·E3·E8·E9 의존 정리), Enterprise Grid 조사 | planner-1 | opus | 완료(D1~D11 제안안 확정) | 1.5h | 2026-11-01 03:54 | 2026-11-01 04:03 | 엔터프라이즈 3절 |
 | E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | dev-4 | opus | 완료(PR #115 머지) | 2h | 2026-11-01 04:22 | 2026-11-01 04:19 | docs/specs/E1-multi-workspace.md 9절 |
-| E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | dev-4 | opus | PR #128 리뷰 중 | 2h | 2026-11-01 05:22 | 2026-11-01 05:18 | E1 스펙 |
+| E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | dev-4 | opus | PR #128 재리뷰 반영 중 | 2h | 2026-11-01 05:22 | 2026-11-01 05:18 | E1 스펙 |
 | E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | - | opus | 대기(E1b 후) | 2h | | | E1 스펙 |
 | E1d DM·검색·활동·MCP 워크스페이스 범위 | - | sonnet | 대기(E1c 후) | 2h | | | E1 스펙 |
 | E1e 조직 거버넌스 설정 분리 | - | sonnet | 대기(E1d 후) | 2h | | | E1 스펙 |
