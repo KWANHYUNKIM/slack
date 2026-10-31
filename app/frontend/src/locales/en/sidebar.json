@@ -32,12 +32,21 @@
     "subtitle": "Find or start a conversation",
     "searchPlaceholder": "Search by name...",
     "noUsers": "No users found",
-    "close": "Close"
+    "close": "Close",
+    "pickSubtitle": "Select up to {max, plural, one {# person} other {# people}}",
+    "select": "Select {name}",
+    "selectedCount": "{count} of {max} selected",
+    "start": "Start conversation",
+    "startGroup": "Start group conversation"
   },
   "you": "(you)",
   "notifications": {
     "someone": "Someone",
     "sentAttachment": "Sent an attachment",
     "threadTitle": "{name} (thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "createError": "Could not start the group conversation. Please try again."
   }
 }

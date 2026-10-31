@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { isToday, isYesterday } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { formatDate, formatTime, formatTimeShort, formatDateTime } from '@/lib/i18n/format';
 import { t as translate } from '@/lib/i18n';
 import {
@@ -11,10 +12,12 @@ import {
   Download,
   FileIcon,
   Search,
+  Users,
+  UserPlus,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useDMStore } from '@/stores/useDMStore';
+import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -38,15 +41,21 @@ import { PanelHeader } from './PanelHeader';
 import { HuddleButton } from '@/components/Huddle/HuddleButton';
 import { HuddleSystemMessage } from '@/components/Huddle/HuddleInvite';
 import { renderMessageContent } from '@/lib/renderMessageContent';
-import { markDMUnread, pinDM, unpinDM, getPinnedDMs, getFileUrl, getAuthFileUrl, type ApiDirectMessage } from '@/lib/api';
+import {
+  markDMUnread, pinDM, unpinDM, getPinnedDMs, getDMGroupPins, createDMGroup, getFileUrl, getAuthFileUrl,
+  type ApiDirectMessage, type AuthUser,
+} from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrors';
+import { groupDisplayName, otherMembers } from '@/lib/groupDM';
+import { AddTeammatesDialog, MAX_GROUP_OTHERS } from '@/components/Sidebar/AddTeammatesDialog';
+import { GroupMembersPanel } from './GroupMembersPanel';
 import { useMobileStore } from '@/stores/useMobileStore';
 import type { DMMessage } from '@/stores/useDMStore';
 
-interface DMConversationProps {
-  userId: number;
-  userName: string;
-  userAvatar?: string;
-}
+// 1:1 DM은 상대 userId, 그룹 DM은 groupId로 연다. 메시지 목록·전송·편집·리액션은 같은 화면을 쓴다.
+type DMConversationProps =
+  | { userId: number; userName: string; userAvatar?: string; groupId?: undefined }
+  | { groupId: number; userId?: undefined; userName?: undefined; userAvatar?: undefined };
 
 function formatDateSeparator(date: Date): string {
   if (isToday(date)) return translate('common:dates.today');
@@ -57,8 +66,19 @@ function formatDateSeparator(date: Date): string {
 
 const EMPTY_MESSAGES: DMMessage[] = [];
 
-export function DMConversation({ userId, userName, userAvatar }: DMConversationProps) {
+const NO_GROUP = { name: null, members: [] };
+
+export function DMConversation(props: DMConversationProps) {
   const { t } = useTranslation('channels');
+  const navigate = useNavigate();
+  const groupId = props.groupId;
+  const isGroup = groupId !== undefined;
+  const group = useChannelStore((s) => (isGroup ? s.groupDMs.find((g) => g.id === groupId) : undefined));
+  const currentUserIdForName = useAuthStore((s) => s.user?.id);
+  // 이 화면에서 userId는 대화 키다(그룹이면 groupConversationKey). 1:1 전용 동작은 isGroup으로 막는다.
+  const userId = isGroup ? groupConversationKey(groupId) : props.userId;
+  const userName = isGroup ? groupDisplayName(group ?? NO_GROUP, currentUserIdForName) : props.userName;
+  const userAvatar = props.userAvatar;
   const messages = useDMStore((s) => s.messages[userId]) ?? EMPTY_MESSAGES;
   const isLoading = useDMStore((s) => s.isLoading);
   const loadError = useDMStore((s) => s.loadError);
@@ -80,7 +100,11 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [showFiles, setShowFiles] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState<ApiDirectMessage[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [showMembers, setShowMembers] = useState(false);
+  const [showAddPeople, setShowAddPeople] = useState(false);
+  const [addPeopleError, setAddPeopleError] = useState<string | null>(null);
   const toggleDMStar = useChannelStore((s) => s.toggleDMStar);
+  const toggleGroupStar = useChannelStore((s) => s.toggleGroupStar);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
@@ -92,9 +116,9 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const hoverLeaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const currentUser = useAuthStore((s) => s.user);
   const openSidebar = useMobileStore((s) => s.openSidebar);
-  const isSelf = userId === currentUser?.id;
-  const dmEntry = useChannelStore((s) => s.directMessages.find((d) => d.userId === userId));
-  const isStarred = dmEntry?.isStarred ?? false;
+  const isSelf = !isGroup && userId === currentUser?.id;
+  const dmEntry = useChannelStore((s) => (isGroup ? undefined : s.directMessages.find((d) => d.userId === userId)));
+  const isStarred = (isGroup ? group?.isStarred : dmEntry?.isStarred) ?? false;
   const openProfile = useProfileStore((s) => s.openProfile);
   const toggleBookmark = useBookmarkStore((s) => s.toggle);
   const bookmarkedIds = useBookmarkStore((s) => s.bookmarkedIds);
@@ -174,7 +198,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
     if (isAtBottom.current) {
       messagesEndRef.current?.scrollIntoView();
     }
-  }, [activeThreadId, showPins, showFiles]);
+  }, [activeThreadId, showPins, showFiles, showMembers]);
 
   const handleStartEdit = (msg: { id: number; content: string }) => {
     startEdit(msg.id, msg.content);
@@ -199,7 +223,26 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
     setActiveThreadId(messageId);
     setShowPins(false);
     setShowFiles(false);
+    setShowMembers(false);
   }, []);
+
+  const loadPins = useCallback(
+    () => (groupId !== undefined ? getDMGroupPins(groupId) : getPinnedDMs(userId)),
+    [groupId, userId],
+  );
+
+  // 1:1에서 사람을 추가하면 새 그룹 DM을 만든다(1:1 대화는 그대로 남는다)
+  const handleAddPeopleToDM = async (users: AuthUser[]) => {
+    try {
+      setAddPeopleError(null);
+      const { group: created } = await createDMGroup([userId, ...users.map((u) => u.id)]);
+      useChannelStore.getState().upsertGroupDM(created);
+      setShowAddPeople(false);
+      navigate(`/g/${created.id}`);
+    } catch (err) {
+      setAddPeopleError(apiErrorMessage(err, 'sidebar:groupDM.createError'));
+    }
+  };
 
   const handleCloseThread = useCallback(() => {
     setActiveThreadId(null);
@@ -208,8 +251,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   // Fetch pinned messages when pins panel is opened
   useEffect(() => {
     if (!showPins) return;
-    getPinnedDMs(userId).then(setPinnedMessages).catch(() => {});
-  }, [showPins, userId]);
+    loadPins().then(setPinnedMessages).catch(() => {});
+  }, [showPins, loadPins]);
 
   const handleTogglePin = useCallback(async (msg: DMMessage) => {
     setShowMoreMenuId(null);
@@ -223,10 +266,10 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
       fetchConversation(userId);
       // Refresh pins panel if open
       if (showPins) {
-        getPinnedDMs(userId).then(setPinnedMessages).catch(() => {});
+        loadPins().then(setPinnedMessages).catch(() => {});
       }
     } catch { /* ignore */ }
-  }, [userId, fetchConversation, showPins]);
+  }, [userId, fetchConversation, showPins, loadPins]);
 
   const handleReplyCountChange = useCallback((messageId: number, count: number, fromSelf?: boolean) => {
     const participant = fromSelf && currentUser
@@ -248,14 +291,20 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   if (threadUserId !== userId) {
     setThreadUserId(userId);
     setActiveThreadId(null);
+    setShowMembers(false);
   }
 
   // Memoize dmParticipantIds to prevent MessageInput re-renders
   const currentUserId = currentUser?.id;
+  const groupMemberKey = group?.members.map((m) => m.id).join(',');
   const dmParticipantIds = useMemo(
-    () => (currentUserId !== undefined ? [currentUserId, userId] : [userId]),
-    [currentUserId, userId]
+    () => {
+      if (isGroup) return groupMemberKey ? groupMemberKey.split(',').map(Number) : [];
+      return currentUserId !== undefined ? [currentUserId, userId] : [userId];
+    },
+    [isGroup, groupMemberKey, currentUserId, userId]
   );
+  const [firstMember, secondMember] = otherMembers(group ?? NO_GROUP, currentUserId);
 
   // Memoize placeholder to prevent MessageInput re-renders
   const placeholder = useMemo(() => t('dm.messagePlaceholder', { name: userName }), [t, userName]);
@@ -274,27 +323,48 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
             >
               <Menu className="h-5 w-5 text-slack-secondary" />
             </button>
-            <button onClick={() => openProfile(userId)} disabled={isSelf} className={cn(!isSelf && 'cursor-pointer')}>
-              <Avatar
-                src={userAvatar || undefined}
-                alt={userName}
-                fallback={userName}
-                size="md"
-                status={dmEntry?.userStatus || 'offline'}
-              />
-            </button>
-            <button
-              onClick={() => openProfile(userId)}
-              disabled={isSelf}
-              className={cn('ms-2 text-[18px] font-bold text-slack-primary', !isSelf && 'cursor-pointer hover:underline')}
-            >
-              {userName}{isSelf && <span className="font-normal text-slack-hint"> {t('dm.you')}</span>}
-            </button>
+            {isGroup ? (
+              <button
+                data-testid="group-header-name"
+                onClick={() => setShowMembers((prev) => !prev)}
+                className="flex min-w-0 items-center gap-2 cursor-pointer"
+                title={t('groupDM.members', { count: group?.members.length ?? 0 })}
+              >
+                <span className="relative h-9 w-9 flex-shrink-0">
+                  {firstMember && (
+                    <Avatar src={firstMember.avatar ?? undefined} alt={firstMember.name} fallback={firstMember.name} size="sm" className="absolute start-0 top-0 h-6 w-6" />
+                  )}
+                  {secondMember && (
+                    <Avatar src={secondMember.avatar ?? undefined} alt={secondMember.name} fallback={secondMember.name} size="sm" className="absolute bottom-0 end-0 h-6 w-6 ring-2 ring-white" />
+                  )}
+                </span>
+                <span className="truncate text-[18px] font-bold text-slack-primary hover:underline">{userName}</span>
+              </button>
+            ) : (
+              <>
+                <button onClick={() => openProfile(userId)} disabled={isSelf} className={cn(!isSelf && 'cursor-pointer')}>
+                  <Avatar
+                    src={userAvatar || undefined}
+                    alt={userName}
+                    fallback={userName}
+                    size="md"
+                    status={dmEntry?.userStatus || 'offline'}
+                  />
+                </button>
+                <button
+                  onClick={() => openProfile(userId)}
+                  disabled={isSelf}
+                  className={cn('ms-2 text-[18px] font-bold text-slack-primary', !isSelf && 'cursor-pointer hover:underline')}
+                >
+                  {userName}{isSelf && <span className="font-normal text-slack-hint"> {t('dm.you')}</span>}
+                </button>
+              </>
+            )}
             <Button
               variant="toolbar"
               size="icon-xs"
               data-testid="dm-star-button"
-              onClick={() => toggleDMStar(userId)}
+              onClick={() => (isGroup ? toggleGroupStar(groupId) : toggleDMStar(userId))}
               title={isStarred ? t('dm.unstar') : t('dm.star')}
               aria-label={isStarred ? t('dm.unstar') : t('dm.star')}
             >
@@ -304,7 +374,33 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
 
           {/* Right Section */}
           <div className="flex items-center gap-2">
-            {!isSelf && <HuddleButton userId={userId} />}
+            {isGroup ? (
+              <Button
+                variant="toolbar"
+                size="sm"
+                data-testid="group-members-button"
+                onClick={() => setShowMembers((prev) => !prev)}
+                aria-label={t('groupDM.members', { count: group?.members.length ?? 0 })}
+                title={t('groupDM.members', { count: group?.members.length ?? 0 })}
+              >
+                <Users className="h-4 w-4 text-slack-secondary" />
+                <span className="text-[13px] text-slack-secondary">{group?.members.length ?? 0}</span>
+              </Button>
+            ) : !isSelf && (
+              <>
+                <Button
+                  variant="toolbar"
+                  size="icon-xs"
+                  data-testid="dm-add-people"
+                  onClick={() => { setAddPeopleError(null); setShowAddPeople(true); }}
+                  aria-label={t('groupDM.addPeople')}
+                  title={t('groupDM.addPeople')}
+                >
+                  <UserPlus className="h-4 w-4 text-slack-secondary" />
+                </Button>
+                <HuddleButton userId={userId} />
+              </>
+            )}
             <HeaderNotifications testIdPrefix="dm" />
             <div className="hidden sm:block h-4 w-px bg-slack-border" />
             <div className="hidden sm:block">
@@ -324,8 +420,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
         <HeaderTabs
           showPins={showPins}
           showFiles={showFiles}
-          onTogglePins={() => { setShowPins((prev) => !prev); setShowFiles(false); }}
-          onToggleFiles={() => { setShowFiles((prev) => !prev); setShowPins(false); }}
+          onTogglePins={() => { setShowPins((prev) => !prev); setShowFiles(false); setShowMembers(false); }}
+          onToggleFiles={() => { setShowFiles((prev) => !prev); setShowPins(false); setShowMembers(false); }}
           testIdPrefix="dm"
         />
 
@@ -352,7 +448,11 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
             ) : messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-slack-hint">
                 <p className="text-lg font-medium">
-                  {isSelf ? t('dm.selfSpace') : t('dm.conversationStart', { name: userName })}
+                  {isSelf
+                    ? t('dm.selfSpace')
+                    : isGroup
+                      ? t('groupDM.conversationStart', { names: userName })
+                      : t('dm.conversationStart', { name: userName })}
                 </p>
                 <p className="text-sm">{t('dm.sendToBegin')}</p>
               </div>
@@ -588,7 +688,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
                             onDelete={() => handleDelete(msg.id)}
                             onPin={() => handleTogglePin(msg)}
                             isPinned={msg.isPinned}
-                            onMarkUnread={() => {
+                            onMarkUnread={isGroup ? undefined : () => {
                               setShowMoreMenuId(null);
                               // Count unread messages from this point forward
                               const unreadCount = messages.filter((m) => m.id >= msg.id).length;
@@ -670,6 +770,11 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
           </div>
         )}
 
+        {/* Group members panel */}
+        {isGroup && showMembers && group && (
+          <GroupMembersPanel group={group} onClose={() => setShowMembers(false)} />
+        )}
+
         {/* Thread Panel */}
         {activeThreadId && (
           <ThreadPanel
@@ -688,6 +793,21 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
           src={lightboxSrc}
           alt={lightboxAlt}
           onClose={() => setLightboxSrc(null)}
+        />
+      )}
+
+      {/* 1:1에서 사람 추가 → 새 그룹 DM */}
+      {!isGroup && (
+        <AddTeammatesDialog
+          open={showAddPeople}
+          mode="pick"
+          onClose={() => setShowAddPeople(false)}
+          onConfirm={handleAddPeopleToDM}
+          excludeIds={currentUserId !== undefined ? [userId, currentUserId] : [userId]}
+          maxSelected={MAX_GROUP_OTHERS - 1}
+          title={t('groupDM.addPeople')}
+          confirmLabel={t('groupDM.createWith')}
+          error={addPeopleError}
         />
       )}
 

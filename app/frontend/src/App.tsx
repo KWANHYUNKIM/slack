@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useNavigate, useParams,
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
-import { useDMStore } from '@/stores/useDMStore';
+import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
@@ -13,6 +13,7 @@ import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { useActivityStore } from '@/stores/useActivityStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
+import { markDMGroupRead } from '@/lib/api';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
@@ -52,9 +53,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
  * Syncs URL params to the channel store.
  * - /channels/:channelId  → sets activeChannelId
  * - /dm/:userId           → sets activeDMId
+ * - /g/:groupId           → sets activeGroupId (group DM)
  */
 function RouteSync() {
-  const { channelId, userId } = useParams<{ channelId?: string; userId?: string }>();
+  const { channelId, userId, groupId } = useParams<{ channelId?: string; userId?: string; groupId?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
@@ -84,8 +86,15 @@ function RouteSync() {
         const dmScrollToMessageId = typeof dmScrollRaw === 'number' && dmScrollRaw > 0 ? dmScrollRaw : undefined;
         setActiveDM(id, dmScrollToMessageId);
       }
+    } else if (groupId) {
+      const id = parseInt(groupId, 10);
+      if (!isNaN(id) && id > 0) {
+        const scrollRaw = (location.state as { scrollToMessageId?: unknown } | null)?.scrollToMessageId;
+        const scrollToMessageId = typeof scrollRaw === 'number' && scrollRaw > 0 ? scrollRaw : undefined;
+        useChannelStore.getState().setActiveGroup(id, scrollToMessageId);
+      }
     }
-  }, [channelId, userId, setActiveChannel, setActiveDM, location.state, channelsLoaded, navigate]);
+  }, [channelId, userId, groupId, setActiveChannel, setActiveDM, location.state, channelsLoaded, navigate]);
 
   return null;
 }
@@ -96,7 +105,7 @@ function RouteSync() {
  */
 function PageRouteSync() {
   useEffect(() => {
-    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
+    useChannelStore.setState({ activeChannelId: null, activeDMId: null, activeGroupId: null });
   }, []);
   return null;
 }
@@ -191,6 +200,7 @@ function AppShell() {
   const joinedChannelsRef = useRef<Set<number>>(new Set());
 
   const fetchDirectMessages = useChannelStore((s) => s.fetchDirectMessages);
+  const fetchGroupDMs = useChannelStore((s) => s.fetchGroupDMs);
   const loadBookmarks = useBookmarkStore((s) => s.load);
 
   // Track which channel/DM the user is viewing for smart push notifications
@@ -199,6 +209,7 @@ function AppShell() {
   useEffect(() => {
     fetchChannels();
     fetchDirectMessages();
+    fetchGroupDMs();
     useChannelStore.getState().fetchSidebarPrefs();
     loadBookmarks();
 
@@ -207,7 +218,7 @@ function AppShell() {
     if (permission !== 'unsupported' && permission !== 'denied' && !isSubscribed) {
       subscribe();
     }
-  }, [fetchChannels, fetchDirectMessages, loadBookmarks]);
+  }, [fetchChannels, fetchDirectMessages, fetchGroupDMs, loadBookmarks]);
 
   // Connect socket and set up event listeners
   useEffect(() => {
@@ -263,15 +274,47 @@ function AppShell() {
       useMessageStore.getState().onMessageDeleted(data);
     };
 
+    const handleNewGroupDM = (dm: import('@/lib/api').ApiDirectMessage & { groupId: number }, currentUser: { id: number }) => {
+      const { groupDMs, activeGroupId, incrementGroupUnread, fetchGroupDMs } = useChannelStore.getState();
+      const isFromMe = dm.fromUserId === currentUser.id;
+      const group = groupDMs.find((g) => g.id === dm.groupId);
+      // 처음 보는 그룹(누가 나를 넣고 바로 보냈다)이면 목록을 다시 받는다(안 읽음 수도 서버 값으로 온다)
+      if (!group) {
+        void fetchGroupDMs();
+      } else if (activeGroupId !== dm.groupId && !isFromMe) {
+        incrementGroupUnread(dm.groupId);
+        if (document.hidden && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(dm.fromUser.name, {
+              body: (dm.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
+              icon: '/favicon-192.png',
+              badge: '/favicon-192.png',
+              data: { url: `/g/${dm.groupId}` },
+            });
+          }).catch(() => {});
+        }
+      }
+      if (activeGroupId === dm.groupId && !isFromMe) {
+        // 보고 있는 그룹이면 읽음 커서를 바로 옮긴다(다른 기기·새로고침에서 안 읽음으로 남지 않게)
+        markDMGroupRead(dm.groupId, dm.id).catch(() => {});
+      }
+      useDMStore.getState().addIncomingMessage(dm, currentUser.id);
+    };
+
     const handleNewDM = (dm: import('@/lib/api').ApiDirectMessage) => {
       const { addOrUpdateDM, activeDMId, incrementDMUnread } = useChannelStore.getState();
       const currentUser = useAuthStore.getState().user;
       if (!currentUser) return;
+      if (dm.groupId) {
+        handleNewGroupDM({ ...dm, groupId: dm.groupId }, currentUser);
+        return;
+      }
       // Validate DM involves the current user
       if (dm.fromUserId !== currentUser.id && dm.toUserId !== currentUser.id) return;
       // Validate required fields
       if (typeof dm.fromUser?.id !== 'number' || typeof dm.toUser?.id !== 'number') return;
       if (typeof dm.fromUser?.name !== 'string' || typeof dm.toUser?.name !== 'string') return;
+      if (!dm.toUser) return;
       const isSelfDM = dm.fromUserId === currentUser.id && dm.toUserId === currentUser.id;
       const isFromMe = dm.fromUserId === currentUser.id;
       const otherUser = isFromMe ? dm.toUser : dm.fromUser;
@@ -303,7 +346,7 @@ function AppShell() {
       useDMStore.getState().onDMUpdated(dm, currentUser.id);
     };
 
-    const handleDMDeleted = (data: { dmId: number; fromUserId: number; toUserId: number }) => {
+    const handleDMDeleted = (data: { dmId: number; fromUserId: number; toUserId: number | null; groupId?: number | null }) => {
       const currentUser = useAuthStore.getState().user;
       if (!currentUser) return;
       useDMStore.getState().onDMDeleted(data, currentUser.id);
@@ -316,16 +359,18 @@ function AppShell() {
       if (reply.fromUserId === currentUser.id) return;
       const otherUserId = reply.fromUserId;
       const participant = { id: reply.fromUser.id, name: reply.fromUser.name, avatar: reply.fromUser.avatar ?? null };
-      useDMStore.getState().incrementReplyCount(reply.threadId, otherUserId, participant);
+      const conversationKey = reply.groupId ? groupConversationKey(reply.groupId) : otherUserId;
+      useDMStore.getState().incrementReplyCount(reply.threadId, conversationKey, participant);
       // Show desktop notification for DM thread replies when tab is hidden
-      const { activeDMId } = useChannelStore.getState();
-      if (document.hidden && activeDMId !== otherUserId && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
+      const { activeDMId, activeGroupId } = useChannelStore.getState();
+      const isViewing = reply.groupId ? activeGroupId === reply.groupId : activeDMId === otherUserId;
+      if (document.hidden && !isViewing && Notification.permission === 'granted' && navigator.serviceWorker?.controller) {
         navigator.serviceWorker.ready.then((reg) => {
           reg.showNotification(t('sidebar:notifications.threadTitle', { name: reply.fromUser.name }), {
             body: (reply.content || '').slice(0, 100) || t('sidebar:notifications.sentAttachment'),
             icon: '/favicon-192.png',
             badge: '/favicon-192.png',
-            data: { url: `/d/${otherUserId}` },
+            data: { url: reply.groupId ? `/g/${reply.groupId}` : `/d/${otherUserId}` },
           });
         }).catch(() => {});
       }
@@ -390,8 +435,31 @@ function AppShell() {
       useChannelStore.getState().applyChannelMeta(data);
     };
 
-    const handleStarUpdated = (data: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => {
+    const handleStarUpdated = (data: { type: 'channel' | 'dm' | 'group'; id: number; isStarred: boolean }) => {
       useChannelStore.getState().applyRemoteStar(data);
+    };
+
+    // 그룹 DM 멤버·이름 변경. 내가 나갔으면 목록에서 빼고, 나를 넣었으면 목록에 더한다.
+    const handleGroupMemberAdded = (data: { groupId: number; group: import('@/lib/api').ApiDMGroup | null }) => {
+      if (data.group) useChannelStore.getState().upsertGroupDM(data.group);
+    };
+    const handleGroupMemberRemoved = (data: { groupId: number; userId: number }) => {
+      const store = useChannelStore.getState();
+      if (data.userId === useAuthStore.getState().user?.id) {
+        store.removeGroupDM(data.groupId);
+        useDMStore.getState().clearConversation(groupConversationKey(data.groupId));
+        return;
+      }
+      const group = store.groupDMs.find((g) => g.id === data.groupId);
+      if (!group) return;
+      useChannelStore.setState((s) => ({
+        groupDMs: s.groupDMs.map((g) =>
+          g.id === data.groupId ? { ...g, members: g.members.filter((m) => m.id !== data.userId) } : g,
+        ),
+      }));
+    };
+    const handleGroupUpdated = (data: { id: number; name: string | null }) => {
+      useChannelStore.getState().renameGroupDM(data.id, data.name);
     };
 
     const handleChannelUnarchived = () => {
@@ -425,6 +493,9 @@ function AppShell() {
     socket.on('channel:unarchived', handleChannelUnarchived);
     socket.on('channel:updated', handleChannelUpdated);
     socket.on('star:updated', handleStarUpdated);
+    socket.on('dmgroup:member:added', handleGroupMemberAdded);
+    socket.on('dmgroup:member:removed', handleGroupMemberRemoved);
+    socket.on('dmgroup:updated', handleGroupUpdated);
     socket.on('reaction:added', handleReactionAdded);
     socket.on('reaction:removed', handleReactionRemoved);
 
@@ -484,6 +555,9 @@ function AppShell() {
       socket.off('channel:unarchived', handleChannelUnarchived);
       socket.off('channel:updated', handleChannelUpdated);
       socket.off('star:updated', handleStarUpdated);
+      socket.off('dmgroup:member:added', handleGroupMemberAdded);
+      socket.off('dmgroup:member:removed', handleGroupMemberRemoved);
+      socket.off('dmgroup:updated', handleGroupUpdated);
       socket.off('reaction:added', handleReactionAdded);
       socket.off('reaction:removed', handleReactionRemoved);
       socket.off('huddle:invite:sent', handleInviteSent);
@@ -571,6 +645,7 @@ function App() {
           <Route index element={<DefaultRedirect />} />
           <Route path="c/:channelId" element={<RouteSync />} />
           <Route path="d/:userId" element={<RouteSync />} />
+          <Route path="g/:groupId" element={<RouteSync />} />
           <Route path="files" element={<PageRouteSync />} />
           <Route path="unreads" element={<PageRouteSync />} />
           <Route path="later" element={<PageRouteSync />} />

@@ -89,12 +89,21 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       if (req.user!.role !== 'GUEST' || dmUserFilter) {
         const dmParticipantFilter = (role: 'fromUserId' | 'toUserId') => ({
           [role]: userId,
+          groupId: null,
           ...(dmUserFilter && { [role === 'fromUserId' ? 'toUserId' : 'fromUserId']: { in: dmUserFilter } }),
         });
+
+        // 그룹 DM은 지금 멤버인 그룹의 메시지만 검색한다(나간 그룹 제외)
+        const myGroupIds = (await prisma.dMGroupMember.findMany({ where: { userId }, select: { groupId: true } }))
+          .map((g) => g.groupId);
 
         dms = await prisma.directMessage.findMany({
           where: {
             OR: [
+              ...(myGroupIds.length > 0 ? [
+                { groupId: { in: myGroupIds }, content: { contains: query, mode: 'insensitive' as const } },
+                { groupId: { in: myGroupIds }, fromUser: { name: { contains: query, mode: 'insensitive' as const } } },
+              ] : []),
               { ...dmParticipantFilter('fromUserId'), content: { contains: query, mode: 'insensitive' } },
               { ...dmParticipantFilter('toUserId'), content: { contains: query, mode: 'insensitive' } },
               { ...dmParticipantFilter('fromUserId'), fromUser: { name: { contains: query, mode: 'insensitive' } } },
@@ -141,7 +150,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const formattedDMs = dms.map((dm) => {
       let score = 0;
       if (dm.content?.toLowerCase().includes(queryLower)) score += 1;
-      const otherUser = dm.fromUserId === userId ? dm.toUser : dm.fromUser;
+      // 그룹 메시지는 toUser가 없다. 상대 대신 보낸 사람을 넣고 groupId로 구분한다.
+      const otherUser = dm.groupId ? dm.fromUser : dm.fromUserId === userId ? dm.toUser : dm.fromUser;
       if (dm.fromUser?.name?.toLowerCase().includes(queryLower)) score += 2;
       if (otherUser?.name?.toLowerCase().includes(queryLower)) score += 2;
       return {
@@ -152,6 +162,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         user: dm.fromUser,
         otherUser,
         participant: otherUser,
+        groupId: dm.groupId ?? null,
         _score: score,
       };
     });

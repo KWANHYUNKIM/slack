@@ -33,7 +33,8 @@ const isMentionType = (type: ApiActivity['type']) => MENTION_TYPES.includes(type
 const ECHO_GUARD_MS = 3000;
 let ignoreReadEchoUntil = 0;
 
-function badgeTarget(a: ApiActivity): { channelId?: number; dmUserId?: number } {
+function badgeTarget(a: ApiActivity): { channelId?: number; dmUserId?: number; dmGroupId?: number } {
+  if (a.dmGroupId) return { dmGroupId: a.dmGroupId };
   return a.dmId !== null ? { dmUserId: a.actor.id } : { channelId: a.channelId ?? undefined };
 }
 

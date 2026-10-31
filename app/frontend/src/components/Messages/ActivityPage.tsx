@@ -56,7 +56,9 @@ export function ActivityPage() {
     // Jump to the thread parent when the activity is a reply, otherwise to the message itself
     const targetId = item.threadId ?? item.messageId ?? item.dmId;
     const state = targetId ? { scrollToMessageId: targetId } : undefined;
-    if (item.dmId !== null) {
+    if (item.dmGroupId) {
+      navigate(`/g/${item.dmGroupId}`, { state });
+    } else if (item.dmId !== null) {
       navigate(`/d/${item.actor.id}`, { state });
     } else if (item.channelId !== null) {
       navigate(`/c/${item.channelId}`, { state });

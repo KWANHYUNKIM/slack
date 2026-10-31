@@ -334,6 +334,8 @@ export interface ApiActivity {
   channelId: number | null;
   messageId: number | null;
   dmId: number | null;
+  /** 그룹 DM 활동이면 그룹 id */
+  dmGroupId?: number | null;
   threadId: number | null;
   message: { id: number; content: string; excerpt: string };
   emoji: string | null;
@@ -352,7 +354,9 @@ export function getActivityUnreadCount() {
 }
 
 export function getMentionCounts() {
-  return request<{ channels: Record<string, number>; dms: Record<string, number> }>('/activity/mention-counts');
+  return request<{ channels: Record<string, number>; dms: Record<string, number>; groups?: Record<string, number> }>(
+    '/activity/mention-counts',
+  );
 }
 
 export function markActivityRead(body: { ids: number[] } | { all: true }) {
@@ -482,6 +486,8 @@ export interface SearchResult {
   user: { id: number; name: string; email: string; avatar?: string | null };
   channel?: { id: number; name: string };
   participant?: { id: number; name: string; email: string };
+  /** 그룹 DM 메시지면 그룹 id */
+  groupId?: number | null;
 }
 
 export interface SearchResponse {
@@ -621,7 +627,9 @@ export interface ApiDirectMessage {
   id: number;
   content: string;
   fromUserId: number;
-  toUserId: number;
+  /** 그룹 DM 메시지는 null (groupId로 먼저 분기한다) */
+  toUserId: number | null;
+  groupId?: number | null;
   threadId?: number | null;
   isPinned?: boolean;
   createdAt: string;
@@ -629,7 +637,7 @@ export interface ApiDirectMessage {
   editedAt: string | null;
   deletedAt: string | null;
   fromUser: { id: number; name: string; email: string; avatar?: string | null };
-  toUser: { id: number; name: string; email: string; avatar?: string | null };
+  toUser: { id: number; name: string; email: string; avatar?: string | null } | null;
   reactions?: ApiDMReaction[];
   files?: ApiMessageFile[];
   _count?: { replies: number };
@@ -691,6 +699,96 @@ export function removeDMReaction(dmId: number, emoji: string) {
   return request<{ message: string }>(`/dms/messages/${dmId}/reactions/${encodeURIComponent(emoji)}`, {
     method: 'DELETE',
   });
+}
+
+// ---- Group DMs ----
+
+export interface ApiDMGroupMember {
+  id: number;
+  name: string;
+  avatar: string | null;
+  status: string | null;
+}
+
+export interface ApiDMGroup {
+  id: number;
+  name: string | null;
+  createdBy: number;
+  createdAt: string;
+  members: ApiDMGroupMember[];
+}
+
+export interface ApiGroupConversation {
+  type: 'group';
+  group: ApiDMGroup;
+  lastMessage: { id: number; content: string; fromUserId: number; createdAt: string } | null;
+  unreadCount: number;
+  mentionCount: number;
+  isStarred: boolean;
+}
+
+export function getDMGroups() {
+  return request<ApiGroupConversation[]>('/dms/groups');
+}
+
+export function createDMGroup(userIds: number[]) {
+  return request<{ group: ApiDMGroup; created: boolean }>('/dms/groups', {
+    method: 'POST',
+    body: JSON.stringify({ userIds }),
+  });
+}
+
+export function renameDMGroup(groupId: number, name: string | null) {
+  return request<{ group: ApiDMGroup }>(`/dms/groups/${groupId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function getDMGroupMessages(groupId: number, cursor?: number, around?: number) {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', String(cursor));
+  if (around) params.set('around', String(around));
+  return request<{ group: ApiDMGroup; messages: ApiDirectMessage[]; hasMore: boolean }>(
+    `/dms/groups/${groupId}/messages?${params}`,
+  );
+}
+
+export function sendDMGroupMessage(groupId: number, content: string, fileIds?: number[]) {
+  return request<ApiDirectMessage>(`/dms/groups/${groupId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content, fileIds }),
+  });
+}
+
+export function addDMGroupMembers(groupId: number, userIds: number[]) {
+  return request<{ group: ApiDMGroup; addedUserIds: number[] }>(`/dms/groups/${groupId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ userIds }),
+  });
+}
+
+export function leaveDMGroup(groupId: number) {
+  return request<{ left: boolean }>(`/dms/groups/${groupId}/members/me`, { method: 'DELETE' });
+}
+
+export function markDMGroupRead(groupId: number, messageId?: number) {
+  return request<{ lastReadDmId: number | null }>(`/dms/groups/${groupId}/read`, {
+    method: 'POST',
+    body: JSON.stringify(messageId ? { messageId } : {}),
+  });
+}
+
+export function getDMGroupPins(groupId: number) {
+  return request<ApiDirectMessage[]>(`/dms/groups/${groupId}/pins`);
+}
+
+export function starDMGroup(groupId: number) {
+  return request<{ groupId: number; isStarred: boolean }>(`/dms/groups/${groupId}/star`, { method: 'PUT' });
+}
+
+export function unstarDMGroup(groupId: number) {
+  return request<{ groupId: number; isStarred: boolean }>(`/dms/groups/${groupId}/star`, { method: 'DELETE' });
 }
 
 // ---- Bookmarks ----

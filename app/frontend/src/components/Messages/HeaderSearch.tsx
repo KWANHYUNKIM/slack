@@ -78,6 +78,8 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
   const handleResultClick = (result: SearchResult) => {
     if (result.channel) {
       navigate(`/c/${result.channel.id}`, { state: { scrollToMessageId: result.id } });
+    } else if (result.groupId) {
+      navigate(`/g/${result.groupId}`, { state: { scrollToMessageId: result.id } });
     } else if (result.participant) {
       navigate(`/d/${result.participant.id}`, { state: { scrollToMessageId: result.id } });
     }

@@ -1,20 +1,36 @@
 import { create } from 'zustand';
 import { t } from '@/lib/i18n';
 import * as api from '@/lib/api';
-import type { Channel, DirectMessage } from '@/lib/types';
+import { toUserStatus, type Channel, type DirectMessage, type GroupDM } from '@/lib/types';
 
 export type SidebarSection = keyof api.SidebarCollapsed;
 
 // 별표 요청 순번(대상별). 연타했을 때 마지막 요청의 결과만 화면에 반영한다.
 const starSeq = new Map<string, number>();
 const starPending = new Map<string, number>();
-const starKey = (type: 'channel' | 'dm', id: number) => `${type}:${id}`;
+type StarType = 'channel' | 'dm' | 'group';
+const starKey = (type: StarType, id: number) => `${type}:${id}`;
+
+export function toGroupDM(c: Pick<api.ApiGroupConversation, 'group'> & Partial<api.ApiGroupConversation>): GroupDM {
+  return {
+    id: c.group.id,
+    name: c.group.name,
+    members: c.group.members.map((m) => ({ ...m, status: toUserStatus(m.status ?? undefined) ?? 'offline' })),
+    unreadCount: c.unreadCount ?? 0,
+    mentionCount: c.mentionCount ?? 0,
+    isStarred: c.isStarred ?? false,
+  };
+}
+
+type MentionTarget = { channelId?: number; dmUserId?: number; dmGroupId?: number };
 
 interface ChannelState {
   channels: Channel[];
   directMessages: DirectMessage[];
+  groupDMs: GroupDM[];
   activeChannelId: number | null;
   activeDMId: number | null;
+  activeGroupId: number | null;
   scrollToMessageId: number | null;
   dmScrollToMessageId: number | null;
   isLoading: boolean;
@@ -27,14 +43,23 @@ interface ChannelState {
   toggleDMStar: (userId: number) => void;
   /** Apply a channel:updated / star:updated payload from another tab or user */
   applyChannelMeta: (meta: { id: number; name: string; topic: string | null; description: string | null }) => void;
-  applyStar: (target: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => void;
+  applyStar: (target: { type: StarType; id: number; isStarred: boolean }) => void;
   /** star:updated from the socket: ignored for a target while my own request for it is in flight */
-  applyRemoteStar: (target: { type: 'channel' | 'dm'; id: number; isStarred: boolean }) => void;
+  applyRemoteStar: (target: { type: StarType; id: number; isStarred: boolean }) => void;
   /** Ids of starred 1:1 DM partners, kept even when the DM is not in the list yet */
   starredDmIds: Set<number>;
   updateChannelMeta: (channelId: number, data: api.ChannelMetaUpdate) => Promise<void>;
   fetchChannels: () => Promise<void>;
   fetchDirectMessages: () => Promise<void>;
+  fetchGroupDMs: () => Promise<void>;
+  /** Add or refresh a group from a create/member event (keeps unread/star state) */
+  upsertGroupDM: (group: api.ApiDMGroup) => void;
+  removeGroupDM: (groupId: number) => void;
+  renameGroupDM: (groupId: number, name: string | null) => void;
+  setActiveGroup: (groupId: number, scrollToMessageId?: number) => void;
+  incrementGroupUnread: (groupId: number) => void;
+  toggleGroupStar: (groupId: number) => void;
+  getActiveGroup: () => GroupDM | undefined;
   createChannel: (name: string, isPrivate?: boolean) => Promise<number>;
   joinChannel: (channelId: number) => Promise<void>;
   leaveChannel: (channelId: number) => Promise<number | null>;
@@ -54,9 +79,9 @@ interface ChannelState {
   /** Re-fetch only the mention counts (after activity read/removed events) */
   refreshMentionCounts: () => Promise<void>;
   /** Lower a channel or DM mention badge by one (an activity was read or removed) */
-  decrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
-  /** A new mention arrived for a channel (channelId) or DM partner (dmUserId) */
-  incrementMention: (target: { channelId?: number; dmUserId?: number }) => void;
+  decrementMention: (target: MentionTarget) => void;
+  /** A new mention arrived for a channel (channelId), DM partner (dmUserId) or group DM (dmGroupId) */
+  incrementMention: (target: MentionTarget) => void;
   markDMAsRead: (dmId: number) => void;
   getActiveChannel: () => Channel | undefined;
   getActiveDM: () => DirectMessage | undefined;
@@ -65,8 +90,10 @@ interface ChannelState {
 export const useChannelStore = create<ChannelState>((set, get) => ({
   channels: [],
   directMessages: [],
+  groupDMs: [],
   activeChannelId: null,
   activeDMId: null,
+  activeGroupId: null,
   scrollToMessageId: null,
   dmScrollToMessageId: null,
   isLoading: false,
@@ -105,6 +132,10 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     if (type === 'channel') {
       set((state) => ({
         channels: state.channels.map((ch) => (ch.id === id ? { ...ch, isStarred } : ch)),
+      }));
+    } else if (type === 'group') {
+      set((state) => ({
+        groupDMs: state.groupDMs.map((g) => (g.id === id ? { ...g, isStarred } : g)),
       }));
     } else {
       set((state) => {
@@ -157,6 +188,88 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     } catch {
       set({ loadError: t('channels:errors.loadConversations') });
     }
+  },
+
+  fetchGroupDMs: async () => {
+    try {
+      const groups = await api.getDMGroups();
+      set({ groupDMs: groups.map(toGroupDM) });
+    } catch {
+      set({ loadError: t('channels:errors.loadConversations') });
+    }
+  },
+
+  upsertGroupDM: (group) => {
+    set((state) => {
+      const existing = state.groupDMs.find((g) => g.id === group.id);
+      const next = toGroupDM({ group });
+      if (!existing) return { groupDMs: [next, ...state.groupDMs] };
+      return {
+        groupDMs: state.groupDMs.map((g) =>
+          g.id === group.id
+            ? { ...next, unreadCount: g.unreadCount, mentionCount: g.mentionCount, isStarred: g.isStarred }
+            : g,
+        ),
+      };
+    });
+  },
+
+  removeGroupDM: (groupId) => {
+    set((state) => ({
+      groupDMs: state.groupDMs.filter((g) => g.id !== groupId),
+      activeGroupId: state.activeGroupId === groupId ? null : state.activeGroupId,
+    }));
+  },
+
+  renameGroupDM: (groupId, name) => {
+    set((state) => ({
+      groupDMs: state.groupDMs.map((g) => (g.id === groupId ? { ...g, name } : g)),
+    }));
+  },
+
+  setActiveGroup: (groupId, scrollToMessageId) => {
+    set((state) => ({
+      activeGroupId: groupId,
+      activeChannelId: null,
+      activeDMId: null,
+      dmScrollToMessageId: scrollToMessageId ?? null,
+      groupDMs: state.groupDMs.map((g) => (g.id === groupId ? { ...g, unreadCount: 0 } : g)),
+    }));
+  },
+
+  incrementGroupUnread: (groupId) => {
+    set((state) => ({
+      groupDMs: state.groupDMs.map((g) => (g.id === groupId ? { ...g, unreadCount: g.unreadCount + 1 } : g)),
+    }));
+  },
+
+  toggleGroupStar: (groupId) => {
+    const current = get().groupDMs.find((g) => g.id === groupId);
+    if (!current) return;
+    const next = !current.isStarred;
+    const key = starKey('group', groupId);
+    const seq = (starSeq.get(key) ?? 0) + 1;
+    starSeq.set(key, seq);
+    starPending.set(key, (starPending.get(key) ?? 0) + 1);
+    get().applyStar({ type: 'group', id: groupId, isStarred: next });
+    (next ? api.starDMGroup(groupId) : api.unstarDMGroup(groupId))
+      .then((res) => {
+        if (starSeq.get(key) === seq) get().applyStar({ type: 'group', id: groupId, isStarred: res.isStarred });
+      })
+      .catch(async () => {
+        if (starSeq.get(key) !== seq) return;
+        try {
+          const list = await api.getDMGroups();
+          const fresh = list.find((c) => c.group.id === groupId);
+          if (starSeq.get(key) === seq) get().applyStar({ type: 'group', id: groupId, isStarred: !!fresh?.isStarred });
+        } catch { /* 서버 상태를 못 가져오면 낙관적 값을 그대로 둔다 */ }
+      })
+      .finally(() => starPending.set(key, (starPending.get(key) ?? 1) - 1));
+  },
+
+  getActiveGroup: () => {
+    const state = get();
+    return state.groupDMs.find((g) => g.id === state.activeGroupId);
   },
 
   fetchChannels: async () => {
@@ -319,7 +432,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
         ],
       });
     }
-    set({ activeDMId: userId, activeChannelId: null });
+    set({ activeDMId: userId, activeChannelId: null, activeGroupId: null });
   },
 
   addOrUpdateDM: (userId: number, userName: string, userAvatar?: string) => {
@@ -360,7 +473,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   },
 
   setActiveChannel: (channelId: number, scrollToMessageId?: number) => {
-    set({ activeChannelId: channelId, activeDMId: null, scrollToMessageId: scrollToMessageId ?? null });
+    set({ activeChannelId: channelId, activeDMId: null, activeGroupId: null, scrollToMessageId: scrollToMessageId ?? null });
     const channel = get().channels.find((ch) => ch.id === channelId);
     if (channel?.isMember) {
       get().markChannelAsRead(channelId);
@@ -369,7 +482,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
   },
 
   setActiveDM: (dmId: number, scrollToMessageId?: number) => {
-    set({ activeDMId: dmId, activeChannelId: null, dmScrollToMessageId: scrollToMessageId ?? null });
+    set({ activeDMId: dmId, activeChannelId: null, activeGroupId: null, dmScrollToMessageId: scrollToMessageId ?? null });
     get().markDMAsRead(dmId);
   },
 
@@ -422,13 +535,14 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       set((state) => ({
         channels: state.channels.map((ch) => ({ ...ch, mentionCount: counts.channels[ch.id] ?? 0 })),
         directMessages: state.directMessages.map((dm) => ({ ...dm, mentionCount: counts.dms[dm.userId] ?? 0 })),
+        groupDMs: state.groupDMs.map((g) => ({ ...g, mentionCount: counts.groups?.[g.id] ?? 0 })),
       }));
     } catch {
       // Badge refresh is best-effort; the next full fetch corrects it
     }
   },
 
-  decrementMention: ({ channelId, dmUserId }) => {
+  decrementMention: ({ channelId, dmUserId, dmGroupId }) => {
     set((state) => ({
       channels: channelId === undefined ? state.channels : state.channels.map((ch) =>
         ch.id === channelId ? { ...ch, mentionCount: Math.max(0, ch.mentionCount - 1) } : ch,
@@ -436,16 +550,22 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
       directMessages: dmUserId === undefined ? state.directMessages : state.directMessages.map((dm) =>
         dm.userId === dmUserId ? { ...dm, mentionCount: Math.max(0, dm.mentionCount - 1) } : dm,
       ),
+      groupDMs: dmGroupId === undefined ? state.groupDMs : state.groupDMs.map((g) =>
+        g.id === dmGroupId ? { ...g, mentionCount: Math.max(0, g.mentionCount - 1) } : g,
+      ),
     }));
   },
 
-  incrementMention: ({ channelId, dmUserId }) => {
+  incrementMention: ({ channelId, dmUserId, dmGroupId }) => {
     set((state) => ({
       channels: channelId === undefined ? state.channels : state.channels.map((ch) =>
         ch.id === channelId ? { ...ch, mentionCount: ch.mentionCount + 1 } : ch,
       ),
       directMessages: dmUserId === undefined ? state.directMessages : state.directMessages.map((dm) =>
         dm.userId === dmUserId ? { ...dm, mentionCount: dm.mentionCount + 1 } : dm,
+      ),
+      groupDMs: dmGroupId === undefined ? state.groupDMs : state.groupDMs.map((g) =>
+        g.id === dmGroupId ? { ...g, mentionCount: g.mentionCount + 1 } : g,
       ),
     }));
   },

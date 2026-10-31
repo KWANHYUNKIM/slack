@@ -27,10 +27,12 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChannelItem } from './ChannelItem';
 import { DirectMessageItem } from './DirectMessageItem';
+import { GroupDMItem } from './GroupDMItem';
 import { AddChannelDialog } from './AddChannelDialog';
 import { AddTeammatesDialog } from './AddTeammatesDialog';
 import type { Channel } from '@/lib/types';
-import { getChannels } from '@/lib/api';
+import { getChannels, createDMGroup } from '@/lib/api';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import type { AuthUser } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
 // HuddleBar moved to global render in App.tsx
@@ -39,7 +41,7 @@ export function Sidebar() {
   const { t, i18n } = useTranslation('sidebar');
   const navigate = useNavigate();
   const location = useLocation();
-  const { channels, directMessages, activeChannelId, activeDMId, startDM, createChannel, joinChannel } =
+  const { channels, directMessages, groupDMs, activeChannelId, activeDMId, activeGroupId, startDM, createChannel, joinChannel } =
     useChannelStore();
   const { user, logout } = useAuthStore();
   const { openProfile } = useProfileStore();
@@ -55,6 +57,7 @@ export function Sidebar() {
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
   const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
   const [showAddTeammates, setShowAddTeammates] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement>(null);
   const workspaceMenuRef = useRef<HTMLDivElement>(null);
@@ -138,6 +141,7 @@ export function Sidebar() {
   };
 
   const handleOpenAddTeammates = () => {
+    setStartError(null);
     setShowAddTeammates(true);
   };
 
@@ -145,6 +149,23 @@ export function Sidebar() {
     startDM(u.id, u.name, u.avatar ?? undefined);
     setShowAddTeammates(false);
     navTo(`/d/${u.id}`);
+  };
+
+  // 1명을 고르면 1:1, 2명 이상이면 그룹 DM(같은 멤버면 기존 그룹이 열린다)
+  const handleStartConversation = async (users: AuthUser[]) => {
+    if (users.length === 1) {
+      handleSelectUser(users[0]);
+      return;
+    }
+    try {
+      setStartError(null);
+      const { group } = await createDMGroup(users.map((u) => u.id));
+      useChannelStore.getState().upsertGroupDM(group);
+      setShowAddTeammates(false);
+      navTo(`/g/${group.id}`);
+    } catch (err) {
+      setStartError(apiErrorMessage(err, 'sidebar:groupDM.createError'));
+    }
   };
 
   // Navigate and close sidebar on mobile
@@ -167,6 +188,8 @@ export function Sidebar() {
   const sortByName = (a: Channel, b: Channel) => collator.compare(a.name, b.name);
   const starredChannels = channels.filter((ch) => ch.isStarred && ch.isMember).sort(sortByName);
   const starredDMs = directMessages.filter((dm) => dm.isStarred);
+  const starredGroups = groupDMs.filter((g) => g.isStarred);
+  const plainGroups = groupDMs.filter((g) => !g.isStarred);
   // 별표를 단 항목은 즐겨찾기 섹션으로 옮겨 간다
   const publicChannels = channels.filter((ch) => !ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
   const privateChannels = channels.filter((ch) => ch.isPrivate && ch.isMember && !ch.isStarred).sort(sortByName);
@@ -313,7 +336,7 @@ export function Sidebar() {
             </button>
             {starredExpanded && (
               <div>
-                {starredChannels.length === 0 && starredDMs.length === 0 && (
+                {starredChannels.length === 0 && starredDMs.length === 0 && starredGroups.length === 0 && (
                   <p data-testid="starred-empty" className="px-4 py-1 text-[13px] text-white/50">
                     {t('sections.starredEmpty')}
                   </p>
@@ -333,6 +356,14 @@ export function Sidebar() {
                     dm={dm}
                     isActive={activeDMId === dm.id}
                     onClick={() => navTo(`/d/${dm.userId}`)}
+                  />
+                ))}
+                {starredGroups.map((group) => (
+                  <GroupDMItem
+                    key={`g-${group.id}`}
+                    group={group}
+                    isActive={activeGroupId === group.id}
+                    onClick={() => navTo(`/g/${group.id}`)}
                   />
                 ))}
               </div>
@@ -415,6 +446,14 @@ export function Sidebar() {
                     onClick={() => navTo(`/d/${dm.userId}`)}
                   />
                 ))}
+                {plainGroups.map((group) => (
+                  <GroupDMItem
+                    key={`g-${group.id}`}
+                    group={group}
+                    isActive={activeGroupId === group.id}
+                    onClick={() => navTo(`/g/${group.id}`)}
+                  />
+                ))}
                 <button
                   onClick={handleOpenAddTeammates}
                   className="flex items-center gap-2 mx-2 w-[calc(100%-16px)] px-4 h-[28px] text-[15px] rounded-[6px] text-start text-white/70 hover:bg-slack-sidebar-hover hover:text-white"
@@ -448,6 +487,8 @@ export function Sidebar() {
         open={showAddTeammates}
         onClose={() => setShowAddTeammates(false)}
         onSelectUser={handleSelectUser}
+        onConfirm={handleStartConversation}
+        error={startError}
       />
     </div>
   );

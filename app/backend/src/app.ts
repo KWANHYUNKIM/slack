@@ -18,6 +18,7 @@ import reactionRoutes from './routes/reactions.js';
 import fileRoutes from './routes/files.js';
 import userRoutes from './routes/users.js';
 import dmRoutes from './routes/dms.js';
+import dmGroupRoutes from './routes/dmGroups.js';
 import bookmarkRoutes from './routes/bookmarks.js';
 import webhookRoutes from './routes/webhooks.js';
 import unreadRoutes from './routes/unreads.js';
@@ -122,6 +123,8 @@ app.use('/messages', apiLimiter, reactionRoutes);
 app.use('/search', apiLimiter, searchRoutes);
 app.use('/files', apiLimiter, fileRoutes);
 app.use('/users', apiLimiter, userRoutes);
+// /dms/:userId보다 먼저 등록해야 'groups'가 사용자 id로 해석되지 않는다
+app.use('/dms/groups', apiLimiter, dmGroupRoutes);
 app.use('/dms', apiLimiter, dmRoutes);
 app.use('/messages', apiLimiter, bookmarkRoutes);
 app.use('/bookmarks', apiLimiter, bookmarkRoutes);

@@ -22,6 +22,7 @@ export function MessageArea() {
   const { sendMessage, sendError, clearSendError } = useMessageStore();
   const joinChannel = useChannelStore((s) => s.joinChannel);
   const fetchChannels = useChannelStore((s) => s.fetchChannels);
+  const activeGroupId = useChannelStore((s) => s.activeGroupId);
   const [showMembers, setShowMembers] = useState(false);
   const [showPins, setShowPins] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
@@ -68,6 +69,11 @@ export function MessageArea() {
     () => (activeChannelName ? t('area.placeholder', { channel: activeChannelName }) : ''),
     [activeChannelName, t]
   );
+
+  // Show group DM conversation if a group DM is active (멤버 목록은 대화를 열면서 받아 온다)
+  if (activeGroupId) {
+    return <DMConversation groupId={activeGroupId} />;
+  }
 
   // Show DM conversation if a DM is active
   if (activeDMId && activeDM) {
