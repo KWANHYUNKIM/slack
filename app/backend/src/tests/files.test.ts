@@ -5,6 +5,7 @@ import fs from 'fs';
 import app from '../app.js';
 import prisma from '../db.js';
 import jwt from 'jsonwebtoken';
+import { verifyFileAccess, verifyFilesAccess } from '../middleware/authorize.js';
 import { JWT_SECRET } from '../config.js';
 
 describe('File Uploads', () => {
@@ -410,6 +411,86 @@ describe('File Uploads', () => {
       expect(ok.status).toBe(200);
       // 응답에서 Referer가 새지 않는다
       expect(ok.headers['referrer-policy']).toBe('no-referrer');
+    });
+
+    // 일괄 접근 확인은 단건 verifyFileAccess와 같은 결과여야 한다(채널·삭제된 메시지·1:1 DM·미첨부·없는 파일).
+    it('should give the same access result for bulk and single checks', async () => {
+      const mk = async (n: string) => (await request(app).post('/auth/register').send({ email: `eq-${n}@example.com`, password: TEST_PASSWORD, name: `EQ ${n}` })).body;
+      const a = await mk('a');
+      const b = await mk('b');
+      const c = await mk('c');
+      const authA = { Authorization: `Bearer ${a.token}` };
+      const upload = async (auth: { Authorization: string }, messageId?: number) => {
+        const r = request(app).post('/files').set(auth);
+        if (messageId) r.field('messageId', String(messageId));
+        return (await r.attach('file', testFilePath)).body.id as number;
+      };
+
+      const ch = await request(app).post('/channels').set(authA).send({ name: 'eq-private', isPrivate: true });
+      const m1 = await request(app).post(`/channels/${ch.body.id}/messages`).set(authA).send({ content: 'x' });
+      const chFile = await upload(authA, m1.body.id);
+      const m2 = await request(app).post(`/channels/${ch.body.id}/messages`).set(authA).send({ content: 'y' });
+      const detachedFile = await upload(authA, m2.body.id);
+      await request(app).delete(`/messages/${m2.body.id}`).set(authA);
+      const loose = await upload(authA);
+      const dmFileId = await upload(authA);
+      const dm = await request(app).post('/dms').set(authA).send({ toUserId: b.user.id, content: 'dm', fileIds: [dmFileId] });
+      expect(dm.status).toBe(201);
+
+      const ids = [chFile, detachedFile, loose, dmFileId, 999999];
+      for (const u of [a, b, c]) {
+        const bulk = await verifyFilesAccess(u.user.id, ids);
+        for (const id of ids) {
+          const single = await verifyFileAccess(u.user.id, id);
+          expect([u.user.id, id, bulk.has(id)]).toEqual([u.user.id, id, single !== null]);
+        }
+      }
+      // 기대값도 직접 확인: B는 DM 파일만, C는 없음
+      expect([...(await verifyFilesAccess(b.user.id, ids))]).toEqual([dmFileId]);
+      expect((await verifyFilesAccess(c.user.id, ids)).size).toBe(0);
+    });
+
+    it('should return the batch limit and cap batch size', async () => {
+      const ok = await request(app).post('/files/download-token').set('Authorization', `Bearer ${authToken}`).send({ fileIds: [999999] });
+      expect(ok.status).toBe(200);
+      expect(ok.body).toEqual({ tokens: {}, limit: 50 });
+      const tooMany = await request(app).post('/files/download-token').set('Authorization', `Bearer ${authToken}`)
+        .send({ fileIds: Array.from({ length: 51 }, (_, i) => i + 1) });
+      expect(tooMany.status).toBe(400);
+    });
+
+    it('should serve ETag/304 only after the token and access checks', async () => {
+      const owner = await request(app).post('/auth/register').send({ email: 'etag-owner@example.com', password: TEST_PASSWORD, name: 'Etag Owner' });
+      const member = await request(app).post('/auth/register').send({ email: 'etag-member@example.com', password: TEST_PASSWORD, name: 'Etag Member' });
+      const ownerAuth = { Authorization: `Bearer ${owner.body.token}` };
+      const memberAuth = { Authorization: `Bearer ${member.body.token}` };
+      const ch = await request(app).post('/channels').set(ownerAuth).send({ name: 'etag-ch' });
+      await request(app).post(`/channels/${ch.body.id}/join`).set(memberAuth);
+      const msg = await request(app).post(`/channels/${ch.body.id}/messages`).set(ownerAuth).send({ content: 'f' });
+      const up = await request(app).post('/files').set(ownerAuth).field('messageId', String(msg.body.id)).attach('file', testFilePath);
+      const fileId = up.body.id;
+      const tok = (await request(app).post('/files/download-token').set(memberAuth).send({ fileId })).body.token;
+
+      const first = await request(app).get(`/files/${fileId}/download?token=${tok}`);
+      expect(first.status).toBe(200);
+      const etag = first.headers['etag'];
+      expect(etag).toMatch(/^"\d+-\d+-\d+"$/);
+      expect(first.headers['cache-control']).toBe('private, no-cache');
+
+      // 같은 ETag + 유효한 토큰 -> 304
+      const cached = await request(app).get(`/files/${fileId}/download?token=${tok}`).set('If-None-Match', etag);
+      expect(cached.status).toBe(304);
+      expect(cached.text ?? '').toBe('');
+
+      // 토큰이 잘못됐거나 다른 파일 것이면 ETag를 보내도 304가 아니다
+      const forged = jwt.sign({ userId: member.body.user.id, tokenVersion: 0, purpose: 'file-download', fileId: fileId + 1000 }, JWT_SECRET, { expiresIn: '5m' });
+      expect((await request(app).get(`/files/${fileId}/download?token=${forged}`).set('If-None-Match', etag)).status).toBe(403);
+      expect((await request(app).get(`/files/${fileId}/download?token=bad`).set('If-None-Match', etag)).status).toBe(401);
+      expect((await request(app).get(`/files/${fileId}/download`).set('If-None-Match', etag)).status).toBe(401);
+
+      // 채널을 나가면 같은 토큰·ETag여도 304가 아니라 404
+      await request(app).post(`/channels/${ch.body.id}/leave`).set(memberAuth);
+      expect((await request(app).get(`/files/${fileId}/download?token=${tok}`).set('If-None-Match', etag)).status).toBe(404);
     });
 
     it('should reject legacy unscoped, expired, wrong-purpose and other-file tokens', async () => {

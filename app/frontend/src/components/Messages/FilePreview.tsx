@@ -1,7 +1,6 @@
+import { AuthFileImage } from './AuthFile';
 import { useTranslation } from 'react-i18next';
-import { useFileTokens } from '@/hooks/useFileTokens';
 import { FileIcon, X } from 'lucide-react';
-import { getFileUrl } from '@/lib/api';
 import type { ApiFile } from '@/lib/api';
 
 interface FilePreviewProps {
@@ -11,7 +10,6 @@ interface FilePreviewProps {
 
 export function FilePreview({ files, onRemove }: FilePreviewProps) {
   const { t } = useTranslation('messages');
-  useFileTokens();
 
   if (files.length === 0) return null;
 
@@ -26,8 +24,8 @@ export function FilePreview({ files, onRemove }: FilePreviewProps) {
           className="relative flex items-center gap-2 rounded-lg border border-slack-border-light bg-slack-hover px-3 py-2 text-sm"
         >
           {file.mimetype.startsWith('image/') ? (
-            <img
-              src={getFileUrl(file.id)}
+            <AuthFileImage
+              fileId={file.id}
               alt={file.originalName}
               className="h-10 w-10 rounded object-cover"
             />

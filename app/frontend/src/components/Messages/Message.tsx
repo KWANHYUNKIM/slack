@@ -1,6 +1,6 @@
 import { mentionsUser } from '@/lib/mentions';
-import { useFileTokens } from '@/hooks/useFileTokens';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { AuthFileImage, AuthFileMedia, AuthFileLink, AuthFileLightbox } from './AuthFile';
 import { useTranslation } from 'react-i18next';
 import { formatTime, formatTimeShort, formatDateTime, DATE_TIME_FULL, formatFileSize } from '@/lib/i18n/format';
 import { FileIcon, Download, Pin } from 'lucide-react';
@@ -18,10 +18,9 @@ import { useMessageActions } from '@/hooks/useMessageActions';
 import { useMessageHover } from '@/hooks/useMessageHover';
 import { useMessageEdit } from '@/hooks/useMessageEdit';
 import type { Message as MessageType } from '@/lib/types';
-import { getAuthFileUrl, getFileUrl, markChannelUnread } from '@/lib/api';
+import { markChannelUnread } from '@/lib/api';
 import { useUnreadStore } from '@/stores/useUnreadStore';
 import { renderMessageContent } from '@/lib/renderMessageContent';
-import { ImageLightbox } from './ImageLightbox';
 import { FilePreviewModal } from './FilePreviewModal';
 import { MessageToolbar } from './MessageToolbar';
 import { MessageActionsMenu } from './MessageActionsMenu';
@@ -49,11 +48,10 @@ interface MessageProps {
 
 export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction, highlighted, onToggleBroadcast, permalinkBase }: MessageProps) {
   const { t } = useTranslation(['messages', 'common']);
-  useFileTokens();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxFileId, setLightboxFileId] = useState<number | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState<string>('');
   const [previewFile, setPreviewFile] = useState<{ id: number; name: string; size: number; mimetype: string } | null>(null);
   const { addReaction, removeReaction, editMessage, deleteMessage } = useMessageStore();
@@ -285,23 +283,23 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
               >
                 {file.mimetype.startsWith('audio/') || (file.mimetype === 'video/webm' && file.originalName.startsWith('voice-message')) ? (
                   <div className="px-3 py-2.5">
-                    <audio
+                    <AuthFileMedia kind="audio" fileId={file.id}
                       controls
                       playsInline
                       controlsList="nodownload noplaybackrate"
                       preload="metadata"
                       className="h-8"
-                      src={getFileUrl(file.id)}
+                      
                     />
                   </div>
                 ) : file.mimetype.startsWith('video/') ? (
                   <div>
-                    <video
+                    <AuthFileMedia kind="video" fileId={file.id}
                       controls
                       playsInline
                       preload="metadata"
                       className="max-h-[300px] max-w-full"
-                      src={getFileUrl(file.id)}
+                      
                     />
                     <div className="flex items-center gap-2 px-3 py-1.5 border-t border-slack-border">
                       <span className="text-[13px] text-slack-link truncate max-w-[200px]">
@@ -310,25 +308,25 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                       <span className="text-[11px] text-slack-disabled flex-shrink-0">
                         {formatFileSize(file.size)}
                       </span>
-                      <a
-                        href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
+                      <AuthFileLink
+                        fileId={file.id} forceDownload
                         download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
                         className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Download className="h-4 w-4" />
-                      </a>
+                      </AuthFileLink>
                     </div>
                   </div>
                 ) : file.mimetype.startsWith('image/') ? (
                   <div>
                     <button
                       data-testid="image-thumbnail"
-                      onClick={() => { setLightboxSrc(getFileUrl(file.id)); setLightboxAlt(file.originalName); }}
+                      onClick={() => { setLightboxFileId(file.id); setLightboxAlt(file.originalName); }}
                       className="block cursor-zoom-in focus:outline-none"
                     >
-                      <img
-                        src={getFileUrl(file.id)}
+                      <AuthFileImage
+                        fileId={file.id}
                         alt={file.originalName}
                         className="max-h-[200px] max-w-[300px] object-contain"
                       />
@@ -340,15 +338,15 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                       <span data-testid="image-filesize" className="text-[11px] text-slack-disabled flex-shrink-0">
                         {formatFileSize(file.size)}
                       </span>
-                      <a
+                      <AuthFileLink
                         data-testid="image-download"
-                        href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
+                        fileId={file.id} forceDownload
                         download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
                         className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Download className="h-4 w-4" />
-                      </a>
+                      </AuthFileLink>
                     </div>
                   </div>
                 ) : (
@@ -365,14 +363,14 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
                         {formatFileSize(file.size)}
                       </span>
                     </div>
-                    <a
-                      href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })}
+                    <AuthFileLink
+                      fileId={file.id} forceDownload
                       download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener"
                       className="flex-shrink-0 text-slack-disabled hover:text-slack-primary"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Download className="h-4 w-4" />
-                    </a>
+                    </AuthFileLink>
                   </div>
                 )}
               </div>
@@ -465,12 +463,8 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
       )}
 
       {/* Image Lightbox */}
-      {lightboxSrc && (
-        <ImageLightbox
-          src={lightboxSrc}
-          alt={lightboxAlt}
-          onClose={() => setLightboxSrc(null)}
-        />
+      {lightboxFileId !== null && (
+        <AuthFileLightbox fileId={lightboxFileId} alt={lightboxAlt} onClose={() => setLightboxFileId(null)} />
       )}
 
       {/* File Preview Modal */}

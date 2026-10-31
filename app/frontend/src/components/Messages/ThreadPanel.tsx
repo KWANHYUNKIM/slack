@@ -11,6 +11,7 @@ import {
   type ApiDirectMessage,
   type ApiMessage,
 } from '@/lib/api';
+import { prefetchFileTokens } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useThreadStore } from '@/stores/useThreadStore';
 import { cn } from '@/lib/utils';
@@ -119,6 +120,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         if (cancelled) return;
         setParentMessage(normalizeToMessage(data.parent));
         setReplies(data.replies.map((r) => normalizeToMessage(r)));
+        prefetchFileTokens([data.parent, ...data.replies].flatMap((m) => (m.files ?? []).map((f: { id: number }) => f.id)));
         // 스레드를 열었으니 읽음 처리한다(보기만 하는 비멤버는 서버가 거부하므로 건너뛴다)
         if (!isDM && !readOnly) void useThreadStore.getState().markRead(messageId);
       })
