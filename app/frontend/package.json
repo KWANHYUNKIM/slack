@@ -15,7 +15,8 @@
     "unread:test": "node --test scripts/unread.test.ts",
     "remind:test": "node --test scripts/remind.test.mjs",
     "admin:test": "node --test scripts/admin-rollback.test.ts",
-    "desktop:test": "node --test scripts/desktop.test.ts"
+    "desktop:test": "node --test scripts/desktop.test.ts",
+    "filetokens:test": "node --test scripts/file-tokens.test.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",

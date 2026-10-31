@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { isToday, isYesterday } from 'date-fns';
+import { AuthFileImage, AuthFileMedia, AuthFileLink, AuthFileLightbox } from './AuthFile';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { usePermalinkStore } from '@/stores/usePermalinkStore';
@@ -37,7 +38,6 @@ import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { MessageInput } from './MessageInput';
 import { ThreadPanel } from './ThreadPanel';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { ImageLightbox } from './ImageLightbox';
 import { HeaderSearch } from './HeaderSearch';
 import { HeaderNotifications } from './HeaderNotifications';
 import { HeaderTabs } from './HeaderTabs';
@@ -47,7 +47,7 @@ import { HuddleButton } from '@/components/Huddle/HuddleButton';
 import { HuddleSystemMessage } from '@/components/Huddle/HuddleInvite';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import {
-  markDMUnread, markDMRead, markDMGroupRead, pinDM, unpinDM, getPinnedDMs, getDMGroupPins, createDMGroup, getFileUrl, getAuthFileUrl,
+  markDMUnread, markDMRead, markDMGroupRead, pinDM, unpinDM, getPinnedDMs, getDMGroupPins, createDMGroup,
   type ApiDirectMessage, type AuthUser,
 } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
@@ -113,7 +113,7 @@ export function DMConversation(props: DMConversationProps) {
   const toggleDMStar = useChannelStore((s) => s.toggleDMStar);
   const toggleGroupStar = useChannelStore((s) => s.toggleGroupStar);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxFileId, setLightboxFileId] = useState<number | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -685,38 +685,38 @@ export function DMConversation(props: DMConversationProps) {
                                 <div key={file.id} className="rounded-lg border border-slack-border overflow-hidden">
                                   {file.mimetype.startsWith('audio/') || (file.mimetype === 'video/webm' && file.originalName.startsWith('voice-message')) ? (
                                     <div className="px-3 py-2.5">
-                                      <audio controls playsInline controlsList="nodownload noplaybackrate" preload="metadata" className="h-8" src={getFileUrl(file.id)} />
+                                      <AuthFileMedia kind="audio" fileId={file.id} controls playsInline controlsList="nodownload noplaybackrate" preload="metadata" className="h-8"  />
                                     </div>
                                   ) : file.mimetype.startsWith('video/') ? (
                                     <div>
-                                      <video controls playsInline preload="metadata" className="max-h-[300px] max-w-[400px]" src={getFileUrl(file.id)} />
+                                      <AuthFileMedia kind="video" fileId={file.id} controls playsInline preload="metadata" className="max-h-[300px] max-w-[400px]"  />
                                       <div className="flex items-center gap-2 px-3 py-1.5 border-t border-slack-border">
                                         <span className="text-[13px] text-slack-link truncate max-w-[200px]">{file.originalName}</span>
-                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
+                                        <AuthFileLink fileId={file.id} forceDownload download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
                                           <Download className="h-4 w-4" />
-                                        </a>
+                                        </AuthFileLink>
                                       </div>
                                     </div>
                                   ) : file.mimetype.startsWith('image/') ? (
                                     <div>
                                       <button
-                                        onClick={() => { setLightboxSrc(getFileUrl(file.id)); setLightboxAlt(file.originalName); }}
+                                        onClick={() => { setLightboxFileId(file.id); setLightboxAlt(file.originalName); }}
                                         className="block cursor-zoom-in focus:outline-none"
                                       >
-                                        <img src={getFileUrl(file.id)} alt={file.originalName} className="max-h-[200px] max-w-[300px] object-contain" />
+                                        <AuthFileImage fileId={file.id} alt={file.originalName} className="max-h-[200px] max-w-[300px] object-contain" />
                                       </button>
                                       <div className="flex items-center gap-2 px-3 py-1.5 border-t border-slack-border">
                                         <span className="text-[13px] text-slack-link truncate max-w-[200px]">{file.originalName}</span>
-                                        <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
+                                        <AuthFileLink fileId={file.id} forceDownload download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="ms-auto flex-shrink-0 text-slack-disabled hover:text-slack-primary" onClick={(e) => e.stopPropagation()}>
                                           <Download className="h-4 w-4" />
-                                        </a>
+                                        </AuthFileLink>
                                       </div>
                                     </div>
                                   ) : (
-                                    <a href={getAuthFileUrl(`/files/${file.id}/download`, { download: true })} download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="flex items-center gap-2 px-3 py-2">
+                                    <AuthFileLink fileId={file.id} forceDownload download={file.originalName.replace(/[/\\:\0]/g, '_')} rel="noopener" className="flex items-center gap-2 px-3 py-2">
                                       <FileIcon className="h-5 w-5 text-slack-secondary flex-shrink-0" />
                                       <span className="text-[13px] text-slack-link truncate max-w-[200px]">{file.originalName}</span>
-                                    </a>
+                                    </AuthFileLink>
                                   )}
                                 </div>
                               ))}
@@ -897,12 +897,8 @@ export function DMConversation(props: DMConversationProps) {
       </div>
 
       {/* Image Lightbox */}
-      {lightboxSrc && (
-        <ImageLightbox
-          src={lightboxSrc}
-          alt={lightboxAlt}
-          onClose={() => setLightboxSrc(null)}
-        />
+      {lightboxFileId !== null && (
+        <AuthFileLightbox fileId={lightboxFileId} alt={lightboxAlt} onClose={() => setLightboxFileId(null)} />
       )}
 
       {/* 1:1에서 사람 추가 → 새 그룹 DM */}
