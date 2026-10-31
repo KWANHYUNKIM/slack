@@ -237,3 +237,7 @@
 | 2026-11-01 01:53 | PR #84 리뷰 10건 전부 반영 결정 → dev-1에 전달: 답글·부모·DM 정리 소켓 이벤트, 채널 법적 보존(보존 사용자가 멤버인 채널 제외), 분리된 고아 파일 정리, 리마인더 유지, 관리자 탭 초안 보존, 자리표시자 처리 예산 포함과 DM 몫 보장, O(n) 매칭, DirectMessage createdAt 인덱스(같은 마이그레이션) |
 | 2026-11-01 02:00 | PR #84 리뷰 반영 검토: retention·files·dms 88/88, frontend tsc, eslint, i18n, 외부 URL, 물리 방향 164 통과 → 리베이스(충돌 0, 이미 최신) → 푸시 → squash 머지(5dbafde). 마이그레이션 20261101040000을 slackclone, slackclone_dev, dev2·3·5에 적용. dev4는 E7b의 같은 이름 WorkspaceSetting 테이블과 충돌(P3018) |
 | 2026-11-01 02:02 | 결정: WorkspaceSetting은 한 테이블로 통합(E7b 마이그레이션은 ALTER ADD requireMfa, id 기본값 1). 2FA 켜기에 비밀번호 재확인 추가, 켤 때 다른 세션 폐기. QR·복구 코드 재발급은 E7c, change-password 401은 별도 파트로 보드 추가 → dev-4에 전달(dev4 DB는 reset) |
+| 2026-11-01 02:05 | 배정: dev-5 fix/change-password-401(haiku, worktree, dev5 DB). 3명(dev-3 flake, dev-4 E7b 정리, dev-5) |
+| 2026-11-01 02:09 | dev-5 검토: auth 25/25(dev5 DB), tsc → PR #86, /code-review low 지적 0 → 머지 |
+| 2026-11-01 02:11 | dev-3 검토: 원인 supertest listen(0) 듀얼스택 바인딩을 127.0.0.1 전용 로컬 프로세스가 가로챔(재현). 테스트 전용 루프백 바인딩, 오류 code 정적 검사, 416 본문 추가. 72/72(dev3 DB) → PR #87, /code-review low 지적 0 → 머지. 전체 스위트 재확인은 스왑 회복 후 |
+| 2026-11-01 02:11 | 배정: dev-1 fix/i18n-followups(haiku, worktree). 디스크 여유 5GB 경계라 설치·빌드 금지 지시. 진행 2명(dev-4 E7b 정리, dev-1) |
