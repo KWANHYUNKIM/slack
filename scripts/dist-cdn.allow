@@ -1,0 +1,8 @@
+# 형식: 파일 경로 정규식<TAB>허용할 URL 정규식 (이 URL을 지운 뒤에도 차단 도메인이 남으면 실패)
+# emoji-mart 5.x 라이브러리 코드에 남는 jsdelivr 폴백 문자열. 아래 조건에서만 실행되지 않는다.
+#  - data: Picker에 lib/emoji/emojiData.ts의 번들 청크 데이터를 항상 넘긴다 (emoji-picker.tsx)
+#  - i18n: lib/i18n/emojiI18n.ts가 번들의 번역 JSON을 넘기고 en은 내장본을 쓴다
+#  - 스프라이트/이미지: set='native'라 getImageURL, getSpritesheetURL 경로를 타지 않는다
+# 위 조건이 깨지면 tests/no-external-requests.spec.ts 가 잡는다.
+assets/.*\.js$	https://cdn\.jsdelivr\.net/npm/@emoji-mart/data@latest/(?:sets|i18n)/
+assets/.*\.js$	https://cdn\.jsdelivr\.net/npm/emoji-datasource-\$\{[^}]*\}@[0-9.]+/img/

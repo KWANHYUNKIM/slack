@@ -7,22 +7,8 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import type { Reaction } from '@/lib/types';
-import data from '@emoji-mart/data';
-
-const SHORTCODE_ALIASES: Record<string, string> = {
-  mind_blown: 'exploding_head',
-};
-
-type EmojiDataShape = { emojis?: Record<string, { skins?: { native?: string }[] }> };
-const emojiData: EmojiDataShape = data as EmojiDataShape;
-
-function shortcodeToNative(emoji: string): string {
-  const key = SHORTCODE_ALIASES[emoji] ?? emoji;
-  const emojiEntry = emojiData.emojis?.[key];
-  const native = emojiEntry?.skins?.[0]?.native;
-  if (native) return native;
-  return emoji;
-}
+import { useEmojiData } from '@/lib/emoji/emojiData';
+import { shortcodeToNative } from '@/lib/emoji/emojiLookup';
 
 function ReactionPill({
   reaction,
@@ -35,6 +21,7 @@ function ReactionPill({
   tooltip: string | undefined;
   onClick: () => void;
 }) {
+  const emojiData = useEmojiData();
   const ref = useRef<HTMLButtonElement>(null);
   const [hovered, setHovered] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -64,7 +51,7 @@ function ReactionPill({
             : 'border-slack-border bg-white text-slack-primary hover:bg-slack-hover'
         )}
       >
-        <span data-testid="reaction-emoji" className="text-sm leading-none">{shortcodeToNative(reaction.emoji)}</span>
+        <span data-testid="reaction-emoji" className="text-sm leading-none">{shortcodeToNative(emojiData, reaction.emoji)}</span>
         <span className="text-[13px] font-medium">{reaction.count}</span>
       </button>
       {hovered && tooltip && pos && createPortal(
@@ -91,6 +78,7 @@ interface MessageReactionsProps {
 export function MessageReactions({ reactions, messageId, onAddReaction, onRemoveReaction }: MessageReactionsProps) {
   const { t } = useTranslation('messages');
   const user = useAuthStore((s) => s.user);
+  const emojiData = useEmojiData();
   const [showPicker, setShowPicker] = useState(false);
   const currentUserId = user?.id ?? -1;
 
@@ -113,7 +101,7 @@ export function MessageReactions({ reactions, messageId, onAddReaction, onRemove
         const hasReacted = reaction.userIds.includes(currentUserId);
         const names = reaction.userNames.filter(Boolean);
         const tooltip = names.length > 0
-          ? t('reactions.tooltip', { names: formatList(names), emoji: shortcodeToNative(reaction.emoji) })
+          ? t('reactions.tooltip', { names: formatList(names), emoji: shortcodeToNative(emojiData, reaction.emoji) })
           : undefined;
         return (
           <ReactionPill

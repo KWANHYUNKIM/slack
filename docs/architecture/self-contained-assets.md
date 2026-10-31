@@ -12,6 +12,7 @@
 | 위치 | 외부 주소 | 문제 | 조치 |
 |---|---|---|---|
 | `emoji-mart` Picker | `cdn.jsdelivr.net/npm/@emoji-mart/data@latest/i18n/<locale>.json` | 로캘이 `en`이 아니면 **실행 중에 CDN에서 번역을 받음**(i18n 작업 후 바로 문제가 됨). `@latest`라 버전도 고정되지 않음 | `@emoji-mart/data/i18n/*.json`을 import해서 `i18n` prop으로 넘김. 이모지 데이터는 이미 번들됨(`data` prop) |
+| `emoji-mart` data (`data@latest/sets/...`) | 같은 CDN | `data` 없이 Picker를 만들면 CDN fetch. 앱은 항상 넘기고 있었으나 메인 번들에 정적 포함이었음 | `lib/emoji/emojiData.ts`가 `@emoji-mart/data`를 lazy 청크(같은 출처)로 읽고, Picker·리액션·`:단축코드:` 변환이 모두 이 한 곳을 쓴다. 라이브러리에 남는 jsdelivr 폴백 문자열은 `scripts/dist-cdn.allow`로만 허용하고 `scripts/check-dist-cdn.sh`가 CI에서 dist를 검사한다 |
 | `emoji-mart` (set이 native가 아닐 때) | `cdn.jsdelivr.net/npm/emoji-datasource-*/img/...png` | 지금은 `native` set이라 요청이 없음 | `set: 'native'`를 고정하고 주석으로 남김. 커스텀 이모지(14)는 서버가 서빙 |
 | `useHuddleStore.ts` | `stun:stun.l.google.com:19302`, `stun1...` | 음성 통화를 연결할 때마다 Google STUN 서버에 접속 | 백엔드에 STUN 응답기(UDP, RFC 5389 Binding)를 직접 넣고, ICE 서버 목록을 `/huddles/config`로 받아 옴. 원격 환경용 TURN은 설정으로 추가 |
 | `backend/src/app.ts` CSP | `randomuser.me` (개발 모드 img-src) | 개발용 예외 | 제거 |
