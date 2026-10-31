@@ -129,6 +129,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # 규칙 17: 소스에 외부 https 리터럴(CDN, 이미지 등)이 없는지 검사한다.
+      - name: Check external URLs
+        working-directory: .
+        run: scripts/check-external-urls.sh
+
       - name: Build
         run: npm run build
 

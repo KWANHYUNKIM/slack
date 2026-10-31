@@ -1,0 +1,7 @@
+# 허용 목록: 정규식, 한 줄에 하나. 사유를 주석으로 남긴다.
+# 사용자 링크 정규화: 스킴 없는 입력에 https:// 를 붙임(콘텐츠이지 요청이 아님)
+useQuillEditor\.ts:.*https://\$\{url\}
+# 프로필 아바타 URL 검증: 사용자가 넣은 URL 문자열의 접두사 검사
+routes/users\.ts:.*startsWith\('https://'\)
+# URL 파싱용 더미 base(요청하지 않음, .invalid는 예약 TLD)
+serializeDelta\.ts:.*placeholder\.invalid

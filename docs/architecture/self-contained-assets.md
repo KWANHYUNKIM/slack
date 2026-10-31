@@ -27,6 +27,7 @@
 
 ## 3. 재발 방지
 - CI에 검사를 넣는다: `app/frontend/dist`와 `app/backend/src`에서 `https?://` 리터럴을 찾아 허용 목록 밖이면 실패시킨다(`scripts/check-external-urls.sh`).
+- 허용 목록은 `scripts/external-urls.allow`(정규식+사유 주석). dist는 번들 라이브러리 주석 오탐 때문에 검사하지 않고 CSP가 막는다.
 - 새 의존성을 리뷰할 때 런타임에 원격 fetch를 하는지 확인한다(PR 템플릿 보안 체크에 항목 추가).
 
 ## 4. 작업 분할

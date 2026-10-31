@@ -40,9 +40,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'img-src': ["'self'", 'blob:', ...(process.env.NODE_ENV !== 'production' ? ['https://randomuser.me'] : []), ...(process.env.GCS_BUCKET_NAME ? [`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`] : [])],
+      // 규칙 17: 외부 출처를 허용하지 않는다. 파일(GCS 포함)은 서버가 스트리밍하므로 'self'로 충분하다.
+      'img-src': ["'self'", 'blob:', 'data:'],
       'connect-src': ["'self'", 'wss:', 'ws:'],
-      'media-src': ["'self'", 'blob:', ...(process.env.GCS_BUCKET_NAME ? [`https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}`] : [])],
+      'media-src': ["'self'", 'blob:'],
     },
   },
   crossOriginEmbedderPolicy: 'credentialless' as any,
