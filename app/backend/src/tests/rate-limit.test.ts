@@ -1,5 +1,5 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { JWT_SECRET } from '../config.js';
@@ -27,7 +27,7 @@ function createTestApp(max: number) {
           if (decoded.userId) return `user:${decoded.userId}`;
         } catch {}
       }
-      return req.ip || 'unknown';
+      return req.ip ? ipKeyGenerator(req.ip) : 'unknown';
     },
   });
 

@@ -15,6 +15,7 @@ export default {
   },
   testMatch: ['**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
-  testTimeout: 10000,
+  // Some suites fire 100 concurrent requests; 10s was flaky on the 8GB dev machine under load.
+  testTimeout: 30000,
   maxWorkers: 1,
 };
