@@ -6,7 +6,7 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { deleteStoredFile } from './fileStorage.js';
 import { emitRemoved } from './mentionService.js';
 import { onThreadReplyDeleted, onThreadParentDeleted } from './threadService.js';
-import { getGroupMemberIds, groupVisibilityWhere } from './dmGroupService.js';
+import { getGroupMemberIds, groupDmVisibleSql } from './dmGroupService.js';
 
 // 데이터 보존(E5). 워크스페이스 기본 + 채널별 덮어쓰기로 "N일 지난 메시지"를 영구 삭제한다.
 //
@@ -238,49 +238,33 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
   return counts;
 }
 
-// DM과 그룹 DM. 보낸 사람이나 받은 사람이 법적 보존이면 제외한다. 그룹 DM은 보존 대상자가 볼 수 있었던 메시지를 제외한다:
-// 그 그룹에 구성원 이력(DMGroupMembership)이 있는 보존 대상자 중 누군가가 지금 구성원이거나, 메시지가 그 사람의 마지막 leftAt 이전에 쓰였으면 남긴다.
-// 새 구성원도 가입 전 기록을 볼 수 있으므로 eDiscovery 범위(groupVisibilityWhere)와 같은 기준이다.
-//
-// Prisma 조건은 메시지의 createdAt을 다른 표(이력)의 열과 비교할 수 없어서, 보존 대상자의 이력 행을 먼저 읽어
-// 그룹마다 (groupId, createdAt 상한) 조건으로 펼친다. 읽은 뒤에 보존이 새로 걸리거나 보존 대상자가 새로 들어와도 지우지 않도록,
-// 읽어 둔 행이 아닌 "보존 대상자의 이력 행"이 하나라도 있는 그룹은 문장 안에서 통째로 건너뛴다(관계 조건이라 문장마다 다시 평가된다).
-// 읽어 둔 구간이 그 뒤에 닫히거나 보존이 풀리면 더 많이 남길 뿐 덜 남기지는 않는다.
-interface HeldSpans {
-  rowIds: number[];
-  spans: { groupId: number; leftAt: Date | null }[];
-}
-
-async function loadHeldSpans(): Promise<HeldSpans> {
-  const rows = await prisma.dMGroupMembership.findMany({
-    where: { user: HELD_USER },
-    select: { id: true, groupId: true, leftAt: true },
-  });
-  return { rowIds: rows.map((r) => r.id), spans: rows };
-}
-
-function dmHeldFilter(held: HeldSpans): Prisma.DirectMessageWhereInput {
-  const inHeldSpan = groupVisibilityWhere(held.spans);
-  // 그룹 조건은 groupId null(1:1)을 먼저 따로 통과시킨다. SQL에서 NOT(groupId = x AND ...)은 groupId가 NULL이면 NULL이 되어 1:1 DM까지 빠진다.
-  const groupNotHeld: Prisma.DirectMessageWhereInput = {
-    group: { memberships: { none: { user: HELD_USER, id: { notIn: held.rowIds } } } },
-    ...(inHeldSpan.length > 0 ? { NOT: { OR: inHeldSpan } } : {}),
-  };
-  return {
-    fromUser: NOT_HELD_USER,
-    OR: [{ toUserId: null }, { toUser: NOT_HELD_USER }],
-    AND: [{ OR: [{ groupId: null }, groupNotHeld] }],
-  };
-}
+// DM과 그룹 DM. 보낸 사람이나 받은 사람이 법적 보존이면 제외하고, 그룹 DM은 보존 대상자가 볼 수 있었던 메시지를 제외한다
+// (구성원 이력이 있는 보존 대상자의 마지막 구간이 끝나기 전 메시지, 지금 구성원이면 전부. 기준은 eDiscovery와 같은 groupDmVisibleSql).
+// 메시지 작성 시각을 이력 행의 시각과 견줘야 해서 Prisma 조건 대신 raw SQL(상관 서브쿼리)로 쓴다. 메시지 별칭은 dm이다.
+// 선택·확인·삭제·자리표시자 전환 문장마다 이 조건이 들어가 문장 시점에 새로 평가되므로, 선택한 뒤에 보존이 걸려도 지우지 않는다.
+const heldUserSql = (userId: Prisma.Sql) => Prisma.sql`EXISTS (
+  SELECT 1 FROM "User" hu WHERE hu.id = ${userId} AND (hu."legalHold" OR EXISTS (
+    SELECT 1 FROM "LegalHoldCustodian" hc JOIN "LegalHold" hh ON hh.id = hc."holdId" WHERE hc."userId" = hu.id AND hh."releasedAt" IS NULL)))`;
+const DM_NOT_HELD = Prisma.sql`(NOT ${heldUserSql(Prisma.sql`dm."fromUserId"`)}
+  AND (dm."toUserId" IS NULL OR NOT ${heldUserSql(Prisma.sql`dm."toUserId"`)})
+  AND NOT ${groupDmVisibleSql(heldUserSql)})`;
+const HAS_REPLIES = Prisma.sql`EXISTS (SELECT 1 FROM "DirectMessage" r WHERE r."threadId" = dm.id)`;
 
 /** 지금도 보존 대상이 아닌 DM id만 남긴다 */
-async function stillPurgeableDms(ids: number[], heldFilter: Prisma.DirectMessageWhereInput): Promise<number[]> {
-  const rows = await prisma.directMessage.findMany({ where: { id: { in: ids }, ...heldFilter }, select: { id: true } });
+async function stillPurgeableDms(ids: number[]): Promise<number[]> {
+  if (ids.length === 0) return [];
+  const rows = await prisma.$queryRaw<Array<{ id: number }>>`SELECT dm.id FROM "DirectMessage" dm WHERE dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}`;
   return rows.map((r) => r.id);
 }
 
 type DmRow = { id: number; fromUserId: number; toUserId: number | null; groupId: number | null; threadId: number | null };
-const DM_ROW_SELECT = { id: true, fromUserId: true, toUserId: true, groupId: true, threadId: true } as const;
+
+/** 보존 대상이 아닌 DM을 id 순으로 고른다. cond도 별칭 dm 기준이다. */
+function selectDms(cond: Prisma.Sql, take: number): Promise<DmRow[]> {
+  return prisma.$queryRaw<DmRow[]>`
+    SELECT dm.id, dm."fromUserId", dm."toUserId", dm."groupId", dm."threadId" FROM "DirectMessage" dm
+    WHERE ${cond} AND ${DM_NOT_HELD} ORDER BY dm.id ASC LIMIT ${take}`;
+}
 
 /** 사용자 삭제 경로(dmService.deleteDirectMessage)와 같은 모양의 dm:deleted를 참여자에게 보낸다. 그룹 구성원은 배치 안에서 한 번만 읽는다. */
 async function emitDmDeleted(rows: DmRow[]): Promise<void> {
@@ -308,35 +292,35 @@ async function emitDmDeleted(rows: DmRow[]): Promise<void> {
 
 async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const heldFilter = dmHeldFilter(await loadHeldSpans());
-  const leafWhere: Prisma.DirectMessageWhereInput = { createdAt: { lt: cutoff }, replies: { none: {} }, ...heldFilter };
+  const leaf = Prisma.sql`dm."createdAt" < ${cutoff} AND NOT ${HAS_REPLIES}`;
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
-      counts.partial = (await prisma.directMessage.findFirst({ where: leafWhere, select: { id: true } })) !== null;
+      counts.partial = (await selectDms(leaf, 1)).length > 0;
       break;
     }
-    const rows = await prisma.directMessage.findMany({ where: leafWhere, select: DM_ROW_SELECT, orderBy: { id: 'asc' }, take });
+    const rows = await selectDms(leaf, take);
     if (rows.length === 0) break;
     budget.left -= rows.length;
     await budget.afterSelect?.();
-    const done = await deleteDms(rows, heldFilter);
+    const done = await deleteDms(rows);
     add(counts, done);
     if (done.messages === 0) break;
   }
-  add(counts, await blankDmParents(cutoff, budget, heldFilter));
+  add(counts, await blankDmParents(cutoff, budget));
   return counts;
 }
 
-async function deleteDms(rows: DmRow[], heldFilter: Prisma.DirectMessageWhereInput): Promise<PurgeCounts> {
-  const ids = await stillPurgeableDms(rows.map((r) => r.id), heldFilter);
+async function deleteDms(rows: DmRow[]): Promise<PurgeCounts> {
+  const ids = await stillPurgeableDms(rows.map((r) => r.id));
   if (ids.length === 0) return emptyCounts();
   const files = await prisma.file.findMany({ where: { dmId: { in: ids } }, select: FILE_SELECT });
   const { failedOwners, removed } = await removeStoredFiles(files);
   const targets = ids.filter((id) => !failedOwners.has(id));
   if (targets.length === 0) return emptyCounts();
 
-  await prisma.directMessage.deleteMany({ where: { id: { in: targets }, replies: { none: {} }, ...heldFilter } });
+  // 답글 없음: 조회 뒤에 새 답글이 달렸다면 그 부모는 지우지 않는다. 리액션은 FK cascade, 첨부 행은 SetNull이라 따로 지운다.
+  await prisma.$executeRaw`DELETE FROM "DirectMessage" dm WHERE dm.id = ANY(${targets}::int[]) AND NOT ${HAS_REPLIES} AND ${DM_NOT_HELD}`;
   const remaining = new Set((await prisma.directMessage.findMany({ where: { id: { in: targets } }, select: { id: true } })).map((m) => m.id));
   const gone = new Set(targets.filter((id) => !remaining.has(id)));
   if (gone.size === 0) return emptyCounts();
@@ -347,41 +331,39 @@ async function deleteDms(rows: DmRow[], heldFilter: Prisma.DirectMessageWhereInp
   return { messages: gone.size, files: fileCount, placeholders: 0, partial: false };
 }
 
-async function blankDmParents(cutoff: Date, budget: Budget, heldFilter: Prisma.DirectMessageWhereInput): Promise<PurgeCounts> {
+async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const where: Prisma.DirectMessageWhereInput = {
-    createdAt: { lt: cutoff },
-    replies: { some: {} },
-    OR: [{ deletedAt: null }, { content: { not: '' } }],
-    AND: [heldFilter],
-  };
+  const parents = Prisma.sql`dm."createdAt" < ${cutoff} AND ${HAS_REPLIES} AND (dm."deletedAt" IS NULL OR dm.content <> '')`;
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
-      counts.partial = (await prisma.directMessage.findFirst({ where, select: { id: true } })) !== null;
+      counts.partial = (await selectDms(parents, 1)).length > 0;
       break;
     }
-    const rows = await prisma.directMessage.findMany({ where, select: DM_ROW_SELECT, orderBy: { id: 'asc' }, take });
+    const rows = await selectDms(parents, take);
     if (rows.length === 0) break;
     budget.left -= rows.length;
     await budget.afterSelect?.();
-    const ids = new Set(await stillPurgeableDms(rows.map((r) => r.id), heldFilter));
+    const ids = new Set(await stillPurgeableDms(rows.map((r) => r.id)));
     if (ids.size === 0) break;
     const files = await prisma.file.findMany({ where: { dmId: { in: [...ids] } }, select: FILE_SELECT });
     const { failedOwners, removed } = await removeStoredFiles(files);
     const targets = rows.filter((r) => ids.has(r.id) && !failedOwners.has(r.id));
     if (targets.length === 0) break;
     const targetIds = targets.map((r) => r.id);
+    const removedIds = removed.map((f) => f.id);
+    // 세 문장 모두 보존 조건을 다시 본다(선택 뒤에 보존이 걸린 DM은 첨부·리액션·내용을 건드리지 않는다)
     const [fileDel] = await prisma.$transaction([
-      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, dm: heldFilter } }),
-      prisma.dMReaction.deleteMany({ where: { dmId: { in: targetIds }, dm: heldFilter } }),
-      prisma.directMessage.updateMany({ where: { id: { in: targetIds }, deletedAt: null, ...heldFilter }, data: { deletedAt: new Date() } }),
-      prisma.directMessage.updateMany({ where: { id: { in: targetIds }, ...heldFilter }, data: { content: '', isPinned: false, pinnedBy: null, pinnedAt: null } }),
+      prisma.$executeRaw`DELETE FROM "File" f USING "DirectMessage" dm WHERE f.id = ANY(${removedIds}::int[]) AND dm.id = f."dmId" AND ${DM_NOT_HELD}`,
+      prisma.$executeRaw`DELETE FROM "DMReaction" x USING "DirectMessage" dm WHERE x."dmId" = ANY(${targetIds}::int[]) AND dm.id = x."dmId" AND ${DM_NOT_HELD}`,
+      prisma.$executeRaw`
+        UPDATE "DirectMessage" dm SET "deletedAt" = COALESCE(dm."deletedAt", now()), content = '', "isPinned" = false, "pinnedBy" = NULL, "pinnedAt" = NULL, "updatedAt" = now()
+        WHERE dm.id = ANY(${targetIds}::int[]) AND ${DM_NOT_HELD}`,
     ]);
     await cleanupActivities({ dmId: { in: targetIds } });
     await emitDmDeleted(targets);
     counts.placeholders += targets.length;
-    counts.files += fileDel.count;
+    counts.files += fileDel;
     if (targets.length < rows.length) break;
   }
   return counts;
@@ -399,7 +381,7 @@ async function dropHeldDetached<T extends { detachedFromMessageId: number | null
   const msgIds = [...new Set(files.flatMap((f) => (f.detachedFromMessageId !== null ? [f.detachedFromMessageId] : [])))];
   const heldDms = new Set<number>();
   if (dmIds.length > 0) {
-    const free = new Set(await stillPurgeableDms(dmIds, dmHeldFilter(await loadHeldSpans())));
+    const free = new Set(await stillPurgeableDms(dmIds));
     const existing = await prisma.directMessage.findMany({ where: { id: { in: dmIds } }, select: { id: true } });
     for (const d of existing) if (!free.has(d.id)) heldDms.add(d.id);
   }

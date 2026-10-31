@@ -364,6 +364,8 @@ describe('Group DMs', () => {
       expect(spans[0]).toMatchObject({ id: closed.id, leftAt: closed.leftAt });
       expect(spans[1].leftAt).toBeNull();
       expect(spans[1].joinedAt.getTime()).toBeGreaterThanOrEqual(closed.leftAt!.getTime());
+      // 같은 사람의 열린 구간은 하나뿐이다(부분 유니크 인덱스)
+      await expect(prisma.dMGroupMembership.create({ data: { groupId, userId: dave.id } })).rejects.toThrow();
 
       // 현재 구성원과 열린 구간은 언제나 1:1
       const members = await prisma.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });

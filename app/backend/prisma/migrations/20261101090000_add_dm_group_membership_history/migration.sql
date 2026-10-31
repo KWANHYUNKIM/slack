@@ -21,13 +21,11 @@ ALTER TABLE "DMGroupMembership" ADD CONSTRAINT "DMGroupMembership_groupId_fkey" 
 -- AddForeignKey
 ALTER TABLE "DMGroupMembership" ADD CONSTRAINT "DMGroupMembership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- 기존 데이터 이전: 지금 구성원마다 열린 구간(leftAt NULL) 하나를 만든다.
--- 시작 시각은 가입 시각(joinedAt)이다. 처음부터 있던 구성원은 그룹과 같은 문장에서 만들어져 joinedAt이 그룹 생성 시각과
--- 몇 ms 어긋날 수 있으므로, 생성 후 1초 안에 들어온 구성원은 그룹 생성 시각으로 당긴다.
+-- 같은 사람의 열린 구간(지금 구성원)은 그룹마다 하나뿐이다. Prisma 스키마로 표현할 수 없는 부분 인덱스라 SQL로만 둔다.
+CREATE UNIQUE INDEX "DMGroupMembership_open_key" ON "DMGroupMembership"("groupId", "userId") WHERE "leftAt" IS NULL;
+
+-- 기존 데이터 이전: 지금 구성원마다 열린 구간(leftAt NULL) 하나를 만든다. joinedAt은 가입 시각(감사용, 범위 판단에는 쓰지 않는다).
 -- 이미 나간 사람의 과거 구간은 기록이 없어 되살릴 수 없다.
 INSERT INTO "DMGroupMembership" ("groupId", "userId", "joinedAt", "leftAt")
-SELECT gm."groupId", gm."userId",
-       CASE WHEN gm."joinedAt" < g."createdAt" + INTERVAL '1 second' THEN LEAST(gm."joinedAt", g."createdAt") ELSE gm."joinedAt" END,
-       NULL
-FROM "DMGroupMember" gm
-JOIN "DMGroup" g ON g."id" = gm."groupId";
+SELECT "groupId", "userId", "joinedAt", NULL
+FROM "DMGroupMember";

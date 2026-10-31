@@ -358,7 +358,7 @@ describe('Data retention', () => {
       const between = await mk(150); // 나가 있던 사이: 재가입 뒤 볼 수 있었다
       const inSecond = await mk(75);
       const afterLeave = await mk(40);
-      // 경계: 마지막으로 나간 시각에 쓴 메시지는 범위 밖(leftAt 미만)
+      // 경계: 마지막으로 나간 시각에 쓴 메시지는 보존 쪽으로 본다(leftAt 이하)
       const atLeave = await prisma.directMessage.create({ data: { content: 'edge', fromUserId: memberId, groupId: group.id, createdAt: lastLeft } });
       // 자리표시자 경로: 범위 안 부모에 새 답글이 달려 있어도 부모는 그대로 남는다
       const parentInSpan = await mk(80);
@@ -371,15 +371,43 @@ describe('Data retention', () => {
       const oldInCurrent = await prisma.directMessage.create({ data: { content: 'old', fromUserId: memberId, groupId: current.id, createdAt: ago(300) } });
 
       await purgeExpiredMessages();
-      for (const m of [beforeJoin, inFirst, between, inSecond, oldInCurrent]) expect(await dmExists(m.id)).toBe(true);
+      for (const m of [beforeJoin, inFirst, between, inSecond, atLeave, oldInCurrent]) expect(await dmExists(m.id)).toBe(true);
       expect(await prisma.directMessage.findUniqueOrThrow({ where: { id: parentInSpan.id } })).toMatchObject({ content: 'g-80', deletedAt: null });
       expect(await dmExists(afterLeave.id)).toBe(false);
-      expect(await dmExists(atLeave.id)).toBe(false);
 
       // 보존이 풀리면 범위 안 메시지도 정리된다
       await prisma.user.update({ where: { id: heldId }, data: { legalHold: false } });
       await purgeExpiredMessages();
-      for (const m of [beforeJoin, inFirst, between, inSecond, oldInCurrent]) expect(await dmExists(m.id)).toBe(false);
+      for (const m of [beforeJoin, inFirst, between, inSecond, atLeave, oldInCurrent]) expect(await dmExists(m.id)).toBe(false);
+    });
+
+    it('keeps group DMs of a current member that has no history row (safety net)', async () => {
+      await setWorkspace(30);
+      await prisma.user.update({ where: { id: heldId }, data: { legalHold: true } });
+      const group = await prisma.dMGroup.create({ data: { memberKey: `g-nohist-${heldId}`, createdBy: memberId } });
+      await prisma.dMGroupMember.createMany({ data: [memberId, otherId, heldId].map((userId) => ({ groupId: group.id, userId })) });
+      const msg = await prisma.directMessage.create({ data: { content: 'g', fromUserId: memberId, groupId: group.id, createdAt: ago(100) } });
+      await purgeExpiredMessages();
+      expect(await dmExists(msg.id)).toBe(true);
+    });
+
+    it('still purges when a held user has thousands of group histories', async () => {
+      await setWorkspace(30);
+      await prisma.user.update({ where: { id: heldId }, data: { legalHold: true } });
+      const N = 3000;
+      await prisma.dMGroup.createMany({ data: Array.from({ length: N }, (_, i) => ({ memberKey: `bulk-${i}`, createdBy: memberId, createdAt: ago(400) })) });
+      const groups = await prisma.dMGroup.findMany({ where: { memberKey: { startsWith: 'bulk-' } }, select: { id: true }, orderBy: { id: 'asc' } });
+      expect(groups).toHaveLength(N);
+      await prisma.dMGroupMembership.createMany({ data: groups.map((g) => ({ groupId: g.id, userId: heldId, joinedAt: ago(400), leftAt: ago(200) })) });
+      const kept = await prisma.directMessage.create({ data: { content: 'seen', fromUserId: memberId, groupId: groups[N - 1].id, createdAt: ago(300) } });
+      const gone = await prisma.directMessage.create({ data: { content: 'after', fromUserId: memberId, groupId: groups[0].id, createdAt: ago(100) } });
+      const free = await prisma.directMessage.create({ data: { content: 'free', fromUserId: memberId, toUserId: otherId, createdAt: ago(100) } });
+
+      const r = await purgeExpiredMessages();
+      expect(r.messages).toBe(2);
+      expect(await dmExists(kept.id)).toBe(true);
+      expect(await dmExists(gone.id)).toBe(false);
+      expect(await dmExists(free.id)).toBe(false);
     });
 
     it('does not purge a group DM when a member of that time is put on hold after the batch was selected', async () => {
