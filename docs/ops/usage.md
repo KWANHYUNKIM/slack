@@ -54,3 +54,6 @@
 | 2026-10-31 21:48 | dev-5 | sonnet | 04-threads-view | 201,158 |
 | 2026-10-31 21:52 | code-review | (리뷰) | PR #26 medium | 116,998 |
 | 2026-10-31 21:55 | dev-5 | sonnet | PR #26 리뷰 반영 | 21,153 |
+| 2026-10-31 22:07 | dev-1 | sonnet | 05-user-status-dnd | 204,133 |
+| 2026-10-31 22:10 | code-review | (리뷰) | PR #28 medium | 89,692 |
+| 2026-10-31 22:14 | dev-1 | sonnet | PR #28 리뷰 반영 | 29,513 |

@@ -21,7 +21,7 @@
 | REA run2: Claude Code 재시작 후 MCP 경로로 재평가 | - | sonnet | 대기(재시작 필요) | 30분 | | | run1과 같은 질문 Q1~Q3 |
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
 | 04-threads-view | dev-5 | sonnet | 완료(PR #26 머지) | 2.5h | 2026-10-31 21:42 | 2026-10-31 21:48 | 스키마 변경(ThreadRead) |
-| 05-user-status-dnd | dev-1 | sonnet | 진행 | 1.5h | 2026-10-31 21:58 | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
+| 05-user-status-dnd | dev-1 | sonnet | 완료(PR #28 머지) | 1.5h | 2026-10-31 21:58 | 2026-10-31 22:07 | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 완료(PR #7 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | dev-5 | sonnet | 완료(PR #14 머지) | 1h | 12:23 | 12:33 | 총괄 결정: Slack과 같게 |
 | security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |
@@ -56,7 +56,7 @@
 | feat/channel-name-taken-code: 중복 채널 이름 오류에 code(CHANNEL_NAME_TAKEN)와 errors 번역(POST /channels·관리자 변경) | dev-3 | sonnet | 완료(PR #21에 포함) | 30분 | | | PR #14 남은 이슈 |
 | feat/channel-name-skeleton: UTS #39 skeleton 컬럼으로 단일 체계 동형 이름(рау/pay, ɡ/g) 유니크 검사 | - | opus | 대기(스키마) | 2h | | | PR #14 남은 이슈 |
 | 00b-gap-analysis-v2: 실제 Slack(#claude-test)과 현재 main 기능 비교, CRUD 관찰, 차이 우선순위 표와 다음 파트 스펙(06~) | planner-1 | sonnet | 완료(문서 기반, 브라우저 미관찰) | 1h | 2026-10-31 21:42 | 2026-10-31 21:45 | Claude in Chrome 도구 없음 → 04·05·06~10 "검증 필요" 항목 브라우저 재관찰 필요 | 2026-10-31 20:33 사용자 지시 |
-| 06-quick-switcher-shortcuts: Cmd/Ctrl+K 빠른 전환기, 전역 단축키 | - | sonnet | 대기(P0, 비스키마) | 1.5h | | | 00b |
+| 06-quick-switcher-shortcuts: Cmd/Ctrl+K 빠른 전환기, 전역 단축키 | dev-2 | sonnet | 진행 | 1.5h | 2026-10-31 22:17 | | 00b |
 | 07-message-permalink: 메시지 링크 복사와 딥링크 | - | sonnet | 대기(P0, 10보다 먼저) | 1.5h | | | 00b |
 | 08-search-v2: from:/in:/날짜 필터, 탭, 하이라이트 | - | sonnet | 대기(P0) | 2h | | | 00b, 기존 fix/search-nfc 흡수 |
 | 10-unread-divider: 안 읽음 구분선 | - | sonnet | 대기(P0, 07 이후) | 1.5h | | | 00b |

@@ -168,3 +168,7 @@
 | 2026-10-31 21:53 | PR #26 리뷰 10건 → dev-5 반영 지시. 총괄 결정: HTTP PATCH도 message:updated 송신(parent 발췌 포함), 스레드 목록 재조회는 화면 열렸을 때만, 읽음 위치 GREATEST, 답글 조회 부모별 20개 SQL 제한, 중첩 답글 400 |
 | 2026-10-31 21:57 | PR #26 머지(08b87ee). 마이그레이션 20261031150000_add_thread_view를 dev1~4·slackclone·slackclone_dev에 적용, dev-5 worktree 제거. 실수: main 정리 명령에 `git checkout -- .`을 섞어 미커밋 문서 기록을 지울 뻔함(권한 단계에서 거부되어 손실 없음). 공유 트리에서는 checkout/reset 계열을 쓰지 않는다 |
 | 2026-10-31 21:58 | 배정: dev-1 05-user-status-dnd(sonnet, 스키마, shouldNotify를 채널·DM·그룹 DM·스레드 푸시에 연결). 자원 감속(스왑 90%) 한도 1 |
+| 2026-10-31 22:10 | dev-1 05 완료 검토: main(841157d) 리베이스, tsc·eslint·i18n·외부 URL·status-dnd 24/24 재확인 → PR #28, /code-review medium |
+| 2026-10-31 22:11 | PR #28 리뷰 10건 → dev-1 반영 지시. 총괄 결정: 수동 DND가 더 길면 상태 묶음으로 덮지 않음, keep은 expiresAt 미전송(없음=유지, null=해제), 상태 문구는 <> 제거 대신 렌더 이스케이프에 맡김, /dms 시각 UTC ISO |
+| 2026-10-31 22:16 | PR #28 머지(7175db1). 첫 merge가 "Base branch was modified"로 일시 실패 → 브랜치 삭제 없이 8초 뒤 재시도해 성공(PR #23 실수 교훈 적용). 마이그레이션 20261031160000_add_user_status_dnd를 dev2~5·slackclone·slackclone_dev에 적용, dev-1 worktree 제거 |
+| 2026-10-31 22:17 | 배정: dev-2 06-quick-switcher-shortcuts(sonnet, 비스키마). 자원 감속(스왑 88%) 한도 1 |
