@@ -529,18 +529,89 @@ export interface SearchResult {
   participant?: { id: number; name: string; email: string };
   /** 그룹 DM 메시지면 그룹 id */
   groupId?: number | null;
+  /** 스레드 답글이면 부모 메시지 id */
+  threadId?: number | null;
+  /** content 안의 일치 구간 [시작, 끝) 목록. 프런트가 <mark>로 렌더한다 */
+  highlights?: Array<[number, number]>;
+}
+
+export interface SearchFileResult {
+  id: number;
+  type: 'file';
+  filename: string;
+  mimetype: string;
+  size: number;
+  url: string;
+  createdAt: string;
+  user: { id: number; name: string; avatar?: string | null };
+  channel?: { id: number; name: string };
+  groupId?: number | null;
+  participantId?: number | null;
+  messageId?: number | null;
+  dmId?: number | null;
+  highlights?: Array<[number, number]>;
+}
+
+export interface SearchPersonResult {
+  id: number;
+  type: 'person';
+  name: string;
+  avatar?: string | null;
+  highlights?: Array<[number, number]>;
+}
+
+export interface SearchChannelResult {
+  id: number;
+  type: 'channel';
+  name: string;
+  topic?: string | null;
+  isPrivate: boolean;
+  isMember: boolean;
+  archived: boolean;
+  highlights?: Array<[number, number]>;
+}
+
+export type SearchTab = 'messages' | 'files' | 'people' | 'channels';
+export type SearchSort = 'relevance' | 'recent';
+
+/** 서버가 질의에서 해석한 필터. 연산자 이름은 번역하지 않는 고정 문법이다 */
+export interface SearchParsedFilters {
+  terms: string[];
+  from: string[];
+  in: string[];
+  before?: string;
+  after?: string;
+  on?: string;
+  has: string[];
+  is: string[];
 }
 
 export interface SearchResponse {
   results: SearchResult[];
   query: string;
   counts: { messages: number; dms: number; total: number };
+  parsedFilters?: SearchParsedFilters;
+  hasMore?: boolean;
+  nextCursor?: string | null;
 }
 
-export function searchMessages(query: string, channelId?: number) {
+export interface SearchPageResponse extends Omit<SearchResponse, 'results'> {
+  results: Array<SearchResult | SearchFileResult | SearchPersonResult | SearchChannelResult>;
+}
+
+export function searchMessages(query: string, channelId?: number, limit?: number) {
   const params = new URLSearchParams({ q: query });
   if (channelId) params.set('channelId', String(channelId));
+  if (limit) params.set('limit', String(limit));
   return request<SearchResponse>(`/search?${params}`);
+}
+
+/** 검색 페이지용: 탭, 정렬, 커서를 지원한다. 메시지 탭은 채널 메시지와 DM을 함께 돌려준다 */
+export function searchAll(query: string, opts: { tab: SearchTab; sort: SearchSort; cursor?: string | null; limit?: number }) {
+  const params = new URLSearchParams({ q: query, type: opts.tab === 'messages' ? 'all' : opts.tab, sort: opts.sort });
+  params.set('limit', String(opts.limit ?? 20));
+  if (opts.cursor) params.set('cursor', opts.cursor);
+  return request<SearchPageResponse>(`/search?${params}`);
 }
 
 // ---- Files ----

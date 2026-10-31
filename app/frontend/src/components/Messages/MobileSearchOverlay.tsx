@@ -72,7 +72,10 @@ export function MobileSearchOverlay({ onClose, testIdPrefix = '' }: MobileSearch
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-      handleSearch();
+      const q = searchQuery.trim();
+      if (!q) return;
+      navigate(`/search?${new URLSearchParams({ q })}`);
+      onClose();
     } else if (e.key === 'Escape') {
       onClose();
     }

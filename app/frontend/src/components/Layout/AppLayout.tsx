@@ -16,6 +16,7 @@ import { LaterPage } from '@/components/Messages/LaterPage';
 import { QuickSwitcher } from '@/components/QuickSwitcher/QuickSwitcher';
 import { ShortcutsHelpModal } from '@/components/Layout/ShortcutsHelpModal';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
+import { SearchPage } from '@/components/Messages/SearchPage';
 
 export function AppLayout() {
   const { t } = useTranslation('errors');
@@ -46,6 +47,8 @@ export function AppLayout() {
     content = <ThreadsPage />;
   } else if (location.pathname === '/later') {
     content = <LaterPage />;
+  } else if (location.pathname === '/search') {
+    content = <SearchPage />;
   } else {
     content = <MessageArea />;
   }

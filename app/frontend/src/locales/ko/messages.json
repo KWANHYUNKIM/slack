@@ -61,7 +61,34 @@
     "searching": "검색하는 중...",
     "noResults": "검색 결과가 없습니다",
     "resultCount": "검색 결과 {count}개",
-    "inChannel": "#{channel} 채널"
+    "inChannel": "#{channel} 채널",
+    "title": "검색 결과",
+    "resultsFor": "\"{query}\" 검색 결과",
+    "emptyQuery": "검색어를 입력하거나 from:, in:, has:, before:, after: 같은 필터를 사용해 보세요.",
+    "noResultsHint": "다른 검색어를 써 보거나 필터를 일부 해제해 보세요.",
+    "clearFilters": "필터 모두 해제",
+    "removeFilter": "필터 {filter} 제거",
+    "loadFailed": "검색에 실패했습니다. 다시 시도해 주세요.",
+    "loadMore": "더 보기",
+    "threadReply": "스레드 답글",
+    "directMessage": "다이렉트 메시지",
+    "groupMessage": "그룹 대화",
+    "joined": "참여 중",
+    "privateChannel": "비공개",
+    "archivedChannel": "보관됨",
+    "back": "뒤로",
+    "tabs": {
+      "label": "검색 결과 종류",
+      "messages": "메시지",
+      "files": "파일",
+      "people": "사람",
+      "channels": "채널"
+    },
+    "sort": {
+      "label": "정렬",
+      "relevance": "관련도",
+      "recent": "최신순"
+    }
   },
   "headerTabs": {
     "files": "파일",

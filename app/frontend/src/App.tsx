@@ -664,6 +664,7 @@ function App() {
           <Route path="unreads" element={<PageRouteSync />} />
           <Route path="later" element={<PageRouteSync />} />
           <Route path="threads" element={<PageRouteSync />} />
+          <Route path="search" element={<PageRouteSync />} />
           <Route path="activity" element={<PageRouteSync />} />
           <Route path="admin" element={<AdminGuard><PageRouteSync /></AdminGuard>} />
           <Route path="*" element={<DefaultRedirect />} />
