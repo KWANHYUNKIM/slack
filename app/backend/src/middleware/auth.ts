@@ -30,6 +30,52 @@ export function clearTokenCache() {
   tokenCache.clear();
 }
 
+export type AccessTokenResult =
+  | { ok: true; user: JwtPayload & { role: string } }
+  | { ok: false };
+
+/**
+ * HTTP 미들웨어와 Socket.io 핸드셰이크가 함께 쓰는 access token 검증.
+ * - 잘못된 토큰(서명, 만료, 형식, 폐기, 비활성 계정)은 `{ ok: false }`를 돌려준다.
+ * - DB 조회 같은 서버 오류는 throw한다. 호출한 쪽이 기록하고 서버 오류로 응답한다.
+ * 실패 사유는 호출한 쪽에 주지 않는다(인증 상태 열거 방지).
+ */
+export async function validateAccessToken(token: string): Promise<AccessTokenResult> {
+  let decoded: JwtPayload & { purpose?: string };
+  try {
+    decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload & { purpose?: string };
+  } catch {
+    return { ok: false };
+  }
+
+  // Reject scoped tokens (e.g. file-download) from being used as general auth
+  if (decoded.purpose) return { ok: false };
+
+  // Validate tokenVersion against DB to support server-side revocation.
+  if (decoded.tokenVersion === undefined) return { ok: false };
+
+  // 서명이 맞아도 형식이 이상하면 DB 조회 전에 거부한다.
+  if (!Number.isInteger(decoded.userId) || decoded.userId <= 0) return { ok: false };
+  if (typeof decoded.tokenVersion !== 'number' || !Number.isFinite(decoded.tokenVersion)) return { ok: false };
+
+  const now = Date.now();
+  let cached = tokenCache.get(decoded.userId);
+  if (!cached || cached.expiresAt < now) {
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { tokenVersion: true, role: true, deactivatedAt: true },
+    });
+    if (!user) return { ok: false };
+    cached = { tokenVersion: user.tokenVersion, role: user.role, deactivatedAt: user.deactivatedAt, expiresAt: now + TOKEN_CACHE_TTL };
+    tokenCache.set(decoded.userId, cached);
+  }
+
+  if (cached.tokenVersion !== decoded.tokenVersion) return { ok: false };
+  if (cached.deactivatedAt) return { ok: false };
+
+  return { ok: true, user: { ...decoded, role: cached.role } };
+}
+
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
@@ -40,64 +86,23 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
 
   const token = authHeader.split(' ')[1];
 
-  // JWT 검증 실패(서명, 만료, 형식 오류)는 잘못된 토큰이므로 401이다.
-  let decoded: JwtPayload & { purpose?: string };
+  // 서버 오류(DB 등)는 401로 삼키지 않는다. 기록하고 500을 내며, 응답 본문에 내부 정보는 넣지 않는다.
+  let result: AccessTokenResult;
   try {
-    decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload & { purpose?: string };
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
-    return;
-  }
-
-  // 여기서부터의 실패(DB 조회 등)는 서버 오류다. 401로 삼키면 진단이 안 되므로 기록하고 500을 낸다.
-  // 응답 본문에는 내부 정보를 넣지 않는다.
-  let cached: { tokenVersion: number; role: string; deactivatedAt: Date | null; expiresAt: number };
-  try {
-    // Reject scoped tokens (e.g. file-download) from being used as general auth
-    if (decoded.purpose) {
-      res.status(401).json({ error: 'Invalid token' });
-      return;
-    }
-
-    // Validate tokenVersion against DB to support server-side revocation.
-    // All failures return the same generic message to prevent
-    // authentication state enumeration (OWASP).
-    if (decoded.tokenVersion === undefined) {
-      res.status(401).json({ error: 'Invalid token' });
-      return;
-    }
-
-    const now = Date.now();
-    const existing = tokenCache.get(decoded.userId);
-    if (!existing || existing.expiresAt < now) {
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { tokenVersion: true, role: true, deactivatedAt: true },
-      });
-      if (!user) {
-        res.status(401).json({ error: 'Invalid token' });
-        return;
-      }
-      cached = { tokenVersion: user.tokenVersion, role: user.role, deactivatedAt: user.deactivatedAt, expiresAt: now + TOKEN_CACHE_TTL };
-      tokenCache.set(decoded.userId, cached);
-    } else {
-      cached = existing;
-    }
-
-    if (cached.tokenVersion !== decoded.tokenVersion) {
-      res.status(401).json({ error: 'Invalid token' });
-      return;
-    }
-    if (cached.deactivatedAt) {
-      res.status(401).json({ error: 'Invalid token' });
-      return;
-    }
+    result = await validateAccessToken(token);
   } catch (error) {
     logError('Auth middleware error', error);
     res.status(500).json({ error: 'Internal server error' });
     return;
   }
 
-  req.user = { ...decoded, role: cached.role };
+  if (!result.ok) {
+    // All failures return the same generic message to prevent
+    // authentication state enumeration (OWASP).
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+
+  req.user = result.user;
   next();
 }

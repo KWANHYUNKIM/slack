@@ -381,6 +381,39 @@ describe('Authentication', () => {
       expect(res.body.error).toBe('Invalid token');
     });
 
+    it('returns 401 without a DB lookup when the signed payload has no userId', async () => {
+      const token = jwt.sign({ tokenVersion: 0 }, JWT_SECRET, { algorithm: 'HS256' });
+      const dbSpy = jest.spyOn(prisma.user, 'findUnique');
+
+      const res = await request(app)
+        .get('/users/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+      expect(dbSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns 401 when userId is a string or not a positive integer', async () => {
+      const regRes = await request(app).post('/auth/register').send(testUser);
+      const id = regRes.body.user.id;
+      const payloads = [
+        { userId: String(id), tokenVersion: 0 },
+        { userId: 0, tokenVersion: 0 },
+        { userId: 1.5, tokenVersion: 0 },
+        { userId: id, tokenVersion: '0' },
+      ];
+
+      for (const payload of payloads) {
+        const token = jwt.sign(payload, JWT_SECRET, { algorithm: 'HS256' });
+        const res = await request(app)
+          .get('/users/me')
+          .set('Authorization', `Bearer ${token}`);
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe('Invalid token');
+      }
+    });
+
     it('returns 500 (not 401), logs the error, and hides internals when the tokenVersion lookup fails', async () => {
       const regRes = await request(app).post('/auth/register').send(testUser);
       const token = regRes.body.token;
