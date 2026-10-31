@@ -2,7 +2,7 @@ import { t } from '@/lib/i18n';
 import { create } from 'zustand';
 import {
   getConversation, sendDM, editDM, deleteDM, addDMReaction, removeDMReaction,
-  getDMGroupMessages, sendDMGroupMessage, type ApiDirectMessage, type ApiDMReaction,
+  prefetchFileTokens, getDMGroupMessages, sendDMGroupMessage, type ApiDirectMessage, type ApiDMReaction,
 } from '@/lib/api';
 import { useAuthStore } from './useAuthStore';
 import { useChannelStore } from './useChannelStore';
@@ -143,6 +143,7 @@ export const useDMStore = create<DMState>((set, get) => ({
         useUnreadStore.getState().setBaseline(scope, data.lastReadId ?? null, data.unreadCount ?? 0);
       }
       const msgs = data.messages.map(transformDM);
+      prefetchFileTokens(msgs.flatMap((m) => m.files.map((f) => f.id)));
       if (!around) msgs.reverse(); // API returns DESC, we want ASC (around returns chronological)
       set((state) => ({
         messages: { ...state.messages, [userId]: msgs },

@@ -3,9 +3,9 @@ set -euo pipefail
 
 # Rebuild the base image (only needed when package.json or prisma schema changes)
 
-GCP_PROJECT_ID="${GCP_PROJECT_ID:-ncvgl-gcp}"
-IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/slawk-base"
-REPO_URL="https://github.com/ncvgl/slawk.git"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-your-gcp-project}"
+IMAGE="us-central1-docker.pkg.dev/${GCP_PROJECT_ID}/cloud-run-source-deploy/slackclone-base"
+REPO_URL="https://github.com/KWANHYUNKIM/slack.git"
 
 echo "Building base image..."
 echo "  Image: ${IMAGE}:latest"
@@ -17,12 +17,12 @@ echo "Cloning ${REPO_URL} (main)..."
 git clone --depth 1 --branch main "${REPO_URL}" "${CLONE_DIR}"
 
 CONTEXT_DIR=$(mktemp -d)
-cp "${CLONE_DIR}/deploy/gcp/Dockerfile.base" "${CONTEXT_DIR}/"
-cp "${CLONE_DIR}/deploy/gcp/cloudbuild.base.yaml" "${CONTEXT_DIR}/"
+cp "${CLONE_DIR}/app/deploy/gcp/Dockerfile.base" "${CONTEXT_DIR}/"
+cp "${CLONE_DIR}/app/deploy/gcp/cloudbuild.base.yaml" "${CONTEXT_DIR}/"
 mkdir -p "${CONTEXT_DIR}/frontend" "${CONTEXT_DIR}/backend/prisma"
-cp "${CLONE_DIR}/frontend/package.json" "${CLONE_DIR}/frontend/package-lock.json" "${CONTEXT_DIR}/frontend/"
-cp "${CLONE_DIR}/backend/package.json" "${CLONE_DIR}/backend/package-lock.json" "${CONTEXT_DIR}/backend/"
-cp "${CLONE_DIR}/backend/prisma/schema.prisma" "${CONTEXT_DIR}/backend/prisma/"
+cp "${CLONE_DIR}/app/frontend/package.json" "${CLONE_DIR}/app/frontend/package-lock.json" "${CONTEXT_DIR}/frontend/"
+cp "${CLONE_DIR}/app/backend/package.json" "${CLONE_DIR}/app/backend/package-lock.json" "${CONTEXT_DIR}/backend/"
+cp "${CLONE_DIR}/app/backend/prisma/schema.prisma" "${CONTEXT_DIR}/backend/prisma/"
 
 gcloud builds submit "${CONTEXT_DIR}" \
   --project "${GCP_PROJECT_ID}" \

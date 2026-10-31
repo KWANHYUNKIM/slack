@@ -28,10 +28,19 @@ slack/
 - 보안 설정은 `docs/security/nodejs-security.md` 9절을 따른다.
 
 ### 웹 배포: 빌드와 실행
-- 이미지: `app/Dockerfile`은 공개 이미지 `node:24-slim`만 쓰는 4단계 멀티스테이지다(프런트 빌드, 백엔드 운영 의존성, 백엔드 tsc 빌드, 런타임). 사설 base 이미지와 GCP 의존은 없다. 런타임은 비 root(`node`), `NODE_ENV=production`, dev 의존성 제외, `/health` HEALTHCHECK를 갖고, 시작 시 `prisma migrate deploy`(DB 준비 전이면 재시도) 후 서버를 띄운다. 프런트 dist는 `public/`에 넣어 백엔드가 서빙한다.
+- 이미지: `app/Dockerfile`은 공개 이미지 `node:24-slim`만 쓰는 3단계 멀티스테이지다. 프런트 빌드, 백엔드 빌드(`npm ci` 한 번, `prisma generate`, `tsc`, `npm prune --omit=dev`), 런타임 순서이고 npm ci, apt, prisma generate는 각각 한 번만 돈다. prisma CLI는 `migrate deploy`를 위해 `dependencies`에 있다. 런타임은 비 root(`node`), `NODE_ENV=production`, dev 의존성 제외, `/health` HEALTHCHECK를 갖는다. 프런트 dist는 `public/`에 넣어 백엔드가 서빙한다. 사설 base 이미지와 GCP 의존은 없다.
 - 빌드: `docker build -t slackclone ./app`
 - 실행: `cd app && cp .env.example .env`(JWT_SECRET, POSTGRES_PASSWORD 채우기, 생성: `openssl rand -hex 32`) 후 `docker compose up -d --build`. 접속은 `http://localhost:8080`. 업로드와 DB는 named volume(`uploads`, `pgdata`)에 저장된다.
-- 시드(tsx, dev 의존성)는 이미지에 포함하지 않는다. 가입은 초대 코드가 필요해서, 빈 DB의 첫 OWNER 부트스트랩 경로는 별도 파트에서 해결해야 한다(남은 이슈). 원작자의 GCP 배포 스크립트는 `app/deploy/gcp/`에 선택 사항으로 남겼다.
+- DB 연결: compose는 `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`를 넘기고, `entrypoint.sh`가 `node dist/ops/cli.js database-url`로 `DATABASE_URL`을 조합한다. 비밀번호의 특수문자는 퍼센트 인코딩된다. `DATABASE_URL`을 직접 주면 그대로 쓴다.
+- 마이그레이션: 시작할 때 `prisma migrate deploy`를 실행한다. DB 연결 실패(P1001, P1002, P1017)만 최대 15회 재시도하고, 마이그레이션 오류(P3009, P3018 등)와 그 밖의 오류는 `migrate status`를 출력하고 바로 종료한다. 판정 코드는 `backend/src/ops/migrateErrors.ts`.
+- 프록시와 TLS: 운영은 TLS 리버스 프록시(nginx, Caddy 등) 뒤에 두고 `PUBLIC_URL=https://...`, `TRUST_PROXY=1`로 설정하는 것을 권장한다. `TRUST_PROXY`는 프록시 홉 수이며 기본 0(신뢰 안 함)이다. 프록시 없이 직접 열면 0으로 둬야 `X-Forwarded-For` 위조로 rate limit을 피할 수 없다. 프록시 뒤인데 0이면 모든 요청이 프록시 IP 하나로 세어진다. `PUBLIC_URL`이 `http://`이면 HSTS, CSP `upgrade-insecure-requests`, socket.io 쿠키의 secure 속성을 끈다. 이는 LAN 시험용이고 인터넷에 공개하는 용도가 아니다. 기본(비어 있음 또는 https)은 https 전제다.
+- 허들 STUN/TURN: 내장 STUN은 기본 켜짐이고 compose가 `3478/udp`를 공개한다. 끄려면 `STUN_ENABLED=false`(포트 공개 줄도 지운다). 원격 접속자가 쓰려면 `STUN_PUBLIC_HOST`에 공인 호스트를, 필요하면 `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL`을 설정한다.
+- 첫 사용자: 이미지에는 시드(tsx, dev 의존성)가 없고 `RUN_SEED`도 없다. 첫 OWNER는 CLI(`feat/bootstrap-owner` 파트, 별도 PR)로 만든다.
+  - 빈 DB로 처음 띄운 뒤 `docker compose exec app node dist/scripts/create-owner.js --email <이메일> --name <이름>`을 실행한다(compose 서비스 이름은 `app`). 비밀번호는 숨김 프롬프트로 입력한다.
+  - 사용자가 1명이라도 있으면 거부된다. 그다음 사용자는 OWNER가 관리 화면에서 만든 초대로 가입한다.
+  - 비대화형(스크립트)에서는 `docker compose exec -T app ...`에 stdin 파이프를 쓴다. 비밀번호를 환경 변수(`BOOTSTRAP_OWNER_*`)로 넘기면 `docker inspect`에 보이므로 가능하면 비워 두고, 썼다면 `.env`에서 지우고 컨테이너를 다시 만든다.
+- GCP 배포 스크립트는 `app/deploy/gcp/`에 선택 사항으로 남겼다(이 저장소를 clone하고 `app/`을 빌드 컨텍스트로 쓴다). 예전 하드코딩 trust proxy 1 값은 그 README와 `cloudbuild.yaml`(`TRUST_PROXY=1`)에 적었다.
+
 
 ## 3. 엔터프라이즈 기능 (Slack Enterprise Grid를 참고해 직접 설계)
 slawk에는 이미 역할(OWNER/ADMIN/MEMBER/GUEST), 감사 로그(AuditLog), 초대 링크, 관리자 패널이 있다. 그 위에 쌓는다.

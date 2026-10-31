@@ -10,39 +10,33 @@ RUN npm ci
 COPY frontend/ ./
 RUN npx vite build
 
-# ── Stage 2: 백엔드 운영 의존성 (bcrypt, sharp 등 네이티브 모듈 포함) ──
-FROM ${NODE_IMAGE} AS backend-deps
+# ── Stage 2: 백엔드 의존성 설치, prisma generate, tsc 빌드, 운영용 prune ──
+# npm ci, apt, prisma generate는 이 단계에서 각각 한 번만 실행한다.
+# bcrypt, sharp 같은 네이티브 모듈은 prebuilt가 없을 때를 대비해 빌드 도구를 둔다(이 단계에만 존재).
+FROM ${NODE_IMAGE} AS backend-build
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates python3 make g++ \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
-COPY backend/prisma/schema.prisma ./prisma/schema.prisma
-# dev 의존성은 제외한다. migrate deploy에 필요한 prisma CLI만 같은 버전으로 추가한다.
-RUN npm ci --omit=dev \
- && npm install --no-save --no-package-lock --no-audit --no-fund prisma@5.22.0 \
- && npx prisma generate \
- && npm cache clean --force
-
-# ── Stage 3: 백엔드 TypeScript 빌드 (전체 의존성) ───────────────────
-FROM ${NODE_IMAGE} AS backend-build
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-WORKDIR /app/backend
-COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 COPY backend/ ./
-RUN npx prisma generate && npx tsc --noEmitOnError && test -f dist/index.js
+RUN npx prisma generate \
+ && npx tsc --noEmitOnError \
+ && test -f dist/index.js \
+ && npm prune --omit=dev \
+ && test -d node_modules/.prisma/client \
+ && npm cache clean --force
 
-# ── Stage 4: 런타임 ─────────────────────────────────────────────────
+# ── Stage 3: 런타임 ─────────────────────────────────────────────────
 FROM ${NODE_IMAGE} AS production
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-COPY --from=backend-deps /app/backend/node_modules ./node_modules
-COPY --from=backend-deps /app/backend/package.json ./
+COPY --from=backend-build /app/backend/node_modules ./node_modules
+COPY --from=backend-build /app/backend/package.json ./
 COPY --from=backend-build /app/backend/dist ./dist
 COPY backend/prisma ./prisma
 # 프런트 빌드 결과를 public/ 에 두면 백엔드가 정적 서빙한다.
@@ -58,6 +52,7 @@ USER node
 ENV NODE_ENV=production \
     PORT=8080
 EXPOSE 8080
+EXPOSE 3478/udp
 VOLUME ["/app/uploads"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
