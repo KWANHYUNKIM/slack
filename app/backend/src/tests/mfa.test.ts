@@ -642,7 +642,7 @@ describe('2단계 인증 API (E7b)', () => {
     expect(mcpBlocked.body).toMatchObject({ jsonrpc: '2.0', error: { data: { code: 'MFA_ENROLLMENT_REQUIRED' } } });
     // 2FA가 있는 관리자의 소켓은 그대로 붙는다
     expect((await connect(adminToken)).connected).toBe(true);
-    expect(on.body).toEqual({ requireMfa: true, mfaAvailable: true });
+    expect(on.body).toEqual({ requireMfa: true, mfaAvailable: true, allowOAuthApps: true });
     expect((await request(app).get('/admin/settings/security').set(auth(adminToken))).body.requireMfa).toBe(true);
 
     // 이미 받은 토큰도, 새 로그인도 등록 전에는 막힌다
@@ -835,7 +835,7 @@ describe('2단계 인증 API (E7b)', () => {
     expect((await request(app).patch('/admin/settings/security').set(auth(adminToken)).send({ requireMfa: true })).status).toBe(503);
     await setRequireMfa(true);
     expect((await request(app).get('/channels').set(auth(other.token))).status).toBe(200);
-    expect((await request(app).get('/admin/settings/security').set(auth(adminToken))).body).toEqual({ requireMfa: true, mfaAvailable: false });
+    expect((await request(app).get('/admin/settings/security').set(auth(adminToken))).body).toEqual({ requireMfa: true, mfaAvailable: false, allowOAuthApps: true });
 
     // 2FA 사용자는 키가 없어도 비밀번호만으로 들어가지 못한다
     const s = await passwordStep(email);

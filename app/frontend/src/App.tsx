@@ -30,6 +30,8 @@ import { AppLayout } from '@/components/Layout/AppLayout';
 import { LoginPage } from '@/components/Auth/LoginPage';
 import { RegisterPage } from '@/components/Auth/RegisterPage';
 import { MfaEnrollmentPage } from '@/components/Auth/MfaEnrollmentPage';
+import { OAuthConsentPage } from '@/components/Auth/OAuthConsentPage';
+import { OAUTH_CONSENT_PATH, peekOAuthReturn, rememberOAuthReturn } from '@/lib/oauthReturn';
 import { startUserPrefsSync } from '@/lib/userPrefsSync';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -60,10 +62,25 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    // OAuth 동의 화면에서 로그인하러 왔으면 그리로 돌아간다(mcp-4)
+    return <Navigate to={peekOAuthReturn() ?? '/'} replace />;
   }
 
   return <>{children}</>;
+}
+
+/** OAuth 동의 화면(mcp-4). 로그인 안 했으면 돌아올 주소를 적어 두고 로그인 화면으로 보낸다. 2FA 필수 정책은 ProtectedRoute가 처리한다. */
+function OAuthConsentRoute() {
+  const location = useLocation();
+  const { isAuthenticated, isHydrating } = useAuthStore();
+  if (!isHydrating && !isAuthenticated) {
+    rememberOAuthReturn(`${location.pathname}${location.search}`);
+  }
+  return (
+    <ProtectedRoute>
+      <OAuthConsentPage />
+    </ProtectedRoute>
+  );
 }
 
 /**
@@ -669,6 +686,7 @@ function App() {
             </PublicRoute>
           }
         />
+        <Route path={OAUTH_CONSENT_PATH} element={<OAuthConsentRoute />} />
         <Route
           path="/"
           element={

@@ -38,6 +38,10 @@ import huddleRoutes from './routes/huddles.js';
 import reminderRoutes from './routes/reminders.js';
 import tokenRoutes from './routes/tokens.js';
 import mcpRoutes from './routes/mcp.js';
+import oauthRoutes from './routes/oauth.js';
+import wellKnownRoutes from './routes/wellKnown.js';
+import connectedAppRoutes from './routes/connectedApps.js';
+import { warnIfOAuthUnconfigured } from './services/oauthService.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { errorCodeDefaults } from './middleware/errorCode.js';
 import { ERR } from './utils/errorCodes.js';
@@ -151,6 +155,7 @@ app.use('/search', apiLimiter, searchRoutes);
 app.use('/files', apiLimiter, fileRoutes);
 app.use('/users/me/sessions', apiLimiter, sessionRoutes);
 app.use('/users/me/2fa', apiLimiter, mfaRoutes);
+app.use('/users/me/connected-apps', apiLimiter, connectedAppRoutes);
 app.use('/users', apiLimiter, userRoutes);
 // /dms/:userId보다 먼저 등록해야 'groups'가 사용자 id로 해석되지 않는다
 app.use('/dms/groups', apiLimiter, dmGroupRoutes);
@@ -171,7 +176,13 @@ app.use('/activity', apiLimiter, activityRoutes);
 app.use('/huddles', apiLimiter, huddleRoutes);
 app.use('/reminders', apiLimiter, reminderRoutes);
 app.use('/tokens', apiLimiter, tokenRoutes);
-// MCP는 개인 액세스 토큰으로만 인증한다(로그인 JWT는 accessTokenAuth가 거부)
+// OAuth 2.1 인가 서버와 메타데이터(mcp-4). 토큰 엔드포인트는 여러 사용자가 한 서버(IP)에서 부르므로
+// 일반 apiLimiter(IP 단위) 대신 라우터 안에서 client_id 단위로 제한한다.
+// 운영에서 PUBLIC_URL이 없으면 OAuth는 503, /mcp는 PAT만 받는다. 시작할 때 한 번 경고한다.
+warnIfOAuthUnconfigured();
+app.use('/.well-known', wellKnownRoutes);
+app.use('/oauth', oauthRoutes);
+// MCP는 개인 액세스 토큰이나 OAuth 액세스 토큰으로만 인증한다(로그인 JWT는 accessTokenAuth가 거부)
 app.use('/mcp', mcpAuthFailureLimiter, accessTokenAuth, mcpTokenLimiter, mcpRoutes);
 
 // Health check

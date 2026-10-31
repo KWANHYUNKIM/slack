@@ -67,7 +67,7 @@ async function runTool(
 ): Promise<CallToolResult> {
   let result: CallToolResult;
   let data: unknown;
-  const retryAfter = opts.write ? await mcpWriteLimiter.consume(ctx.tokenId) : null;
+  const retryAfter = opts.write ? await mcpWriteLimiter.consume(ctx.rateKey ?? ctx.tokenId) : null;
   if (retryAfter !== null) {
     result = fail(`Too many write requests for this token; retry in ${retryAfter} seconds`);
   } else {
@@ -92,7 +92,10 @@ async function runTool(
     targetType: opts.audit?.targetType ?? 'mcp_tool',
     targetId,
     targetName: tool,
-    details: JSON.stringify({ via: 'mcp', tokenId: ctx.tokenId, tool, ok: !result.isError }),
+    // OAuth 토큰(mcp-4)은 종류와 앱(클라이언트) id를 함께 남긴다. PAT는 예전 모양 그대로.
+    details: JSON.stringify(ctx.tokenKind === 'oauth'
+      ? { via: 'mcp', tokenKind: 'oauth', tokenId: ctx.tokenId, oauthClientId: ctx.oauthClientId, tool, ok: !result.isError }
+      : { via: 'mcp', tokenId: ctx.tokenId, tool, ok: !result.isError }),
   });
   return result;
 }

@@ -32,7 +32,8 @@
     "accessTokens": "개인 액세스 토큰",
     "sessions": "로그인된 기기",
     "twoFactor": "2단계 인증",
-    "changePassword": "비밀번호 변경"
+    "changePassword": "비밀번호 변경",
+    "connectedApps": "연결된 앱"
   },
   "sections": {
     "starred": "즐겨찾기",

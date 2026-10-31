@@ -20,6 +20,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     role: req.user!.role,
     tokenId: req.accessToken!.tokenId,
     scopes: req.accessToken!.scopes,
+    tokenKind: req.accessToken!.kind ?? 'pat',
+    rateKey: req.accessToken!.rateKey,
+    oauthClientId: req.accessToken!.oauthClientId,
   });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   res.on('close', () => {

@@ -11,7 +11,7 @@ import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { settleBackgroundWork } from '../services/mentionService.js';
 import { hashSecret } from '../services/accessTokenService.js';
-import { createMcpAuthFailureLimiter, createMcpTokenLimiter } from '../mcp/rateLimit.js';
+import { createMcpAuthFailureLimiter, createMcpTokenLimiter, markMcpAuthFailure } from '../mcp/rateLimit.js';
 import { accessTokenAuth } from '../middleware/accessTokenAuth.js';
 import mcpRoutes from '../routes/mcp.js';
 
@@ -487,10 +487,15 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
       expect((await request(mini).post('/mcp').set('x-token-id', '2')).status).toBe(200);
     });
 
-    it('limits failed authentication attempts per IP, counting only 401', async () => {
+    it('limits failed authentication attempts per IP, counting only 401 marked as an unknown token', async () => {
       const mini = express();
       mini.use(createMcpAuthFailureLimiter(2));
-      mini.all('/mcp', (req, res) => { res.status(Number(req.headers['x-status'] ?? 401)).json({}); });
+      mini.all('/mcp', (req, res) => {
+        const status = Number(req.headers['x-status'] ?? 401);
+        // accessTokenAuth처럼 "형식이 틀리거나 없는 토큰"일 때만 표시한다
+        if (status === 401 && !req.headers['x-known']) markMcpAuthFailure(res);
+        res.status(status).json({});
+      });
       const hit = (status?: number, method: 'get' | 'post' = 'post') => {
         const r = request(mini)[method]('/mcp');
         if (status) r.set('x-status', String(status));
@@ -502,6 +507,8 @@ describe('MCP server + personal access tokens (mcp-1)', () => {
         expect((await hit(200)).status).toBe(200);
         expect((await hit(405, 'get')).status).toBe(405);
         expect((await hit(429)).status).toBe(429);
+        // 알려진 토큰의 401(만료·회전)이나 토큰 없는 탐색 401은 세지 않는다
+        expect((await request(mini).post('/mcp').set('x-known', '1')).status).toBe(401);
       }
       expect((await hit()).status).toBe(401);
       expect((await hit()).status).toBe(401);

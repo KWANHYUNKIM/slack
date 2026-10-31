@@ -69,6 +69,10 @@
     "LEGAL_HOLD_NOT_FOUND": "Legal hold not found.",
     "LEGAL_HOLD_RELEASED": "This legal hold has been released and can't be changed.",
     "LEGAL_HOLD_INVALID_USERS": "Some of the selected people don't exist.",
-    "LEGAL_HOLD_CUSTODIAN_NOT_FOUND": "This person isn't on the legal hold."
+    "LEGAL_HOLD_CUSTODIAN_NOT_FOUND": "This person isn't on the legal hold.",
+    "OAUTH_INVALID_REQUEST": "This connection request is not valid. Start connecting from the app again.",
+    "OAUTH_APPS_DISABLED": "Your workspace administrator has turned off app connections.",
+    "OAUTH_CONNECTION_NOT_FOUND": "This app is not connected.",
+    "OAUTH_NOT_CONFIGURED": "App connections are not configured on this server. Ask your administrator to set the public server address."
   }
 }

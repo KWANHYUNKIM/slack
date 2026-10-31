@@ -14,6 +14,7 @@ import { listActiveSessions, revokeSession, revokeUserSessions } from '../servic
 import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
+import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
 
 const router = Router();
 
@@ -331,17 +332,21 @@ router.post('/users/:id/2fa/reset', async (req: AuthRequest, res: Response) => {
 // GET /admin/settings/security - 조직 보안 정책. mfaAvailable이 false면(암호화 키 없음) 필수 정책을 켤 수 없고 걸리지도 않는다.
 router.get('/settings/security', async (_req: AuthRequest, res: Response) => {
   try {
-    res.json({ requireMfa: await getRequireMfa(), mfaAvailable: isMfaAvailable() });
+    res.json({ requireMfa: await getRequireMfa(), mfaAvailable: isMfaAvailable(), allowOAuthApps: await getAllowOAuthApps() });
   } catch (error) {
     logError('Admin get security settings error', error);
     res.status(500).json({ error: 'Failed to get settings', code: ERR.INTERNAL_ERROR });
   }
 });
 
-// PATCH /admin/settings/security - "모든 사용자 2FA 필수" 켜고 끄기
+// PATCH /admin/settings/security - "모든 사용자 2FA 필수", "OAuth 앱 연결 허용"(mcp-4) 켜고 끄기. 바꿀 값만 보낸다.
 router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
   try {
-    const { requireMfa } = z.object({ requireMfa: z.boolean() }).strict().parse(req.body);
+    const parsed = z.object({ requireMfa: z.boolean().optional(), allowOAuthApps: z.boolean().optional() }).strict()
+      .refine((v) => v.requireMfa !== undefined || v.allowOAuthApps !== undefined, { message: 'Nothing to update' })
+      .parse(req.body);
+    const { requireMfa, allowOAuthApps } = parsed;
+    // 조건 확인을 먼저 다 하고 나서 바꾼다(둘을 함께 보냈을 때 한쪽만 바뀌지 않게)
     if (requireMfa && !isMfaAvailable()) {
       res.status(503).json({ error: 'Two-factor authentication is not available on this server', code: ERR.MFA_UNAVAILABLE });
       return;
@@ -354,23 +359,36 @@ router.patch('/settings/security', async (req: AuthRequest, res: Response) => {
         return;
       }
     }
-    const before = await getRequireMfa();
-    await setRequireMfa(requireMfa);
-    if (before !== requireMfa) {
-      await writeAuditLog({
-        action: 'workspace.mfa_policy_changed', actorId: req.user!.userId, targetType: 'workspace',
-        details: `requireMfa=${requireMfa}`,
-      });
-    }
-    // 켜면 2FA가 없는 사용자의 실시간 연결을 바로 끊는다(다시 붙으려 해도 핸드셰이크가 거부한다). HTTP는 다음 요청부터 막힌다.
-    if (requireMfa) {
-      const unenrolled = await prisma.user.findMany({ where: { mfaEnabledAt: null, deactivatedAt: null }, select: { id: true } });
-      for (const u of unenrolled) {
-        invalidateTokenCache(u.id);
-        kickUser(u.id, MFA_KICK_MESSAGE);
+    if (allowOAuthApps !== undefined) {
+      const beforeOAuth = await getAllowOAuthApps();
+      // 끄면 살아 있는 OAuth 토큰을 모두 폐기한다(다시 켜도 예전 연결이 되살아나지 않게)
+      const revoked = await setAllowOAuthApps(allowOAuthApps);
+      if (beforeOAuth !== allowOAuthApps) {
+        await writeAuditLog({
+          action: 'workspace.oauth_policy_changed', actorId: req.user!.userId, targetType: 'workspace',
+          details: `allowOAuthApps=${allowOAuthApps}; revoked=${revoked}`,
+        });
       }
     }
-    res.json({ requireMfa, mfaAvailable: isMfaAvailable() });
+    if (requireMfa !== undefined) {
+      const before = await getRequireMfa();
+      await setRequireMfa(requireMfa);
+      if (before !== requireMfa) {
+        await writeAuditLog({
+          action: 'workspace.mfa_policy_changed', actorId: req.user!.userId, targetType: 'workspace',
+          details: `requireMfa=${requireMfa}`,
+        });
+      }
+      // 켜면 2FA가 없는 사용자의 실시간 연결을 바로 끊는다(다시 붙으려 해도 핸드셰이크가 거부한다). HTTP는 다음 요청부터 막힌다.
+      if (requireMfa) {
+        const unenrolled = await prisma.user.findMany({ where: { mfaEnabledAt: null, deactivatedAt: null }, select: { id: true } });
+        for (const u of unenrolled) {
+          invalidateTokenCache(u.id);
+          kickUser(u.id, MFA_KICK_MESSAGE);
+        }
+      }
+    }
+    res.json({ requireMfa: await getRequireMfa(), mfaAvailable: isMfaAvailable(), allowOAuthApps: await getAllowOAuthApps() });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });

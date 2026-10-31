@@ -1298,14 +1298,64 @@ export interface SecuritySettings {
   requireMfa: boolean;
   /** false면 서버에 암호화 키가 없어 정책을 켤 수 없고 걸리지도 않는다 */
   mfaAvailable: boolean;
+  /** OAuth 앱(claude.ai 커넥터 등) 연결 허용(mcp-4). 끄면 기존 연결도 모두 끊긴다. */
+  allowOAuthApps: boolean;
 }
 
 export function adminGetSecuritySettings() {
   return request<SecuritySettings>('/admin/settings/security');
 }
 
-export function adminUpdateSecuritySettings(requireMfa: boolean) {
-  return request<SecuritySettings>('/admin/settings/security', { method: 'PATCH', body: JSON.stringify({ requireMfa }) });
+/** 바꿀 값만 보낸다 */
+export function adminUpdateSecuritySettings(patch: { requireMfa?: boolean; allowOAuthApps?: boolean }) {
+  return request<SecuritySettings>('/admin/settings/security', { method: 'PATCH', body: JSON.stringify(patch) });
+}
+
+// ---- OAuth 앱 연결(mcp-4) ----
+
+export interface OAuthConsentDetails {
+  client: {
+    name: string;
+    clientId: string;
+    redirectUri: string;
+    /** 허용하면 이동할 호스트. 동의 화면에 크게 보여 준다(피싱 방지) */
+    redirectHost: string;
+    /** http loopback(이 컴퓨터에서 도는 앱) */
+    loopback: boolean;
+  };
+  scopes: AccessTokenScope[];
+  /** 2FA 사용자는 허용할 때 코드를 넣는다 */
+  mfaRequired: boolean;
+}
+
+/** 인가 요청 파라미터(쿼리 그대로)로 동의 화면 정보를 받는다 */
+export function getOAuthConsentDetails(params: Record<string, string>) {
+  return request<OAuthConsentDetails>(`/oauth/authorize/details?${new URLSearchParams(params).toString()}`);
+}
+
+/** 허용·거부. 돌려받은 redirectTo로 이동만 한다(서버가 등록된 redirect_uri로만 만든다) */
+export function submitOAuthDecision(params: Record<string, string>, approve: boolean, code?: string) {
+  return request<{ redirectTo: string }>('/oauth/authorize/decision', {
+    method: 'POST',
+    body: JSON.stringify({ params, approve, ...(code ? { code } : {}) }),
+  });
+}
+
+export interface ConnectedApp {
+  id: number;
+  name: string;
+  redirectHosts: string[];
+  scopes: AccessTokenScope[];
+  connectedAt: string | null;
+  lastUsedAt: string | null;
+}
+
+export function listConnectedApps() {
+  return request<{ items: ConnectedApp[]; nextCursor: null }>('/users/me/connected-apps');
+}
+
+export function disconnectConnectedApp(id: number) {
+  return request<{ disconnected: true }>(`/users/me/connected-apps/${id}`, { method: 'DELETE' });
 }
 
 export function adminForceLogout(userId: number) {

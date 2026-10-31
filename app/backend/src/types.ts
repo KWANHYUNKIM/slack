@@ -22,6 +22,9 @@ export interface AuthRequest extends Request {
   file?: any;
   dm?: any;
   dmGroupId?: number;
-  /** /mcp에서 개인 액세스 토큰으로 인증했을 때만 채워진다 */
-  accessToken?: { tokenId: number; scopes: string[] };
+  /**
+   * /mcp에서 개인 액세스 토큰이나 OAuth 액세스 토큰(mcp-4)으로 인증했을 때만 채워진다.
+   * kind가 없으면 PAT다. rateKey는 rate limit 버킷(PAT는 토큰, OAuth는 연결 계열 단위).
+   */
+  accessToken?: { tokenId: number; scopes: string[]; kind?: 'pat' | 'oauth'; rateKey?: string; oauthClientId?: number };
 }

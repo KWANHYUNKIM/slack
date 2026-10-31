@@ -6,6 +6,7 @@ import { apiErrorMessage } from '@/lib/apiErrors';
 import { useToastStore } from '@/stores/useToastStore';
 
 // 조직 보안 정책(E7b): 모든 사용자 2FA 필수. 켜는 관리자는 자기 2FA가 먼저 있어야 한다(서버가 MFA_NOT_ENABLED로 막는다).
+// OAuth 앱 연결 허용(mcp-4): 끄면 새 연결이 막히고 기존 연결도 모두 끊긴다.
 export function AdminSecurityTab() {
   const { t } = useTranslation('admin');
   const showToast = useToastStore((s) => s.show);
@@ -19,11 +20,11 @@ export function AdminSecurityTab() {
       .catch(() => setError(t('security.errors.loadFailed')));
   }, [t]);
 
-  const handleToggle = async (requireMfa: boolean) => {
+  const handleToggle = async (patch: { requireMfa?: boolean; allowOAuthApps?: boolean }) => {
     setBusy(true);
     setError(null);
     try {
-      setSettings(await api.adminUpdateSecuritySettings(requireMfa));
+      setSettings(await api.adminUpdateSecuritySettings(patch));
       showToast(t('security.saved'));
     } catch (err) {
       setError(apiErrorMessage(err, 'admin:security.errors.saveFailed'));
@@ -52,11 +53,25 @@ export function AdminSecurityTab() {
               className="mt-1"
               checked={settings.requireMfa}
               disabled={busy || (!settings.mfaAvailable && !settings.requireMfa)}
-              onChange={(e) => void handleToggle(e.target.checked)}
+              onChange={(e) => void handleToggle({ requireMfa: e.target.checked })}
             />
             <span>
               <span className="block text-sm font-medium text-slack-primary">{t('security.requireMfa')}</span>
               <span className="block text-xs text-slack-secondary">{t('security.requireMfaHint')}</span>
+            </span>
+          </label>
+          <label className="mt-3 flex items-start gap-3 rounded-lg border border-slack-border p-4">
+            <input
+              type="checkbox"
+              data-testid="allow-oauth-apps-toggle"
+              className="mt-1"
+              checked={settings.allowOAuthApps}
+              disabled={busy}
+              onChange={(e) => void handleToggle({ allowOAuthApps: e.target.checked })}
+            />
+            <span>
+              <span className="block text-sm font-medium text-slack-primary">{t('security.allowOAuthApps')}</span>
+              <span className="block text-xs text-slack-secondary">{t('security.allowOAuthAppsHint')}</span>
             </span>
           </label>
         </>
