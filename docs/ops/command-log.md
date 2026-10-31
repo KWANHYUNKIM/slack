@@ -287,3 +287,10 @@
 | 2026-11-01 03:47 | PR #106 리뷰 8건 → dev-1: 보존 판단을 상관 NOT EXISTS raw SQL로(이력 크기와 무관한 파라미터, 문장마다 재평가), DB 시각 사용, 열린 구간 부분 유니크 인덱스, 현재 구성원 안전망, joinedAt 감사용, 경계 lte |
 | 2026-11-01 03:47 | PR #107 리뷰 10건 → dev-4: 코드에 동의 시점 tokenVersion, /mcp 실패 limiter는 무효 토큰만, token limiter 키 IP+client_id, 검증 후 claim+토큰 삽입 한 트랜잭션, 끄기·해제 시 코드 삭제, 회전 시 이전 액세스 토큰 즉시 무효, 정리 작업, /oauth limiter, lastUsed 헬퍼 공용화, 이름 없는 앱 번역 키 |
 | 2026-11-01 03:48 | 배정: dev-3 feat/stun-public-port(haiku, worktree). 진행 3명(dev-1 #106, dev-4 #107, dev-3) |
+| 2026-11-01 03:52 | dev-3 검토: compose 호스트 포트를 STUN_PUBLIC_PORT로 매핑하도록 총괄 추가(docker compose config로 양쪽 확인), huddles+stun 31, tsc, 외부 URL → PR #109, /code-review low |
+| 2026-11-01 03:53 | PR #109 /code-review low 지적 0 → 머지 |
+| 2026-11-01 03:54 | 배정: planner-1 spec/E1-multi-workspace(opus, 문서만). E2·E3·E8·E9가 E1에 의존하므로 설계·분할 먼저. 진행 3명(dev-1 #106, dev-4 #107, planner-1) |
+| 2026-11-01 03:57 | PR #106 리뷰 반영 검토: retention 24·ediscovery 9·file-detach 8·huddles 13, tsc → 푸시. 보존 정리 삭제 문장이 raw SQL로 바뀌어 /code-review medium 재리뷰 |
+| 2026-11-01 03:59 | PR #106 재리뷰 10건 → dev-1 9건: 이력 시각을 앱 시계로 통일(메시지 createdAt과 같은 기준), 그룹 DM 분리 파일 보존 확인, eDiscovery 파일 범위에 분리 경로, raw SQL 시각 UTC 명시, 저장소 파일은 DB 처리 행만 사후 삭제, 보존 사용자 정의 일치 테스트, CTE로 보존 집합 1회 계산. 배포 전 탈퇴자 이력 복원 불가는 문서화 |
+| 2026-11-01 04:03 | PR #107 리뷰 반영 검토: 080000 내용 변경(컬럼 3·인덱스 1, 다른 DB에는 미적용이라 재적용 불필요), 리베이스 충돌 0, oauth 35·mcp 30·huddles 13·error-code-coverage 11, tsc, lint, i18n, 물리 방향, 외부 URL → 푸시, 인증 서버라 /code-review medium 재리뷰 |
+| 2026-11-01 04:05 | E1 스펙 검토: docs/specs/E1-multi-workspace.md, docs/research/enterprise-grid.md. D1~D11 제안안 확정(조직 1개, X-Workspace-Id 헤더+역산, DM 조직 단위, URL id, 검색 기본 현재 워크스페이스+DM, 워크스페이스 보관만, 타 워크스페이스 404, 감사 로그 워크스페이스 관리자 자기 범위, 직접 배정 허용, 토큰 조직 단위, Slack Connect 제외). 파트 E1a~E1h 보드 등록, 스키마 파트 직렬 |
