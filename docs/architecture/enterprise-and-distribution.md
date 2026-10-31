@@ -12,7 +12,7 @@ slack/
 - **웹**: 사용자가 브라우저로 서버 주소에 접속한다. 배포는 `app/Dockerfile` 하나(프런트 빌드 결과를 백엔드가 서빙)로 한다.
 - **데스크톱**: Slack 데스크톱 앱과 같은 방식으로, 설치 파일 안에 서버를 넣지 않고 **서버 주소(워크스페이스 URL)를 띄우는 Electron 셸**로 만든다. 처음 실행하면 서버 주소를 입력받고, 이후에는 기억한다. 화면 코드는 웹과 100% 공유한다.
   - 장점: 기능을 추가하면 웹과 데스크톱에 한 번에 반영되고, 앱을 다시 배포할 필요가 적다.
-  - 데스크톱에서만 하는 일은 preload의 `window.desktop` API로 노출한다: 네이티브 알림, 작업 표시줄과 독 배지 숫자, 트레이, 딥링크(`teammessenger://`), 자동 업데이트, 시작 시 실행.
+  - 데스크톱에서만 하는 일은 preload의 `window.desktop` API로 노출한다: 네이티브 알림, 작업 표시줄과 독 배지 숫자, 트레이, 딥링크(`teammessenger://`), 시작 시 실행. 자동 업데이트는 현재 제외다(아래 2절의 "자동 업데이트" 항목).
 
 ## 2. 데스크톱 빌드와 업로드
 | 대상 | 산출물 | 빌드 위치 |
@@ -21,11 +21,28 @@ slack/
 | macOS | `.dmg` (arm64, x64) | `macos-latest` (로컬 M2에서도 가능) |
 | Linux | `.AppImage` | `ubuntu-latest` |
 
-- 도구: electron-builder, electron-updater
-- 흐름: `v*` 태그를 푸시하면 `release.yml`이 세 OS에서 빌드하고, GitHub Releases(https://github.com/KWANHYUNKIM/slack/releases)에 설치 파일과 `latest.yml`(자동 업데이트용)을 올린다.
+- 도구: electron-builder. electron-updater는 쓰지 않는다(자동 업데이트 제외).
+- 흐름: `v*` 태그를 푸시하면 `release.yml`이 세 OS에서 빌드하고, GitHub Releases(https://github.com/KWANHYUNKIM/slack/releases)에 설치 파일과 `SHA256SUMS.txt`를 올린다. `--publish never`로 빌드하므로 `latest.yml`은 만들지 않는다.
+- 자동 업데이트: 현재 제외다. 사유는 규칙 17(외부 https 금지)이다. electron-updater는 실행 중에 GitHub Releases(외부 https)에서 `latest.yml`과 설치 파일을 받아 오는데, 규칙 17의 예외는 웹 푸시뿐이라 이 피드는 허용되지 않는다(`docs/architecture/self-contained-assets.md` 2절, `docs/ops/release.md`). 재도입 조건은 사용자가 이 예외를 승인하고 `self-contained-assets.md`에 예외로 문서화하는 것이다. 승인 전에는 `publish`를 `null`로 두고 업데이트 코드를 넣지 않는다. 승인 후에는 후속 파트에서 `publish: github`, `electron-updater` 의존성, main의 `autoUpdater` 연결을 추가한다.
 - 코드 서명: 인증서가 없으면 Windows SmartScreen 경고, macOS Gatekeeper 경고가 뜬다. 처음에는 서명 없이 배포하고, 릴리스 노트에 "추가 정보, 실행"으로 여는 방법을 적는다. 인증서를 구하면 CI 시크릿에 넣는다.
 - 로컬 M2 Mac에서 Windows exe를 직접 빌드하지 않는다(wine이 필요하고 메모리를 많이 씀). CI에서 빌드한다.
 - 보안 설정은 `docs/security/nodejs-security.md` 9절을 따른다.
+
+### 웹 배포: 빌드와 실행
+- 이미지: `app/Dockerfile`은 공개 이미지 `node:24-slim`만 쓰는 3단계 멀티스테이지다. 프런트 빌드, 백엔드 빌드(`npm ci` 한 번, `prisma generate`, `tsc`, `npm prune --omit=dev`), 런타임 순서이고 npm ci, apt, prisma generate는 각각 한 번만 돈다. prisma CLI는 `migrate deploy`를 위해 `dependencies`에 있다. 런타임은 비 root(`node`), `NODE_ENV=production`, dev 의존성 제외, `/health` HEALTHCHECK를 갖는다. 프런트 dist는 `public/`에 넣어 백엔드가 서빙한다. 사설 base 이미지와 GCP 의존은 없다.
+- 빌드: `docker build -t slackclone ./app`
+- 실행: `cd app && cp .env.example .env`(JWT_SECRET, POSTGRES_PASSWORD 채우기, 생성: `openssl rand -hex 32`) 후 `docker compose up -d --build`. 접속은 `http://localhost:8080`. 업로드와 DB는 named volume(`uploads`, `pgdata`)에 저장된다.
+  - 주의(`$`): compose는 `.env` 값도 보간한다. `POSTGRES_PASSWORD` 등에 `$`가 있으면 `$$`로 써야 한다. 한 개만 쓰면 뒤 문자가 변수 이름으로 해석돼 비밀번호가 달라지고, DB 연결이 실패하거나 엉뚱한 값이 들어간다. 예: 실제 비밀번호 `pa$word`는 `.env`에 `pa$$word`로 쓴다.
+- DB 연결: compose는 `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`를 넘기고, `entrypoint.sh`가 `node dist/ops/cli.js database-url`로 `DATABASE_URL`을 조합한다. 비밀번호의 특수문자는 퍼센트 인코딩된다. `DATABASE_URL`을 직접 주면 그대로 쓴다.
+- 마이그레이션: 시작할 때 `prisma migrate deploy`를 실행한다. DB 연결 실패(P1001, P1002, P1017)만 최대 15회 재시도하고, 마이그레이션 오류(P3009, P3018 등)와 그 밖의 오류는 `migrate status`를 출력하고 바로 종료한다. 판정 코드는 `backend/src/ops/migrateErrors.ts`.
+- 프록시와 TLS: 운영은 TLS 리버스 프록시(nginx, Caddy 등) 뒤에 두고 `PUBLIC_URL=https://...`, `TRUST_PROXY=1`로 설정하는 것을 권장한다. `TRUST_PROXY`는 프록시 홉 수이며 기본 0(신뢰 안 함)이다. 프록시 없이 직접 열면 0으로 둬야 `X-Forwarded-For` 위조로 rate limit을 피할 수 없다. 프록시 뒤인데 0이면 모든 요청이 프록시 IP 하나로 세어진다. `PUBLIC_URL`이 `http://`이면 HSTS, CSP `upgrade-insecure-requests`, socket.io 쿠키의 secure 속성을 끈다. 이는 LAN 시험용이고 인터넷에 공개하는 용도가 아니다. 기본(비어 있음 또는 https)은 https 전제다.
+- 허들 STUN/TURN: 내장 STUN은 기본 켜짐이고 compose가 `3478/udp`를 공개한다. 끄려면 `STUN_ENABLED=false`(포트 공개 줄도 지운다). 원격 접속자가 쓰려면 `STUN_PUBLIC_HOST`에 공인 호스트를, 필요하면 `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL`을 설정한다.
+- 첫 사용자: 이미지에는 시드(tsx, dev 의존성)가 없고 `RUN_SEED`도 없다. 첫 OWNER는 `node dist/scripts/create-owner.js` CLI로 만든다(아래 실행 절차 참고).
+  - 빈 DB로 처음 띄운 뒤 `docker compose exec app node dist/scripts/create-owner.js --email <이메일> --name <이름>`을 실행한다(compose 서비스 이름은 `app`). 비밀번호는 숨김 프롬프트로 입력한다.
+  - 사용자가 1명이라도 있으면 거부된다. 그다음 사용자는 OWNER가 관리 화면에서 만든 초대로 가입한다.
+  - 비대화형(스크립트)에서는 `docker compose exec -T app ...`에 stdin 파이프를 쓴다. 비밀번호를 환경 변수(`BOOTSTRAP_OWNER_*`)로 넘기면 `docker inspect`에 보이므로 가능하면 비워 두고, 썼다면 `.env`에서 지우고 컨테이너를 다시 만든다.
+- GCP 배포 스크립트는 `app/deploy/gcp/`에 선택 사항으로 남겼다(이 저장소를 clone하고 `app/`을 빌드 컨텍스트로 쓴다). 예전 하드코딩 trust proxy 1 값은 그 README와 `cloudbuild.yaml`(`TRUST_PROXY=1`)에 적었다.
+
 
 ## 3. 엔터프라이즈 기능 (Slack Enterprise Grid를 참고해 직접 설계)
 slawk에는 이미 역할(OWNER/ADMIN/MEMBER/GUEST), 감사 로그(AuditLog), 초대 링크, 관리자 패널이 있다. 그 위에 쌓는다.

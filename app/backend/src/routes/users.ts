@@ -11,6 +11,7 @@ import { guestVisibleUserIds } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
+import { displayNameSchema, stripHtml } from '../utils/authSchemas.js';
 import { isUserOnline, presenceQueue } from '../websocket/index.js';
 import {
   STATUS_SELECT, MAX_STATUS_TEXT, MIN_FUTURE_MS, MAX_FUTURE_MS,
@@ -47,16 +48,9 @@ const avatarUpload = multer({
 
 const router = Router();
 
-// Strip HTML tags for defense-in-depth (React escapes output, but sanitize at API layer)
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '');
-}
-
+// stripHtml: defense-in-depth (React escapes output, but sanitize at API layer)
 const updateProfileSchema = z.object({
-  name: z.string().min(1).max(100)
-    .refine(val => !val.includes('\u0000'), { message: 'Name cannot contain null bytes' })
-    .transform(stripHtml)
-    .optional(),
+  name: displayNameSchema.optional(),
   avatar: z.string().max(500).refine(
     // 규칙 17: 외부 URL(http, https, //host)은 받지 않는다. 업로드 API가 돌려주는 자기 출처 경로만 허용한다.
     (url) => /^\/users\/me\/avatar\/[A-Za-z0-9._-]+$/.test(url),

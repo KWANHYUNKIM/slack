@@ -99,3 +99,12 @@
 | 2026-10-31 23:41 | dev-4 | sonnet | PR #51 리뷰 반영 | 24,515 |
 | 2026-10-31 23:42 | dev-5 | sonnet | build/docker-self-contained | 100,835 |
 | 2026-10-31 23:44 | code-review | (리뷰) | PR #55 medium | 68,535 |
+| 2026-10-31 23:49 | dev-5 | opus | feat/bootstrap-owner | 96,948 |
+| 2026-10-31 23:49 | dev-3 | sonnet | PR #52 리뷰 반영 | 70,075 |
+| 2026-10-31 23:49 | dev-2 | sonnet | mcp-2b DM 도구 | 176,902 |
+| 2026-10-31 23:51 | code-review | (리뷰) | PR #57 medium | 66,557 |
+| 2026-10-31 23:54 | dev-5 | sonnet | PR #55 리뷰 반영 | 66,368 |
+| 2026-10-31 23:56 | code-review | (리뷰) | PR #58 medium | 89,349 |
+| 2026-10-31 23:58 | dev-5 | opus | PR #57 리뷰 반영 | 33,663 |
+| 2026-11-01 00:03 | dev-3 | haiku | chore/ops-followups | 93,202 |
+| 2026-11-01 00:05 | code-review | (리뷰) | PR #61 low | 48,446 |

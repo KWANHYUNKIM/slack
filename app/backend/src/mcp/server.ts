@@ -14,7 +14,6 @@ import {
   type ToolContext,
 } from './readTools.js';
 import { mcpWriteLimiter } from './rateLimit.js';
-import { deleteDmMessage, editDmMessage, listDms, readDm, sendDm } from './dmTools.js';
 import { addReaction, deleteMessage, editMessage, removeReaction, sendMessage } from './writeTools.js';
 
 // MCP 서버 정의(mcp-1: 읽기 도구, mcp-2: 쓰기 도구). 요청마다 토큰 소유자 컨텍스트로 새로 만든다(stateless).
@@ -224,75 +223,6 @@ export function createMcpServer(ctx: ToolContext): McpServer {
     }, (args) => runTool(ctx, 'remove_reaction', () => removeReaction(ctx, args), {
       write: true,
       audit: { targetType: 'message', targetId: args.messageId },
-    }));
-  }
-
-  // DM 도구(mcp-2b): 개인 대화라 channels:* 범위와 따로 im:* 범위가 있어야 보인다
-  if (has('im:read')) {
-    server.registerTool('list_dms', {
-      title: 'List direct messages',
-      description: `List your 1:1 DM conversations and group DMs (most recent first) with the last message and unread count. Does not mark anything as read. ${DATA_NOTE}`,
-      inputSchema: {
-        limit: limit(100, 50).describe('Max conversations to return per kind (1-100)'),
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    }, (args) => runTool(ctx, 'list_dms', () => listDms(ctx, args)));
-  }
-
-  if (has('im:history')) {
-    server.registerTool('read_dm', {
-      title: 'Read direct messages',
-      description: `Read recent messages of a 1:1 DM (userId of the other person; your own id reads your notes-to-self) or a group DM (groupId from list_dms), oldest to newest within the page. Pass exactly one of userId or groupId. Use nextCursor to load older messages. Thread replies are not included. Does not mark anything as read. ${DATA_NOTE}`,
-      inputSchema: {
-        userId: id().optional().describe('Other person for a 1:1 DM'),
-        groupId: id().optional().describe('Group DM id from list_dms'),
-        limit: limit(100, 30).describe('Max messages to return (1-100)'),
-        cursor: id().optional().describe('nextCursor from the previous page (older messages)'),
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    }, (args) => runTool(ctx, 'read_dm', () => readDm(ctx, args)));
-  }
-
-  if (has('im:write')) {
-    const dmContent = messageContentSchema.refine((v) => v.trim().length > 0, { message: 'Content cannot be empty' });
-
-    server.registerTool('send_dm', {
-      title: 'Send direct message',
-      description: `Send one message to a person (userId) or to an existing group DM you belong to (groupId). Pass exactly one of them. Sends exactly one message per call. A DM reaches a private conversation, so be careful about what you send and to whom. ${WRITE_NOTE} ${DATA_NOTE}`,
-      inputSchema: {
-        userId: id().optional().describe('Recipient user id from list_users'),
-        groupId: id().optional().describe('Group DM id from list_dms (you must be a member)'),
-        content: dmContent,
-      },
-      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-    }, (args) => runTool(ctx, 'send_dm', () => sendDm(ctx, args), {
-      write: true,
-      audit: { targetType: 'direct_message', targetId: (data) => data?.id },
-    }));
-
-    server.registerTool('edit_dm_message', {
-      title: 'Edit my direct message',
-      description: `Replace the text of one of your own direct messages (1:1 or group) by the message id from read_dm. Separate from edit_message, which edits channel messages. ${WRITE_NOTE} ${DATA_NOTE}`,
-      inputSchema: {
-        messageId: id().describe('Id of your own DM message from read_dm'),
-        content: dmContent,
-      },
-      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    }, (args) => runTool(ctx, 'edit_dm_message', () => editDmMessage(ctx, args), {
-      write: true,
-      audit: { targetType: 'direct_message', targetId: args.messageId },
-    }));
-
-    server.registerTool('delete_dm_message', {
-      title: 'Delete my direct message',
-      description: `Delete one of your own direct messages (1:1 or group) by the message id from read_dm. This cannot be undone from here. Separate from delete_message, which deletes channel messages. ${WRITE_NOTE} ${DATA_NOTE}`,
-      inputSchema: {
-        messageId: id().describe('Id of your own DM message from read_dm'),
-      },
-      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
-    }, (args) => runTool(ctx, 'delete_dm_message', () => deleteDmMessage(ctx, args), {
-      write: true,
-      audit: { targetType: 'direct_message', targetId: args.messageId },
     }));
   }
 

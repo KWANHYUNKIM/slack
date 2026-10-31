@@ -56,10 +56,7 @@
       "channelsHistory": "메시지, 스레드, 활동 읽기",
       "usersRead": "사람 보기",
       "chatWrite": "내 이름으로 메시지 쓰기, 고치기, 지우기",
-      "reactionsWrite": "내 리액션 추가·제거",
-      "imRead": "내 DM과 그룹 DM 목록 보기",
-      "imHistory": "내 DM 대화 내용 읽기",
-      "imWrite": "내 이름으로 DM 보내기, 고치기, 지우기"
+      "reactionsWrite": "내 리액션 추가·제거"
     },
     "expiryLabel": "만료",
     "expiryDays": "{count}일",

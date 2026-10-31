@@ -24,7 +24,7 @@
 | 05-user-status-dnd | dev-1 | sonnet | 완료(PR #28 머지) | 1.5h | 2026-10-31 21:58 | 2026-10-31 22:07 | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 완료(PR #7 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | dev-5 | sonnet | 완료(PR #14 머지) | 1h | 12:23 | 12:33 | 총괄 결정: Slack과 같게 |
-| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | dev-3 | sonnet | PR #52 리뷰 반영 중 | 1h | 2026-10-31 23:33 | | PR #5 리뷰에서 발견 |
+| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | dev-3 | sonnet | 완료(PR #52 머지) | 1h | 2026-10-31 23:33 | | PR #5 리뷰에서 발견 |
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
@@ -32,12 +32,12 @@
 | fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | dev-4 | sonnet | 완료(PR #33에 포함) | 1h | | | 06 search-v2와 함께 |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
-| build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | dev-5 | sonnet | PR #55 리뷰 반영 중 | 1.5h | 2026-10-31 23:23 | | PR #6 리뷰 1번. 웹 배포 전제 |
+| build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | dev-5 | sonnet | 완료(PR #55 머지) | 1.5h | 2026-10-31 23:23 | | PR #6 리뷰 1번. 웹 배포 전제 |
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만, no-external-requests.spec 포함) | 1h | | | PR #7 수동 확인 항목 |
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #8 남은 이슈 |
 | i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | dev-2 | sonnet | 완료(PR #11 머지) | 2.5h | | | docs/architecture/i18n.md |
 | i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
-| i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | - | sonnet | 대기(스키마 순서) | 2h | | | |
+| i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 진행 | 2h | 2026-11-01 00:07 | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
 | i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI | - | haiku | 대기 | 2h | | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
@@ -64,5 +64,7 @@
 | 00c-slack-browser-verify: Claude in Chrome으로 #claude-test CRUD 재관찰, 06~10 "검증 필요" 확인 | - | sonnet | 대기(브라우저 도구 필요) | 1h | | | 사용자 확인 필요 |
 | feat/dm-unread-divider: 1:1 DM·그룹 DM 안 읽음 구분선(기준점 필드, 열 때 읽음 처리 순서) | dev-3 | sonnet | 완료(PR #41 머지) | 1h | 2026-10-31 23:01 | | PR #36 남은 이슈 |
 | fix/admin-store-actions: useAdminStore 나머지 액션(delete/archive/role) 실패 전달과 호출 측 처리 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #38 남은 이슈 |
-| mcp-2b send_dm: MCP DM·그룹 DM 쓰기·읽기 도구(DM 공용 서비스 추출) | dev-2 | sonnet | 진행 | 1.5h | 2026-10-31 23:40 | | PR #49 남은 이슈 |
-| feat/bootstrap-owner: 빈 DB 배포에서 첫 OWNER 생성 경로(사용자 0명일 때만, 동시성 안전) | dev-5 | opus | 진행 | 1h | 2026-10-31 23:44 | | PR #55에서 발견 |
+| mcp-2b send_dm: MCP DM·그룹 DM 쓰기·읽기 도구(DM 공용 서비스 추출) | dev-2 | sonnet | PR #58 리뷰 반영 중 | 1.5h | 2026-10-31 23:40 | | PR #49 남은 이슈 |
+| feat/bootstrap-owner: 빈 DB 배포에서 첫 OWNER 생성 경로(사용자 0명일 때만, 동시성 안전) | dev-5 | opus | 완료(PR #57 머지) | 1h | 2026-10-31 23:44 | | PR #55에서 발견 |
+| fix/emoji-cdn-runtime: emoji-mart data를 번들로, dist CDN 도메인 검사 | dev-1 | sonnet | 진행 | 1h | 2026-11-01 00:00 | | PR #55에서 발견(규칙 17) |
+| chore/ops-followups: .env.example BOOTSTRAP 키, compose $$ 안내, 자동 업데이트 문서 정리, ci.yml action SHA 고정 | dev-3 | haiku | 완료(PR #61 머지) | 45분 | 2026-11-01 00:00 | | |
