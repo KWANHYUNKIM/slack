@@ -23,6 +23,15 @@ const PURGE_BATCH = 1000;
 export const PURGE_MAX_ROWS = 100_000; // 한 번에 처리하는 행 수 상한(채널 메시지, DM, 자리표시자 전환, 고아 파일 합계). 남은 것은 다음 날 이어서 한다.
 const SETTING_ID = 1;
 
+// ── 법적 보존 제외 조건(E6) ──────────────────────────────────────────
+// 활성 보존 건(LegalHold.releasedAt 없음)의 대상자이거나 User.legalHold 플래그가 켜져 있으면 보존 대상이다(둘 중 하나라도).
+// 플래그는 legalHoldService가 동기화하는 캐시지만 정리는 관계를 직접 본다. 선택한 뒤에 보존이 걸려도 지우지 않도록
+// 선택 문장과 삭제 문장(deleteMany, 자리표시자 전환) 모두에 같은 조건을 넣고, 파일 본체를 지우기 직전에 한 번 더 거른다.
+const HELD_USER: Prisma.UserWhereInput = { OR: [{ legalHold: true }, { legalHoldCustody: { some: { hold: { releasedAt: null } } } }] };
+const NOT_HELD_USER: Prisma.UserWhereInput = { legalHold: false, legalHoldCustody: { none: { hold: { releasedAt: null } } } };
+const CHANNEL_NOT_HELD: Prisma.ChannelWhereInput = { legalHold: false, members: { none: { user: HELD_USER } } };
+const MESSAGE_NOT_HELD: Prisma.MessageWhereInput = { user: NOT_HELD_USER, channel: CHANNEL_NOT_HELD };
+
 // ── 정책 ────────────────────────────────────────────────────────────
 
 export async function getWorkspaceRetentionDays(): Promise<number | null> {
@@ -66,6 +75,8 @@ const add = (a: PurgeCounts, b: PurgeCounts) => {
 /** 처리한 행 수를 세는 공용 예산 */
 interface Budget {
   left: number;
+  /** 테스트용: 배치를 고른 직후(지우기 전)에 부른다. 선택과 삭제 사이에 보존이 걸리는 경우를 재현한다. */
+  afterSelect?: () => Promise<void>;
 }
 
 type FileRow = { id: number; filename: string; gcsPath: string | null; messageId: number | null; dmId: number | null };
@@ -115,7 +126,7 @@ type ChannelRow = { id: number; userId: number; threadId: number | null };
 async function purgeChannel(channelId: number, cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
   // 잎 먼저: 답글이 남은 부모는 건드리지 않는다. 법적 보존 대상 사용자의 메시지는 제외한다.
-  const leafWhere: Prisma.MessageWhereInput = { channelId, createdAt: { lt: cutoff }, user: { legalHold: false }, replies: { none: {} } };
+  const leafWhere: Prisma.MessageWhereInput = { channelId, createdAt: { lt: cutoff }, ...MESSAGE_NOT_HELD, replies: { none: {} } };
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
@@ -125,6 +136,7 @@ async function purgeChannel(channelId: number, cutoff: Date, budget: Budget): Pr
     const rows = await prisma.message.findMany({ where: leafWhere, select: { id: true, userId: true, threadId: true }, orderBy: { id: 'asc' }, take });
     if (rows.length === 0) break;
     budget.left -= rows.length;
+    await budget.afterSelect?.();
     const done = await deleteMessages(rows, channelId);
     add(counts, done);
     // 답글을 지우면 그 부모가 다음 조회에서 잎이 된다. 진행이 없으면(저장소 오류 등) 멈춘다.
@@ -134,8 +146,15 @@ async function purgeChannel(channelId: number, cutoff: Date, budget: Budget): Pr
   return counts;
 }
 
+/** 지금도 보존 대상이 아닌 메시지 id만 남긴다(선택 뒤에 보존이 걸렸을 수 있다) */
+async function stillPurgeableMessages(ids: number[]): Promise<number[]> {
+  const rows = await prisma.message.findMany({ where: { id: { in: ids }, ...MESSAGE_NOT_HELD }, select: { id: true } });
+  return rows.map((r) => r.id);
+}
+
 async function deleteMessages(rows: ChannelRow[], channelId: number): Promise<PurgeCounts> {
-  const ids = rows.map((r) => r.id);
+  const ids = await stillPurgeableMessages(rows.map((r) => r.id));
+  if (ids.length === 0) return emptyCounts();
   const files = await prisma.file.findMany({ where: { messageId: { in: ids } }, select: FILE_SELECT });
   const { failedOwners, removed } = await removeStoredFiles(files);
   const targets = ids.filter((id) => !failedOwners.has(id));
@@ -143,7 +162,7 @@ async function deleteMessages(rows: ChannelRow[], channelId: number): Promise<Pu
 
   // replies none: 조회 뒤에 새 답글이 달렸다면 그 부모는 지우지 않는다(답글의 threadId가 끊어지지 않게).
   // 리액션·북마크·스레드 읽음은 FK cascade, 읽음 위치는 SetNull, 첨부 행은 SetNull이라 따로 지운다.
-  await prisma.message.deleteMany({ where: { id: { in: targets }, replies: { none: {} } } });
+  await prisma.message.deleteMany({ where: { id: { in: targets }, replies: { none: {} }, ...MESSAGE_NOT_HELD } });
   const remaining = new Set((await prisma.message.findMany({ where: { id: { in: targets } }, select: { id: true } })).map((m) => m.id));
   const gone = new Set(targets.filter((id) => !remaining.has(id)));
   if (gone.size === 0) return emptyCounts();
@@ -174,7 +193,7 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
   const where: Prisma.MessageWhereInput = {
     channelId,
     createdAt: { lt: cutoff },
-    user: { legalHold: false },
+    ...MESSAGE_NOT_HELD,
     replies: { some: {} },
     OR: [{ deletedAt: null }, { content: { not: '' } }],
   };
@@ -187,19 +206,21 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
     const rows = await prisma.message.findMany({ where, select: { id: true, userId: true }, orderBy: { id: 'asc' }, take });
     if (rows.length === 0) break;
     budget.left -= rows.length;
-    const ids = rows.map((r) => r.id);
-    const files = await prisma.file.findMany({ where: { messageId: { in: ids } }, select: FILE_SELECT });
+    await budget.afterSelect?.();
+    const ids = new Set(await stillPurgeableMessages(rows.map((r) => r.id)));
+    if (ids.size === 0) break;
+    const files = await prisma.file.findMany({ where: { messageId: { in: [...ids] } }, select: FILE_SELECT });
     const { failedOwners, removed } = await removeStoredFiles(files);
-    const targets = rows.filter((r) => !failedOwners.has(r.id));
+    const targets = rows.filter((r) => ids.has(r.id) && !failedOwners.has(r.id));
     if (targets.length === 0) break; // 저장소 오류. 같은 행만 다시 잡히므로 멈추고 다음 실행에 맡긴다.
     const targetIds = targets.map((r) => r.id);
     const [fileDel] = await prisma.$transaction([
-      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) } } }),
-      prisma.reaction.deleteMany({ where: { messageId: { in: targetIds } } }),
-      prisma.bookmark.deleteMany({ where: { messageId: { in: targetIds } } }),
-      prisma.message.updateMany({ where: { id: { in: targetIds }, deletedAt: null }, data: { deletedAt: new Date() } }),
+      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, message: MESSAGE_NOT_HELD } }),
+      prisma.reaction.deleteMany({ where: { messageId: { in: targetIds }, message: MESSAGE_NOT_HELD } }),
+      prisma.bookmark.deleteMany({ where: { messageId: { in: targetIds }, message: MESSAGE_NOT_HELD } }),
+      prisma.message.updateMany({ where: { id: { in: targetIds }, deletedAt: null, ...MESSAGE_NOT_HELD }, data: { deletedAt: new Date() } }),
       prisma.message.updateMany({
-        where: { id: { in: targetIds } },
+        where: { id: { in: targetIds }, ...MESSAGE_NOT_HELD },
         data: { content: '', isPinned: false, pinnedBy: null, pinnedAt: null, alsoSendToChannel: false },
       }),
     ]);
@@ -219,10 +240,16 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
 
 // DM과 그룹 DM. 보호 대상은 보낸 사람, 받은 사람, 그룹 구성원 중 한 명이라도 법적 보존이면 제외한다.
 const dmHeldFilter: Prisma.DirectMessageWhereInput = {
-  fromUser: { legalHold: false },
-  OR: [{ toUserId: null }, { toUser: { legalHold: false } }],
-  AND: [{ OR: [{ groupId: null }, { group: { members: { none: { user: { legalHold: true } } } } }] }],
+  fromUser: NOT_HELD_USER,
+  OR: [{ toUserId: null }, { toUser: NOT_HELD_USER }],
+  AND: [{ OR: [{ groupId: null }, { group: { members: { none: { user: HELD_USER } } } }] }],
 };
+
+/** 지금도 보존 대상이 아닌 DM id만 남긴다 */
+async function stillPurgeableDms(ids: number[]): Promise<number[]> {
+  const rows = await prisma.directMessage.findMany({ where: { id: { in: ids }, ...dmHeldFilter }, select: { id: true } });
+  return rows.map((r) => r.id);
+}
 
 type DmRow = { id: number; fromUserId: number; toUserId: number | null; groupId: number | null; threadId: number | null };
 const DM_ROW_SELECT = { id: true, fromUserId: true, toUserId: true, groupId: true, threadId: true } as const;
@@ -263,6 +290,7 @@ async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeC
     const rows = await prisma.directMessage.findMany({ where: leafWhere, select: DM_ROW_SELECT, orderBy: { id: 'asc' }, take });
     if (rows.length === 0) break;
     budget.left -= rows.length;
+    await budget.afterSelect?.();
     const done = await deleteDms(rows);
     add(counts, done);
     if (done.messages === 0) break;
@@ -272,13 +300,14 @@ async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeC
 }
 
 async function deleteDms(rows: DmRow[]): Promise<PurgeCounts> {
-  const ids = rows.map((r) => r.id);
+  const ids = await stillPurgeableDms(rows.map((r) => r.id));
+  if (ids.length === 0) return emptyCounts();
   const files = await prisma.file.findMany({ where: { dmId: { in: ids } }, select: FILE_SELECT });
   const { failedOwners, removed } = await removeStoredFiles(files);
   const targets = ids.filter((id) => !failedOwners.has(id));
   if (targets.length === 0) return emptyCounts();
 
-  await prisma.directMessage.deleteMany({ where: { id: { in: targets }, replies: { none: {} } } });
+  await prisma.directMessage.deleteMany({ where: { id: { in: targets }, replies: { none: {} }, ...dmHeldFilter } });
   const remaining = new Set((await prisma.directMessage.findMany({ where: { id: { in: targets } }, select: { id: true } })).map((m) => m.id));
   const gone = new Set(targets.filter((id) => !remaining.has(id)));
   if (gone.size === 0) return emptyCounts();
@@ -306,17 +335,19 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
     const rows = await prisma.directMessage.findMany({ where, select: DM_ROW_SELECT, orderBy: { id: 'asc' }, take });
     if (rows.length === 0) break;
     budget.left -= rows.length;
-    const ids = rows.map((r) => r.id);
-    const files = await prisma.file.findMany({ where: { dmId: { in: ids } }, select: FILE_SELECT });
+    await budget.afterSelect?.();
+    const ids = new Set(await stillPurgeableDms(rows.map((r) => r.id)));
+    if (ids.size === 0) break;
+    const files = await prisma.file.findMany({ where: { dmId: { in: [...ids] } }, select: FILE_SELECT });
     const { failedOwners, removed } = await removeStoredFiles(files);
-    const targets = rows.filter((r) => !failedOwners.has(r.id));
+    const targets = rows.filter((r) => ids.has(r.id) && !failedOwners.has(r.id));
     if (targets.length === 0) break;
     const targetIds = targets.map((r) => r.id);
     const [fileDel] = await prisma.$transaction([
-      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) } } }),
-      prisma.dMReaction.deleteMany({ where: { dmId: { in: targetIds } } }),
-      prisma.directMessage.updateMany({ where: { id: { in: targetIds }, deletedAt: null }, data: { deletedAt: new Date() } }),
-      prisma.directMessage.updateMany({ where: { id: { in: targetIds } }, data: { content: '', isPinned: false, pinnedBy: null, pinnedAt: null } }),
+      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, dm: dmHeldFilter } }),
+      prisma.dMReaction.deleteMany({ where: { dmId: { in: targetIds }, dm: dmHeldFilter } }),
+      prisma.directMessage.updateMany({ where: { id: { in: targetIds }, deletedAt: null, ...dmHeldFilter }, data: { deletedAt: new Date() } }),
+      prisma.directMessage.updateMany({ where: { id: { in: targetIds }, ...dmHeldFilter }, data: { content: '', isPinned: false, pinnedBy: null, pinnedAt: null } }),
     ]);
     await cleanupActivities({ dmId: { in: targetIds } });
     await emitDmDeleted(targets);
@@ -333,7 +364,7 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
  */
 async function purgeOrphanFiles(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const where: Prisma.FileWhereInput = { messageId: null, dmId: null, createdAt: { lt: cutoff }, user: { legalHold: false } };
+  const where: Prisma.FileWhereInput = { messageId: null, dmId: null, createdAt: { lt: cutoff }, user: NOT_HELD_USER };
   for (;;) {
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
@@ -345,7 +376,7 @@ async function purgeOrphanFiles(cutoff: Date, budget: Budget): Promise<PurgeCoun
     budget.left -= files.length;
     const { removed } = await removeStoredFiles(files);
     if (removed.length === 0) break;
-    const { count } = await prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, messageId: null, dmId: null } });
+    const { count } = await prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, messageId: null, dmId: null, user: NOT_HELD_USER } });
     counts.files += count;
   }
   return counts;
@@ -359,18 +390,18 @@ const countsDetails = (days: number, c: PurgeCounts) =>
  * 한 채널이 실패해도 나머지는 계속하고, 하나라도 실패했으면 마지막에 던져 스케줄러가 1시간 뒤 다시 시도하게 한다.
  * 예산(maxRows)의 절반은 DM에 예약해 채널이 다 쓰더라도 DM이 굶지 않게 하고, 채널이 남긴 몫은 DM이 이어 쓴다.
  */
-export async function purgeExpiredMessages(now: Date = new Date(), opts: { maxRows?: number } = {}): Promise<PurgeCounts> {
+export async function purgeExpiredMessages(now: Date = new Date(), opts: { maxRows?: number; afterSelect?: () => Promise<void> } = {}): Promise<PurgeCounts> {
   const maxRows = opts.maxRows ?? PURGE_MAX_ROWS;
   const workspaceDays = await getWorkspaceRetentionDays();
   const total = emptyCounts();
-  const channelBudget: Budget = { left: Math.floor(maxRows / 2) };
-  const dmBudget: Budget = { left: maxRows - channelBudget.left };
+  const channelBudget: Budget = { left: Math.floor(maxRows / 2), afterSelect: opts.afterSelect };
+  const dmBudget: Budget = { left: maxRows - channelBudget.left, afterSelect: opts.afterSelect };
   let failed = 0;
   let skipped = 0;
 
   // 법적 보존 채널과, 법적 보존 사용자가 멤버인 채널은 통째로 뺀다
   const channels = await prisma.channel.findMany({
-    where: { legalHold: false, members: { none: { user: { legalHold: true } } } },
+    where: CHANNEL_NOT_HELD,
     select: { id: true, name: true, retentionDays: true },
     orderBy: { id: 'asc' },
   });

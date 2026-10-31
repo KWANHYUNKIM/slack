@@ -82,8 +82,13 @@ model User {
   sessions           Session[]
   mfaRecoveryCodes   MfaRecoveryCode[]
   mfaChallenges      MfaChallenge[]
+  legalHoldsCreated  LegalHold[]          @relation("LegalHoldCreator")
+  legalHoldsReleased LegalHold[]          @relation("LegalHoldReleaser")
+  legalHoldCustody   LegalHoldCustodian[]
 
   // 법적 보존(E6). true면 이 사용자가 쓰거나 받은 메시지는 데이터 보존 정리(E5)에서 제외한다.
+  // 원본은 LegalHold·LegalHoldCustodian이다. 활성(releasedAt 없음) 보존 건의 대상이면 true이며 legalHoldService가 동기화한다.
+  // 정리 쿼리가 조인 없이 거르도록 남겨 둔 캐시라 직접 바꾸지 않는다.
   legalHold Boolean @default(false)
 
   @@index([dndUntil])
@@ -141,6 +146,38 @@ model AuditLog {
   @@index([actorId])
   @@index([action, createdAt])
   @@index([targetType, targetId])
+}
+
+// 법적 보존 건(E6). 해제(releasedAt)해도 행은 지우지 않는다(누가 언제 무엇을 보존했는지가 기록으로 남아야 한다).
+model LegalHold {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(1000)
+  createdBy   Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  releasedAt  DateTime?
+  releasedBy  Int?
+
+  creator    User?                @relation("LegalHoldCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  releaser   User?                @relation("LegalHoldReleaser", fields: [releasedBy], references: [id], onDelete: SetNull)
+  custodians LegalHoldCustodian[]
+
+  @@index([releasedAt])
+}
+
+// 보존 건의 대상 사용자(custodian). 한 사용자가 여러 보존 건에 들 수 있다.
+model LegalHoldCustodian {
+  holdId  Int
+  userId  Int
+  addedBy Int?
+  addedAt DateTime @default(now())
+
+  hold LegalHold @relation(fields: [holdId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([holdId, userId])
+  @@index([userId])
 }
 
 // 워크스페이스 설정(E5). 행은 id=1 하나뿐이다(멀티 워크스페이스(E1)에서 workspaceId로 바꾼다).
@@ -237,6 +274,11 @@ model File {
   dmId         Int?
   createdAt    DateTime @default(now())
 
+  // 소프트 삭제로 메시지에서 분리될 때 원래 붙어 있던 메시지 id(E6 eDiscovery가 삭제된 메시지의 첨부를 찾는다).
+  // FK 없이 둔다: 메시지가 보존 정리로 하드 삭제돼도 기록으로 남는다.
+  detachedFromMessageId Int?
+  detachedFromDmId      Int?
+
   user      User            @relation(fields: [userId], references: [id])
   message   Message?        @relation(fields: [messageId], references: [id], onDelete: SetNull)
   dm        DirectMessage?  @relation(fields: [dmId], references: [id], onDelete: SetNull)
@@ -244,6 +286,8 @@ model File {
   @@index([userId])
   @@index([messageId])
   @@index([dmId])
+  @@index([detachedFromMessageId])
+  @@index([detachedFromDmId])
 }
 
 model DirectMessage {

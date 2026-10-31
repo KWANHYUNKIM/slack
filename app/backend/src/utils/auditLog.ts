@@ -14,15 +14,26 @@ interface AuditEntry {
 
 const DETAILS_MAX = 1000;
 
+const clip = (entry: AuditEntry) => ({
+  ...entry,
+  details: entry.details && entry.details.length > DETAILS_MAX ? entry.details.slice(0, DETAILS_MAX) : entry.details,
+});
+
 export async function writeAuditLog(entry: AuditEntry): Promise<void> {
   try {
-    const data = {
-      ...entry,
-      details: entry.details && entry.details.length > DETAILS_MAX ? entry.details.slice(0, DETAILS_MAX) : entry.details,
-    };
-    await prisma.auditLog.create({ data });
+    await prisma.auditLog.create({ data: clip(entry) });
   } catch (error) {
     // Audit log failure should never block the admin action
+    logError('Audit log write failed', error);
+  }
+}
+
+/** 여러 건을 한 문장(createMany)으로 남긴다. 순서는 배열 순서(id 순)와 같다. */
+export async function writeAuditLogs(entries: AuditEntry[]): Promise<void> {
+  if (entries.length === 0) return;
+  try {
+    await prisma.auditLog.createMany({ data: entries.map(clip) });
+  } catch (error) {
     logError('Audit log write failed', error);
   }
 }

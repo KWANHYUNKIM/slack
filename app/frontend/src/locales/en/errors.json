@@ -64,6 +64,10 @@
     "DLP_PATTERN_INVALID": "The pattern is not allowed.",
     "DLP_RULE_NAME_TAKEN": "A rule with this name already exists.",
     "DLP_RULE_BUILTIN": "Built-in rules can only be turned on or off.",
-    "DLP_RULE_LIMIT": "You have reached the limit for rules. Delete one first."
+    "DLP_RULE_LIMIT": "You have reached the limit for rules. Delete one first.",
+    "LEGAL_HOLD_NOT_FOUND": "Legal hold not found.",
+    "LEGAL_HOLD_RELEASED": "This legal hold has been released and can't be changed.",
+    "LEGAL_HOLD_INVALID_USERS": "Some of the selected people don't exist.",
+    "LEGAL_HOLD_CUSTODIAN_NOT_FOUND": "This person isn't on the legal hold."
   }
 }
