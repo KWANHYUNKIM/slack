@@ -1,7 +1,5 @@
 import { t } from '@/lib/i18n';
 import { create } from 'zustand';
-import { apiErrorMessage } from '@/lib/apiErrors';
-import { CHANNEL_NAME_ADMIN_MAX } from '@/lib/channelName';
 import * as api from '@/lib/api';
 import type { AdminUser, AdminChannel, AdminInvite, AuditLogEntry, AdminWebhook } from '@/lib/api';
 
@@ -30,7 +28,9 @@ interface AdminState {
   deleteChannel: (channelId: number) => Promise<void>;
   archiveChannel: (channelId: number) => Promise<void>;
   unarchiveChannel: (channelId: number) => Promise<void>;
+  /** 실패하면 reject한다(상태는 바꾸지 않는다). 호출한 쪽이 성공·실패를 판단하고 apiErrorMessage로 번역해 보여 준다. */
   editChannel: (channelId: number, data: { name?: string; isPrivate?: boolean }) => Promise<void>;
+  // 주의: editChannel과 removeChannelMember 외의 액션은 아직 실패를 error 상태로 삼킨다. 호출 측과 함께 바꾸는 작업은 fix/admin-store-actions에서 한다.
   removeChannelMember: (channelId: number, userId: number) => Promise<void>;
 }
 
@@ -201,14 +201,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }
   },
 
+  // 실패는 그대로 던진다. 호출한 쪽이 성공·실패를 판단하고 번역된 문구를 보여 준다(삼키면 성공 여부를 이름으로 추정하게 된다).
   editChannel: async (channelId, data) => {
-    const prev = get().channels;
-    try {
-      const updated = await api.adminEditChannel(channelId, data);
-      set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
-    } catch (err) {
-      set({ channels: prev, error: apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_ADMIN_MAX) });
-    }
+    const updated = await api.adminEditChannel(channelId, data);
+    set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
   },
 
   removeChannelMember: async (channelId, userId) => {

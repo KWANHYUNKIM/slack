@@ -1,4 +1,5 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import { jest } from '@jest/globals';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
@@ -113,6 +114,49 @@ describe('WebSocket', () => {
 
     clientSocket.on('connect_error', (err) => {
       expect(err.message).toBe('Invalid token');
+      done();
+    });
+  });
+
+  it('should reject a correctly signed token whose payload has no userId', (done) => {
+    const malformed = jwt.sign({ tokenVersion: 0 }, JWT_SECRET, { algorithm: 'HS256' });
+    clientSocket = Client(`http://localhost:${port}`, {
+      auth: { token: malformed },
+    });
+
+    clientSocket.on('connect', () => {
+      done(new Error('Should not connect'));
+    });
+
+    clientSocket.on('connect_error', (err) => {
+      expect(err.message).toBe('Invalid token');
+      done();
+    });
+  });
+
+  it('should refuse the connection with Server error when the DB lookup fails', (done) => {
+    const dbSpy = jest
+      .spyOn(prisma.user, 'findUnique')
+      .mockRejectedValueOnce(new Error('connection to db refused (secret host)'));
+    const logSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    clientSocket = Client(`http://localhost:${port}`, {
+      auth: { token: authToken },
+    });
+
+    clientSocket.on('connect', () => {
+      dbSpy.mockRestore();
+      logSpy.mockRestore();
+      done(new Error('Should not connect'));
+    });
+
+    clientSocket.on('connect_error', (err) => {
+      expect(dbSpy).toHaveBeenCalled();
+      expect(err.message).toBe('Server error');
+      expect(err.message).not.toContain('secret host');
+      expect(logSpy).toHaveBeenCalledWith('Socket auth error', expect.anything());
+      dbSpy.mockRestore();
+      logSpy.mockRestore();
       done();
     });
   });

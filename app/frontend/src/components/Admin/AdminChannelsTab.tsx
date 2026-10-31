@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, Hash, Trash2, Archive, ArchiveRestore, Pencil, X, Check } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import { CHANNEL_NAME_ADMIN_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -14,15 +15,24 @@ export function AdminChannelsTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [editError, setEditError] = useState('');
+  const [saving, setSaving] = useState(false);
+  // 저장 중 중복 제출을 막고, await 뒤에 편집 행이 같은 채널인지 확인하려고 ref를 함께 둔다.
+  const editingRef = useRef<number | null>(null);
+  const savingRef = useRef(false);
+
+  const setEditing = (id: number | null) => {
+    editingRef.current = id;
+    setEditingId(id);
+  };
 
   const startEdit = (channel: { id: number; name: string }) => {
-    setEditingId(channel.id);
+    setEditing(channel.id);
     setEditName(channel.name);
     setEditError('');
   };
 
   const saveEdit = async () => {
-    if (!editingId || !editName.trim()) return;
+    if (savingRef.current || !editingId || !editName.trim()) return;
     const id = editingId;
     const channel = channels.find((c) => c.id === id);
     const name = normalizeChannelName(editName);
@@ -32,16 +42,26 @@ export function AdminChannelsTab() {
         setEditError(channelNameErrorMessage(t, reason, CHANNEL_NAME_ADMIN_MAX));
         return;
       }
-      await editChannel(id, { name });
-      // 스토어는 실패를 삼키고 error만 남긴다. 이름이 바뀌지 않았으면 실패로 보고 편집 행을 열어 둔다.
-      const state = useAdminStore.getState();
-      if (state.channels.find((c) => c.id === id)?.name !== name) {
-        setEditError(state.error || t('errors.editChannel'));
+      savingRef.current = true;
+      setSaving(true);
+      try {
+        await editChannel(id, { name });
+      } catch (err) {
+        // 실패하면 편집 행을 그대로 열어 두고, 서버 코드(예: 중복 이름)에 맞는 번역 문구를 보여 준다.
+        // 그사이 다른 행을 편집했거나 취소했다면 그 행의 상태는 건드리지 않는다.
+        if (editingRef.current === id) {
+          setEditError(apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_ADMIN_MAX));
+        }
         return;
+      } finally {
+        savingRef.current = false;
+        setSaving(false);
       }
+      // 저장이 끝났을 때 같은 행을 계속 편집 중일 때만 닫는다.
+      if (editingRef.current !== id) return;
     }
     setEditError('');
-    setEditingId(null);
+    setEditing(null);
   };
 
   const activeChannels = channels.filter((c) => !c.archivedAt);
@@ -81,15 +101,15 @@ export function AdminChannelsTab() {
                           aria-describedby={editError ? `channel-edit-error-${channel.id}` : undefined}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') saveEdit();
-                            if (e.key === 'Escape') setEditingId(null);
+                            if (e.key === 'Escape') setEditing(null);
                           }}
                           className="w-full rounded border border-slack-focus px-1.5 py-0.5 text-sm font-medium focus:outline-none"
                           autoFocus
                         />
-                        <button onClick={saveEdit} className="text-green-600 hover:text-green-700" title={t('common:actions.save')} aria-label={t('common:actions.save')}>
+                        <button onClick={saveEdit} disabled={saving} className="text-green-600 hover:text-green-700 disabled:opacity-50" title={t('common:actions.save')} aria-label={t('common:actions.save')}>
                           <Check className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => setEditingId(null)} className="text-slack-hint hover:text-slack-primary" title={t('common:actions.cancel')} aria-label={t('common:actions.cancel')}>
+                        <button onClick={() => setEditing(null)} className="text-slack-hint hover:text-slack-primary" title={t('common:actions.cancel')} aria-label={t('common:actions.cancel')}>
                           <X className="h-3.5 w-3.5" />
                         </button>
                       </div>

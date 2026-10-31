@@ -531,6 +531,76 @@ describe('Admin API', () => {
       });
     });
 
+    describe('PATCH /admin/channels/:id (rename)', () => {
+      it('renames a channel and the new name is read back (create → update → read)', async () => {
+        const res = await request(app)
+          .patch(`/admin/channels/${channelId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-renamed' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.name).toBe('admin-renamed');
+
+        const listRes = await request(app)
+          .get('/admin/channels')
+          .set('Authorization', `Bearer ${adminToken}`);
+        const found = listRes.body.find((c: any) => c.id === channelId);
+        expect(found.name).toBe('admin-renamed');
+      });
+
+      it('returns 409 CHANNEL_NAME_TAKEN for a duplicate name and leaves the channel unchanged', async () => {
+        await request(app)
+          .post('/channels')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-dup-target' });
+
+        const res = await request(app)
+          .patch(`/admin/channels/${channelId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-dup-target' });
+
+        expect(res.status).toBe(409);
+        expect(res.body.code).toBe('CHANNEL_NAME_TAKEN');
+
+        const listRes = await request(app)
+          .get('/admin/channels')
+          .set('Authorization', `Bearer ${adminToken}`);
+        const found = listRes.body.find((c: any) => c.id === channelId);
+        expect(found.name).toBe('admin-test-channel');
+      });
+
+      it('handles consecutive renames: success, duplicate 409, then success again', async () => {
+        const first = await request(app)
+          .patch(`/admin/channels/${channelId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-step-one' });
+        expect(first.status).toBe(200);
+
+        await request(app)
+          .post('/channels')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-step-taken' });
+        const dup = await request(app)
+          .patch(`/admin/channels/${channelId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-step-taken' });
+        expect(dup.status).toBe(409);
+
+        const third = await request(app)
+          .patch(`/admin/channels/${channelId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ name: 'admin-step-two' });
+        expect(third.status).toBe(200);
+        expect(third.body.name).toBe('admin-step-two');
+
+        const listRes = await request(app)
+          .get('/admin/channels')
+          .set('Authorization', `Bearer ${adminToken}`);
+        const found = listRes.body.find((c: any) => c.id === channelId);
+        expect(found.name).toBe('admin-step-two');
+      });
+    });
+
     describe('GET /admin/channels/:id/members', () => {
       it('should list channel members', async () => {
         const res = await request(app)
