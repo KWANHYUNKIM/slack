@@ -16,10 +16,12 @@ import {
   User,
   Shield,
   Inbox,
+  MessagesSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useActivityStore } from '@/stores/useActivityStore';
+import { useThreadStore } from '@/stores/useThreadStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
@@ -52,7 +54,7 @@ export function Sidebar() {
   const channelsExpanded = !sidebarCollapsed.channels;
   const dmsExpanded = !sidebarCollapsed.dms;
   const starredExpanded = !sidebarCollapsed.starred;
-  const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
+  const activeNav = location.pathname === '/activity' ? 'activity' : location.pathname === '/unreads' ? 'unreads' : location.pathname === '/threads' ? 'threads' : location.pathname === '/files' ? 'files' : location.pathname === '/later' ? 'later' : location.pathname === '/admin' ? 'admin' : 'dms';
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddChannelDialog, setShowAddChannelDialog] = useState(false);
   const [browseChannels, setBrowseChannels] = useState<Channel[]>([]);
@@ -66,9 +68,11 @@ export function Sidebar() {
   const totalUnreadCount = channels.reduce((sum, ch) => sum + ch.unreadCount, 0);
 
   const activityUnread = useActivityStore((s) => s.unreadTotal);
+  const threadsUnread = useThreadStore((s) => s.unreadCount);
 
   const navItems = [
     { icon: Bell, label: t('nav.activity'), id: 'activity', badge: activityUnread > 0 ? activityUnread : undefined },
+    { icon: MessagesSquare, label: t('nav.threads'), id: 'threads', badge: threadsUnread > 0 ? threadsUnread : undefined },
     { icon: Inbox, label: t('nav.unreads'), id: 'unreads', badge: totalUnreadCount > 0 ? totalUnreadCount : undefined },
     { icon: Bookmark, label: t('nav.later'), id: 'later' },
     { icon: FileText, label: t('nav.files'), id: 'files' },

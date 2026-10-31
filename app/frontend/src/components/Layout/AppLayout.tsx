@@ -11,6 +11,7 @@ import { AdminPage } from '@/components/Admin/AdminPage';
 import { FilesPage } from '@/components/Messages/FilesPage';
 import { UnreadsPage } from '@/components/Messages/UnreadsPage';
 import { ActivityPage } from '@/components/Messages/ActivityPage';
+import { ThreadsPage } from '@/components/Messages/ThreadsPage';
 import { LaterPage } from '@/components/Messages/LaterPage';
 
 export function AppLayout() {
@@ -37,6 +38,8 @@ export function AppLayout() {
     content = <FilesPage />;
   } else if (location.pathname === '/activity') {
     content = <ActivityPage />;
+  } else if (location.pathname === '/threads') {
+    content = <ThreadsPage />;
   } else if (location.pathname === '/later') {
     content = <LaterPage />;
   } else {

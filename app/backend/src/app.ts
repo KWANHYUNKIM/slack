@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js';
 import channelRoutes from './routes/channels.js';
 import messageRoutes from './routes/messages.js';
 import threadRoutes from './routes/threads.js';
+import threadListRoutes from './routes/thread-list.js';
 import searchRoutes from './routes/search.js';
 import reactionRoutes from './routes/reactions.js';
 import fileRoutes from './routes/files.js';
@@ -85,7 +86,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/channels') || req.path.startsWith('/messages') ||
       req.path.startsWith('/files') || req.path.startsWith('/users') || req.path.startsWith('/dms') ||
       req.path.startsWith('/search') || req.path.startsWith('/bookmarks') || req.path.startsWith('/admin') ||
-      req.path.startsWith('/push')) {
+      req.path.startsWith('/push') || req.path.startsWith('/threads')) {
     res.setHeader('Cache-Control', 'no-store');
   }
   next();
@@ -97,7 +98,7 @@ app.use((req, res, next) => {
 // In production, intercept browser navigations (Accept: text/html) for SPA routes
 // that collide with API routes (e.g. /files, /admin) and serve index.html
 if (process.env.NODE_ENV === 'production') {
-  const spaRoutes = ['/files', '/admin', '/dms', '/activity'];
+  const spaRoutes = ['/files', '/admin', '/dms', '/activity', '/threads'];
   const frontendDist = path.join(process.cwd(), 'public');
   app.use(spaRoutes, (req, res, next) => {
     // Skip API calls: they carry Authorization or explicitly request JSON
@@ -119,6 +120,7 @@ app.use('/auth', authLimiter, authRoutes);
 app.use('/channels', apiLimiter, channelRoutes);
 app.use('/channels', apiLimiter, messageRoutes);
 app.use('/messages', apiLimiter, threadRoutes);
+app.use('/threads', apiLimiter, threadListRoutes);
 app.use('/messages', apiLimiter, reactionRoutes);
 app.use('/search', apiLimiter, searchRoutes);
 app.use('/files', apiLimiter, fileRoutes);

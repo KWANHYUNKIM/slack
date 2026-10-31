@@ -11,6 +11,7 @@ import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { useActivityStore } from '@/stores/useActivityStore';
+import { useThreadStore } from '@/stores/useThreadStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { markDMGroupRead } from '@/lib/api';
@@ -100,7 +101,7 @@ function RouteSync() {
 }
 
 /**
- * Clears the active channel/DM on full-page routes (/files, /unreads, /later, /activity, /admin)
+ * Clears the active channel/DM on full-page routes (/files, /unreads, /later, /activity, /threads, /admin)
  * so MessageArea/AppLayout render the page instead of a conversation.
  */
 function PageRouteSync() {
@@ -237,8 +238,10 @@ function AppShell() {
       useAuthStore.getState().updateUser({ status: 'online' });
       useConnectionStore.getState().setConnected(true);
       void useActivityStore.getState().fetchUnreadCount();
+      void useThreadStore.getState().fetchUnreadCount();
     };
     const unbindActivity = useActivityStore.getState().bindSocket(socket);
+    const unbindThreads = useThreadStore.getState().bindSocket(socket);
     // If already connected (reconnect scenario), update immediately
     if (socket.connected) handleConnect();
 
@@ -536,6 +539,7 @@ function AppShell() {
 
     return () => {
       unbindActivity();
+      unbindThreads();
       socket.off('connect', handleConnect);
       socket.off('message:new', handleNewMessage);
       socket.off('message:updated', handleUpdatedMessage);
@@ -649,6 +653,7 @@ function App() {
           <Route path="files" element={<PageRouteSync />} />
           <Route path="unreads" element={<PageRouteSync />} />
           <Route path="later" element={<PageRouteSync />} />
+          <Route path="threads" element={<PageRouteSync />} />
           <Route path="activity" element={<PageRouteSync />} />
           <Route path="admin" element={<AdminGuard><PageRouteSync /></AdminGuard>} />
           <Route path="*" element={<DefaultRedirect />} />

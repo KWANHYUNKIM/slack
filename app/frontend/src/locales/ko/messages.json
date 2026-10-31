@@ -120,7 +120,11 @@
     "edited": "(수정됨)",
     "pinned": "고정됨",
     "showMore": "더 보기",
-    "showLess": "접기"
+    "showLess": "접기",
+    "repliedToThread": "스레드에 답글: {excerpt}",
+    "deletedPlaceholder": "이 메시지는 삭제되었습니다.",
+    "sendToChannel": "채널에도 보내기",
+    "removeFromChannel": "채널에서 지우기"
   },
   "input": {
     "uploading": "업로드하는 중...",
@@ -198,7 +202,8 @@
     "loadFailed": "스레드를 불러오지 못했습니다. 다시 시도해 주세요.",
     "loading": "스레드를 불러오는 중...",
     "replyFailed": "답글을 보내지 못했습니다. 다시 시도해 주세요.",
-    "joinToReply": "스레드에 답글을 달려면 채널에 참여하세요"
+    "joinToReply": "스레드에 답글을 달려면 채널에 참여하세요",
+    "alsoSendToChannel": "채널에도 보내기"
   },
   "errors": {
     "messageEmpty": "메시지를 입력해 주세요.",
@@ -231,5 +236,22 @@
     "title": "#{name} 채널에 오신 것을 환영합니다",
     "noDescription": "아직 설명이 없습니다.",
     "editDescription": "설명 편집"
+  },
+  "threads": {
+    "title": "스레드",
+    "menu": "메뉴",
+    "loadFailed": "스레드를 불러오지 못했습니다.",
+    "empty": "아직 스레드가 없습니다",
+    "emptyHint": "내가 시작했거나 답글을 단 스레드가 여기에 모입니다.",
+    "newReplies": "{count, plural, other {새 답글 #개}}",
+    "replyCount": "{count, plural, other {답글 #개}}",
+    "olderReplies": "이전 답글은 스레드를 열어 확인하세요",
+    "replyPlaceholder": "답글 입력...",
+    "send": "보내기",
+    "replyFailed": "답글을 보내지 못했습니다. 다시 시도해 주세요.",
+    "alsoSendToChannel": "채널에도 보내기",
+    "openThread": "스레드 열기",
+    "loadMore": "더 보기",
+    "loading": "불러오는 중..."
   }
 }

@@ -381,6 +381,8 @@ export interface ApiMessage {
   userId: number;
   channelId: number;
   threadId: number | null;
+  alsoSendToChannel?: boolean;
+  parent?: { id: number; content: string; deletedAt?: string | null; user: { id: number; name: string } } | null;
   isPinned?: boolean;
   pinnedBy?: number | null;
   pinnedAt?: string | null;
@@ -454,11 +456,49 @@ export function getThread(messageId: number) {
   );
 }
 
-export function replyToMessage(messageId: number, content: string, fileIds?: number[]) {
+export function replyToMessage(messageId: number, content: string, fileIds?: number[], alsoSendToChannel?: boolean) {
   return request<ApiMessage>(`/messages/${messageId}/reply`, {
     method: 'POST',
-    body: JSON.stringify({ content, ...(fileIds?.length ? { fileIds } : {}) }),
+    body: JSON.stringify({
+      content,
+      ...(fileIds?.length ? { fileIds } : {}),
+      ...(alsoSendToChannel ? { alsoSendToChannel: true } : {}),
+    }),
   });
+}
+
+// ---- Threads view ----
+
+export interface ApiThreadItem {
+  parent: ApiMessage;
+  channel: { id: number; name: string; isPrivate: boolean };
+  replyCount: number;
+  unreadCount: number;
+  replies: ApiMessage[];
+  lastReply: ApiMessage | null;
+  lastActivityAt: string;
+}
+
+export function getThreads(cursor?: number, limit = 20) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set('cursor', String(cursor));
+  return request<{ items: ApiThreadItem[]; nextCursor?: number }>(`/threads?${params}`);
+}
+
+export function getThreadUnreadCount() {
+  return request<{ count: number }>('/threads/unread-count');
+}
+
+export function markThreadRead(parentId: number, lastReadReplyId?: number) {
+  return request<{ success: boolean; lastReadReplyId: number | null }>(`/threads/${parentId}/read`, {
+    method: 'POST',
+    body: JSON.stringify(lastReadReplyId ? { lastReadReplyId } : {}),
+  });
+}
+
+/** 답글의 "채널에도 보내기"를 사후에 켜고 끈다. */
+export function setReplyBroadcast(messageId: number, on: boolean) {
+  return request<ApiMessage>(`/messages/${messageId}/broadcast`, { method: on ? 'POST' : 'DELETE' });
 }
 
 // ---- Messages (edit/delete) ----

@@ -93,6 +93,14 @@ export interface Message {
   threadCount: number;
   threadLastReplyAt?: Date;
   threadParticipants?: { id: number; name: string; avatar: string | null }[];
+  /** 스레드 답글이면 부모 id */
+  threadId?: number | null;
+  /** 스레드 답글을 채널 타임라인에도 보냈는지 */
+  alsoSendToChannel?: boolean;
+  /** 채널 타임라인의 "스레드에 답글" 머리글에 쓰는 부모 발췌 */
+  parentExcerpt?: { id: number; content: string; user: { id: number; name: string } } | null;
+  /** 답글이 남은 채널 삭제된 부모(자리표시자) */
+  isDeleted?: boolean;
   isEdited?: boolean;
   isPinned?: boolean;
 }

@@ -7,11 +7,12 @@ import {
   editMessage as apiEditMessage, deleteMessage as apiDeleteMessage,
   editDM, deleteDM,
   addReaction as apiAddReaction, removeReaction as apiRemoveReaction,
-  addDMReaction, removeDMReaction,
+  addDMReaction, removeDMReaction, setReplyBroadcast,
   type ApiDirectMessage,
   type ApiMessage,
 } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useThreadStore } from '@/stores/useThreadStore';
 import { cn } from '@/lib/utils';
 import { getSocket } from '@/lib/socket';
 import { serializeDelta } from '@/lib/serializeDelta';
@@ -33,6 +34,8 @@ interface ThreadPanelProps {
   onReplyCountChange?: (messageId: number, count: number, fromSelf?: boolean) => void;
   variant?: 'channel' | 'dm';
   readOnly?: boolean;
+  /** ?reply=로 지정된 답글. 열릴 때 그 답글로 스크롤하고 강조한다. */
+  highlightReplyId?: number | null;
 }
 
 function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
@@ -73,12 +76,15 @@ function normalizeToMessage(msg: ApiMessage | ApiDirectMessage): MessageType {
       url: f.url,
     })),
     threadCount: 0,
+    threadId: msg.threadId ?? null,
+    alsoSendToChannel: 'alsoSendToChannel' in msg ? !!msg.alsoSendToChannel : false,
+    isDeleted: !!(msg as { deletedAt?: string | null }).deletedAt,
     isEdited: !!msg.editedAt,
     isPinned: false,
   };
 }
 
-export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly }: ThreadPanelProps) {
+export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 'channel', readOnly, highlightReplyId }: ThreadPanelProps) {
   const { t } = useTranslation('messages');
   const isDM = variant === 'dm';
   const testPrefix = isDM ? 'dm-thread' : 'thread';
@@ -89,6 +95,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+  const [alsoSend, setAlsoSend] = useState(false);
   const repliesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSendRef = useRef<() => void>(() => {});
@@ -110,6 +117,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         if (cancelled) return;
         setParentMessage(normalizeToMessage(data.parent));
         setReplies(data.replies.map((r) => normalizeToMessage(r)));
+        // 스레드를 열었으니 읽음 처리한다(보기만 하는 비멤버는 서버가 거부하므로 건너뛴다)
+        if (!isDM && !readOnly) void useThreadStore.getState().markRead(messageId);
       })
       .catch(() => {
         if (!cancelled) setLoadError('threadPanel.loadFailed');
@@ -119,7 +128,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       });
 
     return () => { cancelled = true; };
-  }, [messageId, isDM]);
+  }, [messageId, isDM, readOnly]);
 
   // Listen for real-time thread replies via WebSocket
   useEffect(() => {
@@ -140,6 +149,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     } else {
       const handleNewMessage = (msg: ApiMessage) => {
         if (msg.threadId !== messageId) return;
+        // 패널이 열려 있는 동안 온 답글은 바로 읽음 처리한다
+        if (!readOnly && msg.userId !== useAuthStore.getState().user?.id) void useThreadStore.getState().markRead(messageId);
         const normalized = normalizeToMessage(msg);
         setReplies((prev) => {
           if (prev.some((r) => r.id === normalized.id)) return prev;
@@ -157,11 +168,21 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         socket.off('message:deleted', handleDeletedMessage);
       };
     }
-  }, [messageId, isDM]);
+  }, [messageId, isDM, readOnly]);
 
+  // ?reply=가 있고 아직 그 위치로 가지 않았다면 답글로, 아니면 맨 아래로 스크롤한다
+  const scrolledToHighlight = useRef(false);
   useEffect(() => {
+    scrolledToHighlight.current = false;
+  }, [messageId, highlightReplyId]);
+  useEffect(() => {
+    if (highlightReplyId && !scrolledToHighlight.current && replies.some((r) => r.id === highlightReplyId)) {
+      scrolledToHighlight.current = true;
+      document.querySelector(`[data-testid="${testPrefix}-panel"] [data-message-id="${highlightReplyId}"]`)?.scrollIntoView({ block: 'center' });
+      return;
+    }
     repliesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [replies]);
+  }, [replies, highlightReplyId, testPrefix]);
 
   // Notify parent of reply count changes
   const onReplyCountChangeRef = useRef(onReplyCountChange);
@@ -273,6 +294,13 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     (isDM ? removeDMReaction(msgId, emoji) : apiRemoveReaction(msgId, emoji)).catch(() => {});
   }, [isDM, parentMessage]);
 
+  const handleToggleBroadcast = useCallback((msgId: number, on: boolean) => {
+    setReplies((prev) => prev.map((r) => (r.id === msgId ? { ...r, alsoSendToChannel: on } : r)));
+    setReplyBroadcast(msgId, on).catch(() => {
+      setReplies((prev) => prev.map((r) => (r.id === msgId ? { ...r, alsoSendToChannel: !on } : r)));
+    });
+  }, []);
+
   // --- Send reply ---
 
   const handleSendReply = useCallback(async () => {
@@ -292,7 +320,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
       if (isDM) {
         apiReply = await replyToDM(messageId, content, fileIdsParam);
       } else {
-        apiReply = await replyToMessage(messageId, content, fileIdsParam);
+        apiReply = await replyToMessage(messageId, content, fileIdsParam, alsoSend);
       }
       const reply = normalizeToMessage(apiReply);
       setReplies((prev) => {
@@ -300,6 +328,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
         return [...prev, reply];
       });
       editor.clearEditor();
+      setAlsoSend(false);
     } catch (err) {
       didSendReply.current = false;
       console.error('Failed to send reply:', err);
@@ -307,7 +336,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
     } finally {
       setIsSending(false);
     }
-  }, [messageId, editor, isDM]);
+  }, [messageId, editor, isDM, alsoSend]);
 
   handleSendRef.current = handleSendReply;
 
@@ -359,6 +388,8 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
                 onDeleteMessage={handleDeleteMessage}
                 onAddReaction={handleAddReaction}
                 onRemoveReaction={handleRemoveReaction}
+                highlighted={reply.id === highlightReplyId}
+                onToggleBroadcast={isDM ? undefined : handleToggleBroadcast}
               />
             ))}
             <div ref={repliesEndRef} />
@@ -424,6 +455,18 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
             accept="image/*,audio/*,video/*,.pdf,.txt,.json,.zip"
             onChange={editor.handleFileSelect}
           />
+
+          {!isDM && (
+            <label className="flex items-center gap-1.5 px-3 pb-1 text-[13px] text-slack-secondary">
+              <input
+                type="checkbox"
+                data-testid="thread-also-send"
+                checked={alsoSend}
+                onChange={(e) => setAlsoSend(e.target.checked)}
+              />
+              {t('threadPanel.alsoSendToChannel')}
+            </label>
+          )}
 
           <EditorToolbar
             testIdPrefix={`${testPrefix}-`}

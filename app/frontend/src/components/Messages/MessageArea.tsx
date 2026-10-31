@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Hash, Menu } from 'lucide-react';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -28,6 +29,11 @@ export function MessageArea() {
   const [showFiles, setShowFiles] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  // ?reply=<id>가 있으면 스레드 패널에서 그 답글을 강조한다(퍼말링크 07과 같은 쿼리)
+  const highlightReplyId = Number(new URLSearchParams(location.search).get('reply')) || null;
+
   // Close side panels when switching channels
   useEffect(() => {
     setShowMembers(false);
@@ -35,6 +41,15 @@ export function MessageArea() {
     setShowFiles(false);
     setActiveThreadId(null);
   }, [activeChannelId]);
+
+  // 스레드 모아보기 카드에서 넘어오면 그 스레드를 연다(위 초기화 뒤에 실행되도록 아래에 둔다)
+  const openThreadId = (location.state as { openThreadId?: number } | null)?.openThreadId;
+  useEffect(() => {
+    if (!openThreadId) return;
+    setActiveThreadId(openThreadId);
+    // 한 번 쓴 state는 비워 새로고침해도 패널이 다시 열리지 않게 한다
+    navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: {} });
+  }, [location.key, activeChannelId, openThreadId, location.pathname, location.search, navigate]);
 
   const handleOpenThread = useCallback((messageId: number) => {
     setActiveThreadId(messageId);
@@ -182,6 +197,7 @@ export function MessageArea() {
           messageId={activeThreadId}
           onClose={handleCloseThread}
           onReplyCountChange={handleReplyCountChange}
+          highlightReplyId={highlightReplyId}
           readOnly={readOnly}
         />
       )}
