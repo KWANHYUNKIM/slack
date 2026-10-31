@@ -405,6 +405,22 @@ export interface MessagesResponse {
   hasMore: boolean;
 }
 
+/** 퍼말링크의 메시지가 어느 대화에 있는지 묻는다. 없음/삭제됨/권한 없음은 모두 404다. */
+export interface LocatedMessage {
+  messageId: number;
+  channelId?: number;
+  dmUserId?: number;
+  groupId?: number;
+  /** 스레드 답글이면 부모 id */
+  parentId?: number;
+  /** 삭제됐지만 살아 있는 답글이 남은 부모(자리표시자) */
+  deleted?: boolean;
+}
+
+export function locateMessage(messageId: number, kind: 'channel' | 'dm') {
+  return request<LocatedMessage>(`/messages/${messageId}/locate?kind=${kind}`);
+}
+
 export function getMessages(channelId: number, cursor?: number, limit = 50, around?: number) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', String(cursor));

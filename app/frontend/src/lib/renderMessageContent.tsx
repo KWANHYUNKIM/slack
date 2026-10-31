@@ -1,4 +1,21 @@
 import React from 'react';
+import { buildPermalinkPath, parsePermalink } from '@/lib/permalink';
+import { navigateInApp } from '@/lib/navigation';
+
+const LINK_CLASS = 'text-slack-link underline hover:text-slack-link-hover';
+
+/** 우리 퍼말링크는 새 탭 대신 라우터로 앱 안에서 이동한다. 그 외 링크는 새 탭. */
+function renderLink(key: number, href: string, label: React.ReactNode): React.ReactNode {
+  const permalink = parsePermalink(href);
+  if (permalink) {
+    const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      if (navigateInApp(buildPermalinkPath(permalink))) e.preventDefault();
+    };
+    return <a key={key} href={href} onClick={onClick} className={LINK_CLASS}>{label}</a>;
+  }
+  return <a key={key} href={href} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{label}</a>;
+}
 
 /**
  * Parses inline markdown in a single line and returns React nodes.
@@ -43,10 +60,10 @@ function renderInline(content: string, keyOffset: number = 0): React.ReactNode[]
       nodes.push(<s key={key++}>{renderInline(m[16], key * 1000)}</s>);
     } else if (m[17]) {
       // [text](url)
-      nodes.push(<a key={key++} href={m[18]} target="_blank" rel="noopener noreferrer" className="text-slack-link underline hover:text-slack-link-hover">{m[17]}</a>);
+      nodes.push(renderLink(key++, m[18], m[17]));
     } else if (m[19]) {
       // plain URL
-      nodes.push(<a key={key++} href={m[19]} target="_blank" rel="noopener noreferrer" className="text-slack-link underline hover:text-slack-link-hover">{m[19]}</a>);
+      nodes.push(renderLink(key++, m[19], m[19]));
     }
     last = m.index + m[0].length;
   }
