@@ -9,21 +9,15 @@ import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { kickUser } from '../websocket/index.js';
+import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
 
-// Strip HTML tags for defense-in-depth
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '');
-}
-
 const registerSchema = z.object({
-  email: z.string().email().max(255).transform(e => e.toLowerCase()),
-  password: z.string().min(6).max(72),
-  name: z.string().min(1).max(100)
-    .refine(val => !val.includes('\u0000'), { message: 'Name cannot contain null bytes' })
-    .transform(stripHtml),
+  email: emailSchema,
+  password: newPasswordSchema,
+  name: displayNameSchema,
   inviteCode: z.string().max(64).optional(),
 });
 
@@ -60,7 +54,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
     if (existingUser) {
       // Perform dummy hash to normalize timing (prevent user-enumeration via response time)
-      await bcrypt.hash(password, 10);
+      await bcrypt.hash(password, BCRYPT_ROUNDS);
       res.status(400).json({ error: 'Unable to complete registration' });
       return;
     }
@@ -88,7 +82,7 @@ router.post('/register', async (req: Request, res: Response) => {
       }
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     // Use transaction to atomically validate invite + create user + increment useCount
     const user = await prisma.$transaction(async (tx) => {
@@ -281,7 +275,7 @@ router.post('/login', async (req: Request, res: Response) => {
 // POST /auth/change-password
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1).max(72),
-  newPassword: z.string().min(6).max(72),
+  newPassword: newPasswordSchema,
 });
 
 // Brute-force protection for password change (keyed on userId, not email,
@@ -343,7 +337,7 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     // Clear failed attempts on success
     passwordChangeAttempts.delete(userId);
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 
     // Increment tokenVersion to invalidate all existing sessions
     const updated = await prisma.user.update({
