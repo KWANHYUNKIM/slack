@@ -167,7 +167,7 @@ async function emitNew(rows: Activity[], preload: Preload = {}): Promise<void> {
   }
 }
 
-function emitRemoved(rows: Pick<Activity, 'id' | 'userId'>[]): void {
+export function emitRemoved(rows: Pick<Activity, 'id' | 'userId'>[]): void {
   const io = getIO();
   if (!io || rows.length === 0) return;
   const perUser = new Map<number, number[]>();

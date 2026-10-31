@@ -93,10 +93,17 @@ export function AdminRetentionTab() {
     setChDrafts(Object.fromEntries(p.channels.map((c) => [c.id, toDraft(c.override)])));
   }, []);
 
-  // 저장 뒤 서버 값을 다시 읽는다. 실패하면 호출한 동작의 오류로 보인다.
-  const load = useCallback(async () => {
-    apply(await api.adminGetRetention());
-  }, [apply]);
+  // 저장 뒤 서버 값을 다시 읽는다. 저장한 행(또는 워크스페이스 행)의 초안만 서버 값으로 바꾸고, 다른 행의 편집 중 초안은 그대로 둔다.
+  const refresh = useCallback(async (scope: 'workspace' | number) => {
+    const p = await api.adminGetRetention();
+    setPolicy(p);
+    if (scope === 'workspace') {
+      setWsDraft(toDraft(p.workspace));
+      return;
+    }
+    const channel = p.channels.find((c) => c.id === scope);
+    if (channel) setChDrafts((prev) => ({ ...prev, [scope]: toDraft(channel.override) }));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,7 +138,7 @@ export function AdminRetentionTab() {
   const commit = async (p: Pending | { kind: 'workspace'; days: null }) => {
     if (p.kind === 'workspace') await api.adminSetWorkspaceRetention(p.days);
     else await api.adminSetChannelRetention(p.channelId, p.days);
-    await load();
+    await refresh(p.kind === 'workspace' ? 'workspace' : p.channelId);
     flash();
   };
 
@@ -161,7 +168,7 @@ export function AdminRetentionTab() {
 
   const commitReset = async (channelId: number) => {
     await api.adminClearChannelRetention(channelId);
-    await load();
+    await refresh(channelId);
     flash();
   };
 

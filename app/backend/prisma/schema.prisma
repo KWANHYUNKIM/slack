@@ -262,6 +262,7 @@ model DirectMessage {
   @@index([toUserId, fromUserId])
   @@index([groupId, createdAt])
   @@index([threadId])
+  @@index([createdAt, id]) // 데이터 보존 정리(E5)가 오래된 DM을 id 순서로 찾는다
 }
 
 // 그룹 DM(본인 포함 3~9명). memberKey는 현재 멤버 id를 정렬해 '-'로 이은 값으로, 같은 멤버 집합의 중복 생성을 막는다.

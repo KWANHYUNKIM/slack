@@ -15,3 +15,6 @@ CREATE TABLE "WorkspaceSetting" (
     CONSTRAINT "WorkspaceSetting_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "WorkspaceSetting_messageRetentionDays_check" CHECK ("messageRetentionDays" IS NULL OR "messageRetentionDays" >= 1)
 );
+
+-- 보존 정리가 오래된 DM을 createdAt으로 찾는다(채널 메시지는 [channelId, createdAt] 인덱스가 이미 있다)
+CREATE INDEX "DirectMessage_createdAt_id_idx" ON "DirectMessage"("createdAt", "id");

@@ -1,5 +1,8 @@
 import { TEST_PASSWORD } from './test-constants.js';
 import { jest } from '@jest/globals';
+import { createServer } from 'http';
+import { io as Client } from 'socket.io-client';
+import { initializeWebSocket } from '../websocket/index.js';
 import fs from 'fs';
 import path from 'path';
 import request from 'supertest';
@@ -145,7 +148,7 @@ describe('Data retention', () => {
   });
 
   describe('purge', () => {
-    it('removes expired messages with their files, reactions, bookmarks, reminders and activities, and keeps the rest', async () => {
+    it('removes expired messages with their files, reactions, bookmarks and activities, keeps reminders, and keeps the rest', async () => {
       await setWorkspace(30);
       const ch = await mkChannel('ret-main');
       const other = await mkChannel('ret-other');
@@ -175,7 +178,8 @@ describe('Data retention', () => {
       expect(await prisma.file.findUnique({ where: { id: oldFile.id } })).toBeNull();
       expect(await prisma.reaction.count({ where: { messageId: old.id } })).toBe(0);
       expect(await prisma.bookmark.count({ where: { messageId: old.id } })).toBe(0);
-      expect(await prisma.reminder.count({ where: { messageId: old.id } })).toBe(0);
+      // 리마인더는 FK 없이 남아 "삭제된 메시지"로 보인다(스키마 규칙)
+      expect(await prisma.reminder.count({ where: { messageId: old.id } })).toBe(1);
       expect(await prisma.activity.count({ where: { messageId: old.id } })).toBe(0);
 
       // 기간 안의 메시지와 다른 채널 메시지, 그 부속물은 그대로다
@@ -280,7 +284,7 @@ describe('Data retention', () => {
       await prisma.bookmark.create({ data: { userId: adminId, messageId: parent.id } });
 
       const r1 = await purgeExpiredMessages();
-      expect(r1).toMatchObject({ messages: 1, placeholders: 1 });
+      expect(r1).toMatchObject({ messages: 1, placeholders: 1, partial: false });
       expect(await exists(oldReply.id)).toBe(false);
       expect(await exists(freshReply.id)).toBe(true);
       const blank = await prisma.message.findUniqueOrThrow({ where: { id: parent.id } });
@@ -356,6 +360,87 @@ describe('Data retention', () => {
       expect(await prisma.file.findUnique({ where: { id: file.id } })).not.toBeNull();
     });
 
+    it('excludes a whole channel when a legal-hold user is a member', async () => {
+      await setWorkspace(30);
+      await prisma.user.update({ where: { id: heldId }, data: { legalHold: true } });
+      const heldMemberCh = await mkChannel('ret-hold-member');
+      const plainCh = await mkChannel('ret-hold-plain');
+      await prisma.channelMember.create({ data: { userId: heldId, channelId: heldMemberCh.id } });
+      const kept = await mkMsg(heldMemberCh.id, 100); // 작성자는 hold가 아니지만 채널에 hold 멤버가 있다
+      const dropped = await mkMsg(plainCh.id, 100);
+
+      await purgeExpiredMessages();
+      expect(await exists(kept.id)).toBe(true);
+      expect(await exists(dropped.id)).toBe(false);
+    });
+
+    it('purges detached files (soft-deleted messages) by the workspace default, except legal-hold uploaders', async () => {
+      const mk = async (name: string, ageDays: number, userId = memberId) => {
+        const filename = `ret-orphan-${name}-${Date.now()}.txt`;
+        fs.writeFileSync(path.join(uploadDir, filename), 'x');
+        const row = await prisma.file.create({ data: { filename, originalName: `${name}.txt`, mimetype: 'text/plain', size: 1, url: `/files/${filename}`, userId, createdAt: ago(ageDays) } });
+        return { filename, id: row.id };
+      };
+      const oldF = await mk('old', 40);
+      const newF = await mk('new', 5);
+      await prisma.user.update({ where: { id: heldId }, data: { legalHold: true } });
+      const heldF = await mk('held', 40, heldId);
+
+      // 워크스페이스 기본이 무기한이면 건드리지 않는다
+      await purgeExpiredMessages();
+      expect(await prisma.file.count()).toBe(3);
+
+      await setWorkspace(30);
+      const r = await purgeExpiredMessages();
+      expect(r.files).toBe(1);
+      expect(await prisma.file.findUnique({ where: { id: oldF.id } })).toBeNull();
+      expect(fs.existsSync(path.join(uploadDir, oldF.filename))).toBe(false);
+      expect(await prisma.file.findUnique({ where: { id: newF.id } })).not.toBeNull();
+      expect(await prisma.file.findUnique({ where: { id: heldF.id } })).not.toBeNull();
+      const log = await prisma.auditLog.findFirst({ where: { action: 'retention.purged', targetType: 'file' } });
+      expect(log?.details).toBe('days=30; files=1');
+      for (const f of [newF, heldF]) fs.rmSync(path.join(uploadDir, f.filename), { force: true });
+    });
+
+    it('shares one row budget: channels cannot starve DMs, and leftover work is flagged partial', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-budget');
+      await prisma.message.createMany({ data: Array.from({ length: 6 }, (_, i) => ({ content: `c${i}`, userId: memberId, channelId: ch.id, createdAt: ago(60) })) });
+      await prisma.directMessage.createMany({ data: Array.from({ length: 3 }, (_, i) => ({ content: `d${i}`, fromUserId: memberId, toUserId: otherId, createdAt: ago(60) })) });
+
+      // 예산 4: 채널 2, DM 2
+      const r = await purgeExpiredMessages(new Date(), { maxRows: 4 });
+      expect(r.partial).toBe(true);
+      expect(await prisma.message.count({ where: { channelId: ch.id } })).toBe(4);
+      expect(await prisma.directMessage.count()).toBe(1);
+      const chLog = await prisma.auditLog.findFirst({ where: { action: 'retention.purged', targetType: 'channel' } });
+      expect(chLog?.details).toBe('days=30; messages=2; files=0; placeholders=0; partial=true');
+      const dmLog = await prisma.auditLog.findFirst({ where: { action: 'retention.purged', targetType: 'direct_message' } });
+      expect(dmLog?.details).toBe('days=30; messages=2; files=0; placeholders=0; partial=true');
+
+      // 다음 실행이 이어서 끝낸다
+      const r2 = await purgeExpiredMessages();
+      expect(r2.partial).toBe(false);
+      expect(await prisma.message.count({ where: { channelId: ch.id } })).toBe(0);
+      expect(await prisma.directMessage.count()).toBe(0);
+    });
+
+    it('counts placeholder conversions against the budget', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-budget-blank');
+      const parents = [];
+      for (let i = 0; i < 3; i++) {
+        const p = await mkMsg(ch.id, 60);
+        await mkMsg(ch.id, 1, { threadId: p.id });
+        parents.push(p);
+      }
+      const r = await purgeExpiredMessages(new Date(), { maxRows: 4 }); // 채널 몫 2
+      expect(r.placeholders).toBeLessThanOrEqual(2);
+      expect(r.partial).toBe(true);
+      await purgeExpiredMessages();
+      for (const p of parents) expect((await prisma.message.findUniqueOrThrow({ where: { id: p.id } })).content).toBe('');
+    });
+
     it('processes more than one batch in a single run', async () => {
       await setWorkspace(30);
       const ch = await mkChannel('ret-bulk');
@@ -365,6 +450,66 @@ describe('Data retention', () => {
       expect(await purgeExpiredMessages()).toMatchObject({ messages: 1200 });
       expect(await prisma.message.count({ where: { channelId: ch.id } })).toBe(1);
       expect(await exists(keep.id)).toBe(true);
+    });
+  });
+
+  describe('socket events', () => {
+    let httpServer: ReturnType<typeof createServer>;
+    let io: ReturnType<typeof initializeWebSocket>;
+    let port: number;
+
+    beforeAll(async () => {
+      httpServer = createServer(app);
+      io = initializeWebSocket(httpServer);
+      await new Promise<void>((resolve) => httpServer.listen(() => resolve()));
+      const address = httpServer.address();
+      port = typeof address === 'object' && address ? address.port : 0;
+    });
+    afterAll(() => {
+      io.close();
+      httpServer.close();
+    });
+
+    const waitEvents = async (socket: ReturnType<typeof Client>, names: string[], ms = 1500) => {
+      const got: Record<string, unknown[]> = Object.fromEntries(names.map((n) => [n, []]));
+      for (const n of names) socket.on(n, (p: unknown) => got[n].push(p));
+      await new Promise((r) => setTimeout(r, ms));
+      return got;
+    };
+
+    it('sends the same events as the user delete path for replies, placeholder parents and DMs', async () => {
+      await setWorkspace(30);
+      const ch = await mkChannel('ret-events');
+      await prisma.channelMember.createMany({ data: [{ userId: memberId, channelId: ch.id }, { userId: otherId, channelId: ch.id }] });
+      const parent = await mkMsg(ch.id, 60);
+      const oldReply = await mkMsg(ch.id, 50, { threadId: parent.id, userId: otherId });
+      const freshReply = await mkMsg(ch.id, 1, { threadId: parent.id });
+      const dm = await prisma.directMessage.create({ data: { content: 'old', fromUserId: memberId, toUserId: otherId, createdAt: ago(60) } });
+
+      const socket = Client(`http://localhost:${port}`, { auth: { token: memberToken } });
+      await new Promise<void>((resolve, reject) => {
+        socket.on('connect', () => resolve());
+        socket.on('connect_error', reject);
+      });
+      await new Promise<boolean>((resolve) => socket.emit('join:channel', ch.id, resolve));
+
+      const pending = waitEvents(socket, ['message:deleted', 'thread:updated', 'dm:deleted']);
+      await purgeExpiredMessages();
+      const got = await pending;
+      socket.disconnect();
+
+      // 답글 삭제: 실제 threadId가 실린다
+      expect(got['message:deleted']).toEqual(expect.arrayContaining([
+        { messageId: oldReply.id, threadId: parent.id, channelId: ch.id },
+        // 자리표시자로 바뀐 부모
+        { messageId: parent.id, threadId: null, channelId: ch.id },
+      ]));
+      // 부모별로 한 번씩, 남은 답글 수가 갱신된다
+      const updates = (got['thread:updated'] as { parentId: number; replyCount: number }[]).filter((u) => u.parentId === parent.id);
+      expect(updates.length).toBeGreaterThanOrEqual(1);
+      expect(updates.some((u) => u.replyCount === 1)).toBe(true);
+      expect(got['dm:deleted']).toEqual([{ dmId: dm.id, fromUserId: memberId, toUserId: otherId, groupId: null, threadId: null }]);
+      expect(await exists(freshReply.id)).toBe(true);
     });
   });
 

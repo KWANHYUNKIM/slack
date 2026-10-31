@@ -59,6 +59,7 @@ const TARGET_KEYS: Record<string, string> = {
   audit_log: 'auditLog',
   mcp_tool: 'mcpTool',
   workspace: 'workspace',
+  file: 'file',
 };
 
 function actionColor(action: string): string {

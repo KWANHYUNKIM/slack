@@ -153,7 +153,8 @@
       "token": "Access token",
       "auditLog": "Audit log",
       "mcpTool": "MCP tool",
-      "workspace": "Workspace"
+      "workspace": "Workspace",
+      "file": "File"
     },
     "action": {
       "authLogin": "Signed in",
@@ -231,7 +232,7 @@
   },
   "retention": {
     "title": "Data retention",
-    "description": "Automatically delete messages after a set number of days. Files go with their messages. Cleanup runs once a day.",
+    "description": "Automatically delete messages after a set number of days. Files go with their messages. Cleanup runs once a day. Reminders are kept and show \"deleted message\".",
     "loadError": "Failed to load the retention policy",
     "saveError": "Failed to save the retention policy",
     "resetError": "Failed to reset the channel policy",
