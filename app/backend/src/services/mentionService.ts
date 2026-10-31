@@ -62,6 +62,8 @@ export interface ActivityView {
   dmId: number | null;
   dmGroupId: number | null;
   reminder: { id: number; text: string | null } | null;
+  /** 1:1 DM 활동의 상대 userId(리마인더처럼 배우가 본인인 활동의 이동용). 그 밖에는 null */
+  dmUserId: number | null;
   threadId: number | null;
   message: { id: number; content: string; excerpt: string } | null;
   emoji: string | null;
@@ -112,6 +114,12 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
     reminderIds.length ? prisma.reminder.findMany({ where: { id: { in: reminderIds } }, select: { id: true, text: true } }) : [],
   ]);
   const reminderMap = new Map(reminders.map((r) => [r.id, r]));
+  // 리마인더 활동은 배우가 본인이라 1:1 DM 상대를 따로 구한다(지워진 DM도 이동 판단용으로 읽는다)
+  const partnerDmIds = rows.filter((r) => r.type === 'REMINDER' && r.dmId !== null && r.dmGroupId === null).map((r) => r.dmId as number);
+  const partnerRows = partnerDmIds.length
+    ? await prisma.directMessage.findMany({ where: { id: { in: partnerDmIds } }, select: { id: true, fromUserId: true, toUserId: true } })
+    : [];
+  const partnerMap = new Map(partnerRows.map((d) => [d.id, d]));
   actors.forEach((a) => actorMap.set(a.id, a));
   channels.forEach((c) => channelMap.set(c.id, c));
   messages.forEach((m) => messageMap.set(m.id, m));
@@ -133,6 +141,12 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
       dmId: r.dmId,
       dmGroupId: r.dmGroupId,
       reminder: r.reminderId !== null ? reminderMap.get(r.reminderId) ?? null : null,
+      dmUserId: (() => {
+        const d = r.type === 'REMINDER' && r.dmId !== null ? partnerMap.get(r.dmId) : undefined;
+        if (!d) return null;
+        const other = d.fromUserId === r.userId ? d.toUserId : d.toUserId === r.userId ? d.fromUserId : null;
+        return other;
+      })(),
       threadId: target?.threadId ?? null,
       message: target ? { id: target.id, content: target.content, excerpt: excerpt(target.content) } : null,
       emoji: r.emoji,
@@ -581,35 +595,33 @@ interface ReminderTarget {
   messageId: number | null;
   dmId: number | null;
   channelId: number | null;
+  fireSeq: number;
 }
 
 /** 리마인더 시각이 되면 본인에게 REMINDER 활동을 만들고 알린다. 이미 있으면 null(중복 발송 방지). */
 async function createReminderActivityImpl(r: ReminderTarget): Promise<Activity | null> {
-  try {
-    const dm = r.dmId !== null ? await prisma.directMessage.findUnique({ where: { id: r.dmId }, select: { groupId: true } }) : null;
-    const [created] = await insertActivities([{
-      userId: r.userId,
-      actorId: r.userId,
-      type: 'REMINDER',
-      messageId: r.messageId,
-      dmId: r.dmId,
-      channelId: r.channelId,
-      dmGroupId: dm?.groupId ?? null,
-      reminderId: r.id,
+  // 실패는 던진다: 호출자(reminderService)가 선점을 되돌려 다음 틱에 재시도한다.
+  const dm = r.dmId !== null ? await prisma.directMessage.findUnique({ where: { id: r.dmId }, select: { groupId: true } }) : null;
+  const [created] = await insertActivities([{
+    userId: r.userId,
+    actorId: r.userId,
+    type: 'REMINDER',
+    messageId: r.messageId,
+    dmId: r.dmId,
+    channelId: r.channelId,
+    dmGroupId: dm?.groupId ?? null,
+    reminderId: r.id,
+    reminderSeq: r.fireSeq,
     }]);
-    if (!created) return null;
-    await emitNew([created]);
-    return created;
-  } catch (err) {
-    logError('Create reminder activity failed', err);
-    return null;
-  }
+  if (!created) return null;
+  await emitNew([created]);
+  return created;
 }
 
 /** 스누즈·완료·삭제로 더는 유효하지 않은 리마인더 활동을 지운다. */
-async function deleteReminderActivitiesImpl(reminderId: number): Promise<void> {
+async function deleteReminderActivitiesImpl(reminderId: number, reminderSeq?: number): Promise<void> {
   try {
-    await removeRows(await prisma.activity.findMany({ where: { reminderId }, select: { id: true, userId: true } }));
+    await removeRows(await prisma.activity.findMany({ where: { reminderId, ...(reminderSeq !== undefined && { reminderSeq }) }, select: { id: true, userId: true } }));
   } catch (err) {
     logError('Delete reminder activities failed', err);
   }
@@ -742,5 +754,5 @@ export function removeReactionActivity(...a: Parameters<typeof removeReactionAct
 }
 export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => trackBackground(markThreadMentionsReadImpl(...a));
 export const createReminderActivity = (r: ReminderTarget) => activityQueue.run(`r:${r.id}`, () => createReminderActivityImpl(r));
-export const deleteReminderActivities = (reminderId: number) =>
-  activityQueue.run(`r:${reminderId}`, () => deleteReminderActivitiesImpl(reminderId));
+export const deleteReminderActivities = (reminderId: number, reminderSeq?: number) =>
+  activityQueue.run(`r:${reminderId}`, () => deleteReminderActivitiesImpl(reminderId, reminderSeq));

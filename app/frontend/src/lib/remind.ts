@@ -1,3 +1,5 @@
+import { buildPermalinkPath } from './permalink.ts';
+
 // 리마인더 순수 로직: `/remind` 구문 파싱과 시간 프리셋. UI와 분리해 Node에서 단위 테스트한다(npm run remind:test).
 
 export type RemindError = 'syntax' | 'tooShort' | 'tooLong';
@@ -74,4 +76,29 @@ export function parseLocalDateTime(value: string): Date | null {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+export const REMINDERS_LIST_PATH = '/later?tab=reminders';
+
+export interface ReminderOpenInput {
+  channelId: number | null;
+  dmGroupId?: number | null;
+  /** 1:1 DM의 상대 userId */
+  dmUserId?: number | null;
+  /** 대상 메시지(채널 메시지 id 또는 DM id). 없거나 지워졌으면 null */
+  target: { id: number; threadId: number | null } | null;
+}
+
+/**
+ * 리마인더(또는 REMINDER 활동)를 눌렀을 때 갈 경로. 대상이 있으면 07 퍼말링크로 메시지까지 가고,
+ * 대상이 없거나 어느 대화인지 알 수 없으면 리마인더 목록으로 보낸다. 스레드 답글은 부모 + ?reply=.
+ */
+export function reminderOpenPath(i: ReminderOpenInput): string {
+  if (!i.target) return REMINDERS_LIST_PATH;
+  const messageId = i.target.threadId ?? i.target.id;
+  const replyId = i.target.threadId ? i.target.id : undefined;
+  if (i.dmGroupId) return buildPermalinkPath({ kind: 'group', conversationId: i.dmGroupId, messageId, replyId });
+  if (i.dmUserId) return buildPermalinkPath({ kind: 'dm', conversationId: i.dmUserId, messageId, replyId });
+  if (i.channelId) return buildPermalinkPath({ kind: 'channel', conversationId: i.channelId, messageId, replyId });
+  return REMINDERS_LIST_PATH;
 }

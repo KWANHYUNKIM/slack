@@ -1,6 +1,6 @@
 import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Pin, Pencil, Trash2, MailOpen, AlarmClock } from 'lucide-react';
+import { Pin, Pencil, Trash2, MailOpen, Link2, AlarmClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ interface MessageActionsMenuProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onMarkUnread?: () => void;
+  onCopyLink?: () => void;
   /** 있으면 "리마인더" 항목을 보인다. 채널 메시지는 messageId, DM은 dmId */
   reminderTarget?: { messageId?: number; dmId?: number };
   onClose: () => void;
@@ -28,6 +29,7 @@ export function MessageActionsMenu({
   onEdit,
   onDelete,
   onMarkUnread,
+  onCopyLink,
   reminderTarget,
   onClose,
   showOwnerActions,
@@ -44,7 +46,7 @@ export function MessageActionsMenu({
   const [showReminder, setShowReminder] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  // Initial position measurement
+  // Position measurement. 리마인더 하위 메뉴가 펼쳐지면 높이가 바뀌므로 다시 잰다.
   useLayoutEffect(() => {
     const anchor = anchorRef.current;
     const menu = menuRef.current;
@@ -56,11 +58,11 @@ export function MessageActionsMenu({
 
     let top = anchorRect.top;
     if (top + menuHeight > window.innerHeight) {
-      top = Math.max(0, anchorRect.top - menuHeight);
+      top = Math.max(0, Math.min(anchorRect.top - menuHeight, window.innerHeight - menuHeight));
     }
 
     setPos({ top, left: Math.max(0, anchorRect.right - menuWidth) });
-  }, []);
+  }, [showReminder]);
 
   // Close on scroll (matches Slack behavior) and click outside
   useEffect(() => {
@@ -82,7 +84,7 @@ export function MessageActionsMenu({
     };
   }, []);
 
-  const hasAnyAction = onPin || showOwnerActions || onMarkUnread || reminderTarget;
+  const hasAnyAction = onPin || showOwnerActions || onMarkUnread || onCopyLink || reminderTarget;
 
   const menuContent = (
     <div
@@ -105,6 +107,16 @@ export function MessageActionsMenu({
             <Button variant="menu-item" onClick={onMarkUnread}>
               <MailOpen className="h-4 w-4" />
               {t('actionsMenu.markUnread')}
+            </Button>
+          )}
+          {onCopyLink && (
+            <Button
+              variant="menu-item"
+              data-testid={testIdPrefix ? `${testIdPrefix}-copy-link-btn` : 'copy-link-btn'}
+              onClick={onCopyLink}
+            >
+              <Link2 className="h-4 w-4" />
+              {t('actionsMenu.copyLink')}
             </Button>
           )}
           {reminderTarget && (

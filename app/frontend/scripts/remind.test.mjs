@@ -5,6 +5,7 @@ import {
   isRemindCommand,
   parseLocalDateTime,
   parseRemind,
+  reminderOpenPath,
   reminderPresets,
   snoozeDate,
 } from '../src/lib/remind.ts';
@@ -74,4 +75,15 @@ test('parses datetime-local values', () => {
   assert.equal(d.getHours(), 15);
   assert.equal(parseLocalDateTime(''), null);
   assert.equal(parseLocalDateTime('2026-13-45T99:99'), null);
+});
+
+test('reminder open path: permalinks, replies, and the list fallback', () => {
+  assert.equal(reminderOpenPath({ channelId: 3, target: { id: 9, threadId: null } }), '/c/3/m/9');
+  assert.equal(reminderOpenPath({ channelId: 3, target: { id: 12, threadId: 9 } }), '/c/3/m/9?reply=12');
+  // 1:1 DM은 상대 userId로 간다(활동의 배우는 본인이라 쓰지 않는다)
+  assert.equal(reminderOpenPath({ channelId: null, dmUserId: 7, target: { id: 40, threadId: null } }), '/d/7/m/40');
+  assert.equal(reminderOpenPath({ channelId: null, dmGroupId: 5, target: { id: 41, threadId: null } }), '/g/5/m/41');
+  // 대상이 없거나(삭제, /remind 본문) 상대를 모르면 목록
+  assert.equal(reminderOpenPath({ channelId: 3, target: null }), '/later?tab=reminders');
+  assert.equal(reminderOpenPath({ channelId: null, target: { id: 40, threadId: null } }), '/later?tab=reminders');
 });

@@ -80,16 +80,14 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
         return;
       }
       const remindAt = new Date(Date.now() + parsed.minutes * 60_000);
-      if (await useReminderStore.getState().create({ text: parsed.text, remindAt })) {
+      if (await useReminderStore.getState().create({ text: parsed.text, remindAt }, { notify: false })) {
         editor.clearEditor();
         const key = getDraftKey(channelId, dmParticipantIds);
         if (key) drafts.delete(key);
         setScheduleConfirm(t('reminder.command.created', { time: formatDateTime(remindAt) }));
         setTimeout(() => setScheduleConfirm(null), 4000);
-      } else {
-        setScheduleError(t('reminder.toast.createFailed'));
-        setTimeout(() => setScheduleError(null), 4000);
       }
+      // 실패하면 스토어가 오류 토스트를 띄운다(인라인 안내는 성공과 구문 오류만 맡는다)
       return;
     }
     const fileIds = editor.pendingFiles.map((f) => f.id);

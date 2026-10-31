@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Trash2, Undo2, AlarmClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/lib/i18n/format';
-import { snoozeDate } from '@/lib/remind';
+import { reminderOpenPath, snoozeDate } from '@/lib/remind';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useReminderStore } from '@/stores/useReminderStore';
 import type { ApiReminder } from '@/lib/api';
@@ -25,6 +25,8 @@ export function RemindersTab() {
   const items = useReminderStore((s) => s.items);
   const isLoading = useReminderStore((s) => s.isLoading);
   const loadError = useReminderStore((s) => s.loadError);
+  const nextCursor = useReminderStore((s) => s.nextCursor);
+  const isLoadingMore = useReminderStore((s) => s.isLoadingMore);
 
   useEffect(() => {
     void useReminderStore.getState().setTab('pending');
@@ -32,10 +34,12 @@ export function RemindersTab() {
 
   const open = (r: ApiReminder) => {
     if (!r.message) return;
-    const state = { scrollToMessageId: r.message.threadId ?? r.message.id };
-    if (r.dmGroupId) navigate(`/g/${r.dmGroupId}`, { state });
-    else if (r.dmUserId) navigate(`/d/${r.dmUserId}`, { state });
-    else if (r.channelId) navigate(`/c/${r.channelId}`, { state });
+    navigate(reminderOpenPath({
+      channelId: r.channelId,
+      dmGroupId: r.dmGroupId,
+      dmUserId: r.dmUserId,
+      target: { id: r.message.id, threadId: r.message.threadId },
+    }));
   };
 
   return (
@@ -146,6 +150,16 @@ export function RemindersTab() {
             );
           })}
         </ul>
+      )}
+      {nextCursor !== null && (
+        <button
+          data-testid="reminders-load-more"
+          disabled={isLoadingMore}
+          onClick={() => void useReminderStore.getState().fetchMore()}
+          className="mx-auto mt-3 block rounded px-3 py-1 text-[13px] text-slack-link hover:bg-slack-hover disabled:opacity-40"
+        >
+          {t('reminder.loadMore')}
+        </button>
       )}
     </div>
   );

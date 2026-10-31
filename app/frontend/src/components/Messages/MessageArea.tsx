@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Hash, Menu } from 'lucide-react';
 import { useMobileStore } from '@/stores/useMobileStore';
+import { usePermalinkStore } from '@/stores/usePermalinkStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { MessageHeader } from './MessageHeader';
@@ -31,8 +32,9 @@ export function MessageArea() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  // ?reply=<id>가 있으면 스레드 패널에서 그 답글을 강조한다(퍼말링크 07과 같은 쿼리)
-  const highlightReplyId = Number(new URLSearchParams(location.search).get('reply')) || null;
+  // ?reply=<id>가 있거나 퍼말링크로 열렸으면 스레드 패널에서 그 답글을 강조한다
+  const [permalinkReplyId, setPermalinkReplyId] = useState<number | null>(null);
+  const highlightReplyId = permalinkReplyId ?? (Number(new URLSearchParams(location.search).get('reply')) || null);
 
   // Close side panels when switching channels
   useEffect(() => {
@@ -51,6 +53,15 @@ export function MessageArea() {
     navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: {} });
   }, [location.key, activeChannelId, openThreadId, location.pathname, location.search, navigate]);
 
+  // 퍼말링크(답글, 삭제된 부모)가 요청한 스레드를 연다. 한 번 쓰면 비운다(위 초기화 뒤에 실행되도록 아래에 둔다).
+  const pendingThread = usePermalinkStore((s) => s.pendingThread);
+  useEffect(() => {
+    if (!pendingThread || pendingThread.kind !== 'channel' || pendingThread.conversationId !== activeChannelId) return;
+    setActiveThreadId(pendingThread.parentId);
+    setPermalinkReplyId(pendingThread.replyId ?? null);
+    usePermalinkStore.getState().setPendingThread(null);
+  }, [pendingThread, activeChannelId]);
+
   const handleOpenThread = useCallback((messageId: number) => {
     setActiveThreadId(messageId);
     setShowMembers(false);
@@ -58,6 +69,7 @@ export function MessageArea() {
 
   const handleCloseThread = useCallback(() => {
     setActiveThreadId(null);
+    setPermalinkReplyId(null);
   }, []);
 
   const handleReplyCountChange = useCallback((messageId: number, count: number) => {

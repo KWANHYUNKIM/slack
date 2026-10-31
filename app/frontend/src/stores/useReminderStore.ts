@@ -2,30 +2,28 @@ import { create } from 'zustand';
 import type { Socket } from 'socket.io-client';
 import * as api from '@/lib/api';
 import type { ApiReminder } from '@/lib/api';
+import { t } from '@/lib/i18n';
+import { useToastStore } from './useToastStore';
 
 type Tab = 'pending' | 'done';
-
-interface ToastState {
-  /** reminders.json의 번역 키 (예: 'created', 'due') */
-  key: 'created' | 'due' | 'createFailed';
-  text?: string;
-  id: number;
-}
 
 interface ReminderState {
   tab: Tab;
   items: ApiReminder[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   loadError: boolean;
-  toast: ToastState | null;
+  /** 완료 목록의 다음 페이지 cursor (미완료 목록은 항상 전부 받는다) */
+  nextCursor: number | null;
 
   setTab: (tab: Tab) => Promise<void>;
   fetch: () => Promise<void>;
-  create: (body: { messageId?: number; dmId?: number; text?: string; remindAt: Date }) => Promise<boolean>;
+  fetchMore: () => Promise<void>;
+  /** notify: false이면 성공 토스트를 띄우지 않는다(/remind처럼 호출한 쪽이 피드백을 직접 보일 때). 실패 토스트는 항상 띄운다. */
+  create: (body: { messageId?: number; dmId?: number; text?: string; remindAt: Date }, opts?: { notify?: boolean }) => Promise<boolean>;
   snooze: (id: number, remindAt: Date) => Promise<void>;
   complete: (id: number, completed?: boolean) => Promise<void>;
   remove: (id: number) => Promise<void>;
-  dismissToast: () => void;
   /** Subscribe to reminder:due / reminder:updated / reminder:removed. Returns the unsubscribe function. */
   bindSocket: (socket: Socket) => () => void;
 }
@@ -41,17 +39,16 @@ function sortFor(tab: Tab, items: ApiReminder[]): ApiReminder[] {
 
 const belongsToTab = (tab: Tab, r: ApiReminder) => (tab === 'pending' ? r.completedAt === null : r.completedAt !== null);
 
-let toastSeq = 0;
-
 export const useReminderStore = create<ReminderState>((set, get) => ({
   tab: 'pending',
   items: [],
   isLoading: false,
+  isLoadingMore: false,
   loadError: false,
-  toast: null,
+  nextCursor: null,
 
   setTab: async (tab) => {
-    set({ tab, items: [] });
+    set({ tab, items: [], nextCursor: null });
     await get().fetch();
   },
 
@@ -61,23 +58,40 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
     try {
       const data = await api.getReminders(tab);
       if (get().tab !== tab) return;
-      set({ items: data.items, isLoading: false });
+      set({ items: data.items, nextCursor: data.nextCursor, isLoading: false });
     } catch {
       if (get().tab !== tab) return;
       set({ isLoading: false, loadError: true });
     }
   },
 
-  create: async (body) => {
+  fetchMore: async () => {
+    const { tab, nextCursor, isLoadingMore } = get();
+    if (nextCursor === null || isLoadingMore) return;
+    set({ isLoadingMore: true });
+    try {
+      const data = await api.getReminders(tab, nextCursor);
+      if (get().tab !== tab) return;
+      set((s) => ({
+        items: [...s.items, ...data.items.filter((n) => !s.items.some((i) => i.id === n.id))],
+        nextCursor: data.nextCursor,
+        isLoadingMore: false,
+      }));
+    } catch {
+      set({ isLoadingMore: false });
+    }
+  },
+
+  create: async (body, opts = {}) => {
     try {
       const created = await api.createReminder({ ...body, remindAt: body.remindAt.toISOString() });
       set((s) => ({
         items: s.tab === 'pending' && !s.items.some((i) => i.id === created.id) ? sortFor('pending', [...s.items, created]) : s.items,
-        toast: { key: 'created', id: ++toastSeq },
       }));
+      if (opts.notify !== false) useToastStore.getState().show(t('messages:reminder.toast.created'));
       return true;
     } catch {
-      set({ toast: { key: 'createFailed', id: ++toastSeq } });
+      useToastStore.getState().show(t('messages:reminder.toast.createFailed'), 'error');
       return false;
     }
   },
@@ -110,8 +124,6 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
     }
   },
 
-  dismissToast: () => set({ toast: null }),
-
   bindSocket: (socket) => {
     // 다른 탭의 변경도 같은 목록에 반영한다(중복 전달은 id로 합친다)
     const handleUpdated = (data: { reminder: ApiReminder }) => {
@@ -123,7 +135,8 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
     };
     const handleDue = (data: { reminder: ApiReminder }) => {
       handleUpdated(data);
-      set({ toast: { key: 'due', text: data.reminder.text ?? data.reminder.message?.excerpt ?? '', id: ++toastSeq } });
+      const text = data.reminder.text ?? data.reminder.message?.excerpt ?? '';
+      useToastStore.getState().show(t('messages:reminder.toast.due', { text }), 'success', 6000);
     };
     const handleRemoved = (data: { id: number }) => {
       set((s) => ({ items: s.items.filter((i) => i.id !== data.id) }));

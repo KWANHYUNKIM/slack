@@ -13,6 +13,8 @@ export const MAX_REMINDER_TEXT = 500;
 export const MIN_FUTURE_MS = 1000;
 export const MAX_FUTURE_MS = 365 * 24 * 60 * 60 * 1000;
 const DUE_BATCH = 50;
+/** 발송 실패를 이만큼 겪으면 failedAt을 찍고 더 시도하지 않는다 */
+export const MAX_DELIVERY_ATTEMPTS = 3;
 const EXCERPT_LENGTH = 200;
 
 export interface ReminderView {
@@ -131,14 +133,40 @@ export async function serializeReminders(userId: number, rows: Reminder[]): Prom
   });
 }
 
+// ── 푸시 문구 ────────────────────────────────────────────────────────
+
+// 서버에는 사용자 로캘이 없다. 리마인더를 만들 때 요청의 Accept-Language를 저장해 두고 그 언어로 푸시를 보낸다.
+// 해석하지 못하면 기본 ko.
+export type PushLocale = 'ko' | 'en';
+export const DEFAULT_PUSH_LOCALE: PushLocale = 'ko';
+
+const PUSH_TEXT: Record<PushLocale, { title: string; fallbackBody: string }> = {
+  ko: { title: '리마인더', fallbackBody: '메시지에 대한 리마인더' },
+  en: { title: 'Reminder', fallbackBody: 'Reminder about a message' },
+};
+
+/** Accept-Language 헤더에서 지원 언어를 고른다(앞선 항목 우선). 지원하지 않으면 null. */
+export function pickLocale(header: string | undefined | null): PushLocale | null {
+  if (!header) return null;
+  for (const part of header.split(',').slice(0, 8)) {
+    const tag = part.split(';')[0].trim().toLowerCase();
+    if (tag === 'ko' || tag.startsWith('ko-')) return 'ko';
+    if (tag === 'en' || tag.startsWith('en-')) return 'en';
+  }
+  return null;
+}
+
+export function pushTextFor(locale: string | null | undefined, body: string): { title: string; body: string } {
+  const texts = PUSH_TEXT[locale === 'en' ? 'en' : DEFAULT_PUSH_LOCALE];
+  return { title: texts.title, body: body.trim() ? body.slice(0, 100) : texts.fallbackBody };
+}
+
 // ── 소켓 ─────────────────────────────────────────────────────────────
 
-export async function emitReminder(event: 'reminder:due' | 'reminder:updated', userId: number, row: Reminder): Promise<void> {
-  const io = getIO();
-  if (!io) return;
+/** 직렬화를 이미 한 뷰를 본인 모든 탭에 보낸다(경로마다 직렬화는 한 번만). */
+export function emitReminder(event: 'reminder:due' | 'reminder:updated', userId: number, reminder: ReminderView): void {
   try {
-    const [reminder] = await serializeReminders(userId, [row]);
-    io.to(`user:${userId}`).emit(event, { reminder });
+    getIO()?.to(`user:${userId}`).emit(event, { reminder });
   } catch (err) {
     logError(`${event} emit failed`, err);
   }
@@ -151,45 +179,83 @@ export function emitReminderRemoved(userId: number, id: number): void {
 // ── 시각 도달 처리 ───────────────────────────────────────────────────
 
 /**
- * 시각이 지난 리마인더를 한 번만 발송한다. firedAt을 updateMany로 먼저 선점하므로
- * 틱이 겹치거나 서버가 여러 대여도 한 건은 한 번만 간다. 처리한 개수를 돌려준다.
+ * 시각이 지난 리마인더를 한 번만 발송한다. firedAt을 updateMany로 먼저 선점(fireSeq +1)하므로
+ * 틱이 겹치거나 서버가 여러 대여도 한 회차는 한 번만 간다. 처리한 개수를 돌려준다.
+ * 발송이 실패하면 선점을 되돌려 다음 틱에 다시 시도하고, MAX_DELIVERY_ATTEMPTS번 실패하면 failedAt을 찍는다.
  */
 export async function processDueReminders(now = new Date()): Promise<number> {
   const due = await prisma.reminder.findMany({
-    where: { firedAt: null, completedAt: null, remindAt: { lte: now } },
+    where: { firedAt: null, completedAt: null, failedAt: null, remindAt: { lte: now } },
     orderBy: { remindAt: 'asc' },
     take: DUE_BATCH,
+    select: { id: true },
   });
   let fired = 0;
-  for (const r of due) {
+  for (const { id } of due) {
+    let claimed: Reminder | null = null;
     try {
-      const claimed = await prisma.reminder.updateMany({
-        where: { id: r.id, firedAt: null, completedAt: null },
-        data: { firedAt: now },
+      const res = await prisma.reminder.updateMany({
+        where: { id, firedAt: null, completedAt: null, failedAt: null },
+        data: { firedAt: now, fireSeq: { increment: 1 } },
       });
-      if (claimed.count === 0) continue;
+      if (res.count === 0) continue;
       fired++;
-      await deliverReminder({ ...r, firedAt: now });
+      claimed = await prisma.reminder.findUnique({ where: { id } });
+      if (claimed) await deliverReminder(claimed);
     } catch (err) {
-      logError(`Reminder ${r.id} delivery failed`, err);
+      logError(`Reminder ${id} delivery failed`, err);
+      if (claimed) await rollbackClaim(claimed);
     }
   }
   return fired;
 }
 
+/** 발송 실패: 이 회차의 활동을 치우고 선점을 되돌린다. 상한에 닿으면 failedAt을 찍는다. */
+async function rollbackClaim(r: Reminder): Promise<void> {
+  try {
+    await deleteReminderActivities(r.id, r.fireSeq).catch((err) => logError('Reminder rollback cleanup failed', err));
+    // 그사이 스누즈·삭제·완료로 회차가 바뀌었다면 건드리지 않는다
+    const reverted = await prisma.reminder.updateMany({
+      where: { id: r.id, fireSeq: r.fireSeq, firedAt: r.firedAt },
+      data: { firedAt: null, failCount: { increment: 1 } },
+    });
+    if (reverted.count === 0) return;
+    const cur = await prisma.reminder.findUnique({ where: { id: r.id }, select: { failCount: true } });
+    if (cur && cur.failCount >= MAX_DELIVERY_ATTEMPTS) {
+      await prisma.reminder.updateMany({ where: { id: r.id, failedAt: null }, data: { failedAt: new Date() } });
+      logError(`Reminder ${r.id} gave up after ${cur.failCount} failed deliveries`, new Error('reminder delivery failed'));
+    }
+  } catch (err) {
+    logError(`Reminder ${r.id} rollback failed`, err);
+  }
+}
+
+/** 이 회차가 아직 유효한가: 스누즈(firedAt 초기화), 완료, 삭제가 끼어들지 않았는지. */
+async function isStillCurrent(r: Reminder): Promise<boolean> {
+  const cur = await prisma.reminder.findUnique({ where: { id: r.id }, select: { firedAt: true, fireSeq: true, completedAt: true } });
+  return !!cur && cur.completedAt === null && cur.fireSeq === r.fireSeq && cur.firedAt !== null && cur.firedAt.getTime() === r.firedAt?.getTime();
+}
+
 async function deliverReminder(r: Reminder): Promise<void> {
   const user = await prisma.user.findUnique({ where: { id: r.userId }, select: { deactivatedAt: true } });
   if (!user || user.deactivatedAt) return;
+  if (!(await isStillCurrent(r))) return;
 
   await createReminderActivity(r);
-  await emitReminder('reminder:due', r.userId, r);
+  // 활동을 만드는 사이 스누즈·완료·삭제가 지나갔다면 방금 만든 활동을 치우고 알리지 않는다
+  if (!(await isStillCurrent(r))) {
+    await deleteReminderActivities(r.id, r.fireSeq);
+    return;
+  }
+
+  const [view] = await serializeReminders(r.userId, [r]);
+  emitReminder('reminder:due', r.userId, view);
 
   // 푸시: 접속 중이면 토스트로 충분하다. 방해금지는 shouldNotify가 막는다.
   if (isUserOnline(r.userId)) return;
-  const [view] = await serializeReminders(r.userId, [r]);
-  const body = r.text ?? view.message?.excerpt ?? '';
+  const text = pushTextFor(r.locale, r.text ?? view.message?.excerpt ?? '');
   const url = view.dmGroupId ? `/g/${view.dmGroupId}` : view.dmUserId ? `/d/${view.dmUserId}` : r.channelId ? `/c/${r.channelId}` : '/';
-  await sendPushToUser(r.userId, { title: 'Reminder', body: body.slice(0, 100), url }, { kind: 'reminder', channelId: r.channelId ?? undefined })
+  await sendPushToUser(r.userId, { ...text, url }, { kind: 'reminder', channelId: r.channelId ?? undefined })
     .catch((err) => logError('Reminder push failed', err));
 }
 

@@ -60,3 +60,16 @@
 | 2026-10-31 22:20 | dev-2 | sonnet | 06-quick-switcher-shortcuts | 128,115 |
 | 2026-10-31 22:24 | code-review | (리뷰) | PR #30 medium | 85,973 |
 | 2026-10-31 22:27 | dev-2 | sonnet | PR #30 리뷰 반영 | 36,448 |
+| 2026-10-31 22:32 | dev-3 | sonnet | 07-message-permalink | 151,380 |
+| 2026-10-31 22:37 | code-review | (리뷰) | PR #32 medium | 97,299 |
+| 2026-10-31 22:37 | dev-4 | sonnet | 08-search-v2 | 162,641 |
+| 2026-10-31 22:39 | dev-5 | sonnet | 09-reminders | 191,019 |
+| 2026-10-31 22:40 | code-review | (리뷰) | PR #33 medium | 85,340 |
+| 2026-10-31 22:41 | code-review | (리뷰) | PR #34 medium | (포크, 미보고) |
+| 2026-10-31 22:41 | dev-3 | sonnet | PR #32 리뷰 반영 | 37,546 |
+| 2026-10-31 22:49 | dev-3 | sonnet | 10-unread-divider | 122,412 |
+| 2026-10-31 22:51 | dev-4 | sonnet | PR #33 리뷰 반영 | 78,199 |
+| 2026-10-31 22:52 | code-review | (리뷰) | PR #36 medium | 76,997 |
+| 2026-10-31 22:55 | dev-1 | haiku | fix/auth-error-logging + admin-store-rethrow | 91,979 |
+| 2026-10-31 22:58 | code-review | (리뷰) | PR #38 medium | 61,048 |
+| 2026-10-31 22:56 | dev-3 | sonnet | PR #36 리뷰 반영 | 37,503 |

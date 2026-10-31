@@ -18,12 +18,15 @@ import { useMessageHover } from '@/hooks/useMessageHover';
 import { useMessageEdit } from '@/hooks/useMessageEdit';
 import type { Message as MessageType } from '@/lib/types';
 import { getAuthFileUrl, getFileUrl, markChannelUnread } from '@/lib/api';
+import { useUnreadStore } from '@/stores/useUnreadStore';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { ImageLightbox } from './ImageLightbox';
 import { FilePreviewModal } from './FilePreviewModal';
 import { MessageToolbar } from './MessageToolbar';
 import { MessageActionsMenu } from './MessageActionsMenu';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { copyPermalink } from '@/hooks/useCopyPermalink';
+import type { PermalinkKind } from '@/lib/permalink';
 
 interface MessageProps {
   message: MessageType;
@@ -39,9 +42,11 @@ interface MessageProps {
   highlighted?: boolean;
   /** 스레드 답글의 "채널에도 보내기"를 켜고 끈다(본인 답글에만 표시) */
   onToggleBroadcast?: (id: number, on: boolean) => void;
+  /** 링크 복사가 가리킬 대화. 생략하면 메시지의 채널이다(DM 스레드 패널은 DM/그룹을 넘긴다) */
+  permalinkBase?: { kind: PermalinkKind; conversationId: number };
 }
 
-export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction, highlighted, onToggleBroadcast }: MessageProps) {
+export function Message({ message, showAvatar, onOpenThread, readOnly, variant = 'default', onEditMessage, onDeleteMessage, onAddReaction, onRemoveReaction, highlighted, onToggleBroadcast, permalinkBase }: MessageProps) {
   const { t } = useTranslation(['messages', 'common']);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -92,6 +97,17 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
   const handleEdit = () => {
     startEdit(message.id, message.content);
     setShowMoreMenu(false);
+  };
+
+  // 답글의 링크는 부모 메시지 주소에 ?reply=가 붙은 형태다
+  const handleCopyLink = () => {
+    setShowMoreMenu(false);
+    const base = permalinkBase ?? { kind: 'channel' as const, conversationId: message.channelId };
+    void copyPermalink(
+      message.threadId
+        ? { ...base, messageId: message.threadId, replyId: message.id }
+        : { ...base, messageId: message.id },
+    );
   };
 
   const handleDelete = () => {
@@ -411,6 +427,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
         <MessageActionsMenu
           anchorClassName="absolute -top-4 end-5 mt-9"
           onClose={() => setShowMoreMenu(false)}
+          onCopyLink={handleCopyLink}
           reminderTarget={{ messageId: message.id }}
           onMarkUnread={!isThread ? () => {
             setShowMoreMenu(false);
@@ -419,6 +436,7 @@ export function Message({ message, showAvatar, onOpenThread, readOnly, variant =
               (m) => m.channelId === message.channelId && m.id >= message.id
             ).length;
             setUnreadCount(message.channelId, unreadCount);
+            useUnreadStore.getState().markUnreadFrom(message.channelId, message.id);
             markChannelUnread(message.channelId, message.id).catch(() => {});
           } : undefined}
           onPin={!isThread ? () => {
