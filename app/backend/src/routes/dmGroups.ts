@@ -20,6 +20,7 @@ import {
   leaveGroup,
   sendGroupMessage,
   markGroupRead,
+  getGroupUnreadBaseline,
   listGroupConversations,
   emitToGroup,
   InvalidFileIdsError,
@@ -151,6 +152,8 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
     let messages: any[];
     let nextCursor: number | undefined;
     let hasMore = false;
+    // 안 읽음 구분선 기준점(?withUnread=1, 첫 페이지만): 읽기 전용이라 메시지 조회와 병렬로 돌리고, 읽음 커서 이동보다 먼저 끝낸다.
+    let unreadBaseline: { lastReadId: number | null; unreadCount: number } | undefined;
     if (around) {
       const half = Math.floor(limit / 2);
       const [before, target, after] = await Promise.all([
@@ -160,13 +163,16 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
       ]);
       messages = enrich([...before.reverse(), ...target, ...after]);
     } else {
-      const rows = await prisma.directMessage.findMany({
+      const rowsQuery = prisma.directMessage.findMany({
         where,
         include,
         orderBy: { createdAt: 'desc' },
         take: limit + 1,
         ...(cursor && { cursor: { id: cursor }, skip: 1 }),
       });
+      const wantBaseline = req.query.withUnread === '1' && !cursor;
+      const [rows, baseline] = await Promise.all([rowsQuery, wantBaseline ? getGroupUnreadBaseline(groupId, userId) : undefined]);
+      unreadBaseline = baseline;
       const page = paginateResults(rows, limit);
       messages = enrich(page.results);
       nextCursor = page.nextCursor;
@@ -181,7 +187,7 @@ router.get('/:id/messages', authMiddleware, requireDmGroupMember, async (req: Au
 
     // 멤버 목록은 첫 페이지(커서 없음)에서만 싣는다. 이전 페이지 로드는 메시지만 필요하다.
     const group = cursor ? undefined : await getGroupView(groupId);
-    res.json({ ...(group && { group }), messages, nextCursor, hasMore });
+    res.json({ ...(group && { group }), messages, nextCursor, hasMore, ...unreadBaseline });
   } catch (error) {
     logError('Get group DM messages error', error);
     res.status(500).json({ error: 'Failed to get messages' });

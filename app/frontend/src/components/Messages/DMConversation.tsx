@@ -21,6 +21,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
 import { useChannelStore } from '@/stores/useChannelStore';
+import { useUnreadStore } from '@/stores/useUnreadStore';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useMessageEdit } from '@/hooks/useMessageEdit';
@@ -30,6 +31,8 @@ import { MessageToolbar } from './MessageToolbar';
 import { MessageActionsMenu } from './MessageActionsMenu';
 import { MessageReactions } from './MessageReactions';
 import { ThreadIndicator } from './ThreadIndicator';
+import { UnreadDivider } from './UnreadDivider';
+import { NewMessagesBar } from './NewMessagesBar';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { MessageInput } from './MessageInput';
 import { ThreadPanel } from './ThreadPanel';
@@ -44,10 +47,12 @@ import { HuddleButton } from '@/components/Huddle/HuddleButton';
 import { HuddleSystemMessage } from '@/components/Huddle/HuddleInvite';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import {
-  markDMUnread, pinDM, unpinDM, getPinnedDMs, getDMGroupPins, createDMGroup, getFileUrl, getAuthFileUrl,
+  markDMUnread, markDMRead, markDMGroupRead, pinDM, unpinDM, getPinnedDMs, getDMGroupPins, createDMGroup, getFileUrl, getAuthFileUrl,
   type ApiDirectMessage, type AuthUser,
 } from '@/lib/api';
 import { apiErrorMessage } from '@/lib/apiErrors';
+import { dmUnreadScope, type UnreadCandidate } from '@/lib/unread';
+import { useUnreadDivider } from '@/hooks/useUnreadDivider';
 import { groupDisplayName, otherMembers, MAX_GROUP_OTHERS } from '@/lib/groupDM';
 import { AddTeammatesDialog } from '@/components/Sidebar/AddTeammatesDialog';
 import { GroupMembersPanel } from './GroupMembersPanel';
@@ -133,13 +138,61 @@ export function DMConversation(props: DMConversationProps) {
 
   const dmScrollToMessageId = useChannelStore((s) => s.dmScrollToMessageId);
 
+  // 안 읽음 구분선: 열 때 받은 기준점을 고정해 쓴다(채널과 같은 훅·컴포넌트)
+  const unreadScope = dmUnreadScope(userId);
+  const candidates = useMemo<UnreadCandidate[]>(
+    () => messages.map((m) => ({ id: m.id, userId: m.fromUserId, threadId: m.threadId })),
+    [messages],
+  );
+  // 서버 읽음 처리: 1:1은 상대 메시지 전부, 그룹은 읽음 커서
+  const markServerRead = useCallback((messageId?: number) => {
+    (groupId !== undefined ? markDMGroupRead(groupId, messageId) : markDMRead(userId)).catch(() => {});
+  }, [groupId, userId]);
+  const divider = useUnreadDivider({
+    scope: unreadScope,
+    candidates,
+    myUserId: currentUser?.id,
+    loaded: !isLoading && messages.length > 0,
+    hasJumpTarget: !!dmScrollToMessageId,
+    containerRef: scrollContainerRef,
+    endRef: messagesEndRef,
+    isAtBottom,
+    fetchAround: async (id) => {
+      await fetchConversation(userId, id);
+      const state = useDMStore.getState();
+      if (state.loadError) return null;
+      return state.messages[userId]?.[0]?.id ?? null;
+    },
+    markRead: (lastId) => {
+      if (groupId !== undefined) {
+        useChannelStore.setState((st) => ({ groupDMs: st.groupDMs.map((g) => (g.id === groupId ? { ...g, unreadCount: 0 } : g)) }));
+      } else {
+        useChannelStore.getState().markDMAsRead(userId);
+      }
+      markServerRead(lastId);
+    },
+  });
+  const { dividerBeforeId, dividerRef, initialScrollDone, resetOpen } = divider;
+
   // Fetch when the conversation changes. The jump target is read once from the store (not a dep),
   // so clearing it later never triggers another fetch.
   const requestedAroundRef = useRef<number | null>(null);
   useEffect(() => {
+    isAtBottom.current = true;
+    resetOpen();
     const target = useChannelStore.getState().dmScrollToMessageId;
     requestedAroundRef.current = target;
-    fetchConversation(userId, target ?? undefined);
+    // 안 읽음 기준점은 같은 응답으로 받는다(서버가 읽음 처리보다 먼저 계산). 점프 대상이 있으면 구분선 없이 연다.
+    const unreadStore = useUnreadStore.getState();
+    unreadStore.begin(unreadScope);
+    if (target) unreadStore.setUnknown(unreadScope);
+    fetchConversation(userId, target ?? undefined, !target).then(() => {
+      // around로 열면 조회가 읽음 처리를 하지 않으므로 조회가 끝난 뒤에 서버 읽음 처리를 한다
+      if (target && !useDMStore.getState().loadError) markServerRead();
+    });
+    return () => useUnreadStore.getState().reset();
+    // groupId·unreadScope는 userId(대화 키)에서 정해진다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, fetchConversation]);
 
   // Jump to a target message (search result, activity item). While the target is set and
@@ -163,9 +216,12 @@ export function DMConversation(props: DMConversationProps) {
     } else if (hasMessages && !isLoading && requestedAroundRef.current !== dmScrollToMessageId) {
       // Target is older than what is loaded: fetch the page around it once
       requestedAroundRef.current = dmScrollToMessageId;
-      fetchConversation(userId, dmScrollToMessageId);
+      // 열려 있는 대화에서 점프해도 조회가 끝나면 서버 읽음 처리를 한다(around 조회는 읽음 처리를 하지 않는다)
+      fetchConversation(userId, dmScrollToMessageId).then(() => {
+        if (!useDMStore.getState().loadError) markServerRead();
+      });
     }
-  }, [dmScrollToMessageId, targetLoaded, hasMessages, isLoading, userId, fetchConversation]);
+  }, [dmScrollToMessageId, targetLoaded, hasMessages, isLoading, userId, fetchConversation, markServerRead]);
 
   // Clear the target (and so the highlight) 2s after it was reached
   useEffect(() => {
@@ -177,11 +233,16 @@ export function DMConversation(props: DMConversationProps) {
   // Auto-scroll to bottom on new messages (not when targeting a specific message)
   useEffect(() => {
     if (dmScrollToMessageId) return;
+    if (!initialScrollDone.current) return; // 처음 위치는 훅이 잡는다(구분선이 있으면 구분선에서 시작)
     if (didScrollToTarget.current) {
       didScrollToTarget.current = false;
       return;
     }
+    // 구분선에서 읽는 중이면(바닥이 아니면) 새 메시지가 와도 끌어내리지 않는다. 내가 보낸 메시지는 바닥으로 간다.
+    if (!isAtBottom.current && messages[messages.length - 1]?.fromUserId !== currentUser?.id) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // 마지막 메시지 작성자만 읽는다: 길이가 바뀔 때만 실행한다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, dmScrollToMessageId]);
 
   // Track whether user is scrolled to the bottom
@@ -456,7 +517,15 @@ export function DMConversation(props: DMConversationProps) {
       {/* Body: messages column + optional side panel */}
       <div className="relative flex min-h-0 flex-1">
         {/* Messages column */}
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+          {divider.showBar && (
+            <NewMessagesBar
+              count={divider.barCount}
+              atLeast={divider.barAtLeast}
+              onJump={divider.jumpToDivider}
+              onMarkRead={divider.markAllRead}
+            />
+          )}
           {/* Messages list */}
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-white px-5 pb-4 pt-5">
             {isLoading ? (
@@ -510,6 +579,7 @@ export function DMConversation(props: DMConversationProps) {
                           <div className="flex-1 border-t border-slack-border-light" />
                         </div>
                       )}
+                      {msg.id === dividerBeforeId && <UnreadDivider ref={dividerRef} />}
                       <div
                         data-testid={`dm-message-${msg.id}`}
                         className={cn(
@@ -715,18 +785,28 @@ export function DMConversation(props: DMConversationProps) {
                             }}
                             onPin={() => handleTogglePin(msg)}
                             isPinned={msg.isPinned}
-                            onMarkUnread={isGroup ? undefined : () => {
+                            // 서버는 상대가 보낸 메시지만 안 읽음으로 돌릴 수 있다: 내 메시지에는 항목을 숨긴다
+                            onMarkUnread={isGroup || isOwner ? undefined : () => {
                               setShowMoreMenuId(null);
+                              const prevBadge = dmEntry?.unreadCount ?? 0;
+                              const { ready, lastReadId: prevLast, total, pinnedBeforeId } = useUnreadStore.getState();
                               // Count unread messages from this point forward
                               const unreadCount = messages.filter((m) => m.id >= msg.id).length;
-                              useChannelStore.getState().incrementDMUnread(userId);
-                              // Update in store and persist to backend
-                              useChannelStore.setState((s) => ({
+                              const setBadge = (count: number) => useChannelStore.setState((s) => ({
                                 directMessages: s.directMessages.map((dm) =>
-                                  dm.userId === userId ? { ...dm, unreadCount } : dm
+                                  dm.userId === userId ? { ...dm, unreadCount: count } : dm
                                 ),
                               }));
-                              markDMUnread(userId, msg.id).catch(() => {});
+                              setBadge(unreadCount);
+                              // 그 메시지 앞에 구분선을 긋는다
+                              useUnreadStore.getState().markUnreadFrom(unreadScope, msg.id, candidates);
+                              markDMUnread(userId, msg.id).catch(() => {
+                                // 저장에 실패하면 배지와 구분선을 원래대로 되돌린다
+                                setBadge(prevBadge);
+                                if (useUnreadStore.getState().channelId === unreadScope) {
+                                  useUnreadStore.setState({ ready, lastReadId: prevLast, total, pinnedBeforeId });
+                                }
+                              });
                             }}
                           />
                         )}
