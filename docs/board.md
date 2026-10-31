@@ -14,7 +14,7 @@
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 완료(PR #3 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
 | D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | 완료(PR #45 머지) | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
 | D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | dev-4 | sonnet | 완료(PR #51 머지) | 1.5h | 2026-10-31 23:33 | | D1 이후 |
-| E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 진행(E4·E5·E7 완료, E7b 리뷰, E6·E10 진행) | | | | P0 이후 |
+| E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 진행(E4·E5·E6·E7·E7b·E7c·E10 완료, E1·E2·E3·E8·E9 대기) | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
 | security/deps-upgrade-frontend: quill, react-router 등 | dev-3 | sonnet | 완료(PR #4 머지) | 1h | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3 |
 | security/deps-upgrade-backend: critical 1, high 다수, CI audit 차단 복구 | dev-4 | sonnet | 완료(PR #6 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:01 | multer, sharp, socket.io-parser, ws, zod, quill, react-router 등 |
@@ -72,11 +72,13 @@
 | E7 세션 관리: Session 모델·sid, 기기 목록·개별/전체 로그아웃, 관리자 강제 로그아웃 UI, 유휴·최대 수명 정책(2FA는 E7b) | dev-5 | sonnet | 완료(PR #80 머지) | 2h | 2026-11-01 01:17 | | 엔터프라이즈 3절 |
 | E5 데이터 보존 정책: 워크스페이스·채널 보존 일수, 일 1회 하드 삭제 배치, legalHold 제외 자리, 관리자 탭 | dev-1 | sonnet | 완료(PR #84 머지) | 2h | 2026-11-01 01:40 | 2026-11-01 02:00 | 엔터프라이즈 3절 |
 | E7b 2단계 인증: TOTP(암호화 저장), 복구 코드, 로그인 2단계, 조직 필수 정책, 관리자 초기화 | dev-4 | opus | 완료(PR #89 머지) | 2h | 2026-11-01 01:40 | 2026-11-01 02:48 | E7 후속 |
-| E6 법적 보존과 eDiscovery: LegalHold 건·대상자, 보존 정리 제외, 관리자 검색·스트리밍 내보내기, 감사 로그 | dev-1 | opus | PR #98 리뷰 반영 중 | 2h | 2026-11-01 02:42 | 2026-11-01 02:55 | 엔터프라이즈 3절, 마이그레이션 060000 |
+| E6 법적 보존과 eDiscovery: LegalHold 건·대상자, 보존 정리 제외, 관리자 검색·스트리밍 내보내기, 감사 로그 | dev-1 | opus | 완료(PR #98 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:55 | 엔터프라이즈 3절, 마이그레이션 060000 |
 | E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 완료(PR #96 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:51 | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 완료(PR #99), QR 완료(PR #101 머지) | 1.5h | | | E7b 남은 이슈 |
-| feat/group-membership-history: 그룹 DM 구성원 이력(가입·탈퇴 시각)으로 eDiscovery·법적 보존이 나간 대상자의 재직 기간 메시지까지 포함 | - | opus | 대기(스키마) | 1.5h | | | PR #98 리뷰 4번 |
+| test/error-code-coverage-consts: 정적 검사가 code를 담은 상수 객체(.json(MFA_TOKEN_EXPIRED) 등)를 오탐 → main에서 실패 | dev-3 | haiku | 진행 | 30분 | 2026-11-01 03:24 | | PR #98 검토 중 발견 |
+| fix/dm-delete-detach: DM 삭제도 첨부를 분리할지 결정, 분리 첨부 재연결 방지(detachedFrom* null 조건) | - | sonnet | 대기 | 45분 | | | PR #98 남은 이슈 |
+| feat/group-membership-history: 그룹 DM 구성원 이력(가입·탈퇴 시각)으로 eDiscovery·법적 보존이 나간 대상자의 재직 기간 메시지까지 포함 | dev-1 | opus | 진행 | 1.5h | 2026-11-01 03:25 | | PR #98 리뷰 4번 |
 | fix/read-cursor-race: 동시 /channels/:id/read에서 커서가 최대 id보다 작게 남는 경쟁(activity.test.ts:748, 1/6회) | dev-3 | sonnet | 완료(PR #93 머지) | 45분 | 2026-11-01 02:26 | 2026-11-01 02:30 | PR #91 보고 |
 | refactor/api-401-by-code: 프런트 request()가 401 전체가 아니라 토큰 code(AUTH_INVALID_TOKEN 등)일 때만 로그아웃, 이후 2FA·비밀번호 오류 상태 코드 정리 | dev-4 | sonnet | 완료(PR #97 머지) | 1h | 2026-11-01 02:49 | 2026-11-01 02:56 | PR #89 리뷰 |
 | feat/account-password-ui: 프런트 비밀번호 변경 화면(AUTH_CURRENT_PASSWORD_INCORRECT 표시) | dev-4 | sonnet | 완료(PR #99 머지) | 45분 | 2026-11-01 02:58 | | PR #86 남은 이슈 |
