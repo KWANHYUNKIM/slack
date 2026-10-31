@@ -39,7 +39,7 @@
 | i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 완료(PR #71 머지) | 2h | 2026-11-01 00:07 | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | dev-3 | sonnet | 완료(PR #74 머지) | 1.5h | 2026-11-01 00:48 | | |
-| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a~5g 완료(28/31), E1b 새 키 일괄 진행 | 2h | 2026-11-01 04:29 | | |
+| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a~5h 완료(28/31), 5i(ar·he·fa RTL) 진행 | 2h | 2026-11-01 04:29 | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
