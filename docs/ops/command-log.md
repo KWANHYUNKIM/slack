@@ -230,3 +230,4 @@
 | 2026-11-01 01:17 | PR #77(E4) 머지(b5409f2, audit-logs 24·auth 24·물리 방향 162). 마이그레이션 20261101020000_audit_log_indexes를 dev2~5·slackclone·slackclone_dev에 적용(dev1은 개발자가 수정본으로 재적용). 자원 감속(스왑 92%) 한도 1 → dev-5 E7 세션 관리(2FA 제외) 배정 |
 | 2026-11-01 01:27 | E7 검토: main 리베이스(충돌 0), worktree 독립 node_modules로 검증(sessions 24·auth 24·websocket 11·audit-logs 24·물리 방향 163, 메인 client 무변경 확인) → PR #80, /code-review |
 | 2026-11-01 01:30 | PR #80 리뷰 10건 → dev-5 반영 지시. 총괄 결정: 소켓 활동도 lastSeenAt 갱신, UA는 코드로 저장·화면에서 번역, 이 기기 로그아웃은 /auth/logout 하나로, 서버가 끊은 소켓은 즉시 로그아웃 처리, 관리자 전체 로그아웃은 tokenVersion도 증가(레거시 토큰 차단), IPv6 /48 마스킹 |
+| 2026-11-01 01:40 | PR #80(E7) 머지(085ce2b). 총괄이 직접 1건 수정: 관리자 전체 로그아웃은 항상 tokenVersion을 올리므로 폐기 세션 0건이어도 감사 로그를 남기도록 변경, 테스트 기대값 갱신(sessions 27). 마이그레이션 20261101030000_add_sessions(수정본)를 dev1~4·slackclone·slackclone_dev에 적용. 자원 정상(여유 36%, 스왑 86%, 디스크 8GB) → main 통합 DB(slackclone)에서 전체 백엔드 스위트 백그라운드 실행, 배정: dev-1 E5 데이터 보존(sonnet), dev-4 E7b 2FA(opus) |
