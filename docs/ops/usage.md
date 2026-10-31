@@ -110,3 +110,4 @@
 | 2026-11-01 00:05 | code-review | (리뷰) | PR #61 low | 48,446 |
 | 2026-11-01 00:05 | dev-2 | sonnet | PR #58 리뷰 반영 | 43,580 |
 | 2026-11-01 00:05 | dev-1 | sonnet | fix/emoji-cdn-runtime | 90,745 |
+| 2026-11-01 00:10 | code-review | (리뷰) | PR #64 medium | 67,599 |
