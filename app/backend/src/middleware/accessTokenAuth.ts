@@ -1,11 +1,12 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types.js';
 import { looksLikeAccessToken, verifyAccessToken } from '../services/accessTokenService.js';
+import { ERR } from '../utils/errorCodes.js';
 
 function reject(res: Response): void {
   // RFC 6750: Bearer 인증 실패에는 WWW-Authenticate를 붙인다. 실패 이유는 구분하지 않는다.
   res.setHeader('WWW-Authenticate', 'Bearer realm="mcp", error="invalid_token"');
-  res.status(401).json({ error: 'Invalid token' });
+  res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
 }
 
 /**

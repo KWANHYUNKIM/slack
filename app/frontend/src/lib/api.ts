@@ -98,6 +98,8 @@ export interface AuthUser {
   name: string;
   avatar?: string | null;
   role?: 'ADMIN' | 'MEMBER' | 'GUEST';
+  locale?: string | null;
+  timeZone?: string | null;
   createdAt: string;
 }
 
@@ -661,6 +663,8 @@ export interface UserProfile {
   name: string;
   avatar?: string | null;
   role?: 'ADMIN' | 'MEMBER' | 'GUEST';
+  locale?: string | null;
+  timeZone?: string | null;
   status?: string;
   bio?: string | null;
   createdAt: string;
@@ -673,7 +677,7 @@ export function getMyProfile() {
   return request<UserProfile>('/users/me');
 }
 
-export function updateMyProfile(data: { name?: string; avatar?: string | null; status?: string; bio?: string | null }) {
+export function updateMyProfile(data: { name?: string; avatar?: string | null; status?: string; bio?: string | null; locale?: string | null; timeZone?: string | null }) {
   return request<UserProfile>('/users/me', {
     method: 'PATCH',
     body: JSON.stringify(data),

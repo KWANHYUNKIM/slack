@@ -10,6 +10,7 @@ import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { kickUser } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
+import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
 
 const router = Router();
@@ -56,13 +57,13 @@ router.post('/register', async (req: Request, res: Response) => {
     if (existingUser) {
       // Perform dummy hash to normalize timing (prevent user-enumeration via response time)
       await bcrypt.hash(password, BCRYPT_ROUNDS);
-      res.status(400).json({ error: 'Unable to complete registration' });
+      res.status(400).json({ error: 'Unable to complete registration', code: ERR.AUTH_REGISTRATION_FAILED });
       return;
     }
 
     // Require invite code — no open registration (relaxed in test env for convenience)
     if (!inviteCode && !isTest) {
-      res.status(400).json({ error: 'An invite is required to register' });
+      res.status(400).json({ error: 'An invite is required to register', code: ERR.INVITE_REQUIRED });
       return;
     }
 
@@ -70,15 +71,15 @@ router.post('/register', async (req: Request, res: Response) => {
     if (inviteCode) {
       const invite = await prisma.inviteLink.findUnique({ where: { code: inviteCode } });
       if (!invite) {
-        res.status(400).json({ error: 'Invalid invite code' });
+        res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
         return;
       }
       if (invite.expiresAt && invite.expiresAt < new Date()) {
-        res.status(400).json({ error: 'Invite code has expired' });
+        res.status(400).json({ error: 'Invite code has expired', code: ERR.INVITE_EXPIRED });
         return;
       }
       if (invite.maxUses !== null && invite.useCount >= invite.maxUses) {
-        res.status(400).json({ error: 'Invite code has reached its usage limit' });
+        res.status(400).json({ error: 'Invite code has reached its usage limit', code: ERR.INVITE_EXHAUSTED });
         return;
       }
     }
@@ -144,11 +145,11 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(201).json({ user, token });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.issues });
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
       return;
     }
     if (error instanceof Error && error.message === 'INVITE_INVALID') {
-      res.status(400).json({ error: 'Invite code is no longer valid' });
+      res.status(400).json({ error: 'Invite code is no longer valid', code: ERR.INVITE_INVALID });
       return;
     }
     // Handle unique constraint violation (concurrent registration race).
@@ -156,11 +157,11 @@ router.post('/register', async (req: Request, res: Response) => {
     // so concurrent requests can't differentiate "email already existed"
     // (400) from "email just now taken by a racing request" (was 500).
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      res.status(400).json({ error: 'Unable to complete registration' });
+      res.status(400).json({ error: 'Unable to complete registration', code: ERR.AUTH_REGISTRATION_FAILED });
       return;
     }
     logError('Register error', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    res.status(500).json({ error: 'Failed to register user', code: ERR.INTERNAL_ERROR });
   }
 });
 
@@ -172,7 +173,7 @@ router.post('/login', async (req: Request, res: Response) => {
     // Check account lockout
     const attempts = loginAttempts.get(email);
     if (attempts && attempts.lockedUntil > Date.now()) {
-      res.status(429).json({ error: 'Account temporarily locked. Try again later.' });
+      res.status(429).json({ error: 'Account temporarily locked. Try again later.', code: ERR.AUTH_ACCOUNT_LOCKED });
       return;
     }
 
@@ -180,7 +181,7 @@ router.post('/login', async (req: Request, res: Response) => {
       where: { email },
       select: {
         id: true, email: true, name: true, avatar: true, role: true,
-        password: true, deactivatedAt: true, tokenVersion: true, createdAt: true,
+        password: true, deactivatedAt: true, tokenVersion: true, createdAt: true, locale: true, timeZone: true,
       },
     });
     if (!user) {
@@ -197,14 +198,14 @@ router.post('/login', async (req: Request, res: Response) => {
         }
         loginAttempts.set(email, current);
       }
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
 
     // Block deactivated accounts — still run bcrypt to prevent timing enumeration
     const validPassword = await bcrypt.compare(password, user.password);
     if (user.deactivatedAt) {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
     if (!validPassword) {
@@ -219,7 +220,7 @@ router.post('/login', async (req: Request, res: Response) => {
         }
         loginAttempts.set(email, current);
       }
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid credentials', code: ERR.AUTH_INVALID_CREDENTIALS });
       return;
     }
 
@@ -239,16 +240,18 @@ router.post('/login', async (req: Request, res: Response) => {
         avatar: user.avatar,
         role: user.role,
         createdAt: user.createdAt,
+        locale: user.locale,
+        timeZone: user.timeZone,
       },
       token,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.issues });
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
       return;
     }
     logError('Login error', error);
-    res.status(500).json({ error: 'Failed to login' });
+    res.status(500).json({ error: 'Failed to login', code: ERR.INTERNAL_ERROR });
   }
 });
 
@@ -285,7 +288,7 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     // Check lockout before any DB or bcrypt work
     const pwAttempts = passwordChangeAttempts.get(userId);
     if (pwAttempts && pwAttempts.lockedUntil > Date.now()) {
-      res.status(429).json({ error: 'Too many failed attempts. Try again later.' });
+      res.status(429).json({ error: 'Too many failed attempts. Try again later.', code: ERR.AUTH_TOO_MANY_ATTEMPTS });
       return;
     }
 
@@ -294,7 +297,7 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
       select: { id: true, password: true },
     });
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found', code: ERR.NOT_FOUND });
       return;
     }
 
@@ -310,7 +313,7 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
         current.count = 0;
       }
       passwordChangeAttempts.set(userId, current);
-      res.status(401).json({ error: 'Current password is incorrect' });
+      res.status(401).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
       return;
     }
 
@@ -346,11 +349,11 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
     res.json({ message: 'Password changed successfully', token });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.issues });
+      res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
       return;
     }
     logError('Change password error', error);
-    res.status(500).json({ error: 'Failed to change password' });
+    res.status(500).json({ error: 'Failed to change password', code: ERR.INTERNAL_ERROR });
   }
 });
 
@@ -359,7 +362,7 @@ router.get('/invite/:code', async (req: Request, res: Response) => {
   try {
     const code = req.params.code as string;
     if (!code || code.length > 64) {
-      res.status(400).json({ error: 'Invalid invite code' });
+      res.status(400).json({ error: 'Invalid invite code', code: ERR.INVITE_INVALID });
       return;
     }
 
@@ -369,24 +372,24 @@ router.get('/invite/:code', async (req: Request, res: Response) => {
     });
 
     if (!invite) {
-      res.status(404).json({ error: 'Invite not found' });
+      res.status(404).json({ error: 'Invite not found', code: ERR.INVITE_NOT_FOUND });
       return;
     }
 
     if (invite.expiresAt && invite.expiresAt < new Date()) {
-      res.status(410).json({ error: 'Invite expired' });
+      res.status(410).json({ error: 'Invite expired', code: ERR.INVITE_EXPIRED });
       return;
     }
 
     if (invite.maxUses !== null && invite.useCount >= invite.maxUses) {
-      res.status(410).json({ error: 'Invite exhausted' });
+      res.status(410).json({ error: 'Invite exhausted', code: ERR.INVITE_EXHAUSTED });
       return;
     }
 
     res.json({ valid: true, role: invite.role });
   } catch (error) {
     logError('Validate invite error', error);
-    res.status(500).json({ error: 'Failed to validate invite' });
+    res.status(500).json({ error: 'Failed to validate invite', code: ERR.INTERNAL_ERROR });
   }
 });
 

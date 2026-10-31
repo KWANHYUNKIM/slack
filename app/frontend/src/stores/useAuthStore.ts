@@ -104,6 +104,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               avatar: profile.avatar,
               role: profile.role,
               status: toUserStatus(profile.status),
+              locale: profile.locale,
+              timeZone: profile.timeZone,
             },
             isHydrating: false,
           });

@@ -29,6 +29,7 @@ import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { LoginPage } from '@/components/Auth/LoginPage';
 import { RegisterPage } from '@/components/Auth/RegisterPage';
+import { startUserPrefsSync } from '@/lib/userPrefsSync';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common');
@@ -640,6 +641,7 @@ function App() {
 
   useEffect(() => {
     hydrate();
+    return startUserPrefsSync();
   }, [hydrate]);
 
   return (

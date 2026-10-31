@@ -287,8 +287,7 @@ export async function sendGroupMessage(input: GroupMessageInput) {
     sendPushToUser(
       userId,
       {
-        title: threadId ? `${senderName} (thread)` : senderName,
-        body: dm.content.slice(0, 100) || 'Sent an attachment',
+        titleKey: threadId ? 'dmThread' : 'dmTitle', sender: senderName, content: dm.content, plainBody: true,
         url: `/g/${groupId}`,
       },
       { kind: 'dm' },

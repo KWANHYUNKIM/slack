@@ -3,6 +3,7 @@ import prisma from '../db.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from './pushService.js';
+import { renderPush, resolvePushLocale } from '../i18n/pushMessages.js';
 import { createReminderActivity, deleteReminderActivities } from './mentionService.js';
 
 // 리마인더 생성·조회·변경과 시각 도달 처리. 알림은 활동(REMINDER)과 푸시로 보내고,
@@ -135,30 +136,14 @@ export async function serializeReminders(userId: number, rows: Reminder[]): Prom
 
 // ── 푸시 문구 ────────────────────────────────────────────────────────
 
-// 서버에는 사용자 로캘이 없다. 리마인더를 만들 때 요청의 Accept-Language를 저장해 두고 그 언어로 푸시를 보낸다.
-// 해석하지 못하면 기본 ko.
-export type PushLocale = 'ko' | 'en';
-export const DEFAULT_PUSH_LOCALE: PushLocale = 'ko';
-
-const PUSH_TEXT: Record<PushLocale, { title: string; fallbackBody: string }> = {
-  ko: { title: '리마인더', fallbackBody: '메시지에 대한 리마인더' },
-  en: { title: 'Reminder', fallbackBody: 'Reminder about a message' },
-};
-
-/** Accept-Language 헤더에서 지원 언어를 고른다(앞선 항목 우선). 지원하지 않으면 null. */
-export function pickLocale(header: string | undefined | null): PushLocale | null {
-  if (!header) return null;
-  for (const part of header.split(',').slice(0, 8)) {
-    const tag = part.split(';')[0].trim().toLowerCase();
-    if (tag === 'ko' || tag.startsWith('ko-')) return 'ko';
-    if (tag === 'en' || tag.startsWith('en-')) return 'en';
-  }
-  return null;
-}
+// 푸시 문구는 수신자의 User.locale을 우선한다. 없으면 리마인더를 만들 때 저장한 Accept-Language(Reminder.locale), 그것도 없으면 ko.
+// 언어 선택과 번역 리소스는 i18n/pushMessages.ts에 있다.
+export { pickLocale, DEFAULT_PUSH_LOCALE } from '../i18n/pushMessages.js';
+export type { PushLocale } from '../i18n/pushMessages.js';
 
 export function pushTextFor(locale: string | null | undefined, body: string): { title: string; body: string } {
-  const texts = PUSH_TEXT[locale === 'en' ? 'en' : DEFAULT_PUSH_LOCALE];
-  return { title: texts.title, body: body.trim() ? body.slice(0, 100) : texts.fallbackBody };
+  const { title, body: text } = renderPush(resolvePushLocale(null, locale), { titleKey: 'reminderTitle', content: body, plainBody: true, emptyKey: 'reminderFallback' });
+  return { title, body: text };
 }
 
 // ── 소켓 ─────────────────────────────────────────────────────────────
@@ -253,9 +238,12 @@ async function deliverReminder(r: Reminder): Promise<void> {
 
   // 푸시: 접속 중이면 토스트로 충분하다. 방해금지는 shouldNotify가 막는다.
   if (isUserOnline(r.userId)) return;
-  const text = pushTextFor(r.locale, r.text ?? view.message?.excerpt ?? '');
   const url = view.dmGroupId ? `/g/${view.dmGroupId}` : view.dmUserId ? `/d/${view.dmUserId}` : r.channelId ? `/c/${r.channelId}` : '/';
-  await sendPushToUser(r.userId, { ...text, url }, { kind: 'reminder', channelId: r.channelId ?? undefined })
+  await sendPushToUser(
+    r.userId,
+    { titleKey: 'reminderTitle', content: r.text ?? view.message?.excerpt ?? '', plainBody: true, emptyKey: 'reminderFallback', url },
+    { kind: 'reminder', channelId: r.channelId ?? undefined, localeFallback: r.locale },
+  )
     .catch((err) => logError('Reminder push failed', err));
 }
 

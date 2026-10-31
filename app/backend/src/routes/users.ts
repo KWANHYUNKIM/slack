@@ -12,6 +12,8 @@ import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { displayNameSchema, stripHtml } from '../utils/authSchemas.js';
+import { localeSchema, timeZoneSchema } from '../utils/userPrefs.js';
+import { ERR } from '../utils/errorCodes.js';
 import { isUserOnline, presenceQueue } from '../websocket/index.js';
 import {
   STATUS_SELECT, MAX_STATUS_TEXT, MIN_FUTURE_MS, MAX_FUTURE_MS,
@@ -61,6 +63,9 @@ const updateProfileSchema = z.object({
     .refine(val => !val.includes('\u0000'), { message: 'Bio cannot contain null bytes' })
     .transform(stripHtml)
     .optional().nullable(),
+  // 다국어(i18n-3): 푸시 문구 언어와 날짜 경계 기본값. null이면 설정을 지운다.
+  locale: localeSchema.optional().nullable(),
+  timeZone: timeZoneSchema.optional().nullable(),
 });
 
 // GET /users/me - Get current user profile
@@ -78,6 +83,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
         role: true,
         status: true,
         bio: true,
+        locale: true,
+        timeZone: true,
         createdAt: true,
         updatedAt: true,
         ...STATUS_SELECT,
@@ -283,6 +290,8 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
         avatar: true,
         status: true,
         bio: true,
+        locale: true,
+        timeZone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -291,7 +300,8 @@ router.patch('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json(user);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.issues });
+      const prefIssue = error.issues.find((i) => i.message === ERR.INVALID_LOCALE || i.message === ERR.INVALID_TIME_ZONE);
+      res.status(400).json({ error: error.issues, code: prefIssue ? prefIssue.message : ERR.VALIDATION_FAILED });
       return;
     }
     logError('Update profile error', error);

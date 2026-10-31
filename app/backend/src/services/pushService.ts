@@ -2,6 +2,7 @@ import webpush from 'web-push';
 import prisma from '../db.js';
 import { logError } from '../utils/logger.js';
 import { isUserDnd } from './statusService.js';
+import { PushSpec, renderPush, resolvePushLocale } from '../i18n/pushMessages.js';
 
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@slawk.dev';
 
@@ -33,6 +34,8 @@ interface PushPayload {
 export interface NotifyContext {
   kind?: 'message' | 'mention' | 'dm' | 'thread' | 'reminder';
   channelId?: number;
+  /** User.locale이 없을 때 쓸 언어(리마인더를 만들 때 저장한 값) */
+  localeFallback?: string | null;
 }
 
 /**
@@ -45,7 +48,11 @@ export async function shouldNotify(userId: number, _ctx?: NotifyContext): Promis
   return true;
 }
 
-export async function sendPushToUser(userId: number, payload: PushPayload, ctx?: NotifyContext): Promise<void> {
+/**
+ * 푸시를 보낸다. input이 PushSpec(titleKey 포함)이면 수신자의 User.locale로 문구를 만든다.
+ * 미리 만든 PushPayload도 받는다(문구를 호출한 쪽이 책임진다).
+ */
+export async function sendPushToUser(userId: number, input: PushPayload | PushSpec, ctx?: NotifyContext): Promise<void> {
   if (!ensureConfigured()) return;
   if (!(await shouldNotify(userId, ctx))) return;
 
@@ -55,6 +62,13 @@ export async function sendPushToUser(userId: number, payload: PushPayload, ctx?:
 
   if (subscriptions.length === 0) return;
 
+  let payload: PushPayload;
+  if ('titleKey' in input) {
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { locale: true } });
+    payload = renderPush(resolvePushLocale(u?.locale, ctx?.localeFallback), input);
+  } else {
+    payload = input;
+  }
   const jsonPayload = JSON.stringify(payload);
   const expiredIds: number[] = [];
 
