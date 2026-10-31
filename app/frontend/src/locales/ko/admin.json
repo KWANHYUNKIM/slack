@@ -134,24 +134,63 @@
     "empty": "아직 설정된 웹훅이 없습니다"
   },
   "audit": {
-    "empty": "아직 감사 로그가 없습니다. 관리자 작업이 여기에 기록됩니다.",
-    "showing": "전체 {total}개 중 {shown}개 표시",
+    "empty": "조건에 맞는 감사 로그가 없습니다. 기록된 작업이 여기에 표시됩니다.",
     "loadMore": "더 보기",
-    "actions": {
-      "roleChanged": "역할 변경",
-      "deactivated": "비활성화",
-      "reactivated": "다시 활성화",
-      "archived": "보관",
-      "unarchived": "보관 해제",
-      "deleted": "삭제",
-      "edited": "수정",
-      "created": "생성"
-    },
     "targets": {
       "user": "사용자",
       "channel": "채널",
-      "invite": "초대"
-    }
+      "invite": "초대",
+      "webhook": "웹훅",
+      "message": "메시지",
+      "directMessage": "다이렉트 메시지",
+      "token": "액세스 토큰",
+      "auditLog": "감사 로그",
+      "mcpTool": "MCP 도구"
+    },
+    "action": {
+      "authLogin": "로그인",
+      "authLoginFailed": "로그인 실패",
+      "authLogout": "로그아웃",
+      "authPasswordChanged": "비밀번호 변경",
+      "userRoleChanged": "역할 변경",
+      "userDeactivated": "비활성화",
+      "userForceLogout": "강제 로그아웃",
+      "userReactivated": "다시 활성화",
+      "ownershipTransferred": "소유권 이전",
+      "ownerBootstrapped": "소유자 생성",
+      "channelCreated": "채널 생성",
+      "channelEdited": "채널 수정",
+      "channelArchived": "채널 보관",
+      "channelUnarchived": "채널 보관 해제",
+      "channelDeleted": "채널 삭제",
+      "channelMemberAdded": "멤버 추가",
+      "channelMemberRemoved": "멤버 제거",
+      "inviteCreated": "초대 생성",
+      "inviteDeleted": "초대 삭제",
+      "webhookCreated": "웹훅 생성",
+      "webhookDeleted": "웹훅 삭제",
+      "tokenCreate": "토큰 발급",
+      "tokenRevoke": "토큰 폐기",
+      "mcpToolCall": "MCP 도구 호출",
+      "auditExported": "감사 로그 내보내기"
+    },
+    "filters": {
+      "allActions": "모든 작업",
+      "actionsSelected": "작업 {count}개",
+      "actor": "수행자",
+      "allActors": "모든 수행자",
+      "targetType": "대상 종류",
+      "allTargets": "모든 대상",
+      "from": "시작",
+      "to": "끝",
+      "apply": "적용",
+      "reset": "초기화"
+    },
+    "export": {
+      "csv": "CSV 내보내기",
+      "json": "JSON 내보내기"
+    },
+    "unknownActor": "알 수 없음"
   },
   "errors": {
     "archiveChannel": "채널을 보관하지 못했습니다",
@@ -162,6 +201,7 @@
     "deleteInvite": "초대 링크를 삭제하지 못했습니다",
     "deleteWebhook": "웹훅을 삭제하지 못했습니다",
     "editChannel": "채널을 수정하지 못했습니다",
+    "exportAuditLog": "감사 로그를 내보내지 못했습니다",
     "fetchAuditLog": "감사 로그를 불러오지 못했습니다",
     "fetchChannels": "채널을 불러오지 못했습니다",
     "fetchInvites": "초대 링크를 불러오지 못했습니다",

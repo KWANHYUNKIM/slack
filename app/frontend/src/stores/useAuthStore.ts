@@ -49,6 +49,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     // Unsubscribe from push notifications before clearing auth
     useNotificationStore.getState().unsubscribe().catch(() => {});
+    // 감사 로그용 로그아웃 알림. 실패해도 로그아웃은 막지 않고, 페이지 이동 뒤에도 전송되게 keepalive를 쓴다.
+    const token = localStorage.getItem('token');
+    if (token) {
+      void fetch('/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, keepalive: true }).catch(() => {});
+    }
     localStorage.removeItem('token');
     // 최근 방문(06)은 사용자별 기록이라 로그아웃할 때 현재 사용자의 것을 지운다
     useSwitcherStore.getState().clearRecents();

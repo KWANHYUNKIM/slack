@@ -48,3 +48,10 @@ export function getTurnConfig() {
     credential: process.env.TURN_CREDENTIAL || '',
   };
 }
+
+// 감사 로그 보존 일수. 비우거나 0이면 무기한 보관한다(기본값).
+// 기본을 무기한으로 둔 이유: 삭제는 되돌릴 수 없고, 법적 보존 기간은 조직마다 달라서 운영자가 정하게 한다.
+export function getAuditRetentionDays(): number {
+  const days = Number.parseInt(process.env.AUDIT_LOG_RETENTION_DAYS ?? '', 10);
+  return Number.isInteger(days) && days > 0 ? days : 0;
+}

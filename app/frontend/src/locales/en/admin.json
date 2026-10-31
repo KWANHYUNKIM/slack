@@ -134,24 +134,63 @@
     "empty": "No webhooks configured yet"
   },
   "audit": {
-    "empty": "No audit log entries yet. Admin actions will be recorded here.",
-    "showing": "Showing {shown} of {total} entries",
+    "empty": "No audit log entries match. Recorded actions appear here.",
     "loadMore": "Load more",
-    "actions": {
-      "roleChanged": "Role Changed",
-      "deactivated": "Deactivated",
-      "reactivated": "Reactivated",
-      "archived": "Archived",
-      "unarchived": "Unarchived",
-      "deleted": "Deleted",
-      "edited": "Edited",
-      "created": "Created"
-    },
     "targets": {
       "user": "User",
       "channel": "Channel",
-      "invite": "Invite"
-    }
+      "invite": "Invite",
+      "webhook": "Webhook",
+      "message": "Message",
+      "directMessage": "Direct message",
+      "token": "Access token",
+      "auditLog": "Audit log",
+      "mcpTool": "MCP tool"
+    },
+    "action": {
+      "authLogin": "Signed in",
+      "authLoginFailed": "Sign-in failed",
+      "authLogout": "Signed out",
+      "authPasswordChanged": "Password changed",
+      "userRoleChanged": "Role changed",
+      "userDeactivated": "Deactivated",
+      "userForceLogout": "Forced sign-out",
+      "userReactivated": "Reactivated",
+      "ownershipTransferred": "Ownership transferred",
+      "ownerBootstrapped": "Owner created",
+      "channelCreated": "Channel created",
+      "channelEdited": "Channel edited",
+      "channelArchived": "Channel archived",
+      "channelUnarchived": "Channel unarchived",
+      "channelDeleted": "Channel deleted",
+      "channelMemberAdded": "Member added",
+      "channelMemberRemoved": "Member removed",
+      "inviteCreated": "Invite created",
+      "inviteDeleted": "Invite deleted",
+      "webhookCreated": "Webhook created",
+      "webhookDeleted": "Webhook deleted",
+      "tokenCreate": "Token created",
+      "tokenRevoke": "Token revoked",
+      "mcpToolCall": "MCP tool call",
+      "auditExported": "Audit log exported"
+    },
+    "filters": {
+      "allActions": "All actions",
+      "actionsSelected": "{count, plural, one {# action} other {# actions}}",
+      "actor": "Actor",
+      "allActors": "All actors",
+      "targetType": "Target type",
+      "allTargets": "All targets",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "reset": "Reset"
+    },
+    "export": {
+      "csv": "Export CSV",
+      "json": "Export JSON"
+    },
+    "unknownActor": "Unknown"
   },
   "errors": {
     "archiveChannel": "Failed to archive channel",
@@ -162,6 +201,7 @@
     "deleteInvite": "Failed to delete invite",
     "deleteWebhook": "Failed to delete webhook",
     "editChannel": "Failed to edit channel",
+    "exportAuditLog": "Failed to export audit log",
     "fetchAuditLog": "Failed to fetch audit log",
     "fetchChannels": "Failed to fetch channels",
     "fetchInvites": "Failed to fetch invites",
