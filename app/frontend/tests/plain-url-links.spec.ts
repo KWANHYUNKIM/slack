@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, sendMessage, clickChannel, waitForMessage , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, sendMessage, clickChannel, TEST_PASSWORD } from './helpers';
 
 test.describe('Plain URL auto-linking', () => {
   test('plain URLs in messages are rendered as clickable links', async ({ page }) => {

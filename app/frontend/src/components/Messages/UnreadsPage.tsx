@@ -54,14 +54,17 @@ export function UnreadsPage() {
           </div>
         ) : (
           <div className="space-y-1">
-            {messages.map((msg) => (
+            {messages.map((msg) => {
+              const channel = msg.channel;
+              if (!channel) return null;
+              return (
               <div
                 key={msg.id}
                 className="flex items-start gap-3 rounded-lg p-3 hover:bg-slack-hover cursor-pointer group"
-                onClick={() => navigate(`/c/${msg.channel.id}`, { state: { scrollToMessageId: msg.id } })}
+                onClick={() => navigate(`/c/${channel.id}`, { state: { scrollToMessageId: msg.id } })}
               >
                 <Avatar
-                  src={msg.user.avatar ?? undefined}
+                  src={msg.user.avatar}
                   alt={msg.user.name}
                   fallback={msg.user.name}
                   size="md"
@@ -81,11 +84,12 @@ export function UnreadsPage() {
                   </div>
                   <div className="flex items-center gap-1 mt-1 text-[12px] text-slack-hint">
                     <Hash className="h-3 w-3" />
-                    <span>{msg.channel.name}</span>
+                    <span>{channel.name}</span>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

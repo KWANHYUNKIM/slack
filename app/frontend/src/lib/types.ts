@@ -1,10 +1,19 @@
+export type UserStatus = 'online' | 'away' | 'dnd' | 'offline';
+
+const USER_STATUSES: readonly string[] = ['online', 'away', 'dnd', 'offline'];
+
+/** Narrow a server-provided status string; unknown values give undefined. */
+export function toUserStatus(status: string | undefined): UserStatus | undefined {
+  return status !== undefined && USER_STATUSES.includes(status) ? (status as UserStatus) : undefined;
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
   avatar?: string | null;
   role?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
-  status?: 'online' | 'away' | 'dnd' | 'offline';
+  status?: UserStatus;
   displayName?: string;
 }
 
@@ -45,11 +54,17 @@ export interface MessageFile {
   url: string;
 }
 
+/** Author info embedded in a message (the API does not send email or role). */
+export type MessageUser = Pick<User, 'id' | 'name' | 'avatar' | 'displayName'>;
+
+/** Entry in the @mention dropdown; the @here pseudo-user has no email. */
+export type MentionUser = Pick<User, 'id' | 'name' | 'avatar'>;
+
 export interface Message {
   id: number;
   content: string;
   userId: number;
-  user: User;
+  user: MessageUser;
   channelId: number;
   createdAt: Date;
   updatedAt?: Date;

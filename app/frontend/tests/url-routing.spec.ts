@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, clickChannel , TEST_PASSWORD } from './helpers';
 
 test.describe('URL-based channel navigation', () => {
   test('clicking a channel updates the URL', async ({ page }) => {

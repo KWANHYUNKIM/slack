@@ -1,4 +1,4 @@
-import { useEffect, useRef, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Picker } from 'emoji-mart';
 import data from '@emoji-mart/data';
@@ -14,8 +14,10 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
   const onEmojiSelectRef = useRef(onEmojiSelect);
   const onClickOutsideRef = useRef(onClickOutside);
 
-  onEmojiSelectRef.current = onEmojiSelect;
-  onClickOutsideRef.current = onClickOutside;
+  useLayoutEffect(() => {
+    onEmojiSelectRef.current = onEmojiSelect;
+    onClickOutsideRef.current = onClickOutside;
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -63,13 +65,14 @@ export function PortalEmojiPicker({
   onClickOutside,
   anchorClassName,
 }: PortalEmojiPickerProps) {
-  const anchorRef = useRef<HTMLDivElement>(null);
   const onClickOutsideRef = useRef(onClickOutside);
-  onClickOutsideRef.current = onClickOutside;
+  useLayoutEffect(() => {
+    onClickOutsideRef.current = onClickOutside;
+  });
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  useLayoutEffect(() => {
-    const anchor = anchorRef.current;
+  // Measure the anchor as soon as it is attached (runs during commit, before paint)
+  const anchorRef = useCallback((anchor: HTMLDivElement | null) => {
     if (!anchor) return;
 
     const anchorRect = anchor.getBoundingClientRect();

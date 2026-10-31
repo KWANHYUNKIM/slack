@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { getChannelMembers, getUsers, addChannelMember, getChannel, type ChannelMember, type AuthUser } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
-import { Button } from '@/components/ui/button';
 import { ProfileModal } from '@/components/ProfileModal';
 import { PanelHeader } from './PanelHeader';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -29,8 +28,14 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
   const [confirmRemove, setConfirmRemove] = useState<{ userId: number; userName: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  const fetchMembers = () => {
+  // Show the spinner again when the panel is pointed at another channel
+  const [loadedChannelId, setLoadedChannelId] = useState(channelId);
+  if (loadedChannelId !== channelId) {
+    setLoadedChannelId(channelId);
     setIsLoading(true);
+  }
+
+  const loadMembers = useCallback(() => {
     getChannelMembers(channelId)
       .then((data) => {
         setMembers(data);
@@ -40,10 +45,16 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
       })
       .catch(() => setLoadError('Failed to load members.'))
       .finally(() => setIsLoading(false));
-  };
+  }, [channelId]);
+
+  // Refresh the member list, showing the spinner again
+  const fetchMembers = useCallback(() => {
+    setIsLoading(true);
+    loadMembers();
+  }, [loadMembers]);
 
   useEffect(() => {
-    fetchMembers();
+    loadMembers();
     // Fetch channel details to get creator and current user's role
     getChannel(channelId).then((channel) => {
       setChannelCreatorId(channel.createdBy ?? null);
@@ -52,7 +63,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
     }).catch(() => {
       // Ignore error, user may not have access
     });
-  }, [channelId, currentUser?.id]);
+  }, [channelId, currentUser?.id, loadMembers]);
 
   // Listen for real-time presence updates
   useEffect(() => {
@@ -97,7 +108,7 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
     return () => {
       socket.off('channel:member-left', handleMemberLeft);
     };
-  }, [channelId]);
+  }, [channelId, fetchMembers]);
 
   const handleRemoveMember = async (userId: number, userName: string) => {
     setConfirmRemove({ userId, userName });
@@ -116,8 +127,8 @@ export function MembersPanel({ channelId, onClose }: MembersPanelProps) {
       }
       setConfirmRemove(null);
       // Member list will refresh via WebSocket channel:member-left event
-    } catch (error: any) {
-      alert(error.message || 'Failed to remove member');
+    } catch (error) {
+      alert((error instanceof Error && error.message) || 'Failed to remove member');
     } finally {
       setRemoving(false);
     }
@@ -280,10 +291,7 @@ function AddPeopleForm({
   }, []);
 
   useEffect(() => {
-    if (query.length < 1) {
-      setResults([]);
-      return;
-    }
+    if (query.length < 1) return;
     const timer = setTimeout(async () => {
       try {
         const users = await getUsers(query);
@@ -309,7 +317,10 @@ function AddPeopleForm({
         ref={inputRef}
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (e.target.value.length < 1) setResults([]);
+        }}
         placeholder="Search by name..."
         className="w-full rounded border border-slack-border px-2 py-1 text-[13px] outline-none focus:border-slack-link"
       />

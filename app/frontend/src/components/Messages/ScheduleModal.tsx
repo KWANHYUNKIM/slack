@@ -9,13 +9,17 @@ interface ScheduleModalProps {
   isScheduling: boolean;
 }
 
+// 1 minute from now as a datetime-local value (user's local timezone)
+function getLocalDatetimeOneMinuteAhead(): string {
+  const d = new Date(Date.now() + 60 * 1000);
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
 export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleModalProps) {
-  // Default to 1 minute from now (user's local timezone)
-  const [customScheduleAt, setCustomScheduleAt] = useState(() => {
-    const d = new Date(Date.now() + 60 * 1000);
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
-  });
+  // Earliest allowed time, fixed when the modal opens
+  const [minScheduleAt] = useState(getLocalDatetimeOneMinuteAhead);
+  const [customScheduleAt, setCustomScheduleAt] = useState(getLocalDatetimeOneMinuteAhead);
 
   return (
     <div
@@ -42,7 +46,7 @@ export function ScheduleModal({ onSchedule, onClose, isScheduling }: ScheduleMod
             type="datetime-local"
             value={customScheduleAt}
             onChange={(e) => setCustomScheduleAt(e.target.value)}
-            min={(() => { const d = new Date(Date.now() + 60 * 1000); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
+            min={minScheduleAt}
             className="h-9 w-full rounded-md border border-slack-border-dark px-3 text-[14px] text-slack-primary outline-none focus:border-slack-link focus:ring-1 focus:ring-slack-link"
           />
         </div>

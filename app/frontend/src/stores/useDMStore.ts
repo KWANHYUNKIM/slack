@@ -56,7 +56,7 @@ function transformDM(dm: ApiDirectMessage): DMMessage {
     replyCount: dm._count?.replies ?? 0,
     threadParticipants: dm.threadParticipants ?? [],
     reactions: groupReactions(dm.reactions),
-    files: (dm.files ?? []).map((f: any) => ({
+    files: (dm.files ?? []).map((f) => ({
       id: f.id,
       filename: f.filename,
       originalName: f.originalName ?? f.filename,
@@ -379,7 +379,8 @@ export const useDMStore = create<DMState>((set, get) => ({
 
   clearConversation: (userId: number) => {
     set((state) => {
-      const { [userId]: _, ...rest } = state.messages;
+      const rest = { ...state.messages };
+      delete rest[userId];
       return { messages: rest };
     });
   },

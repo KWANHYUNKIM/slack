@@ -17,9 +17,15 @@ export function PinsPanel({ channelId, onClose }: PinsPanelProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const fetchPins = useCallback(() => {
+  // Show the spinner again when the panel is pointed at another channel
+  const [loadedChannelId, setLoadedChannelId] = useState(channelId);
+  if (loadedChannelId !== channelId) {
+    setLoadedChannelId(channelId);
     setIsLoading(true);
     setLoadError(null);
+  }
+
+  const fetchPins = useCallback(() => {
     getPinnedMessages(channelId)
       .then((data) => setPins(data))
       .catch(() => setLoadError('Failed to load pinned messages.'))

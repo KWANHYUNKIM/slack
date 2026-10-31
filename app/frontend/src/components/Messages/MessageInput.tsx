@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
+import type { Delta } from 'quill';
 import {
   SendHorizontal,
   ChevronDown,
@@ -20,7 +21,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import { ErrorBanner, SuccessBanner } from '@/components/ui/ErrorBanner';
 
 // Per-channel/DM draft storage (session-only, survives channel switches)
-const drafts = new Map<string, any>();
+const drafts = new Map<string, Delta>();
 
 function getDraftKey(channelId?: number, dmParticipantIds?: number[]): string {
   if (channelId) return `ch:${channelId}`;

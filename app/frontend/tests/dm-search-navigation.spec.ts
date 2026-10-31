@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { register, uniqueEmail, login , TEST_PASSWORD } from './helpers';
+import { register, uniqueEmail, TEST_PASSWORD } from './helpers';
 
 test.describe('DM search result navigation', () => {
   const suffix = Date.now().toString();

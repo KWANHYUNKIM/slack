@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import * as api from '@/lib/api';
 import { clearDownloadToken } from '@/lib/api';
 import { disconnectSocket } from '@/lib/socket';
-import type { User } from '@/lib/types';
+import { toUserStatus, type User } from '@/lib/types';
 import { useNotificationStore } from './useNotificationStore';
 
 let storageListenerRegistered = false;
@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               name: profile.name,
               avatar: profile.avatar,
               role: profile.role,
-              status: profile.status as any,
+              status: toUserStatus(profile.status),
             },
             isHydrating: false,
           });

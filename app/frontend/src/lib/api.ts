@@ -93,11 +93,11 @@ export function clearDownloadToken(): void {
 }
 
 class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-  ) {
+  status: number;
+
+  constructor(message: string, status: number) {
     super(message);
+    this.status = status;
     this.name = 'ApiError';
   }
 }
@@ -250,7 +250,7 @@ export function unpinDM(dmId: number) {
 }
 
 export function getPinnedDMs(userId: number) {
-  return request<any[]>(`/dms/${userId}/pins`);
+  return request<ApiDirectMessage[]>(`/dms/${userId}/pins`);
 }
 
 // ---- Messages ----
@@ -262,6 +262,15 @@ export interface ApiReaction {
   messageId: number;
   createdAt: string;
   user: { id: number; name: string };
+}
+
+export interface ApiMessageFile {
+  id: number;
+  filename: string;
+  originalName?: string;
+  mimetype: string;
+  size: number;
+  url: string;
 }
 
 export interface ApiMessage {
@@ -280,7 +289,7 @@ export interface ApiMessage {
   user: { id: number; name: string; email: string; avatar?: string | null };
   channel?: { id: number; name: string };
   reactions: ApiReaction[];
-  files: { id: number; filename: string; originalName: string; mimetype: string; size: number; url: string }[];
+  files: ApiMessageFile[];
   _count: { replies: number };
   threadParticipants?: { id: number; name: string; avatar: string | null }[];
 }
@@ -522,6 +531,7 @@ export interface ApiDirectMessage {
   fromUser: { id: number; name: string; email: string; avatar?: string | null };
   toUser: { id: number; name: string; email: string; avatar?: string | null };
   reactions?: ApiDMReaction[];
+  files?: ApiMessageFile[];
   _count?: { replies: number };
   threadParticipants?: { id: number; name: string; avatar: string | null }[];
 }

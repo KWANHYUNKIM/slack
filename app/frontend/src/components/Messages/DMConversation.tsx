@@ -35,7 +35,7 @@ import { PanelHeader } from './PanelHeader';
 import { HuddleButton } from '@/components/Huddle/HuddleButton';
 import { HuddleSystemMessage } from '@/components/Huddle/HuddleInvite';
 import { renderMessageContent } from '@/lib/renderMessageContent';
-import { markDMUnread, pinDM, unpinDM, getPinnedDMs, getFileUrl, getAuthFileUrl } from '@/lib/api';
+import { markDMUnread, pinDM, unpinDM, getPinnedDMs, getFileUrl, getAuthFileUrl, type ApiDirectMessage } from '@/lib/api';
 import { useMobileStore } from '@/stores/useMobileStore';
 import type { DMMessage } from '@/stores/useDMStore';
 
@@ -74,7 +74,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const [showEmojiPickerId, setShowEmojiPickerId] = useState<number | null>(null);
   const [showPins, setShowPins] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
-  const [pinnedMessages, setPinnedMessages] = useState<DMMessage[]>([]);
+  const [pinnedMessages, setPinnedMessages] = useState<ApiDirectMessage[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [isStarred, setIsStarred] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -86,7 +86,7 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   const isAtBottom = useRef(true);
   const messageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const didScrollToTarget = useRef(false);
-  const hoverLeaveTimer = useRef<ReturnType<typeof setTimeout>>();
+  const hoverLeaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const currentUser = useAuthStore((s) => s.user);
   const openSidebar = useMobileStore((s) => s.openSidebar);
   const isSelf = userId === currentUser?.id;
@@ -114,7 +114,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
     const el = messageRefs.current.get(dmScrollToMessageId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedId(dmScrollToMessageId);
+      // Deferred so the highlight state is not set synchronously inside the effect
+      queueMicrotask(() => setHighlightedId(dmScrollToMessageId));
       didScrollToTarget.current = true;
       useChannelStore.setState({ dmScrollToMessageId: null });
     }
@@ -223,14 +224,17 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
   );
 
   // Close thread panel when switching conversations
-  useEffect(() => {
+  const [threadUserId, setThreadUserId] = useState(userId);
+  if (threadUserId !== userId) {
+    setThreadUserId(userId);
     setActiveThreadId(null);
-  }, [userId]);
+  }
 
   // Memoize dmParticipantIds to prevent MessageInput re-renders
+  const currentUserId = currentUser?.id;
   const dmParticipantIds = useMemo(
-    () => (currentUser ? [currentUser.id, userId] : [userId]),
-    [currentUser?.id, userId]
+    () => (currentUserId !== undefined ? [currentUserId, userId] : [userId]),
+    [currentUserId, userId]
   );
 
   // Memoize placeholder to prevent MessageInput re-renders

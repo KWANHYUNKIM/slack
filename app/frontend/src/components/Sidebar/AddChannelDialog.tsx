@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Hash, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,14 +29,16 @@ export function AddChannelDialog({
   const [createChannelError, setCreateChannelError] = useState('');
 
   // Reset state when dialog opens
-  useEffect(() => {
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (open) {
       setAddChannelMode('create');
       setNewChannelName('');
       setIsPrivate(false);
       setCreateChannelError('');
     }
-  }, [open]);
+  }
 
   if (!open) return null;
 

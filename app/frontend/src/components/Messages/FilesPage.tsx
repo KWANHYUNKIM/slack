@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { FileText, Download, Menu } from 'lucide-react';
 import { format } from 'date-fns';
 import { getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
-import { formatBytes, FileIcon } from '@/lib/fileUtils';
+import { formatBytes } from '@/lib/fileUtils';
+import { FileIcon } from './FileIcon';
 import { ImageLightbox } from './ImageLightbox';
 import { useMobileStore } from '@/stores/useMobileStore';
 

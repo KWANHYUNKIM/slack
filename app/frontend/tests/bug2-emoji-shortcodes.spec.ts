@@ -29,7 +29,7 @@ test.describe('Bug #2: Emoji shortcodes render as unicode', () => {
     }
 
     const channelsData = await channelsResp.json();
-    const generalChannel = channelsData.find((c: any) => c.name === 'general');
+    const generalChannel = channelsData.find((c: { id: number; name: string }) => c.name === 'general');
     const channelId = generalChannel?.id;
 
     if (!channelId) {
@@ -48,7 +48,7 @@ test.describe('Bug #2: Emoji shortcodes render as unicode', () => {
     }
 
     const messagesData = await messagesResp.json();
-    const message = messagesData.messages?.find((m: any) => m.content === msg);
+    const message = messagesData.messages?.find((m: { content: string }) => m.content === msg);
 
     if (!message) {
       // If message not found, skip

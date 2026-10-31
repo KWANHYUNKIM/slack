@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Clock, Hash, Pencil, Send, Trash2, X } from 'lucide-react';
+import { Clock, Hash, Pencil, Send, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   getScheduledMessages,
@@ -20,8 +20,7 @@ export function ScheduledMessagesTab() {
   const [editTime, setEditTime] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const fetchMessages = useCallback(() => {
-    setIsLoading(true);
+  const loadMessages = useCallback(() => {
     getScheduledMessages()
       .then((data) => {
         setMessages(data);
@@ -31,9 +30,15 @@ export function ScheduledMessagesTab() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  // Reload after a failed action, showing the spinner again
+  const fetchMessages = useCallback(() => {
+    setIsLoading(true);
+    loadMessages();
+  }, [loadMessages]);
+
   useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+    loadMessages();
+  }, [loadMessages]);
 
   const handleCancel = async (id: number) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));

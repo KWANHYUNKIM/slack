@@ -75,9 +75,13 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
   // After messages load, persist the read state to the backend so the
   // unread badge does not reappear on page reload.
   // Only mark as read if user is at/near the bottom of the message list.
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  });
   useEffect(() => {
     if (readOnly || messages.length === 0) return;
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = messagesRef.current[messagesRef.current.length - 1];
     // Update in-memory unread count immediately (clears badge)
     markChannelAsRead(channelId);
     // Only persist to backend if user is at/near bottom
@@ -94,7 +98,8 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
     const el = messageRefs.current.get(scrollToMessageId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedId(scrollToMessageId);
+      // Deferred so the highlight state is not set synchronously inside the effect
+      queueMicrotask(() => setHighlightedId(scrollToMessageId));
       didScrollToTarget.current = true;
       useChannelStore.setState({ scrollToMessageId: null });
     }

@@ -20,12 +20,16 @@ export function AddTeammatesDialog({
   const { teammates, searchTeammates } = useChannelActions();
   const currentUser = useAuthStore((s) => s.user);
 
+  // Clear the search box when dialog opens
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (open) setTeammateSearch('');
+  }
+
   // Load all teammates when dialog opens
   useEffect(() => {
-    if (open) {
-      setTeammateSearch('');
-      searchTeammates('');
-    }
+    if (open) searchTeammates('');
   }, [open, searchTeammates]);
 
   if (!open) return null;

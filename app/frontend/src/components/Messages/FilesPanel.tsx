@@ -4,7 +4,8 @@ import { format } from 'date-fns';
 import { getChannelFiles, getUserFiles, getAuthFileUrl, getFileUrl, refreshDownloadToken, type ApiFileWithUser } from '@/lib/api';
 import { ImageLightbox } from './ImageLightbox';
 import { PanelHeader } from './PanelHeader';
-import { formatBytes, FileIcon } from '@/lib/fileUtils';
+import { formatBytes } from '@/lib/fileUtils';
+import { FileIcon } from './FileIcon';
 
 interface FilesPanelProps {
   channelId?: number;
@@ -20,8 +21,14 @@ export function FilesPanel({ channelId, onClose, title }: FilesPanelProps) {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState('');
 
-  const fetchFiles = useCallback(() => {
+  // Show the spinner again when the panel is pointed at another channel
+  const [loadedChannelId, setLoadedChannelId] = useState(channelId);
+  if (loadedChannelId !== channelId) {
+    setLoadedChannelId(channelId);
     setIsLoading(true);
+  }
+
+  const fetchFiles = useCallback(() => {
     const fetchFn = channelId ? getChannelFiles(channelId) : getUserFiles();
     Promise.all([fetchFn, refreshDownloadToken()])
       .then(([data]) => {

@@ -9,6 +9,7 @@ import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
+import { toUserStatus } from '@/lib/types';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
@@ -69,13 +70,13 @@ function RouteSync() {
         navigate('/', { replace: true });
         return;
       }
-      const scrollRaw = (location.state as any)?.scrollToMessageId;
+      const scrollRaw = (location.state as { scrollToMessageId?: unknown } | null)?.scrollToMessageId;
       const scrollToMessageId = typeof scrollRaw === 'number' && scrollRaw > 0 ? scrollRaw : undefined;
       setActiveChannel(id, scrollToMessageId);
     } else if (userId) {
       const id = parseInt(userId, 10);
       if (!isNaN(id) && id > 0) {
-        const dmScrollRaw = (location.state as any)?.scrollToMessageId;
+        const dmScrollRaw = (location.state as { scrollToMessageId?: unknown } | null)?.scrollToMessageId;
         const dmScrollToMessageId = typeof dmScrollRaw === 'number' && dmScrollRaw > 0 ? dmScrollRaw : undefined;
         setActiveDM(id, dmScrollToMessageId);
       }
@@ -357,8 +358,9 @@ function AppShell() {
       updateDMStatus(data.userId, data.status as import('@/lib/types').DirectMessage['userStatus']);
       // Also update own status in auth store when server confirms our presence
       const currentUser = useAuthStore.getState().user;
-      if (currentUser && data.userId === currentUser.id) {
-        useAuthStore.getState().updateUser({ status: data.status as any });
+      const status = toUserStatus(data.status);
+      if (currentUser && status && data.userId === currentUser.id) {
+        useAuthStore.getState().updateUser({ status });
       }
     };
 
