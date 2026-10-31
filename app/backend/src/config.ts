@@ -22,6 +22,23 @@ function resolveJwtSecret(): string {
 
 export const JWT_SECRET = resolveJwtSecret();
 
+// STUN_PUBLIC_PORT: 컨테이너 밖에서 보이는 포트가 안쪽 포트와 다를 때(예: 호스트 34780 → 컨테이너 3478) 광고할 포트.
+// 비었거나 1~65535 정수가 아니면 null이고, 그때는 실제 바인드 포트를 광고한다.
+export function parseStunPublicPort(raw: string | undefined): number | null {
+  const value = (raw ?? '').trim();
+  if (!/^\d{1,5}$/.test(value)) return null;
+  const port = Number(value);
+  return port >= 1 && port <= 65535 ? port : null;
+}
+
+// 잘못된 STUN_PUBLIC_PORT는 시작 시 한 번만 경고하고 무시한다(index.ts에서 호출).
+export function warnIfInvalidStunPublicPort(): boolean {
+  const raw = (process.env.STUN_PUBLIC_PORT ?? '').trim();
+  if (raw === '' || parseStunPublicPort(raw) !== null) return false;
+  console.warn(`STUN_PUBLIC_PORT is not a valid port (1-65535): "${raw}"; the bound STUN port is advertised instead`);
+  return true;
+}
+
 // 내장 STUN / 허들 ICE 설정. dotenv가 app.ts에서 늦게 로드되므로 호출 시점에 env를 읽는다.
 export function getStunConfig() {
   const port = Number.parseInt(process.env.STUN_PORT ?? '', 10);
@@ -34,6 +51,8 @@ export function getStunConfig() {
     host: process.env.STUN_HOST || '0.0.0.0',
     // 클라이언트에 광고할 공인 호스트. production에서는 Host 헤더를 믿지 않고 이 값만 쓴다.
     publicHost: (process.env.STUN_PUBLIC_HOST || '').trim(),
+    // 클라이언트에 광고할 공인 포트. null이면 실제 바인드 포트를 쓴다.
+    publicPort: parseStunPublicPort(process.env.STUN_PUBLIC_PORT),
   };
 }
 
