@@ -50,7 +50,7 @@ test('emoji-mart 폴백 문자열만 있으면 허용 목록으로 통과한다'
     'a=await e(`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/${v}/${s}.json`);' +
     'b=`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/i18n/${l}.json`;' +
     'c=`https://cdn.jsdelivr.net/npm/emoji-datasource-${p.set}@15.0.1/img/${p.set}/64/${u}.png`;';
-  const r = run({ 'assets/vendor.js': body });
+  const r = run({ 'assets/emoji-mart-Bx_9-aZ.js': body });
   assert.equal(r.status, 0, r.stderr);
 });
 
@@ -58,12 +58,35 @@ test('허용된 emoji-mart 문자열 옆에 다른 jsdelivr 요청이 있으면 
   const body =
     '`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/${v}/${s}.json`;' +
     'fetch("https://cdn.jsdelivr.net/npm/other-lib@1/data.json")';
-  const r = run({ 'assets/vendor.js': body });
+  const r = run({ 'assets/emoji-mart-Bx_9-aZ.js': body });
   assert.equal(r.status, 1);
 });
 
+test('빈 dist(파일 없음)는 통과가 아니라 실패다', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'dist-cdn-empty-'));
+  try {
+    mkdirSync(join(dir, 'assets'));
+    const r = spawnSync('bash', [script, dir], { cwd: root, encoding: 'utf8' });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /검사할 파일이 없다/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('앱 코드 청크에 CDN 문자열이 있으면 emoji-mart 청크가 함께 있어도 실패한다', () => {
+  const fallback = '`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/${v}/${s}.json`';
+  const r = run({
+    'assets/emoji-mart-Bx_9-aZ.js': fallback,
+    'assets/index-Cx9f.js': 'fetch("https://cdn.jsdelivr.net/npm/other@1/a.json")',
+  });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /index-Cx9f\.js/);
+  assert.doesNotMatch(r.stderr, /emoji-mart-Bx_9-aZ\.js/);
+});
+
 test('허용 경로 밖의 파일에서는 emoji-mart 문자열도 실패한다', () => {
-  const r = run({ 'src/main.js': '`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/${v}/${s}.json`' });
+  const r = run({ 'assets/index-Cx9f.js': '`https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/${v}/${s}.json`' });
   assert.equal(r.status, 1);
 });
 

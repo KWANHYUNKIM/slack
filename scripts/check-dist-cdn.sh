@@ -17,7 +17,14 @@ for t in "${targets[@]}"; do
   [ -e "$t" ] || { echo "검사 대상이 없다: $t (빌드를 먼저 실행)" >&2; exit 1; }
 done
 
-hits=$(find "${targets[@]}" -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.css' -o -name '*.html' -o -name '*.json' -o -name '*.svg' \) -print0 \
+files=$(find "${targets[@]}" -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.css' -o -name '*.html' -o -name '*.json' -o -name '*.svg' \))
+# 검사할 파일이 없으면 통과가 아니라 실패다 (빈 dist는 빌드 실패로 본다)
+if [ -z "$files" ]; then
+  echo "검사할 파일이 없다: ${targets[*]} (빌드 산출물이 비어 있다, 빌드를 먼저 확인)" >&2
+  exit 1
+fi
+
+hits=$(printf '%s\n' "$files" | tr '\n' '\0' \
   | xargs -0 -n1 perl -e '
     my $path = $ARGV[0];
     my @allow;

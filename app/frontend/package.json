@@ -17,7 +17,7 @@
     "admin:test": "node --test scripts/admin-rollback.test.ts",
     "desktop:test": "node --test scripts/desktop.test.ts",
     "filetokens:test": "node --test scripts/file-tokens.test.ts",
-    "emoji:test": "node --test scripts/emoji-lookup.test.ts"
+    "emoji:test": "node --test scripts/emoji-lookup.test.ts scripts/emoji-store.test.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",

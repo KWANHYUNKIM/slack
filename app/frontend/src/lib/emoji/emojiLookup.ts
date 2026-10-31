@@ -23,6 +23,25 @@ export function shortcodeToNative(data: EmojiMartData | null, emoji: string): st
   return data?.emojis?.[key]?.skins?.[0]?.native ?? emoji;
 }
 
+/**
+ * 전송 직전에 남은 :단축코드:를 네이티브 이모지로 바꾼다.
+ * 입력 중 변환과 같은 규칙(앞이 문장 시작이나 공백, 코드 2자 이상, 공백 없음)이고 코드 스팬·블록 안은 건드리지 않는다.
+ */
+export function replaceShortcodes(text: string, data: EmojiMartData): string {
+  const index = buildEmojiMap(buildEmojiIndex(data));
+  return text
+    .split(/(```[\s\S]*?```|`[^`\n]*`)/)
+    .map((part, i) =>
+      i % 2 === 1
+        ? part
+        : part.replace(/(^|\s):([^\s:]{2,}):/g, (m, pre: string, code: string) => {
+            const hit = index.get(code.toLowerCase());
+            return hit ? pre + hit.native : m;
+          }),
+    )
+    .join('');
+}
+
 /** 자동완성용 검색 목록. 별칭도 같은 이모지를 가리키는 항목으로 넣는다. */
 export function buildEmojiIndex(data: EmojiMartData): EmojiIndexEntry[] {
   const { emojis, aliases = {} } = data;

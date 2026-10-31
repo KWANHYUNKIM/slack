@@ -7,6 +7,15 @@ export default defineConfig({
   plugins: [react()],
   build: {
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        // emoji-mart 라이브러리를 이름 있는 청크(assets/emoji-mart-[hash].js)로 분리한다.
+        // 라이브러리에 남는 jsdelivr 폴백 문자열을 scripts/dist-cdn.allow가 이 청크에만 허용하기 위해서다.
+        manualChunks(id) {
+          if (id.includes('/node_modules/emoji-mart/')) return 'emoji-mart';
+        },
+      },
+    },
   },
   esbuild: {
     drop: ['console', 'debugger'],

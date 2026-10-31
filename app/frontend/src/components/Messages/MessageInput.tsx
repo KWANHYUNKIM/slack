@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import { scheduleMessage } from '@/lib/api';
 import { serializeDelta } from '@/lib/serializeDelta';
+import { convertShortcodesForSend } from '@/lib/emoji/emojiData';
 import { LinkModal } from './LinkModal';
 import { ScheduleModal } from './ScheduleModal';
 import { ScheduleMenu } from './ScheduleMenu';
@@ -68,7 +69,8 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
   const handleSend = useCallback(async () => {
     const quill = editor.quillRef.current;
     if (!quill) return;
-    const text = serializeDelta(quill);
+    // 입력 중 변환이 못 된 :단축코드:는 전송 직전에 바꾼다 (데이터가 늦으면 원문 그대로)
+    const text = await convertShortcodesForSend(serializeDelta(quill));
     if (!text && editor.pendingFiles.length === 0) return;
     const content = text || '';
     // /remind 는 채널 메시지로 저장하지 않고 리마인더로 만든다(파싱 오류는 입력창 아래에 안내)
@@ -108,7 +110,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
     async (scheduledAt: Date) => {
       const quill = editor.quillRef.current;
       if (!quill || !channelId) return;
-      const text = serializeDelta(quill);
+      const text = await convertShortcodesForSend(serializeDelta(quill));
       if (!text) return;
 
       setIsScheduling(true);

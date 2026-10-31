@@ -208,3 +208,7 @@
 | 2026-11-01 00:05 | ops-followups 검토: 개발자가 남긴 문서 불일치 3곳(보안 문서 자동 업데이트 문장, electron-builder 주석, 첫 OWNER 문구)은 사소해 총괄이 같은 브랜치에서 직접 수정 → PR #61, /code-review low |
 | 2026-11-01 00:06 | PR #61 리뷰 지적 없음 → 머지 |
 | 2026-11-01 00:07 | 배정: dev-4 i18n-3 backend(오류 code, User.locale·timeZone, 푸시 문구 번역). 자원 정상(여유 30%, 스왑 88%), 3명(dev-1 이모지 CDN, dev-2 PR #58, dev-4) |
+| 2026-11-01 00:12 | 실수: PR #58 머지 명령을 `rebase && 검증; fetch && commit-tree && push && merge`로 이어 붙여, 리베이스가 websocket/index.ts 충돌로 멈춘 상태에서 HEAD(=main) 트리로 병합 커밋을 만들어 푸시하고 머지함 → main에 빈 커밋(99e6785) 생김, 코드 손상 없음(diff 0 확인). 충돌 해결(PR #55 runtimeConfig import와 dmService import 양쪽 유지) 후 PR #63으로 재제출·머지(6f929b7, mcp-dm 22·dms 27·dm-groups 23·websocket 11). 재발 방지: 리베이스 후 충돌 검사 결과가 비어 있지 않으면 같은 명령에서 푸시·머지로 넘어가지 않는다(명령을 나눠 실행) |
+| 2026-11-01 00:13 | 이모지 CDN 조사 결과: 앱은 data·i18n·native를 이미 넘겨 런타임 fetch 없음, dist의 jsdelivr는 라이브러리 폴백 문자열. 데이터 lazy 청크화와 dist CDN 도메인 검사 추가 → PR #64, /code-review |
+| 2026-11-01 00:14 | PR #64 리뷰 9건 → dev-1 반영 지시. 총괄 결정: 로그인 직후 이모지 데이터 선로딩, pill은 자리표시자, 전송 직전 단축코드 변환 시 로드 대기, emoji-mart를 이름 있는 청크로 분리해 CDN 예외를 그 청크로만 한정 |
+| 2026-11-01 00:15 | 배정: dev-2 mcp-3(검색 공용 서비스화, list_files·read_file, 리소스·프롬프트). 3명(dev-1 PR #64 반영, dev-2, dev-4 i18n-3) |
