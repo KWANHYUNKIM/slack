@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|---|
 | 00-gap-analysis (Slack ↔ slawk 기능 비교와 파트 분할) | planner-1 | sonnet | 완료 | 60분 | 2026-10-31 08:55 | 2026-10-31 08:58 | 루프 1, 실제 약 3분. 결과: specs/00~03 |
 | 01a-mentions-activity (백엔드) | dev-1 | sonnet | PR #8 (리뷰 반영 완료) | 1.5h | 2026-10-31 10:05 | 2026-10-31 10:11 | P0, 스키마 변경. PR #5 위에 쌓음 |
-| 01b-mentions-activity (프런트) | dev-5 | sonnet | PR #9 | 1.5h | 2026-10-31 10:30 | 2026-10-31 10:35 | | 활동 탭, 배지, @channel |
+| 01b-mentions-activity (프런트) | dev-5 | sonnet | PR #9 (리뷰 반영 중) | 1.5h | 2026-10-31 10:30 | 2026-10-31 10:35 | | 활동 탭, 배지, @channel |
 | 03-channel-meta-star | - | sonnet | 대기 | 1.5h | | | P0, 스키마 변경 |
 | 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
 | 04-threads-view, 05-user-status-dnd 스펙 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3, Slack 테스트 채널 CRUD 실습 포함 |
@@ -32,7 +32,7 @@
 | build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | - | sonnet | 대기 | 1.5h | | | PR #6 리뷰 1번. 웹 배포 전제 |
 | verify/e2e-smoke: 백엔드+프런트 띄우고 Playwright 핵심 CRUD 스모크(메시지·스레드·DM·핀·검색) | - | sonnet | 대기(정상 단계에서만) | 1h | | | PR #7 수동 확인 항목 |
 | feat/mentions-scheduled-webhook: 예약 메시지·웹훅 메시지에도 멘션 활동 생성 | - | haiku | 대기 | 30분 | | | PR #8 남은 이슈 |
-| i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | - | sonnet | 대기(PR #7 머지 후) | 2.5h | | | docs/architecture/i18n.md |
+| i18n-1 infra: i18next, 문자열 추출, 언어 선택 UI, Intl, html lang/dir | - | sonnet | **다음 최우선**(01b 반영 후) | 2.5h | | | docs/architecture/i18n.md |
 | i18n-2 ko: 한국어 번역 전체와 검수 | - | sonnet | 대기 | 1.5h | | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | - | sonnet | 대기(스키마 순서) | 2h | | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | - | sonnet | 대기 | 1.5h | | | |
