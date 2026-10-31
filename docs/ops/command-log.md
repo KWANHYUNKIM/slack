@@ -87,3 +87,5 @@
 | 10:26 | 외부 URL 전수 조사(grep) | emoji-mart i18n CDN fetch, Google STUN, CSP 예외 2건, 죽은 mocks 발견 | self-contained-assets.md |
 | 10:28 | 결정: MCP는 백엔드 내장 Streamable HTTP + PAT 먼저, OAuth 2.1은 다음 | 프로세스 추가 없이 메모리 절약, Claude Code 연결이 가장 빠름 | mcp.md |
 | 10:28 | 결정: i18n은 i18next+ICU, 한국어 1등급, 31개 언어 2등급, 나머지는 영어 대체 + Intl | | i18n.md |
+| 10:29 | PR #8 리뷰 반영 커밋 377bad5 | 444 tests. NULLS NOT DISTINCT라 Postgres 15 이상 필요(로컬 16 OK) | |
+| 10:30 | 5 | dev-5 | sonnet | 01b 멘션·활동 프런트, 시연 서버로 브라우저 CRUD 확인 | 진행 중 |
