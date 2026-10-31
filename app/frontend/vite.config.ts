@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vite.dev/config/
+// 브라우저 주소창 이동(Accept: text/html)은 프록시하지 않고 SPA로 넘긴다. 새로고침해도 화면 경로가 API로 가지 않게 한다.
+const spaNavigation = (req: { headers: { accept?: string }; url?: string }) =>
+  req.headers.accept?.includes('text/html') ? req.url : undefined;
+
 export default defineConfig({
   plugins: [react()],
   build: {
@@ -32,58 +36,57 @@ export default defineConfig({
       '/auth': { target: 'http://localhost:3000', changeOrigin: true },
       '/channels': { target: 'http://localhost:3000', changeOrigin: true },
       '/messages': { target: 'http://localhost:3000', changeOrigin: true },
-      '/search': { target: 'http://localhost:3000', changeOrigin: true },
+      '/search': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        // /search는 화면 경로이기도 하다. 새로고침 같은 문서 이동은 SPA가 처리하게 둔다.
+        bypass: spaNavigation,
+      },
       '/files': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the /files SPA route works on refresh
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) {
-            return req.url;
-          }
-        },
+        bypass: spaNavigation,
       },
       '/users': { target: 'http://localhost:3000', changeOrigin: true },
       '/dms': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the SPA handles /dms in the browser
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) {
-            return req.url;
-          }
-        },
+        bypass: spaNavigation,
       },
       '/activity': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the /activity SPA route works on refresh
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) {
-            return req.url;
-          }
-        },
+        bypass: spaNavigation,
       },
       '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
       '/admin': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the /admin SPA route works on refresh
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) {
-            return req.url;
-          }
-        },
+        bypass: spaNavigation,
       },
       '/huddles': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         // Skip proxy for HTML page navigations so the SPA handles /huddles in the browser
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) {
-            return req.url;
-          }
-        },
+        bypass: spaNavigation,
+      },
+      // 나중에 보기 > 리마인더(reminders)와 웹훅 관리(webhooks) API. 화면 경로와 겹치지 않는다.
+      '/reminders': { target: 'http://localhost:3000', changeOrigin: true },
+      '/webhooks': { target: 'http://localhost:3000', changeOrigin: true },
+      // /threads, /unreads는 화면 경로이기도 해서 문서 이동은 SPA가 처리하게 둔다.
+      '/threads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        bypass: spaNavigation,
+      },
+      '/unreads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        bypass: spaNavigation,
       },
       '/bookmarks': { target: 'http://localhost:3000', changeOrigin: true },
       '/push': { target: 'http://localhost:3000', changeOrigin: true },
