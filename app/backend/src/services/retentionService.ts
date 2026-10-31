@@ -3,7 +3,7 @@ import prisma from '../db.js';
 import { getIO } from '../websocket/index.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
-import { deleteStoredFile } from './fileStorage.js';
+import { deleteStoredFileDetailed } from './fileStorage.js';
 import { emitRemoved } from './mentionService.js';
 import { onThreadReplyDeleted, onThreadParentDeleted } from './threadService.js';
 import { getGroupMemberIds, groupDmVisibleSql } from './dmGroupService.js';
@@ -16,6 +16,11 @@ import { utcTimestamp } from '../db/sqlTime.js';
 // 이렇게 하면 04의 삭제된 부모 표시 규칙이 그대로 통하고 답글의 threadId가 끊어지지 않는다. 답글이 모두 사라진 뒤 다음 배치가 부모를 지운다.
 // 리마인더는 지우지 않는다(스키마 규칙: FK 없이 남아 화면에서 "삭제된 메시지"로 보인다).
 // 소켓 이벤트는 사용자 삭제 경로(messageService, dmService)와 같은 것을 보낸다.
+//
+// 파일 삭제 순서(채널, DM, 분리 파일 모두 같다): 보존 조건이 든 DB 문장이 실제로 처리한 행(RETURNING)만 대상으로 삼고,
+// 지울 저장소 키를 같은 트랜잭션에서 아웃박스(StorageDeletionRetry)에 넣은 뒤, 커밋 뒤에 저장소 본체를 지우고 성공한 아웃박스 행을 지운다.
+// 저장소 오류나 커밋 뒤 프로세스 중단은 아웃박스 행으로 남아 다음 실행 시작 때 재시도한다. 저장소 오류는 정리 진행을 멈추지 않는다.
+// (예전에는 본체를 먼저 지웠다. 그러면 정리 도중 보존이 걸릴 때 DB 행은 남는데 본체만 사라질 수 있다.)
 
 export const MIN_RETENTION_DAYS = 1;
 export const MAX_RETENTION_DAYS = 3650;
@@ -23,11 +28,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PURGE_BATCH = 1000;
 export const PURGE_MAX_ROWS = 100_000; // 한 번에 처리하는 행 수 상한(채널 메시지, DM, 자리표시자 전환, 고아 파일 합계). 남은 것은 다음 날 이어서 한다.
 const SETTING_ID = 1;
+const TX_OPTIONS = { timeout: 30_000, maxWait: 10_000 }; // 기본 5초는 큰 배치에서 모자란다
 
 // ── 법적 보존 제외 조건(E6) ──────────────────────────────────────────
 // 활성 보존 건(LegalHold.releasedAt 없음)의 대상자이거나 User.legalHold 플래그가 켜져 있으면 보존 대상이다(둘 중 하나라도).
 // 플래그는 legalHoldService가 동기화하는 캐시지만 정리는 관계를 직접 본다. 선택한 뒤에 보존이 걸려도 지우지 않도록
-// 선택 문장과 삭제 문장(deleteMany, 자리표시자 전환) 모두에 같은 조건을 넣고, 파일 본체를 지우기 직전에 한 번 더 거른다.
+// 선택 문장과 삭제 문장(DELETE, 자리표시자 전환 UPDATE) 모두에 같은 조건을 넣고, 본체는 그 문장이 돌려준 행만 지운다.
 // HELD_USER·NOT_HELD_USER(Prisma)와 아래 HELD_CTE(raw SQL)는 같은 사용자 집합을 고른다. 하나를 바꾸면 나머지도 바꾼다(retention.test가 확인한다).
 export const HELD_USER: Prisma.UserWhereInput = { OR: [{ legalHold: true }, { legalHoldCustody: { some: { hold: { releasedAt: null } } } }] };
 export const NOT_HELD_USER: Prisma.UserWhereInput = { legalHold: false, legalHoldCustody: { none: { hold: { releasedAt: null } } } };
@@ -79,32 +85,76 @@ interface Budget {
   left: number;
   /** 테스트용: 배치를 고른 직후(지우기 전)에 부른다. 선택과 삭제 사이에 보존이 걸리는 경우를 재현한다. */
   afterSelect?: () => Promise<void>;
+  /** 테스트용: DB 커밋 뒤, 저장소 본체를 지우기 전에 부른다. 던지면 그 시점에 프로세스가 죽은 것과 같다(아웃박스 행이 남는다). */
+  beforeBlobDelete?: () => Promise<void>;
 }
 
-type FileRow = { id: number; filename: string; gcsPath: string | null; messageId: number | null; dmId: number | null };
-const FILE_SELECT = { id: true, filename: true, gcsPath: true, messageId: true, dmId: true } as const;
+/** 저장소 삭제 아웃박스(StorageDeletionRetry) 행 */
+type OutboxRow = { id: number; filename: string; gcsPath: string | null; attempts?: number };
+
+/** 저장소 삭제를 시도하는 최대 횟수. 넘으면 로그를 남기고 아웃박스에서 지운다. */
+export const MAX_STORAGE_DELETE_ATTEMPTS = 5;
+const MAX_ERROR_LENGTH = 500;
 
 /**
- * 파일 본체를 저장소에서 먼저 지운다. 지우지 못한 파일의 주인(메시지 또는 DM) id와, 지운 파일 id를 돌려준다.
- * 지우지 못한 주인은 이번에 지우지 않고 다음에 다시 시도한다.
- * 본체를 먼저 지우는 이유: 반대로 하면 DB만 지워지고 본체가 남아 영영 못 찾는다. 본체만 없는 행은 404로 끝나 해롭지 않다.
+ * 파일 행을 지우는 문장. 지울 저장소 키를 같은 문장(그러니 같은 트랜잭션)에서 아웃박스에 넣고 그 행을 돌려준다.
+ * 보존 조건(cond 안)이 든 DELETE가 실제로 지운 행만 아웃박스에 들어가므로 보존 파일의 본체는 지우지 않는다.
+ * 프로세스가 커밋 뒤 본체를 지우기 전에 죽어도 아웃박스 행이 남아 다음 실행에서 처리한다.
+ * 파일 별칭은 fl이고, using에는 USING 절을(없으면 Prisma.empty) 넣는다.
  */
-async function removeStoredFiles(files: FileRow[]): Promise<{ failedOwners: Set<number>; removed: FileRow[] }> {
-  const failedOwners = new Set<number>();
-  const removed: FileRow[] = [];
-  for (const f of files) {
-    if (await deleteStoredFile(f)) removed.push(f);
-    else if (f.messageId ?? f.dmId) failedOwners.add((f.messageId ?? f.dmId)!);
-  }
-  return { failedOwners, removed };
+function deleteFilesToOutbox(using: Prisma.Sql, cond: Prisma.Sql): Prisma.Sql {
+  return Prisma.sql`
+    WITH ${HELD_CTE}, del AS (DELETE FROM "File" fl ${using} WHERE ${cond} RETURNING fl.filename, fl."gcsPath")
+    INSERT INTO "StorageDeletionRetry" (filename, "gcsPath") SELECT filename, "gcsPath" FROM del RETURNING id, filename, "gcsPath"`;
 }
 
-/** 지운 파일 중 주인이 실제로 사라진 것만 DB 행을 지운다(주인 FK가 SetNull이라 messageId/dmId가 null이 된 행). */
-async function deleteFileRows(removed: FileRow[], goneOwners: Set<number>, key: 'messageId' | 'dmId'): Promise<number> {
-  const ids = removed.filter((f) => goneOwners.has(f[key]!)).map((f) => f.id);
-  if (ids.length === 0) return 0;
-  const { count } = await prisma.file.deleteMany({ where: { id: { in: ids }, [key]: null } });
-  return count;
+/** 아웃박스 행 하나의 본체를 지운다. 성공이나 영구 실패면 행을 지우고, 일시 실패면 시도 횟수와 원인을 기록해 남긴다. */
+async function processOutboxRow(r: OutboxRow): Promise<void> {
+  const res = await deleteStoredFileDetailed(r);
+  const attempts = (r.attempts ?? 0) + 1;
+  try {
+    if (res.ok) {
+      await prisma.storageDeletionRetry.deleteMany({ where: { id: r.id } });
+    } else if (res.permanent || attempts >= MAX_STORAGE_DELETE_ATTEMPTS) {
+      logError(`Retention: giving up removing stored file (outbox ${r.id}, ${r.filename}, attempts=${attempts}): ${res.error}`, null);
+      await prisma.storageDeletionRetry.deleteMany({ where: { id: r.id } });
+    } else {
+      await prisma.storageDeletionRetry.update({ where: { id: r.id }, data: { attempts, lastError: res.error.slice(0, MAX_ERROR_LENGTH), lastTriedAt: new Date() } });
+    }
+  } catch (error) {
+    // 행이 남으므로 다음 실행에서 다시 처리한다
+    logError(`Retention: storage deletion outbox ${r.id} could not be updated`, error);
+  }
+}
+
+/** 커밋 뒤: 방금 아웃박스에 넣은 파일의 본체를 지운다. 저장소 오류는 정리 진행을 멈추지 않는다. */
+async function removeBlobsAfterDelete(files: OutboxRow[], budget?: Budget): Promise<void> {
+  if (files.length === 0) return;
+  await budget?.beforeBlobDelete?.();
+  for (const f of files) await processOutboxRow(f);
+}
+
+/**
+ * 정리 실행 시작 때 아웃박스에 남은 행을 모두 처리한다(이전 실행의 저장소 오류, 커밋 뒤 중단). 처리한 행은 정리 예산에서 뺀다.
+ * 시도 횟수가 적은 순, 오래된 순으로 배치를 반복하고, 이번 실행에서 이미 시도한 행(lastTriedAt)은 다시 잡지 않는다.
+ */
+export async function retryStorageDeletions(budget: { left: number }): Promise<{ processed: number; partial: boolean }> {
+  const runStart = new Date();
+  const eligible: Prisma.StorageDeletionRetryWhereInput = { OR: [{ lastTriedAt: null }, { lastTriedAt: { lt: runStart } }] };
+  let processed = 0;
+  const seen = new Set<number>();
+  for (;;) {
+    const take = Math.min(PURGE_BATCH, budget.left);
+    if (take <= 0) return { processed, partial: (await prisma.storageDeletionRetry.count({ where: eligible })) > 0 };
+    const rows = (await prisma.storageDeletionRetry.findMany({ where: eligible, orderBy: [{ attempts: 'asc' }, { id: 'asc' }], take })).filter((r) => !seen.has(r.id));
+    if (rows.length === 0) return { processed, partial: false };
+    budget.left -= rows.length;
+    processed += rows.length;
+    for (const r of rows) {
+      seen.add(r.id);
+      await processOutboxRow(r);
+    }
+  }
 }
 
 /**
@@ -139,9 +189,9 @@ async function purgeChannel(channelId: number, cutoff: Date, budget: Budget): Pr
     if (rows.length === 0) break;
     budget.left -= rows.length;
     await budget.afterSelect?.();
-    const done = await deleteMessages(rows, channelId);
+    const done = await deleteMessages(rows, channelId, budget);
     add(counts, done);
-    // 답글을 지우면 그 부모가 다음 조회에서 잎이 된다. 진행이 없으면(저장소 오류 등) 멈춘다.
+    // 답글을 지우면 그 부모가 다음 조회에서 잎이 된다. 진행이 없으면(전부 보존에 걸린 경우 등) 멈춘다. 저장소 오류는 아웃박스가 받으므로 진행을 막지 않는다.
     if (done.messages === 0) break;
   }
   add(counts, await blankParents(channelId, cutoff, budget));
@@ -154,22 +204,36 @@ async function stillPurgeableMessages(ids: number[]): Promise<number[]> {
   return rows.map((r) => r.id);
 }
 
-async function deleteMessages(rows: ChannelRow[], channelId: number): Promise<PurgeCounts> {
+async function deleteMessages(rows: ChannelRow[], channelId: number, budget: Budget): Promise<PurgeCounts> {
   const ids = await stillPurgeableMessages(rows.map((r) => r.id));
   if (ids.length === 0) return emptyCounts();
-  const files = await prisma.file.findMany({ where: { messageId: { in: ids } }, select: FILE_SELECT });
-  const { failedOwners, removed } = await removeStoredFiles(files);
-  const targets = ids.filter((id) => !failedOwners.has(id));
-  if (targets.length === 0) return emptyCounts();
 
-  // replies none: 조회 뒤에 새 답글이 달렸다면 그 부모는 지우지 않는다(답글의 threadId가 끊어지지 않게).
-  // 리액션·북마크·스레드 읽음은 FK cascade, 읽음 위치는 SetNull, 첨부 행은 SetNull이라 따로 지운다.
-  await prisma.message.deleteMany({ where: { id: { in: targets }, replies: { none: {} }, ...MESSAGE_NOT_HELD } });
-  const remaining = new Set((await prisma.message.findMany({ where: { id: { in: targets } }, select: { id: true } })).map((m) => m.id));
-  const gone = new Set(targets.filter((id) => !remaining.has(id)));
+  // 메시지 삭제(보존·답글 없음 조건 포함)와 그 첨부 행 삭제를 한 트랜잭션으로 하고, 지울 저장소 키는 같은 트랜잭션에서 아웃박스에 넣는다.
+  // 저장소 본체는 커밋 뒤에 지운다. 리액션·북마크·스레드 읽음은 FK cascade, 읽음 위치는 SetNull이다.
+  // 첨부 행은 FK SetNull이라 메시지가 지워지면 messageId가 비므로, 지우기 전에 첨부 id를 잡아 두고 지운 메시지의 것만 지운다.
+  // replies 없음: 조회 뒤에 새 답글이 달렸다면 그 부모는 지우지 않는다(답글의 threadId가 끊어지지 않게).
+  const { gone, files } = await prisma.$transaction(
+    async (tx) => {
+      const attached = (await tx.file.findMany({ where: { messageId: { in: ids } }, select: { id: true } })).map((f) => f.id);
+      const deleted = await tx.$queryRaw<Array<{ id: number }>>`
+        WITH ${HELD_CTE}
+        DELETE FROM "Message" m WHERE m.id = ANY(${ids}::int[]) AND NOT ${MSG_HAS_REPLIES} AND ${MSG_NOT_HELD}
+        RETURNING m.id`;
+      const goneIds = new Set(deleted.map((d) => d.id));
+      if (goneIds.size === 0 || attached.length === 0) return { gone: goneIds, files: [] as OutboxRow[] };
+      const goneArr = [...goneIds];
+      const queued = await tx.$queryRaw<OutboxRow[]>(
+        deleteFilesToOutbox(
+          Prisma.empty,
+          Prisma.sql`fl.id = ANY(${attached}::int[]) AND fl."messageId" IS NULL AND (fl."detachedFromMessageId" IS NULL OR fl."detachedFromMessageId" = ANY(${goneArr}::int[]))`,
+        ),
+      );
+      return { gone: goneIds, files: queued };
+    },
+    TX_OPTIONS,
+  );
   if (gone.size === 0) return emptyCounts();
-
-  const fileCount = await deleteFileRows(removed, gone, 'messageId');
+  await removeBlobsAfterDelete(files, budget);
   await cleanupActivities({ messageId: { in: [...gone] } });
 
   const io = getIO();
@@ -186,7 +250,7 @@ async function deleteMessages(rows: ChannelRow[], channelId: number): Promise<Pu
       void onThreadReplyDeleted({ id: r.id, userId: r.userId, channelId, threadId: p.id });
     }
   }
-  return { messages: gone.size, files: fileCount, placeholders: 0, partial: false };
+  return { messages: gone.size, files: files.length, placeholders: 0, partial: false };
 }
 
 /** 만료됐지만 답글이 남은 부모를 자리표시자로 바꾼다. 이미 바뀐 것은 다시 건드리지 않는다. */
@@ -211,22 +275,32 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
     await budget.afterSelect?.();
     const ids = new Set(await stillPurgeableMessages(rows.map((r) => r.id)));
     if (ids.size === 0) break;
-    const files = await prisma.file.findMany({ where: { messageId: { in: [...ids] } }, select: FILE_SELECT });
-    const { failedOwners, removed } = await removeStoredFiles(files);
-    const targets = rows.filter((r) => ids.has(r.id) && !failedOwners.has(r.id));
-    if (targets.length === 0) break; // 저장소 오류. 같은 행만 다시 잡히므로 멈추고 다음 실행에 맡긴다.
-    const targetIds = targets.map((r) => r.id);
-    const [fileDel] = await prisma.$transaction([
-      prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, message: MESSAGE_NOT_HELD } }),
-      prisma.reaction.deleteMany({ where: { messageId: { in: targetIds }, message: MESSAGE_NOT_HELD } }),
-      prisma.bookmark.deleteMany({ where: { messageId: { in: targetIds }, message: MESSAGE_NOT_HELD } }),
-      prisma.message.updateMany({ where: { id: { in: targetIds }, deletedAt: null, ...MESSAGE_NOT_HELD }, data: { deletedAt: new Date() } }),
-      prisma.message.updateMany({
-        where: { id: { in: targetIds }, ...MESSAGE_NOT_HELD },
-        data: { content: '', isPinned: false, pinnedBy: null, pinnedAt: null, alsoSendToChannel: false },
-      }),
-    ]);
-    await cleanupActivities({ messageId: { in: targetIds } });
+    const targetIds = rows.filter((r) => ids.has(r.id)).map((r) => r.id);
+    // 첨부(지울 저장소 키는 아웃박스로)·리액션·북마크 삭제와 자리표시자 전환을 한 트랜잭션으로 하고, 네 문장 모두 보존 조건을 다시 본다.
+    // 선택 뒤에 보존이 걸린 메시지는 아무것도 건드리지 않고, 실제로 비운 행(RETURNING)만 집계·알림한다. 저장소 본체는 커밋 뒤에 지운다.
+    const at = utcTimestamp(new Date());
+    const [files, , , blanked] = await prisma.$transaction(
+      [
+        prisma.$queryRaw<OutboxRow[]>(deleteFilesToOutbox(Prisma.sql`USING "Message" m`, Prisma.sql`m.id = fl."messageId" AND m.id = ANY(${targetIds}::int[]) AND ${MSG_NOT_HELD}`)),
+        prisma.$executeRaw`
+          WITH ${HELD_CTE}
+          DELETE FROM "Reaction" x USING "Message" m WHERE m.id = x."messageId" AND m.id = ANY(${targetIds}::int[]) AND ${MSG_NOT_HELD}`,
+        prisma.$executeRaw`
+          WITH ${HELD_CTE}
+          DELETE FROM "Bookmark" x USING "Message" m WHERE m.id = x."messageId" AND m.id = ANY(${targetIds}::int[]) AND ${MSG_NOT_HELD}`,
+        prisma.$queryRaw<Array<{ id: number }>>`
+          WITH ${HELD_CTE}
+          UPDATE "Message" m SET "deletedAt" = COALESCE(m."deletedAt", ${at}), content = '', "isPinned" = false, "pinnedBy" = NULL, "pinnedAt" = NULL,
+            "alsoSendToChannel" = false, "updatedAt" = ${at}
+          WHERE m.id = ANY(${targetIds}::int[]) AND ${MSG_NOT_HELD}
+          RETURNING m.id`,
+      ],
+    );
+    await removeBlobsAfterDelete(files, budget);
+    const blankedIds = new Set(blanked.map((b) => b.id));
+    const targets = rows.filter((r) => blankedIds.has(r.id));
+    if (targets.length === 0) break; // 전부 보존에 걸렸다. 같은 행만 다시 잡히므로 멈춘다.
+    await cleanupActivities({ messageId: { in: targets.map((r) => r.id) } });
     // 사용자 삭제 경로와 같은 알림: 채널에 message:deleted, 참여자에게 thread:updated(자리표시자로 바뀜)
     const io = getIO();
     for (const r of targets) {
@@ -234,7 +308,7 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
       void onThreadParentDeleted({ id: r.id, userId: r.userId, channelId, threadId: null });
     }
     counts.placeholders += targets.length;
-    counts.files += fileDel.count;
+    counts.files += files.length;
     if (targets.length < rows.length) break;
   }
   return counts;
@@ -250,22 +324,16 @@ async function blankParents(channelId: number, cutoff: Date, budget: Budget): Pr
 export const HELD_CTE = Prisma.sql`held AS (
   SELECT hu.id FROM "User" hu WHERE hu."legalHold" OR EXISTS (
     SELECT 1 FROM "LegalHoldCustodian" hc JOIN "LegalHold" hh ON hh.id = hc."holdId" WHERE hc."userId" = hu.id AND hh."releasedAt" IS NULL))`;
+// 채널 메시지용 raw SQL 조건(메시지 별칭 m): MESSAGE_NOT_HELD와 같다(작성자가 보존 대상이 아니고, 채널이 보존 채널이거나 보존 대상자가 멤버인 채널이 아님).
+const MSG_NOT_HELD = Prisma.sql`(m."userId" NOT IN (SELECT id FROM held) AND NOT EXISTS (
+  SELECT 1 FROM "Channel" mc WHERE mc.id = m."channelId" AND (mc."legalHold"
+    OR EXISTS (SELECT 1 FROM "ChannelMember" mcm WHERE mcm."channelId" = mc.id AND mcm."userId" IN (SELECT id FROM held)))))`;
+const MSG_HAS_REPLIES = Prisma.sql`EXISTS (SELECT 1 FROM "Message" mr WHERE mr."threadId" = m.id)`;
 const isHeld = (userId: Prisma.Sql) => Prisma.sql`${userId} IN (SELECT id FROM held)`;
 const DM_NOT_HELD = Prisma.sql`(NOT ${isHeld(Prisma.sql`dm."fromUserId"`)}
   AND (dm."toUserId" IS NULL OR NOT ${isHeld(Prisma.sql`dm."toUserId"`)})
   AND NOT ${groupDmVisibleSql(isHeld)})`;
 const HAS_REPLIES = Prisma.sql`EXISTS (SELECT 1 FROM "DirectMessage" r WHERE r."threadId" = dm.id)`;
-const FILE_RETURNING = Prisma.sql`fl.id, fl.filename, fl."gcsPath", fl."messageId", fl."dmId"`;
-
-/**
- * DB에서 이미 지운 파일 행의 본체를 지운다. 보존 조건이 든 DB 문장이 실제로 지운 행(RETURNING)만 받으므로 보존 파일은 건드리지 않는다.
- * 실패하면 로그만 남긴다(행이 없어 다시 찾을 수 없다. 본체만 남는 쪽이 보존 파일을 잃는 쪽보다 안전하다).
- */
-async function removeBlobsAfterDelete(files: FileRow[]): Promise<void> {
-  for (const f of files) {
-    if (!(await deleteStoredFile(f))) logError(`Retention: stored file ${f.id} could not be removed after its row was deleted`, null);
-  }
-}
 
 type DmRow = { id: number; fromUserId: number; toUserId: number | null; groupId: number | null; threadId: number | null };
 
@@ -314,7 +382,7 @@ async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeC
     if (rows.length === 0) break;
     budget.left -= rows.length;
     await budget.afterSelect?.();
-    const done = await deleteDms(rows);
+    const done = await deleteDms(rows, budget);
     add(counts, done);
     if (done.messages === 0) break;
   }
@@ -326,7 +394,7 @@ async function purgeDirectMessages(cutoff: Date, budget: Budget): Promise<PurgeC
  * DM을 지우고(보존 조건·답글 없음을 문장 안에서 다시 본다) 실제로 지운 DM의 첨부만 지운다. 저장소 본체는 커밋 뒤에 지운다.
  * 첨부 행은 FK SetNull이라 DM이 지워지면 dmId가 비므로, 지우기 전에 첨부 id를 잡아 두고 dmId가 빈 것만 지운다.
  */
-async function deleteDms(rows: DmRow[]): Promise<PurgeCounts> {
+async function deleteDms(rows: DmRow[], budget: Budget): Promise<PurgeCounts> {
   const candidates = rows.map((r) => r.id);
   const { goneIds, files } = await prisma.$transaction(async (tx) => {
     const attached = (await tx.file.findMany({ where: { dmId: { in: candidates } }, select: { id: true } })).map((f) => f.id);
@@ -335,15 +403,17 @@ async function deleteDms(rows: DmRow[]): Promise<PurgeCounts> {
       DELETE FROM "DirectMessage" dm WHERE dm.id = ANY(${candidates}::int[]) AND NOT ${HAS_REPLIES} AND ${DM_NOT_HELD}
       RETURNING dm.id`;
     const ids = gone.map((g) => g.id);
-    if (ids.length === 0 || attached.length === 0) return { goneIds: ids, files: [] as FileRow[] };
-    const removed = await tx.$queryRaw<FileRow[]>`
-      DELETE FROM "File" fl WHERE fl.id = ANY(${attached}::int[]) AND fl."dmId" IS NULL
-        AND (fl."detachedFromDmId" IS NULL OR fl."detachedFromDmId" = ANY(${ids}::int[]))
-      RETURNING ${FILE_RETURNING}`;
+    if (ids.length === 0 || attached.length === 0) return { goneIds: ids, files: [] as OutboxRow[] };
+    const removed = await tx.$queryRaw<OutboxRow[]>(
+      deleteFilesToOutbox(
+        Prisma.empty,
+        Prisma.sql`fl.id = ANY(${attached}::int[]) AND fl."dmId" IS NULL AND (fl."detachedFromDmId" IS NULL OR fl."detachedFromDmId" = ANY(${ids}::int[]))`,
+      ),
+    );
     return { goneIds: ids, files: removed };
-  });
+  }, TX_OPTIONS);
   if (goneIds.length === 0) return emptyCounts();
-  await removeBlobsAfterDelete(files);
+  await removeBlobsAfterDelete(files, budget);
 
   const gone = new Set(goneIds);
   await cleanupActivities({ dmId: { in: goneIds } });
@@ -368,10 +438,7 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
     const at = utcTimestamp(new Date());
     // 세 문장 모두 보존 조건을 다시 본다(선택 뒤에 보존이 걸린 DM은 첨부·리액션·내용을 건드리지 않는다)
     const [files, , blanked] = await prisma.$transaction([
-      prisma.$queryRaw<FileRow[]>`
-        WITH ${HELD_CTE}
-        DELETE FROM "File" fl USING "DirectMessage" dm WHERE dm.id = fl."dmId" AND dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}
-        RETURNING ${FILE_RETURNING}`,
+      prisma.$queryRaw<OutboxRow[]>(deleteFilesToOutbox(Prisma.sql`USING "DirectMessage" dm`, Prisma.sql`dm.id = fl."dmId" AND dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}`)),
       prisma.$executeRaw`
         WITH ${HELD_CTE}
         DELETE FROM "DMReaction" x USING "DirectMessage" dm WHERE dm.id = x."dmId" AND dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}`,
@@ -381,7 +448,7 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
         WHERE dm.id = ANY(${ids}::int[]) AND ${DM_NOT_HELD}
         RETURNING dm.id`,
     ]);
-    await removeBlobsAfterDelete(files);
+    await removeBlobsAfterDelete(files, budget);
     if (blanked.length === 0) break;
     const blankedIds = new Set(blanked.map((b) => b.id));
     const targets = rows.filter((r) => blankedIds.has(r.id));
@@ -430,11 +497,10 @@ async function purgeOrphanFiles(cutoff: Date, budget: Budget): Promise<PurgeCoun
     const ids = rows.map((r) => r.id);
     lastId = ids[ids.length - 1];
     budget.left -= rows.length;
-    const removed = await prisma.$queryRaw<FileRow[]>`
-      WITH ${HELD_CTE}
-      DELETE FROM "File" fl WHERE fl.id = ANY(${ids}::int[]) AND fl."messageId" IS NULL AND fl."dmId" IS NULL AND ${ORPHAN_NOT_HELD}
-      RETURNING ${FILE_RETURNING}`;
-    await removeBlobsAfterDelete(removed);
+    const removed = await prisma.$queryRaw<OutboxRow[]>(
+      deleteFilesToOutbox(Prisma.empty, Prisma.sql`fl.id = ANY(${ids}::int[]) AND fl."messageId" IS NULL AND fl."dmId" IS NULL AND ${ORPHAN_NOT_HELD}`),
+    );
+    await removeBlobsAfterDelete(removed, budget);
     counts.files += removed.length;
   }
   return counts;
@@ -448,12 +514,21 @@ const countsDetails = (days: number, c: PurgeCounts) =>
  * 한 채널이 실패해도 나머지는 계속하고, 하나라도 실패했으면 마지막에 던져 스케줄러가 1시간 뒤 다시 시도하게 한다.
  * 예산(maxRows)의 절반은 DM에 예약해 채널이 다 쓰더라도 DM이 굶지 않게 하고, 채널이 남긴 몫은 DM이 이어 쓴다.
  */
-export async function purgeExpiredMessages(now: Date = new Date(), opts: { maxRows?: number; afterSelect?: () => Promise<void> } = {}): Promise<PurgeCounts> {
+export async function purgeExpiredMessages(now: Date = new Date(), opts: { maxRows?: number; afterSelect?: () => Promise<void>; beforeBlobDelete?: () => Promise<void> } = {}): Promise<PurgeCounts> {
   const maxRows = opts.maxRows ?? PURGE_MAX_ROWS;
   const workspaceDays = await getWorkspaceRetentionDays();
   const total = emptyCounts();
-  const channelBudget: Budget = { left: Math.floor(maxRows / 2), afterSelect: opts.afterSelect };
-  const dmBudget: Budget = { left: maxRows - channelBudget.left, afterSelect: opts.afterSelect };
+  // 아웃박스에 남은 저장소 삭제를 먼저 처리한다. 처리한 만큼 이번 실행의 예산에서 뺀다.
+  const retryBudget = { left: maxRows };
+  try {
+    const r = await retryStorageDeletions(retryBudget);
+    if (r.partial) total.partial = true;
+  } catch (error) {
+    logError('Retention storage deletion retry failed', error);
+  }
+  const rest = Math.max(0, retryBudget.left);
+  const channelBudget: Budget = { left: Math.floor(rest / 2), afterSelect: opts.afterSelect, beforeBlobDelete: opts.beforeBlobDelete };
+  const dmBudget: Budget = { left: rest - channelBudget.left, afterSelect: opts.afterSelect, beforeBlobDelete: opts.beforeBlobDelete };
   let failed = 0;
   let skipped = 0;
 
