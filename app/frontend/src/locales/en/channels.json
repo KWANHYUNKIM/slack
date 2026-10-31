@@ -17,8 +17,6 @@
     "join": "Join",
     "close": "Close",
     "errors": {
-      "tooLong": "Channel name must be 25 characters or fewer",
-      "invalidChars": "Channel names can only contain lowercase letters, numbers, and hyphens",
       "createFailed": "Failed to create channel"
     }
   },
@@ -62,5 +60,11 @@
     "noFiles": "No files shared yet",
     "loadError": "Failed to load messages.",
     "sendError": "Message failed to send. Please try again."
+  },
+  "nameRules": {
+    "required": "Enter a channel name.",
+    "tooLong": "Channel name must be {max} characters or fewer.",
+    "invalidChars": "Channel names can only contain letters, numbers, hyphens, and underscores, and must start with a letter or number.",
+    "mixedScripts": "Channel names can't mix look-alike alphabets (such as Latin with Cyrillic or Greek) or digits from another number system."
   }
 }

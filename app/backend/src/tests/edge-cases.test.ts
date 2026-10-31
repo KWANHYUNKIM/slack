@@ -109,7 +109,7 @@ describe('Edge Cases & Error Handling', () => {
       expect(res.body.content).toBe(emojiContent);
     });
 
-    it('should reject underscores and periods in channel name', async () => {
+    it('should reject periods in channel name', async () => {
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
