@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(ztlumeno)",
+    "mute": "Ztlumit",
+    "unmute": "Zrušit ztlumení",
+    "leave": "Opustit huddle"
+  },
+  "button": {
+    "leaveFirstError": "Nejprve opusťte aktuální huddle",
+    "cancelInviteFirstError": "Nejprve zrušte aktuální pozvánku",
+    "cancelInvite": "Zrušit pozvánku",
+    "calling": "Volání...",
+    "inHuddle": "V huddle",
+    "leaveCurrentFirst": "Nejprve opusťte aktuální huddle",
+    "start": "Zahájit huddle"
+  },
+  "incoming": {
+    "invite": "Pozvánka do huddle",
+    "secondsLeft": "{count} s",
+    "decline": "Odmítnout",
+    "accept": "Přijmout"
+  },
+  "system": {
+    "youStarted": "Zahájili jste huddle.",
+    "started": "Zahájen huddle.",
+    "ended": "Ukončeno",
+    "youSentInvite": "Odeslali jste pozvánku do huddle.",
+    "sentInvite": "Poslal(a) vám pozvánku do huddle.",
+    "huddleStarted": "Huddle zahájen",
+    "huddleEnded": "Huddle ukončen ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Nejprve opusťte aktuální huddle",
+    "cancelInviteFirst": "Nejprve zrušte aktuální pozvánku",
+    "micDenied": "Přístup k mikrofonu byl odepřen",
+    "busy": "Druhý účastník je v jiném huddle",
+    "declined": "Pozvánka byla odmítnuta",
+    "expired": "Platnost pozvánky vypršela",
+    "rateLimited": "Příliš mnoho požadavků. Zkuste to za chvíli znovu",
+    "invalidInvite": "Žádost o pozvání byla neplatná",
+    "cannotInviteSelf": "Nemůžete pozvat sami sebe",
+    "userNotFound": "Uživatel nenalezen",
+    "invalidAccept": "Žádost o přijetí byla neplatná",
+    "inviteNotFound": "Pozvánka nenalezena nebo vypršela",
+    "peerOffline": "Druhý účastník je offline",
+    "generic": "Huddle se nepodařilo zahájit. Zkuste to znovu"
+  }
+}

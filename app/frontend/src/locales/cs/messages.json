@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Upozornit všechny, kdo jsou online",
+    "channelLabel": "@channel",
+    "channelHint": "Upozornit všechny v tomto kanálu"
+  },
+  "deleteDialog": {
+    "title": "Smazat zprávu",
+    "body": "Opravdu chcete tuto zprávu smazat? Tuto akci nelze vrátit zpět."
+  },
+  "editorToolbar": {
+    "attachFile": "Připojit soubor",
+    "emoji": "Emotikony",
+    "mention": "Zmínit někoho",
+    "stopRecording": "Zastavit nahrávání",
+    "recordVoice": "Nahrát hlasový záznam"
+  },
+  "emojiAutocomplete": {
+    "navigate": "pro pohyb",
+    "select": "pro výběr",
+    "dismiss": "pro zavření",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Odebrat {name}"
+  },
+  "fileModal": {
+    "download": "Stáhnout",
+    "loadFailed": "Obsah souboru se nepodařilo načíst",
+    "truncated": "... (zkráceno)",
+    "noPreview": "Náhled není k dispozici",
+    "downloadToView": "Pro zobrazení stáhněte soubor"
+  },
+  "files": {
+    "allFiles": "Všechny soubory",
+    "channelFiles": "Soubory kanálu",
+    "loadFailed": "Soubory se nepodařilo načíst.",
+    "empty": "Zatím nebyly nahrány žádné soubory",
+    "download": "Stáhnout",
+    "menu": "Nabídka",
+    "unavailable": "Soubor není k dispozici",
+    "preparing": "Příprava souboru"
+  },
+  "format": {
+    "bold": "Tučné",
+    "italic": "Kurzíva",
+    "strike": "Přeškrtnutí",
+    "link": "Odkaz",
+    "orderedList": "Číslovaný seznam",
+    "bulletList": "Odrážkový seznam",
+    "code": "Kód",
+    "codeBlock": "Blok kódu",
+    "quote": "Citace"
+  },
+  "notifications": {
+    "title": "Oznámení",
+    "empty": "Žádná nová oznámení",
+    "unreadCount": "{count, plural, one {# nepřečtená zpráva} few {# nepřečtené zprávy} many {# nepřečtené zprávy} other {# nepřečtených zpráv}}"
+  },
+  "search": {
+    "placeholder": "Hledat",
+    "searching": "Hledání...",
+    "noResults": "Nebyly nalezeny žádné výsledky",
+    "previewHint": "{count, plural, one {Nejlepší # výsledek} few {Nejlepší # výsledky} many {Nejlepší # výsledku} other {Nejlepších # výsledků}} · Zobrazit vše (Enter)",
+    "truncatedNotice": "Výsledků je mnoho. Přidejte filtry, aby se zúžily.",
+    "retry": "Zkusit znovu",
+    "ignoredChip": "{token} (ignorováno)",
+    "ignoredLimitChip": "{token} (ignorováno: příliš mnoho)",
+    "inChannel": "v #{channel}",
+    "title": "Výsledky hledání",
+    "resultsFor": "Výsledky pro „{query}“",
+    "emptyQuery": "Zadejte hledaný výraz nebo použijte filtry, například from:, in:, has:, before: nebo after:.",
+    "noResultsHint": "Zkuste jiná klíčová slova nebo odeberte některé filtry.",
+    "clearFilters": "Vymazat všechny filtry",
+    "removeFilter": "Odebrat filtr {filter}",
+    "loadFailed": "Hledání se nezdařilo. Zkuste to znovu.",
+    "loadMore": "Načíst další",
+    "threadReply": "Odpověď ve vlákně",
+    "directMessage": "Přímá zpráva",
+    "groupMessage": "Skupinová konverzace",
+    "joined": "Připojeno",
+    "privateChannel": "Soukromý",
+    "archivedChannel": "Archivovaný",
+    "back": "Zpět",
+    "tabs": {
+      "label": "Typy výsledků hledání",
+      "messages": "Zprávy",
+      "files": "Soubory",
+      "people": "Lidé",
+      "channels": "Kanály"
+    },
+    "sort": {
+      "label": "Řadit podle",
+      "relevance": "Relevance",
+      "recent": "Nejnovější"
+    }
+  },
+  "headerTabs": {
+    "files": "Soubory",
+    "pins": "Připnuté"
+  },
+  "lightbox": {
+    "close": "Zavřít"
+  },
+  "later": {
+    "title": "Později",
+    "saved": "Uložené",
+    "scheduled": "Naplánované",
+    "loadFailed": "Uložené zprávy se nepodařilo načíst.",
+    "empty": "Zatím nejsou uložené žádné zprávy. Klikněte na ikonu záložky u libovolné zprávy a uložte ji.",
+    "removeSaved": "Odebrat z uložených",
+    "menu": "Nabídka",
+    "reminders": "Připomenutí"
+  },
+  "linkModal": {
+    "title": "Přidat odkaz",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Zobrazený text",
+    "optional": "(nepovinné)",
+    "textPlaceholder": "Text odkazu",
+    "close": "Zavřít"
+  },
+  "actionsMenu": {
+    "noActions": "Nejsou k dispozici žádné akce",
+    "markUnread": "Označit jako nepřečtené",
+    "pin": "Připnout zprávu",
+    "unpin": "Odepnout zprávu",
+    "edit": "Upravit zprávu",
+    "delete": "Smazat zprávu",
+    "copyLink": "Kopírovat odkaz",
+    "remind": "Připomenout mi to"
+  },
+  "area": {
+    "selectChannel": "Vyberte kanál a začněte psát zprávy",
+    "openMenu": "Otevřít nabídku",
+    "placeholder": "Zpráva do #{channel}",
+    "viewing": "Prohlížíte si <bold>#{channel}</bold>",
+    "joinChannel": "Připojit se ke kanálu"
+  },
+  "header": {
+    "menu": "Nabídka",
+    "unstar": "Odebrat z oblíbených",
+    "star": "Přidat k oblíbeným",
+    "members": "Členové: {count}",
+    "search": "Hledat",
+    "channelMenu": "Možnosti kanálu",
+    "leaveChannel": "Opustit kanál",
+    "leaveLastMember": "Kanál nelze opustit, jste poslední člen.",
+    "dismiss": "Zavřít",
+    "addTopic": "Přidat téma",
+    "editDetails": "Upravit podrobnosti kanálu"
+  },
+  "message": {
+    "edited": "(upraveno)",
+    "pinned": "Připnuto",
+    "showMore": "Zobrazit více",
+    "showLess": "Zobrazit méně",
+    "repliedToThread": "Odpověď ve vlákně: {excerpt}",
+    "deletedPlaceholder": "Tato zpráva byla smazána.",
+    "sendToChannel": "Odeslat také do kanálu",
+    "removeFromChannel": "Odebrat z kanálu"
+  },
+  "input": {
+    "uploading": "Nahrávání...",
+    "scheduleMessage": "Naplánovat zprávu",
+    "send": "Odeslat zprávu",
+    "hint": "Stiskněte <kbd>Enter</kbd> pro odeslání, <kbd>Shift + Enter</kbd> pro nový řádek",
+    "scheduledFor": "Naplánováno na {time}",
+    "scheduleFailed": "Zprávu se nepodařilo naplánovat. Zkuste to znovu."
+  },
+  "list": {
+    "loading": "Načítání zpráv...",
+    "empty": "Zatím žádné zprávy",
+    "emptyReadOnly": "Tento kanál nemá žádné zprávy.",
+    "emptyFirst": "Buďte první, kdo pošle zprávu!"
+  },
+  "reactions": {
+    "tooltip": "{names} reagoval(i) emotikonem {emoji}",
+    "add": "Přidat reakci",
+    "you": "Vy"
+  },
+  "toolbar": {
+    "addReaction": "Přidat reakci",
+    "replyInThread": "Odpovědět ve vlákně",
+    "removeBookmark": "Odebrat záložku",
+    "bookmark": "Přidat tuto zprávu do záložek",
+    "moreActions": "Další akce"
+  },
+  "mobileSearch": {
+    "placeholder": "Hledat zprávy...",
+    "hint": "Hledejte zprávy napříč všemi kanály a konverzacemi",
+    "close": "Zavřít hledání"
+  },
+  "pins": {
+    "title": "Připnuté zprávy",
+    "loadFailed": "Připnuté zprávy se nepodařilo načíst.",
+    "empty": "Zatím žádné připnuté zprávy"
+  },
+  "schedule": {
+    "menuTitle": "Naplánovat zprávu",
+    "in20": "Za 20 minut",
+    "in1h": "Za 1 hodinu",
+    "in3h": "Za 3 hodiny",
+    "tomorrow9": "Zítra v 9:00",
+    "custom": "Vlastní čas...",
+    "modalTitle": "Naplánovat zprávu",
+    "dateTime": "Datum a čas",
+    "pickFuture": "Vyberte čas v budoucnosti.",
+    "submit": "Naplánovat",
+    "submitting": "Plánování...",
+    "close": "Zavřít"
+  },
+  "scheduled": {
+    "loadFailed": "Naplánované zprávy se nepodařilo načíst.",
+    "cancelFailed": "Zprávu se nepodařilo zrušit.",
+    "sendFailed": "Zprávu se nepodařilo odeslat.",
+    "saveFailed": "Změny se nepodařilo uložit.",
+    "empty": "Žádné naplánované zprávy. Naplánujte zprávu pomocí ikony hodin v editoru zpráv.",
+    "sendAt": "Odeslat v:",
+    "edit": "Upravit",
+    "sendNow": "Odeslat nyní",
+    "cancel": "Zrušit",
+    "failedDlp": "Tato zpráva nebyla odeslána, protože odpovídala pravidlu ochrany dat ({rule}). Smažte ji a napište novou."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# odpověď} few {# odpovědi} many {# odpovědi} other {# odpovědí}}"
+  },
+  "unreads": {
+    "title": "Nepřečtené",
+    "loadFailed": "Nepřečtené zprávy se nepodařilo načíst.",
+    "empty": "Žádné nepřečtené zprávy. Máte vše přečtené! 🎉",
+    "menu": "Nabídka"
+  },
+  "threadPanel": {
+    "title": "Vlákno",
+    "replyPlaceholder": "Odpovědět...",
+    "loadFailed": "Vlákno se nepodařilo načíst. Zkuste to znovu.",
+    "loading": "Načítání vlákna...",
+    "replyFailed": "Odpověď se nepodařilo odeslat. Zkuste to znovu.",
+    "joinToReply": "Pro odpovídání ve vláknech se připojte ke kanálu",
+    "alsoSendToChannel": "Odeslat také do kanálu"
+  },
+  "errors": {
+    "messageEmpty": "Zpráva nemůže být prázdná.",
+    "pasteUploadFailed": "Vložený obrázek se nepodařilo nahrát. Zkuste to znovu.",
+    "dropUploadFailed": "Přetažený soubor se nepodařilo nahrát. Zkuste to znovu.",
+    "uploadFailed": "Soubor se nepodařilo nahrát. Zkuste to znovu.",
+    "voiceUploadFailed": "Hlasovou zprávu se nepodařilo nahrát.",
+    "micDenied": "Přístup k mikrofonu byl odepřen. Povolte přístup k mikrofonu.",
+    "loadFailed": "Zprávy se nepodařilo načíst.",
+    "sendTimeout": "Odeslání zprávy vypršelo. Zkuste to znovu.",
+    "sendFailed": "Zprávu se nepodařilo odeslat. Zkuste to znovu.",
+    "pushNotConfigured": "Push oznámení na serveru nejsou nastavena",
+    "serviceWorkerUnavailable": "Service worker není k dispozici",
+    "subscribeFailed": "Odběr se nepodařilo zaregistrovat",
+    "editFailed": "Úpravu se nepodařilo uložit. Zkuste to znovu."
+  },
+  "details": {
+    "title": "Podrobnosti kanálu",
+    "name": "Název",
+    "topic": "Téma",
+    "topicPlaceholder": "O čem tento kanál je?",
+    "description": "Popis",
+    "descriptionPlaceholder": "Přidat popis",
+    "createdBy": "Vytvořil(a) {name}",
+    "readOnly": "Tyto údaje mohou upravovat jen vlastníci kanálu, moderátoři a správci pracovního prostoru.",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "saveFailed": "Podrobnosti kanálu se nepodařilo uložit."
+  },
+  "intro": {
+    "title": "Vítejte v kanálu #{name}",
+    "noDescription": "Zatím bez popisu.",
+    "editDescription": "Upravit popis"
+  },
+  "threads": {
+    "title": "Vlákna",
+    "menu": "Nabídka",
+    "loadFailed": "Vlákna se nepodařilo načíst.",
+    "empty": "Zatím žádná vlákna",
+    "emptyHint": "Vlákna, která začnete nebo do kterých přispějete, se zobrazí zde.",
+    "newReplies": "{count, plural, one {# nová odpověď} few {# nové odpovědi} many {# nové odpovědi} other {# nových odpovědí}}",
+    "replyCount": "{count, plural, one {# odpověď} few {# odpovědi} many {# odpovědi} other {# odpovědí}}",
+    "olderReplies": "Otevřete vlákno a zobrazíte starší odpovědi",
+    "replyPlaceholder": "Odpovědět...",
+    "send": "Odeslat",
+    "replyFailed": "Odpověď se nepodařilo odeslat. Zkuste to znovu.",
+    "alsoSendToChannel": "Odeslat také do kanálu",
+    "openThread": "Otevřít vlákno",
+    "loadMore": "Načíst další",
+    "loading": "Načítání..."
+  },
+  "permalink": {
+    "copied": "Odkaz zkopírován",
+    "notFound": "Tuto zprávu nelze najít, nebo nemáte oprávnění ji zobrazit",
+    "goHome": "Na domovskou stránku",
+    "copyManually": "Odkaz se nepodařilo zkopírovat automaticky. Zkopírujte tento odkaz: {url}"
+  },
+  "unread": {
+    "divider": "Nové",
+    "newMessagesBar": "{count, plural, one {# nová zpráva} few {# nové zprávy} many {# nové zprávy} other {# nových zpráv}}",
+    "newMessagesBarAtLeast": "{count, plural, one {alespoň # nová zpráva} few {alespoň # nové zprávy} many {alespoň # nové zprávy} other {alespoň # nových zpráv}}",
+    "markRead": "Označit jako přečtené",
+    "jumpFailed": "Nepodařilo se načíst pozici nepřečtených zpráv"
+  },
+  "reminder": {
+    "set": "Nastavit připomenutí",
+    "customLabel": "Datum a čas připomenutí",
+    "preset": {
+      "in20": "Za 20 minut",
+      "in1h": "Za 1 hodinu",
+      "in3h": "Za 3 hodiny",
+      "tomorrow": "Zítra",
+      "nextWeek": "Příští týden",
+      "custom": "Vlastní..."
+    },
+    "status": {
+      "pending": "Připravuje se",
+      "done": "Dokončeno"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 hodina",
+      "tomorrow": "Zítra"
+    },
+    "loadFailed": "Připomenutí se nepodařilo načíst.",
+    "empty": "Žádná připomenutí. Přidejte je přes nabídku dalších akcí u zprávy nebo napište /remind.",
+    "emptyDone": "Žádná dokončená připomenutí.",
+    "dueAt": "Termín {time}",
+    "firedAt": "Termín byl {time}",
+    "completedAt": "Dokončeno {time}",
+    "messageDeleted": "Smazaná zpráva",
+    "complete": "Označit jako dokončené",
+    "reopen": "Označit jako nedokončené",
+    "delete": "Smazat připomenutí",
+    "toast": {
+      "created": "Připomenutí nastaveno",
+      "due": "Připomenutí: {text}",
+      "createFailed": "Připomenutí se nepodařilo nastavit. Zkuste to znovu."
+    },
+    "command": {
+      "syntax": "Použití: /remind me [text] in [počet] [minut|hodin|dnů]",
+      "tooShort": "Připomenutí musí být nastaveno alespoň 1 minutu předem.",
+      "tooLong": "Připomenutí musí být do jednoho roku.",
+      "created": "Připomenutí nastaveno na {time}"
+    },
+    "pastTime": "Vyberte čas v budoucnosti.",
+    "loadMore": "Načíst další"
+  }
+}

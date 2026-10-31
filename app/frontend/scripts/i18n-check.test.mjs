@@ -97,7 +97,7 @@ test('빈 문자열 값은 등급과 관계없이 실패한다', () => {
   assert.match(checkLocale(base, data, { tier: 2 }).errors[0], /빈 값: messages:greet/);
 });
 
-test('실제 번역 파일(ko, ja, zh-Hans, zh-Hant, es, fr, de, pt-BR, it, ru, uk, pl, nl, tr, sv, da, vi, id, ms, fil, hi, bn, th, nb)이 검사를 통과한다', () => {
+test('실제 번역 파일(ko, ja, zh-Hans, zh-Hant, es, fr, de, pt-BR, it, ru, uk, pl, nl, tr, sv, da, vi, id, ms, fil, hi, bn, th, nb, fi, cs, el, hu, ro)이 검사를 통과한다', () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const root = join(here, '..', 'src', 'locales');
   const load = (locale) => {
@@ -134,6 +134,11 @@ test('실제 번역 파일(ko, ja, zh-Hans, zh-Hant, es, fr, de, pt-BR, it, ru, 
     ['bn', 2],
     ['th', 2],
     ['nb', 2],
+    ['fi', 2],
+    ['cs', 2],
+    ['el', 2],
+    ['hu', 2],
+    ['ro', 2],
   ]) {
     const { errors } = checkLocale(en, load(locale), { tier });
     assert.deepEqual(errors, [], `${locale} 오류`);
@@ -198,6 +203,11 @@ test('CLDR 분기 키는 Intl.PluralRules가 그 로캘에 대해 내는 카테�
     bn: ['one', 'other'],
     th: ['other'],
     nb: ['one', 'other'],
+    fi: ['one', 'other'],
+    cs: ['one', 'few', 'many', 'other'],
+    el: ['one', 'other'],
+    hu: ['one', 'other'],
+    ro: ['one', 'few', 'other'],
   };
   for (const [locale, categories] of Object.entries(expected)) {
     // Intl이 내는 카테고리와 규칙서 값이 같은지 먼저 확인한다(이 Node의 ICU 데이터 기준)

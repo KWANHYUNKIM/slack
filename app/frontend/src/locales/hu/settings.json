@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Nyelv",
+    "pending": "{name} (fordítás hamarosan)",
+    "beta": "Béta",
+    "betaOption": "{name} (béta)"
+  },
+  "avatar": {
+    "alt": "Profilkép",
+    "dnd": "Az értesítések szüneteltetve vannak"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Bezárás",
+    "loading": "Betöltés...",
+    "notFound": "A profil nem található",
+    "uploadPhoto": "Fotó feltöltése",
+    "uploading": "Feltöltés...",
+    "name": "Név",
+    "bio": "Bemutatkozás",
+    "bioPlaceholder": "Mesélj magadról másoknak",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "status": "Állapot",
+    "joined": "Csatlakozott",
+    "message": "Üzenet",
+    "edit": "Profil szerkesztése",
+    "statusValue": {
+      "online": "elérhető",
+      "away": "távol",
+      "offline": "nem elérhető"
+    },
+    "errors": {
+      "loadFailed": "A profilt nem sikerült betölteni.",
+      "saveFailed": "A profilt nem sikerült menteni. Próbálja újra.",
+      "notImage": "Válasszon egy képfájlt.",
+      "tooLarge": "A képnek 5 MB-nál kisebbnek kell lennie.",
+      "uploadFailed": "A fotót nem sikerült feltölteni. Próbálja újra."
+    },
+    "statusUntil": "Eddig: {time}"
+  },
+  "crop": {
+    "title": "Fotó kivágása",
+    "close": "Bezárás",
+    "zoom": "Nagyítás",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "saving": "Mentés...",
+    "failed": "A kivágás sikertelen"
+  },
+  "accessTokens": {
+    "title": "Személyes hozzáférési tokenek",
+    "description": "A tokenekkel a Claude és más MCP-kliensek olvashatnak a munkaterületén, és ha engedélyezi, az Ön jogosultságaival írhatnak is benne. Kezelje őket jelszóként.",
+    "nameLabel": "Token neve",
+    "namePlaceholder": "pl. Claude Code a laptopomon",
+    "scopesLabel": "Jogosultságok",
+    "scope": {
+      "channelsRead": "Csatornák listázása",
+      "channelsHistory": "Üzenetek, szálak és tevékenység olvasása",
+      "usersRead": "Személyek megtekintése",
+      "chatWrite": "Saját üzenetek közzététele, szerkesztése és törlése",
+      "reactionsWrite": "Saját reakciók hozzáadása és eltávolítása",
+      "imRead": "Saját közvetlen és csoportos üzeneteinek listázása",
+      "imHistory": "Közvetlen üzenetei előzményeinek olvasása",
+      "imWrite": "Közvetlen üzenetek küldése, szerkesztése és törlése",
+      "searchRead": "Üzenetek, fájlok, személyek és csatornák keresése (a közvetlen üzenetek találataihoz közvetlen üzenetek előzménye szükséges)",
+      "filesRead": "Fájlok listázása és szöveges fájlok tartalmának olvasása"
+    },
+    "expiryLabel": "Lejár",
+    "expiryDays": "{count, plural, one {# nap} other {# nap}}",
+    "expiryNever": "Nem jár le",
+    "neverWarning": "A lejárat nélküli tokenek addig érvényesek, amíg vissza nem vonja őket.",
+    "create": "Token létrehozása",
+    "createdNotice": "Másolja ki most az új tokent. Később már nem fogja látni.",
+    "copy": "Token másolása",
+    "copyCommand": "Parancs másolása",
+    "copied": "Vágólapra másolva",
+    "connectHint": "Csatlakozás a Claude Code-ból:",
+    "dismiss": "Kész, token elrejtése",
+    "loading": "Betöltés...",
+    "empty": "Nincsenek személyes hozzáférési tokenjei.",
+    "expires": "Lejár: {date}",
+    "expired": "Lejárt",
+    "noExpiry": "Nem jár le",
+    "lastUsed": "Utoljára használva: {date}",
+    "neverUsed": "Még nem használták",
+    "rename": "Átnevezés",
+    "renameLabel": "{name} token átnevezése",
+    "revoke": "Visszavonás",
+    "revokeLabel": "{name} token visszavonása",
+    "revokeConfirm": "Visszavonás most",
+    "cancel": "Mégse",
+    "close": "Bezárás",
+    "errors": {
+      "loadFailed": "A tokeneket nem sikerült betölteni.",
+      "createFailed": "A tokent nem sikerült létrehozni. Próbálja újra.",
+      "renameFailed": "A tokent nem sikerült átnevezni.",
+      "revokeFailed": "A tokent nem sikerült visszavonni.",
+      "copyFailed": "A másolás nem sikerült. Jelölje ki a szöveget, és másolja kézzel.",
+      "limitReached": "Legfeljebb {max} aktív tokenje lehet. Vonjon vissza egyet, amit már nem használ, és próbálja újra.",
+      "codeRequired": "A token létrehozásához adja meg a kétlépcsős kódját.",
+      "invalidCode": "A kétlépcsős kód helytelen."
+    },
+    "codeLabel": "Kétlépcsős kód",
+    "codeHint": "A token létrehozásához adja meg a hitelesítő alkalmazásából kapott kódot."
+  },
+  "sessions": {
+    "title": "Bejelentkezett eszközök",
+    "description": "Ezek az eszközök be vannak jelentkezve a fiókjába. Jelentkeztesse ki azokat, amelyeket nem ismer fel, vagy már nem használ.",
+    "loading": "Betöltés...",
+    "empty": "Nincsenek bejelentkezett eszközök.",
+    "thisDevice": "Ez az eszköz",
+    "unknownDevice": "Ismeretlen eszköz",
+    "signedInAt": "Bejelentkezve: {date}",
+    "lastActive": "Utoljára aktív: {date}",
+    "signOut": "Kijelentkezés",
+    "signOutLabel": "Kijelentkezés innen: {device}",
+    "signOutThisLabel": "Kijelentkezés ebből az eszközből ({device})",
+    "signOutOthers": "Kijelentkezés az összes többi eszközről",
+    "signOutOthersConfirm": "{count, plural, one {Kijelentkezés # másik eszközről} other {Kijelentkezés # másik eszközről}}",
+    "revoked": "Az eszközről kijelentkezett",
+    "revokedOthers": "Az összes többi eszközről kijelentkezett",
+    "errors": {
+      "loadFailed": "Az eszközöket nem sikerült betölteni.",
+      "revokeFailed": "A kijelentkezés sikertelen. Próbálja újra."
+    },
+    "device": {
+      "desktop": "Asztali alkalmazás",
+      "desktopOn": "Asztali alkalmazás ezen: {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} ezen: {os}",
+      "unknownOn": "Ismeretlen eszköz ezen: {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Jelszó módosítása",
+    "description": "Adja meg a jelenlegi jelszavát, és válasszon újat.",
+    "currentLabel": "Jelenlegi jelszó",
+    "newLabel": "Új jelszó",
+    "confirmLabel": "Új jelszó megerősítése",
+    "sessionsNote": "A jelszó módosításakor a többi bejelentkezett eszköze kijelentkezik.",
+    "submit": "Jelszó módosítása",
+    "submitting": "Módosítás...",
+    "cancel": "Mégse",
+    "successToast": "A jelszava módosult",
+    "errors": {
+      "currentRequired": "Adja meg a jelenlegi jelszavát.",
+      "failed": "A jelszót nem sikerült módosítani. Próbálja újra."
+    }
+  },
+  "twoFactor": {
+    "title": "Kétlépcsős azonosítás",
+    "description": "Bejelentkezéskor a jelszón kívül kérjen kódot a hitelesítő alkalmazásából.",
+    "loading": "Betöltés...",
+    "statusOn": "Be",
+    "statusOff": "Ki",
+    "enabledSince": "Bekapcsolva: {date}",
+    "recoveryRemaining": "{count, plural, one {# visszaállítókód maradt} other {# visszaállítókód maradt}}",
+    "unavailable": "A kétlépcsős azonosítás nem érhető el ezen a kiszolgálón. Kérje meg az adminisztrátort.",
+    "requiredNotice": "A szervezete kétlépcsős azonosítást kíván meg.",
+    "close": "Bezárás",
+    "setup": {
+      "start": "Kétlépcsős azonosítás beállítása",
+      "starting": "Előkészítés...",
+      "step1": "1. Adja hozzá ezt a fiókot a hitelesítő alkalmazásához. Nyissa meg a hivatkozást a telefonján, vagy írja be kézzel a beállítókulcsot.",
+      "uriLabel": "Beállítási hivatkozás",
+      "openInApp": "Megnyitás a hitelesítő alkalmazásban",
+      "qrLabel": "QR-kód a hitelesítő alkalmazáshoz",
+      "qrHint": "Olvassa be ezt a QR-kódot a hitelesítő alkalmazásával, vagy használja alul a hivatkozást vagy a kulcsot.",
+      "keyLabel": "Beállítókulcs",
+      "copyKey": "Beállítókulcs másolása",
+      "copyUri": "Beállítási hivatkozás másolása",
+      "copied": "Másolva",
+      "step2": "2. Adja meg az alkalmazásában megjelenő 6 számjegyű kódot.",
+      "codeLabel": "Azonosítókód",
+      "codePlaceholder": "123456",
+      "verify": "Bekapcsolás",
+      "verifying": "Ellenőrzés...",
+      "cancel": "Mégse",
+      "passwordLabel": "3. Adja meg a jelenlegi jelszavát.",
+      "sessionsNote": "A bekapcsoláskor a többi bejelentkezett eszköze kijelentkezik."
+    },
+    "recovery": {
+      "title": "Mentse el a visszaállítókódjait",
+      "description": "Ha elveszíti az eszközét, visszaállítókóddal jelentkezhet be. Minden kód egyszer használható. Később már nem jelennek meg.",
+      "download": "Letöltés",
+      "copy": "Összes másolása",
+      "fileHeader": "Visszaállítókódok. Minden kód egyszer használható. Tárolja biztonságos helyen.",
+      "confirmSaved": "Elmentettem a visszaállítókódjaimat",
+      "fileName": "visszaallitokodok.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Jelszó",
+      "codeLabel": "Azonosító- vagy visszaállítókód",
+      "cancel": "Mégse",
+      "passwordInvalid": "Adjon meg érvényes jelszót.",
+      "codeInvalid": "Adjon meg érvényes azonosító- vagy visszaállítókódot."
+    },
+    "regenerate": {
+      "start": "Új visszaállítókódok létrehozása",
+      "title": "Új visszaállítókódok létrehozása",
+      "description": "A régi visszaállítókódjai az újak létrehozásakor azonnal érvényüket vesztik. Adja meg a jelszavát és a hitelesítő alkalmazásából kapott kódot (vagy egy visszaállítókódot).",
+      "submit": "Új kódok létrehozása",
+      "submitting": "Létrehozás...",
+      "lowNotice": "{count, plural, one {Már csak # visszaállítókód maradt} other {Már csak # visszaállítókód maradt}}. Hozzon létre újakat, mielőtt elfogynak.",
+      "toast": "Az új visszaállítókódok elkészültek"
+    },
+    "disable": {
+      "title": "Kétlépcsős azonosítás kikapcsolása",
+      "description": "Adja meg a jelszavát és a hitelesítő alkalmazásából kapott kódot (vagy egy visszaállítókódot).",
+      "start": "Kikapcsolás",
+      "submit": "Kétlépcsős azonosítás kikapcsolása",
+      "submitting": "Kikapcsolás...",
+      "blockedByPolicy": "A szervezete kétlépcsős azonosítást kíván meg, ezért nem kapcsolhatja ki. Ha elvesztette az eszközét, kérje meg az adminisztrátort a visszaállításra."
+    },
+    "enabledToast": "A kétlépcsős azonosítás be van kapcsolva",
+    "disabledToast": "A kétlépcsős azonosítás ki van kapcsolva",
+    "errors": {
+      "loadFailed": "A kétlépcsős azonosítás beállításait nem sikerült betölteni.",
+      "setupFailed": "A beállítást nem sikerült elindítani. Próbálja újra.",
+      "enableFailed": "A kétlépcsős azonosítást nem sikerült bekapcsolni.",
+      "regenerateFailed": "Nem sikerült új visszaállítókódokat létrehozni.",
+      "disableFailed": "A kétlépcsős azonosítást nem sikerült kikapcsolni.",
+      "copyFailed": "A vágólapra nem sikerült másolni."
+    }
+  },
+  "connectedApps": {
+    "title": "Csatlakoztatott alkalmazások",
+    "description": "Azok az alkalmazások, amelyeknek engedélyezte, hogy az OAuth-bejelentkezésen keresztül használják a fiókját. Az Ön jogosultságaival működnek. Csatlakoztassa le azokat, amelyeket már nem használ.",
+    "loading": "Betöltés...",
+    "empty": "Nincs a fiókjához csatlakoztatott alkalmazás.",
+    "redirectsTo": "Visszairányít ide: {hosts}",
+    "connectedAt": "Csatlakoztatva: {date}",
+    "lastUsed": "Utoljára használva: {date}",
+    "neverUsed": "Még nem használták",
+    "disconnect": "Leválasztás",
+    "disconnectLabel": "{name} leválasztása",
+    "disconnectConfirm": "Leválasztás most",
+    "cancel": "Mégse",
+    "disconnected": "Az alkalmazás leválasztva",
+    "close": "Bezárás",
+    "errors": {
+      "loadFailed": "A csatlakoztatott alkalmazásokat nem sikerült betölteni.",
+      "disconnectFailed": "Az alkalmazást nem sikerült leválasztani."
+    },
+    "unnamedApp": "Névtelen alkalmazás"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Luo kanava",
+    "tabBrowse": "Selaa kanavia",
+    "nameLabel": "Kanavan nimi",
+    "namePlaceholder": "esim. suunnittelu-budjetti",
+    "visibility": "Näkyvyys",
+    "public": "Julkinen",
+    "private": "Yksityinen",
+    "publicHint": "Kuka tahansa työtilassa voi löytää tämän kanavan ja liittyä siihen.",
+    "privateHint": "Vain kutsutut jäsenet voivat löytää tämän kanavan ja liittyä siihen.",
+    "cancel": "Peruuta",
+    "create": "Luo",
+    "noChannels": "Liittymiseen ei ole saatavilla kanavia",
+    "memberCount": "{count, plural, one {# jäsen} other {# jäsentä}}",
+    "joined": "Liitytty",
+    "join": "Liity",
+    "close": "Sulje",
+    "errors": {
+      "createFailed": "Kanavan luominen epäonnistui"
+    }
+  },
+  "errors": {
+    "loadConversations": "Keskustelujen lataaminen epäonnistui.",
+    "loadChannels": "Kanavien lataaminen epäonnistui."
+  },
+  "membersPanel": {
+    "title": "Jäsenet",
+    "addPeople": "Lisää henkilöitä",
+    "loadError": "Jäsenten lataaminen epäonnistui.",
+    "removeError": "Jäsenen poistaminen epäonnistui",
+    "online": "Paikalla — {count}",
+    "offline": "Poissa — {count}",
+    "removeDialog": {
+      "title": "Poistetaanko jäsen?",
+      "message": "Poistetaanko <bold>{name}</bold> tältä kanavalta?"
+    },
+    "removing": "Poistetaan...",
+    "searchByName": "Hae nimellä...",
+    "noUsers": "Käyttäjiä ei löytynyt",
+    "roles": {
+      "owner": "Omistaja",
+      "moderator": "Moderaattori"
+    },
+    "removeMember": "Poista jäsen"
+  },
+  "dm": {
+    "messagePlaceholder": "Viesti käyttäjälle {name}",
+    "you": "(sinä)",
+    "star": "Lisää tähdellä merkittyihin",
+    "unstar": "Poista tähdellä merkityistä",
+    "loadingMessages": "Ladataan viestejä...",
+    "selfSpace": "Tämä on oma tilasi. Kirjoita luonnoksia, listaa tehtäviäsi tai pidä linkit ja tiedostot käden ulottuvilla.",
+    "conversationStart": "Keskustelusi käyttäjän {name} kanssa alkaa tästä",
+    "sendToBegin": "Aloita keskustelu lähettämällä viesti.",
+    "edited": "(muokattu)",
+    "pinnedMessages": "Kiinnitetyt viestit",
+    "noPins": "Ei vielä kiinnitettyjä viestejä",
+    "files": "Tiedostot",
+    "noFiles": "Tiedostoja ei ole vielä jaettu",
+    "loadError": "Viestien lataaminen epäonnistui.",
+    "sendError": "Viestin lähettäminen epäonnistui. Yritä uudelleen."
+  },
+  "nameRules": {
+    "required": "Anna kanavan nimi.",
+    "tooLong": "Kanavan nimi saa olla enintään {max} merkkiä.",
+    "invalidChars": "Kanavan nimi saa sisältää vain kirjaimia, numeroita, väliviivoja ja alaviivoja, ja sen on alettava kirjaimella tai numerolla.",
+    "tooManyMarks": "Kanavan nimessä ei saa olla peräkkäin yli neljää yhdistelmämerkkiä.",
+    "mixedScripts": "Kanavan nimessä ei saa sekoittaa keskenään samannäköisiä aakkosia (kuten latinalaisia ja kyrillisiä tai kreikkalaisia kirjaimia) eikä toisen numerojärjestelmän numeroita.",
+    "taken": "Samanniminen kanava on jo olemassa."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# jäsen} other {# jäsentä}}",
+    "nameLabel": "Keskustelun nimi",
+    "namePlaceholder": "Lisää nimi",
+    "noName": "Ei nimeä (näytetään jäsenten nimet)",
+    "rename": "Nimeä keskustelu uudelleen",
+    "addPeople": "Lisää henkilöitä",
+    "add": "Lisää",
+    "createWith": "Aloita ryhmäkeskustelu",
+    "leave": "Poistu keskustelusta",
+    "leaveConfirm": "Poistutaanko tästä keskustelusta? Et enää näe sen viestejä.",
+    "conversationStart": "Tämä on keskustelusi alku henkilöiden {names} kanssa",
+    "addError": "Henkilöiden lisääminen epäonnistui. Yritä uudelleen.",
+    "renameError": "Keskustelun nimeäminen uudelleen epäonnistui. Yritä uudelleen.",
+    "leaveError": "Keskustelusta poistuminen epäonnistui. Yritä uudelleen."
+  }
+}

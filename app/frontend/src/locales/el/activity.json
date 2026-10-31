@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Δραστηριότητα",
+    "markAllRead": "Σήμανση όλων ως αναγνωσμένων",
+    "loading": "Φόρτωση...",
+    "loadingMore": "Φόρτωση περισσότερων...",
+    "loadFailed": "Η φόρτωση της δραστηριότητας απέτυχε.",
+    "empty": "Δεν υπάρχει δραστηριότητα ακόμη.",
+    "unread": "Μη αναγνωσμένο",
+    "menu": "Μενού",
+    "someone": "Κάποιος",
+    "directMessage": "ένα άμεσο μήνυμα",
+    "messageDeleted": "Διαγραμμένο μήνυμα"
+  },
+  "tabs": {
+    "all": "Όλα",
+    "mentions": "Αναφορές",
+    "threads": "Νήματα",
+    "reactions": "Αντιδράσεις"
+  },
+  "describe": {
+    "mention": "Ο/Η {actor} σας ανέφερε στο {where}",
+    "channelMention": "Ο/Η {actor} ανέφερε το @channel στο {where}",
+    "hereMention": "Ο/Η {actor} ανέφερε το @here στο {where}",
+    "threadReply": "Ο/Η {actor} απάντησε σε νήμα στο {where}",
+    "reaction": "Ο/Η {actor} αντέδρασε με {emoji} στο μήνυμά σας στο {where}",
+    "reminder": "Υπενθύμιση"
+  }
+}

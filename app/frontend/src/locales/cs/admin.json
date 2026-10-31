@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Panel správce",
+    "openSidebar": "Otevřít postranní panel",
+    "tabs": {
+      "members": "Členové",
+      "invites": "Pozvánky",
+      "channels": "Kanály",
+      "webhooks": "Webhooky",
+      "audit": "Protokol auditu",
+      "retention": "Uchovávání dat",
+      "security": "Zabezpečení",
+      "dlp": "DLP",
+      "legalHolds": "Právní uchování"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanál",
+      "members": "Členové",
+      "messages": "Zprávy",
+      "created": "Vytvořeno"
+    },
+    "actions": {
+      "rename": "Přejmenovat kanál",
+      "archive": "Archivovat kanál",
+      "delete": "Smazat kanál",
+      "unarchive": "Zrušit archivaci kanálu",
+      "deletePermanently": "Smazat trvale"
+    },
+    "emptyActive": "Žádné aktivní kanály",
+    "archivedHeading": "Archivované kanály ({count})",
+    "archivedOn": "archivováno {date}",
+    "messageCount": "{count, plural, one {# zpráva} few {# zprávy} many {# zprávy} other {# zpráv}}",
+    "deleteDialog": {
+      "title": "Smazat kanál",
+      "message": "Opravdu chcete trvale smazat kanál #{name}? Všechny zprávy budou ztraceny. Tuto akci nelze vrátit zpět."
+    },
+    "archiveDialog": {
+      "title": "Archivovat kanál",
+      "confirm": "Archivovat",
+      "message": "Archivovat #{name}? Kanál bude skryt v postranním panelu, ale zprávy zůstanou zachovány. Archivaci můžete později zrušit."
+    },
+    "unarchiveDialog": {
+      "title": "Zrušit archivaci kanálu",
+      "confirm": "Zrušit archivaci",
+      "message": "Zrušit archivaci #{name}? Kanál se znovu objeví v postranním panelu u všech členů."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Hledat členy...",
+    "columns": {
+      "user": "Uživatel",
+      "email": "E-mail",
+      "role": "Role",
+      "status": "Stav",
+      "actions": "Akce"
+    },
+    "you": "(vy)",
+    "roles": {
+      "owner": "Vlastník",
+      "admin": "Správce",
+      "member": "Člen",
+      "guest": "Host"
+    },
+    "status": {
+      "active": "Aktivní",
+      "deactivated": "Deaktivováno"
+    },
+    "actions": {
+      "transfer": "Předat vlastnictví",
+      "reactivate": "Znovu aktivovat",
+      "deactivate": "Deaktivovat",
+      "forceLogout": "Vynutit odhlášení",
+      "resetMfa": "Resetovat 2FA"
+    },
+    "empty": "Nebyli nalezeni žádní uživatelé",
+    "dialogs": {
+      "transfer": {
+        "title": "Předat vlastnictví pracovního prostoru",
+        "confirm": "Předat",
+        "message": "Opravdu chcete předat vlastnictví pracovního prostoru uživateli {name}? Vaše role se změní na správce."
+      },
+      "deactivate": {
+        "title": "Deaktivovat uživatele",
+        "confirm": "Deaktivovat",
+        "message": "Opravdu chcete deaktivovat uživatele {name}? Okamžitě bude odhlášen a nebude se moci přihlásit."
+      },
+      "reactivate": {
+        "title": "Znovu aktivovat uživatele",
+        "confirm": "Aktivovat",
+        "message": "Opravdu chcete znovu aktivovat uživatele {name}? Bude se moci opět přihlásit."
+      },
+      "forceLogout": {
+        "title": "Vynutit odhlášení",
+        "confirm": "Odhlásit",
+        "message": "Odhlásit uživatele {name} ze všech zařízení hned teď? Jeho účet zůstane aktivní a bude se moci znovu přihlásit."
+      },
+      "resetMfa": {
+        "title": "Resetovat dvoufázové ověření",
+        "confirm": "Resetovat",
+        "message": "Odebrat dvoufázové ověření uživateli {name}? Bude odhlášen ze všech zařízení a bude se moci přihlásit jen heslem."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Dvoufázové ověření je zapnuto"
+    }
+  },
+  "invites": {
+    "createHeading": "Vytvořit odkaz na pozvánku",
+    "fields": {
+      "role": "Role",
+      "maxUses": "Maximální počet použití",
+      "expiresIn": "Platnost"
+    },
+    "unlimited": "Neomezeně",
+    "expiry": {
+      "1d": "1 den",
+      "7d": "7 dní",
+      "30d": "30 dní",
+      "never": "Nikdy"
+    },
+    "expired": "Vypršelo",
+    "columns": {
+      "url": "URL pozvánky",
+      "uses": "Použití",
+      "expires": "Platnost",
+      "createdBy": "Vytvořil(a)"
+    },
+    "copyUrl": "Kopírovat URL pozvánky",
+    "full": "(vyčerpáno)",
+    "delete": "Smazat pozvánku",
+    "empty": "Zatím žádné odkazy na pozvánky"
+  },
+  "webhooks": {
+    "createHeading": "Vytvořit webhook",
+    "fields": {
+      "name": "Název webhooku",
+      "channel": "Kanál"
+    },
+    "namePlaceholder": "Moje integrace",
+    "selectChannel": "Vyberte kanál...",
+    "columns": {
+      "name": "Název",
+      "url": "URL webhooku",
+      "lastUsed": "Naposledy použito"
+    },
+    "never": "Nikdy",
+    "justNow": "Právě teď",
+    "inactive": "Neaktivní",
+    "copyUrl": "Kopírovat URL webhooku",
+    "delete": "Smazat webhook",
+    "empty": "Zatím nejsou nastaveny žádné webhooky"
+  },
+  "audit": {
+    "empty": "Neodpovídají žádné záznamy protokolu auditu. Zde se zobrazí zaznamenané akce.",
+    "loadMore": "Načíst další",
+    "targets": {
+      "user": "Uživatel",
+      "channel": "Kanál",
+      "invite": "Pozvánka",
+      "webhook": "Webhook",
+      "message": "Zpráva",
+      "directMessage": "Přímá zpráva",
+      "token": "Přístupový token",
+      "auditLog": "Protokol auditu",
+      "mcpTool": "Nástroj MCP",
+      "workspace": "Pracovní prostor",
+      "file": "Soubor",
+      "dlpRule": "Pravidlo DLP",
+      "legalHold": "Právní uchování"
+    },
+    "action": {
+      "authLogin": "Přihlášení",
+      "authLoginFailed": "Neúspěšné přihlášení",
+      "authLogout": "Odhlášení",
+      "authPasswordChanged": "Heslo změněno",
+      "userRoleChanged": "Role změněna",
+      "userDeactivated": "Deaktivováno",
+      "userForceLogout": "Vynucené odhlášení",
+      "userReactivated": "Znovu aktivováno",
+      "ownershipTransferred": "Vlastnictví předáno",
+      "ownerBootstrapped": "Vlastník vytvořen",
+      "channelCreated": "Kanál vytvořen",
+      "channelEdited": "Kanál upraven",
+      "channelArchived": "Kanál archivován",
+      "channelUnarchived": "Archivace kanálu zrušena",
+      "channelDeleted": "Kanál smazán",
+      "channelMemberAdded": "Člen přidán",
+      "channelMemberRemoved": "Člen odebrán",
+      "inviteCreated": "Pozvánka vytvořena",
+      "inviteDeleted": "Pozvánka smazána",
+      "webhookCreated": "Webhook vytvořen",
+      "webhookDeleted": "Webhook smazán",
+      "tokenCreate": "Token vytvořen",
+      "tokenRevoke": "Token zrušen",
+      "mcpToolCall": "Volání nástroje MCP",
+      "auditExported": "Protokol auditu exportován",
+      "authLoginLocked": "Účet zamknut",
+      "sessionRevoked": "Zařízení odhlášeno",
+      "sessionRevokedAll": "Všechna zařízení odhlášena",
+      "retentionPurged": "Vypršelá data smazána",
+      "retentionWorkspaceUpdated": "Zásady uchovávání změněny",
+      "retentionChannelUpdated": "Uchovávání kanálu změněno",
+      "retentionChannelCleared": "Uchovávání kanálu obnoveno",
+      "mfaEnabled": "Dvoufázové ověření zapnuto",
+      "mfaDisabled": "Dvoufázové ověření vypnuto",
+      "mfaRecoveryUsed": "Použit záložní kód",
+      "mfaRecoveryRegenerated": "Záložní kódy vytvořeny znovu",
+      "mfaResetByAdmin": "Dvoufázové ověření resetováno správcem",
+      "mfaPolicyChanged": "Požadavek na dvoufázové ověření změněn",
+      "dlpBlocked": "Zpráva zablokována pravidlem DLP",
+      "dlpWarned": "Varování DLP",
+      "dlpRuleCreated": "Pravidlo DLP vytvořeno",
+      "dlpRuleUpdated": "Pravidlo DLP změněno",
+      "dlpRuleDeleted": "Pravidlo DLP smazáno",
+      "dlpRuleTimeout": "Pravidlo DLP vypršelo časovým limitem",
+      "dlpRuleAutoDisabled": "Pravidlo DLP bylo automaticky vypnuto",
+      "legalHoldCreated": "Právní uchování vytvořeno",
+      "legalHoldUpdated": "Právní uchování upraveno",
+      "legalHoldCustodianAdded": "Osoba přidána do právního uchování",
+      "legalHoldCustodianRemoved": "Osoba odebrána z právního uchování",
+      "legalHoldReleased": "Právní uchování zrušeno",
+      "ediscoverySearched": "Hledání eDiscovery",
+      "ediscoveryExportRequested": "Požadavek na export eDiscovery",
+      "ediscoveryExported": "Export eDiscovery dokončen"
+    },
+    "filters": {
+      "allActions": "Všechny akce",
+      "actionsSelected": "{count, plural, one {# akce} few {# akce} many {# akce} other {# akcí}}",
+      "actor": "Původce",
+      "allActors": "Všichni původci",
+      "targetType": "Typ cíle",
+      "allTargets": "Všechny cíle",
+      "from": "Od",
+      "to": "Do",
+      "apply": "Použít",
+      "reset": "Resetovat"
+    },
+    "export": {
+      "csv": "Exportovat CSV",
+      "json": "Exportovat JSON"
+    },
+    "unknownActor": "Neznámý"
+  },
+  "errors": {
+    "archiveChannel": "Kanál se nepodařilo archivovat",
+    "createInvite": "Pozvánku se nepodařilo vytvořit",
+    "createWebhook": "Webhook se nepodařilo vytvořit",
+    "deactivateUser": "Uživatele se nepodařilo deaktivovat",
+    "deleteChannel": "Kanál se nepodařilo smazat",
+    "deleteInvite": "Pozvánku se nepodařilo smazat",
+    "deleteWebhook": "Webhook se nepodařilo smazat",
+    "editChannel": "Kanál se nepodařilo upravit",
+    "exportAuditLog": "Protokol auditu se nepodařilo exportovat",
+    "fetchAuditLog": "Protokol auditu se nepodařilo načíst",
+    "fetchChannels": "Kanály se nepodařilo načíst",
+    "fetchInvites": "Pozvánky se nepodařilo načíst",
+    "fetchUsers": "Uživatele se nepodařilo načíst",
+    "fetchWebhooks": "Webhooky se nepodařilo načíst",
+    "forceLogout": "Uživatele se nepodařilo odhlásit",
+    "reactivateUser": "Uživatele se nepodařilo znovu aktivovat",
+    "removeChannelMember": "Člena kanálu se nepodařilo odebrat",
+    "transferOwnership": "Vlastnictví se nepodařilo předat",
+    "unarchiveChannel": "Archivaci kanálu se nepodařilo zrušit",
+    "updateRole": "Roli se nepodařilo aktualizovat",
+    "resetMfa": "Dvoufázové ověření se nepodařilo resetovat"
+  },
+  "retention": {
+    "title": "Uchovávání dat",
+    "description": "Automaticky mazat zprávy po nastaveném počtu dní. Soubory se mažou spolu se zprávami. Úklid probíhá jednou denně. Připomenutí se zachovávají a zobrazují „smazaná zpráva“.",
+    "loadError": "Zásady uchovávání se nepodařilo načíst",
+    "saveError": "Zásady uchovávání se nepodařilo uložit",
+    "resetError": "Zásady kanálu se nepodařilo obnovit na výchozí",
+    "workspace": {
+      "heading": "Výchozí nastavení pracovního prostoru",
+      "hint": "Platí pro každý kanál bez vlastního nastavení a také pro přímé a skupinové zprávy."
+    },
+    "mode": {
+      "forever": "Uchovávat navždy",
+      "days": "Smazat po počtu dní",
+      "inherit": "Použít výchozí nastavení pracovního prostoru"
+    },
+    "daysLabel": "Dny",
+    "daysHint": "{min} až {max} dní",
+    "effective": {
+      "forever": "Uchováváno navždy",
+      "days": "{count, plural, one {# den} few {# dny} many {# dne} other {# dní}}"
+    },
+    "channels": {
+      "heading": "Kanály",
+      "columns": {
+        "channel": "Kanál",
+        "policy": "Zásady",
+        "effective": "Platí"
+      },
+      "legalHold": "Právní uchování",
+      "reset": "Obnovit výchozí",
+      "empty": "Žádné kanály"
+    },
+    "save": "Uložit",
+    "saved": "Uloženo",
+    "confirm": {
+      "title": "Trvale smazat staré zprávy?",
+      "message": "Při dalším úklidu budou trvale smazány zprávy starší než {count, plural, one {# den} few {# dny} many {# dne} other {# dní}} spolu se svými soubory. Tuto akci nelze vrátit zpět.",
+      "confirm": "Použít zásady"
+    }
+  },
+  "security": {
+    "title": "Dvoufázové ověření",
+    "requireMfa": "Vyžadovat dvoufázové ověření pro všechny",
+    "requireMfaHint": "Členové bez dvoufázového ověření uvidí jen obrazovku nastavení, dokud jej nezapnou.",
+    "unavailable": "Dvoufázové ověření je na tomto serveru vypnuto, protože není nastaven šifrovací klíč (TOTP_ENCRYPTION_KEY). Požadavek se neuplatňuje.",
+    "saved": "Nastavení zabezpečení uloženo",
+    "loading": "Načítání...",
+    "errors": {
+      "loadFailed": "Nastavení zabezpečení se nepodařilo načíst.",
+      "saveFailed": "Nastavení zabezpečení se nepodařilo uložit."
+    },
+    "allowOAuthApps": "Povolit členům připojovat aplikace OAuth",
+    "allowOAuthAppsHint": "Umožní členům připojovat aplikace, například Claude, přes přihlášení OAuth. Vypnutí okamžitě odpojí všechny aplikace."
+  },
+  "dlp": {
+    "title": "Ochrana před únikem dat",
+    "description": "Zjišťuje citlivé vzory ve zprávách, například čísla platebních karet. Blokovací pravidlo zabrání uložení zprávy. Výstražné pravidlo zprávu uloží a zapíše do protokolu auditu. Text zprávy se do protokolu nikdy nezapisuje.",
+    "loadError": "Pravidla DLP se nepodařilo načíst",
+    "saveError": "Pravidlo se nepodařilo uložit",
+    "toggleError": "Pravidlo se nepodařilo změnit",
+    "deleteError": "Pravidlo se nepodařilo smazat",
+    "testError": "Vzor se nepodařilo otestovat",
+    "builtinBadge": "Vestavěné",
+    "builtinPattern": "Vestavěný detektor",
+    "builtin": {
+      "credit_card": "Číslo platební karty",
+      "kr_rrn": "Korejské rodné číslo",
+      "aws_access_key": "Přístupový klíč AWS",
+      "private_key": "Privátní klíč"
+    },
+    "action": {
+      "BLOCK": "Blokovat",
+      "WARN": "Varovat"
+    },
+    "columns": {
+      "name": "Pravidlo",
+      "pattern": "Vzor",
+      "action": "Akce",
+      "enabled": "Stav"
+    },
+    "on": "Zapnuto",
+    "off": "Vypnuto",
+    "toggleLabel": "Zapnout nebo vypnout {name}",
+    "edit": "Upravit",
+    "editLabel": "Upravit {name}",
+    "delete": "Smazat",
+    "deleteLabel": "Smazat {name}",
+    "form": {
+      "createHeading": "Přidat pravidlo",
+      "editHeading": "Upravit pravidlo",
+      "name": "Název",
+      "pattern": "Vzor (regulární výraz)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Akce",
+      "add": "Přidat pravidlo",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "hint": "Až {max} znaků. Vnořená opakování jako (a+)+, zpětné odkazy a velmi vysoké počty opakování jsou zamítnuty."
+    },
+    "patternProblem": {
+      "empty": "Zadejte vzor.",
+      "tooLong": "Vzor je příliš dlouhý.",
+      "invalid": "Toto není platný regulární výraz.",
+      "backreference": "Zpětné odkazy nejsou povoleny.",
+      "nestedQuantifier": "Vnořená opakování mohou kontrolu velmi zpomalit, proto nejsou povolena.",
+      "repeatTooLarge": "Počet opakování je příliš velký (nejvýše 200)."
+    },
+    "test": {
+      "heading": "Otestovat vzor",
+      "hint": "Nic se neukládá. Zadejte vzor výše nebo vyberte uložené pravidlo a poté napište ukázkový text.",
+      "source": "Vzor k otestování",
+      "sourceDraft": "Vzor z formuláře výše",
+      "sample": "Ukázkový text",
+      "run": "Otestovat",
+      "matched": "Shoda. Tento text by byl zachycen.",
+      "notMatched": "Bez shody.",
+      "timedOut": "Kontrola trvala příliš dlouho a byla zastavena. Zjednodušte vzor."
+    },
+    "confirmDelete": {
+      "title": "Smazat toto pravidlo?",
+      "message": "Pravidlo „{name}“ bude odstraněno a již nebude kontrolováno."
+    }
+  },
+  "legalHolds": {
+    "description": "Uchová vše, co člověk napsal nebo obdržel, i když by to uchovávání dat jinak smazalo. Správci mohou uchovaná data prohledávat a exportovat pro právní posouzení.",
+    "statusFilter": "Zobrazit",
+    "status": {
+      "active": "Aktivní",
+      "released": "Zrušeno",
+      "all": "Vše"
+    },
+    "empty": "Žádná právní uchování",
+    "selectHint": "Vyberte právní uchování a spravujte jeho osoby nebo prohledávejte jeho data.",
+    "loadMore": "Načíst další",
+    "custodianCount": "{count, plural, one {# osoba} few {# osoby} many {# osoby} other {# osob}}",
+    "createdOn": "Vytvořeno {date}",
+    "releasedOn": "Zrušeno {date}",
+    "createdBy": "Vytvořil(a) {name} dne {date}",
+    "releasedBy": "Zrušil(a) {name} dne {date}",
+    "unknownUser": "Neznámý uživatel",
+    "edit": "Upravit",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "fields": {
+      "name": "Název",
+      "description": "Popis (nepovinné)"
+    },
+    "create": {
+      "open": "Nové uchování",
+      "submit": "Vytvořit uchování",
+      "hint": "Osoby můžete přidat až po vytvoření uchování."
+    },
+    "custodians": {
+      "heading": "Osoby v uchování",
+      "pick": "Vyberte osobu",
+      "add": "Přidat",
+      "remove": "Odebrat {name} z tohoto uchování",
+      "empty": "V tomto uchování zatím není nikdo.",
+      "deactivated": "Deaktivováno"
+    },
+    "release": {
+      "open": "Zrušit uchování",
+      "title": "Zrušit toto právní uchování?",
+      "message": "„{name}“ přestane data uchovávat. Osoby, které nejsou v jiném aktivním uchování, se vrátí pod běžné zásady uchovávání a jejich staré zprávy mohou být smazány při dalším úklidu. Uchování a seznam osob zůstanou v záznamech. Tuto akci nelze vrátit zpět.",
+      "confirm": "Zrušit uchování"
+    },
+    "discovery": {
+      "heading": "Hledání a export",
+      "hint": "Zahrnuje zprávy, které osoby v uchování napsaly v libovolném kanálu (včetně soukromých), přímé a skupinové zprávy, kterých se účastnily, a údaje o souborech. Smazané zprávy jsou zahrnuty a označeny.",
+      "query": "Klíčové slovo",
+      "from": "Od",
+      "to": "Do",
+      "search": "Hledat",
+      "export": "Exportovat (JSONL)",
+      "exportHint": "Exportuje výsledky posledního hledání. Každé hledání a export se zapisuje do protokolu auditu.",
+      "searchFirst": "Nejprve vyhledejte s těmito filtry. Export používá filtry hledání zobrazeného níže.",
+      "kinds": {
+        "channel": "Zprávy v kanálech",
+        "dm": "Přímé zprávy",
+        "file": "Soubory"
+      },
+      "empty": "Žádné výsledky",
+      "deleted": "Smazáno",
+      "edited": "Upraveno",
+      "reply": "Odpověď ve vlákně",
+      "groupDm": "Skupinová zpráva #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Právní uchování se nepodařilo načíst",
+      "create": "Právní uchování se nepodařilo vytvořit",
+      "update": "Právní uchování se nepodařilo aktualizovat",
+      "custodians": "Osoby v uchování se nepodařilo změnit",
+      "release": "Právní uchování se nepodařilo zrušit",
+      "search": "Hledání se nezdařilo",
+      "export": "Export se nezdařil"
+    }
+  }
+}

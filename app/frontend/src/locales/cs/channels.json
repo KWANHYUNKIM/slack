@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Vytvořit kanál",
+    "tabBrowse": "Procházet kanály",
+    "nameLabel": "Název kanálu",
+    "namePlaceholder": "např. plan-rozpocet",
+    "visibility": "Viditelnost",
+    "public": "Veřejný",
+    "private": "Soukromý",
+    "publicHint": "Kdokoli v pracovním prostoru může tento kanál najít a připojit se k němu.",
+    "privateHint": "Tento kanál mohou najít a připojit se k němu jen pozvaní členové.",
+    "cancel": "Zrušit",
+    "create": "Vytvořit",
+    "noChannels": "Nejsou k dispozici žádné kanály, ke kterým se lze připojit",
+    "memberCount": "{count, plural, one {# člen} few {# členové} many {# člena} other {# členů}}",
+    "joined": "Připojeno",
+    "join": "Připojit se",
+    "close": "Zavřít",
+    "errors": {
+      "createFailed": "Kanál se nepodařilo vytvořit"
+    }
+  },
+  "errors": {
+    "loadConversations": "Konverzace se nepodařilo načíst.",
+    "loadChannels": "Kanály se nepodařilo načíst."
+  },
+  "membersPanel": {
+    "title": "Členové",
+    "addPeople": "Přidat lidi",
+    "loadError": "Členy se nepodařilo načíst.",
+    "removeError": "Člena se nepodařilo odebrat",
+    "online": "Online — {count}",
+    "offline": "Offline — {count}",
+    "removeDialog": {
+      "title": "Odebrat člena?",
+      "message": "Odebrat uživatele <bold>{name}</bold> z tohoto kanálu?"
+    },
+    "removing": "Odebírání...",
+    "searchByName": "Hledat podle jména...",
+    "noUsers": "Nebyli nalezeni žádní uživatelé",
+    "roles": {
+      "owner": "Vlastník",
+      "moderator": "Moderátor"
+    },
+    "removeMember": "Odebrat člena"
+  },
+  "dm": {
+    "messagePlaceholder": "Zpráva pro {name}",
+    "you": "(vy)",
+    "star": "Přidat do oblíbených",
+    "unstar": "Odebrat z oblíbených",
+    "loadingMessages": "Načítání zpráv...",
+    "selfSpace": "Toto je váš vlastní prostor. Pište koncepty, veďte seznam úkolů nebo mějte po ruce odkazy a soubory.",
+    "conversationStart": "Začátek vaší konverzace s uživatelem {name}",
+    "sendToBegin": "Začněte konverzaci odesláním zprávy.",
+    "edited": "(upraveno)",
+    "pinnedMessages": "Připnuté zprávy",
+    "noPins": "Zatím žádné připnuté zprávy",
+    "files": "Soubory",
+    "noFiles": "Zatím nebyly sdíleny žádné soubory",
+    "loadError": "Zprávy se nepodařilo načíst.",
+    "sendError": "Zprávu se nepodařilo odeslat. Zkuste to znovu."
+  },
+  "nameRules": {
+    "required": "Zadejte název kanálu.",
+    "tooLong": "Název kanálu smí mít nejvýše {max} znaků.",
+    "invalidChars": "Názvy kanálů smějí obsahovat jen písmena, číslice, pomlčky a podtržítka a musí začínat písmenem nebo číslicí.",
+    "tooManyMarks": "Název kanálu nesmí obsahovat více než 4 kombinovaná diakritická znaménka za sebou.",
+    "mixedScripts": "Název kanálu nesmí kombinovat podobně vypadající abecedy (například latinku s cyrilicí nebo řečtinou) ani číslice z jiné číselné soustavy.",
+    "taken": "Kanál s tímto názvem již existuje."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# člen} few {# členové} many {# člena} other {# členů}}",
+    "nameLabel": "Název konverzace",
+    "namePlaceholder": "Přidat název",
+    "noName": "Bez názvu (zobrazí se jména členů)",
+    "rename": "Přejmenovat konverzaci",
+    "addPeople": "Přidat lidi",
+    "add": "Přidat",
+    "createWith": "Začít skupinovou konverzaci",
+    "leave": "Opustit konverzaci",
+    "leaveConfirm": "Opustit tuto konverzaci? Její zprávy už nebudete vidět.",
+    "conversationStart": "Toto je začátek vaší konverzace s uživateli {names}",
+    "addError": "Lidi se nepodařilo přidat. Zkuste to znovu.",
+    "renameError": "Konverzaci se nepodařilo přejmenovat. Zkuste to znovu.",
+    "leaveError": "Konverzaci se nepodařilo opustit. Zkuste to znovu."
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "Csatorna létrehozása",
+    "tabBrowse": "Csatornák böngészése",
+    "nameLabel": "Csatorna neve",
+    "namePlaceholder": "pl. terv-koltsegvetes",
+    "visibility": "Láthatóság",
+    "public": "Nyilvános",
+    "private": "Privát",
+    "publicHint": "A munkaterület bárkije megtalálhatja és csatlakozhat ehhez a csatornához.",
+    "privateHint": "Csak a meghívott tagok találhatják meg és csatlakozhatnak ehhez a csatornához.",
+    "cancel": "Mégse",
+    "create": "Létrehozás",
+    "noChannels": "Nincs elérhető csatorna, amelyhez csatlakozhatna",
+    "memberCount": "{count, plural, one {# tag} other {# tag}}",
+    "joined": "Csatlakozva",
+    "join": "Csatlakozás",
+    "close": "Bezárás",
+    "errors": {
+      "createFailed": "A csatorna létrehozása nem sikerült"
+    }
+  },
+  "errors": {
+    "loadConversations": "A beszélgetéseket nem sikerült betölteni.",
+    "loadChannels": "A csatornákat nem sikerült betölteni."
+  },
+  "membersPanel": {
+    "title": "Tagok",
+    "addPeople": "Személyek hozzáadása",
+    "loadError": "A tagokat nem sikerült betölteni.",
+    "removeError": "A tag eltávolítása nem sikerült",
+    "online": "Elérhető — {count}",
+    "offline": "Nem elérhető — {count}",
+    "removeDialog": {
+      "title": "Eltávolítja a tagot?",
+      "message": "Eltávolítja <bold>{name}</bold> tagot ebből a csatornából?"
+    },
+    "removing": "Eltávolítás...",
+    "searchByName": "Keresés név szerint...",
+    "noUsers": "Nincs találat a felhasználók között",
+    "roles": {
+      "owner": "Tulajdonos",
+      "moderator": "Moderátor"
+    },
+    "removeMember": "Tag eltávolítása"
+  },
+  "dm": {
+    "messagePlaceholder": "Üzenet ennek: {name}",
+    "you": "(ön)",
+    "star": "Hozzáadás a csillagozottakhoz",
+    "unstar": "Eltávolítás a csillagozottak közül",
+    "loadingMessages": "Üzenetek betöltése...",
+    "selfSpace": "Ez az Ön saját tere. Írjon piszkozatokat, készítsen feladatlistát, vagy tartson kéznél hivatkozásokat és fájlokat.",
+    "conversationStart": "Az Ön beszélgetésének kezdete vele: {name}",
+    "sendToBegin": "Küldjön üzenetet a beszélgetés megkezdéséhez.",
+    "edited": "(szerkesztve)",
+    "pinnedMessages": "Kitűzött üzenetek",
+    "noPins": "Még nincs kitűzött üzenet",
+    "files": "Fájlok",
+    "noFiles": "Még nem osztottak meg fájlt",
+    "loadError": "Az üzeneteket nem sikerült betölteni.",
+    "sendError": "Az üzenetet nem sikerült elküldeni. Próbálja újra."
+  },
+  "nameRules": {
+    "required": "Adjon meg egy csatornanevet.",
+    "tooLong": "A csatornanév legfeljebb {max} karakter lehet.",
+    "invalidChars": "A csatornanevek csak betűket, számokat, kötőjeleket és aláhúzásjeleket tartalmazhatnak, és betűvel vagy számmal kell kezdődniük.",
+    "tooManyMarks": "A csatornanévben egymás után legfeljebb 4 kombinált jel állhat.",
+    "mixedScripts": "A csatornanév nem keverhet összetéveszthetően hasonló ábécéket (például latin és cirill vagy görög betűket), és más számrendszer számjegyeit sem.",
+    "taken": "Ilyen nevű csatorna már létezik."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# tag} other {# tag}}",
+    "nameLabel": "Beszélgetés neve",
+    "namePlaceholder": "Név hozzáadása",
+    "noName": "Nincs név (a tagok nevei jelennek meg)",
+    "rename": "Beszélgetés átnevezése",
+    "addPeople": "Személyek hozzáadása",
+    "add": "Hozzáadás",
+    "createWith": "Csoportos beszélgetés indítása",
+    "leave": "Kilépés a beszélgetésből",
+    "leaveConfirm": "Kilép ebből a beszélgetésből? Többé nem látja az üzeneteit.",
+    "conversationStart": "Ez az Ön beszélgetésének kezdete velük: {names}",
+    "addError": "A személyeket nem sikerült hozzáadni. Próbálja újra.",
+    "renameError": "A beszélgetést nem sikerült átnevezni. Próbálja újra.",
+    "leaveError": "A beszélgetésből nem sikerült kilépni. Próbálja újra."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "close": "Închide",
+    "send": "Trimite",
+    "confirm": "Confirmă",
+    "back": "Înapoi",
+    "remove": "Elimină",
+    "add": "Adaugă",
+    "create": "Creează",
+    "retry": "Încearcă din nou",
+    "search": "Caută",
+    "copy": "Copiază",
+    "done": "Gata",
+    "next": "Următorul",
+    "more": "Mai mult"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emoji-urile nu au putut fi încărcate. Verifică conexiunea și încearcă din nou.",
+    "retry": "Încearcă din nou"
+  },
+  "status": {
+    "loading": "Se încarcă...",
+    "saving": "Se salvează...",
+    "deleting": "Se șterge..."
+  },
+  "dates": {
+    "today": "Azi",
+    "yesterday": "Ieri"
+  },
+  "quickSwitcher": {
+    "title": "Comutare rapidă",
+    "inputLabel": "Mergi la o conversație",
+    "placeholder": "Mergi la un canal sau la o conversație",
+    "recent": "Recente",
+    "results": "Rezultate",
+    "clearRecent": "Șterge recentele",
+    "listLabel": "Conversații",
+    "noResults": "Nu există conversații potrivite",
+    "starred": "Marcate cu stea",
+    "unread": "Necitite",
+    "dnd": "Nu deranja",
+    "footer": "{keys} pentru a deschide. Săgețile sus și jos pentru a te deplasa, Enter pentru a merge, Esc pentru a închide.",
+    "open": "Mergi la…",
+    "kind": {
+      "channel": "Canal",
+      "dm": "Mesaj direct",
+      "group": "Mesaj de grup"
+    }
+  },
+  "shortcuts": {
+    "title": "Scurtături de la tastatură",
+    "groups": {
+      "navigation": "Navigare",
+      "general": "General"
+    },
+    "items": {
+      "switcher": "Deschide comutarea rapidă",
+      "prevChannel": "Conversația anterioară",
+      "nextChannel": "Următoarea conversație",
+      "prevUnread": "Conversația necitită anterioară",
+      "nextUnread": "Următoarea conversație necitită",
+      "help": "Afișează scurtăturile de la tastatură",
+      "closeTop": "Închide comutarea rapidă sau această fereastră"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Spațiu de lucru"
+  },
+  "organization": {
+    "defaultName": "Organizație"
+  }
+}

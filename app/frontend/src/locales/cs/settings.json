@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Jazyk",
+    "pending": "{name} (překlad brzy)",
+    "beta": "Beta",
+    "betaOption": "{name} (beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Oznámení jsou pozastavena"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Zavřít",
+    "loading": "Načítání...",
+    "notFound": "Profil nenalezen",
+    "uploadPhoto": "Nahrát fotku",
+    "uploading": "Nahrávání...",
+    "name": "Jméno",
+    "bio": "O mně",
+    "bioPlaceholder": "Řekněte lidem něco o sobě",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "status": "Stav",
+    "joined": "Připojen(a)",
+    "message": "Zpráva",
+    "edit": "Upravit profil",
+    "statusValue": {
+      "online": "online",
+      "away": "pryč",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profil se nepodařilo načíst.",
+      "saveFailed": "Profil se nepodařilo uložit. Zkuste to znovu.",
+      "notImage": "Vyberte prosím obrazový soubor.",
+      "tooLarge": "Obrázek musí být menší než 5 MB.",
+      "uploadFailed": "Fotku se nepodařilo nahrát. Zkuste to znovu."
+    },
+    "statusUntil": "Do {time}"
+  },
+  "crop": {
+    "title": "Oříznout fotku",
+    "close": "Zavřít",
+    "zoom": "Přiblížení",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "saving": "Ukládání...",
+    "failed": "Oříznutí se nezdařilo"
+  },
+  "accessTokens": {
+    "title": "Osobní přístupové tokeny",
+    "description": "Tokeny umožňují Claude a dalším klientům MCP číst ve vašem pracovním prostoru a, pokud to povolíte, také zapisovat s vašimi oprávněními. Zacházejte s nimi jako s heslem.",
+    "nameLabel": "Název tokenu",
+    "namePlaceholder": "např. Claude Code na mém notebooku",
+    "scopesLabel": "Oprávnění",
+    "scope": {
+      "channelsRead": "Zobrazit seznam kanálů",
+      "channelsHistory": "Číst zprávy, vlákna a aktivitu",
+      "usersRead": "Zobrazit lidi",
+      "chatWrite": "Odesílat, upravovat a mazat své zprávy",
+      "reactionsWrite": "Přidávat a odebírat své reakce",
+      "imRead": "Zobrazit své přímé a skupinové zprávy",
+      "imHistory": "Číst historii svých přímých zpráv",
+      "imWrite": "Odesílat, upravovat a mazat své přímé zprávy",
+      "searchRead": "Hledat zprávy, soubory, lidi a kanály (výsledky přímých zpráv vyžadují historii přímých zpráv)",
+      "filesRead": "Zobrazit seznam souborů a číst obsah textových souborů"
+    },
+    "expiryLabel": "Platnost do",
+    "expiryDays": "{count, plural, one {# den} few {# dny} many {# dne} other {# dní}}",
+    "expiryNever": "Bez vypršení",
+    "neverWarning": "Tokeny bez data vypršení zůstávají platné, dokud je nezrušíte.",
+    "create": "Vygenerovat token",
+    "createdNotice": "Zkopírujte si nový token hned. Později ho už nebudete moci zobrazit.",
+    "copy": "Kopírovat token",
+    "copyCommand": "Kopírovat příkaz",
+    "copied": "Zkopírováno do schránky",
+    "connectHint": "Připojte se z Claude Code:",
+    "dismiss": "Hotovo, skrýt token",
+    "loading": "Načítání...",
+    "empty": "Nemáte žádné osobní přístupové tokeny.",
+    "expires": "Vyprší {date}",
+    "expired": "Vypršelo",
+    "noExpiry": "Bez vypršení",
+    "lastUsed": "Naposledy použito {date}",
+    "neverUsed": "Nikdy nepoužito",
+    "rename": "Přejmenovat",
+    "renameLabel": "Přejmenovat token {name}",
+    "revoke": "Zrušit",
+    "revokeLabel": "Zrušit token {name}",
+    "revokeConfirm": "Zrušit nyní",
+    "cancel": "Zrušit",
+    "close": "Zavřít",
+    "errors": {
+      "loadFailed": "Tokeny se nepodařilo načíst.",
+      "createFailed": "Token se nepodařilo vytvořit. Zkuste to znovu.",
+      "renameFailed": "Token se nepodařilo přejmenovat.",
+      "revokeFailed": "Token se nepodařilo zrušit.",
+      "copyFailed": "Kopírování se nezdařilo. Vyberte text a zkopírujte jej ručně.",
+      "limitReached": "Můžete mít nejvýše {max} aktivních tokenů. Zrušte token, který už nepoužíváte, a zkuste to znovu.",
+      "codeRequired": "Pro vytvoření tokenu zadejte svůj dvoufázový kód.",
+      "invalidCode": "Dvoufázový kód je nesprávný."
+    },
+    "codeLabel": "Dvoufázový kód",
+    "codeHint": "Pro vytvoření tokenu zadejte kód z vaší aplikace pro ověřování."
+  },
+  "sessions": {
+    "title": "Přihlášená zařízení",
+    "description": "Tato zařízení jsou přihlášena k vašemu účtu. Odhlaste ta, která nepoznáváte nebo již nepoužíváte.",
+    "loading": "Načítání...",
+    "empty": "Žádná přihlášená zařízení.",
+    "thisDevice": "Toto zařízení",
+    "unknownDevice": "Neznámé zařízení",
+    "signedInAt": "Přihlášeno {date}",
+    "lastActive": "Naposledy aktivní {date}",
+    "signOut": "Odhlásit se",
+    "signOutLabel": "Odhlásit zařízení {device}",
+    "signOutThisLabel": "Odhlásit toto zařízení ({device})",
+    "signOutOthers": "Odhlásit všechna ostatní zařízení",
+    "signOutOthersConfirm": "{count, plural, one {Odhlásit # ostatní zařízení} few {Odhlásit # ostatní zařízení} many {Odhlásit # ostatního zařízení} other {Odhlásit # ostatních zařízení}}",
+    "revoked": "Zařízení odhlášeno",
+    "revokedOthers": "Všechna ostatní zařízení odhlášena",
+    "errors": {
+      "loadFailed": "Zařízení se nepodařilo načíst.",
+      "revokeFailed": "Odhlášení se nezdařilo. Zkuste to znovu."
+    },
+    "device": {
+      "desktop": "Desktopová aplikace",
+      "desktopOn": "Desktopová aplikace na {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} na {os}",
+      "unknownOn": "Neznámé zařízení na {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Změnit heslo",
+    "description": "Zadejte své současné heslo a zvolte nové.",
+    "currentLabel": "Současné heslo",
+    "newLabel": "Nové heslo",
+    "confirmLabel": "Potvrďte nové heslo",
+    "sessionsNote": "Když změníte heslo, ostatní vaše přihlášená zařízení budou odhlášena.",
+    "submit": "Změnit heslo",
+    "submitting": "Měnění...",
+    "cancel": "Zrušit",
+    "successToast": "Vaše heslo bylo změněno",
+    "errors": {
+      "currentRequired": "Zadejte své současné heslo.",
+      "failed": "Heslo se nepodařilo změnit. Zkuste to znovu."
+    }
+  },
+  "twoFactor": {
+    "title": "Dvoufázové ověření",
+    "description": "Při přihlášení vyžadovat kromě hesla také kód z vaší aplikace pro ověřování.",
+    "loading": "Načítání...",
+    "statusOn": "Zapnuto",
+    "statusOff": "Vypnuto",
+    "enabledSince": "Zapnuto {date}",
+    "recoveryRemaining": "{count, plural, one {Zbývá # záložní kód} few {Zbývají # záložní kódy} many {Zbývá # záložního kódu} other {Zbývá # záložních kódů}}",
+    "unavailable": "Dvoufázové ověření na tomto serveru není k dispozici. Požádejte správce.",
+    "requiredNotice": "Vaše organizace vyžaduje dvoufázové ověření.",
+    "close": "Zavřít",
+    "setup": {
+      "start": "Nastavit dvoufázové ověření",
+      "starting": "Příprava...",
+      "step1": "1. Přidejte tento účet do své aplikace pro ověřování. Otevřete odkaz v telefonu, nebo zadejte nastavovací klíč ručně.",
+      "uriLabel": "Nastavovací odkaz",
+      "openInApp": "Otevřít v aplikaci pro ověřování",
+      "qrLabel": "QR kód pro aplikaci pro ověřování",
+      "qrHint": "Naskenujte tento QR kód svou aplikací pro ověřování, nebo použijte odkaz či klíč níže.",
+      "keyLabel": "Nastavovací klíč",
+      "copyKey": "Kopírovat nastavovací klíč",
+      "copyUri": "Kopírovat nastavovací odkaz",
+      "copied": "Zkopírováno",
+      "step2": "2. Zadejte šestimístný kód, který zobrazuje vaše aplikace.",
+      "codeLabel": "Ověřovací kód",
+      "codePlaceholder": "123456",
+      "verify": "Zapnout",
+      "verifying": "Kontrola...",
+      "cancel": "Zrušit",
+      "passwordLabel": "3. Zadejte své současné heslo.",
+      "sessionsNote": "Když to zapnete, ostatní vaše přihlášená zařízení budou odhlášena."
+    },
+    "recovery": {
+      "title": "Uložte si záložní kódy",
+      "description": "Pokud ztratíte zařízení, můžete se přihlásit záložním kódem. Každý kód funguje jen jednou. Znovu se nezobrazí.",
+      "download": "Stáhnout",
+      "copy": "Kopírovat vše",
+      "fileHeader": "Záložní kódy. Každý kód funguje jen jednou. Uschovejte je na bezpečném místě.",
+      "confirmSaved": "Záložní kódy jsem si uložil(a)",
+      "fileName": "zalozni-kody.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Heslo",
+      "codeLabel": "Ověřovací nebo záložní kód",
+      "cancel": "Zrušit",
+      "passwordInvalid": "Zadejte platné heslo.",
+      "codeInvalid": "Zadejte platný ověřovací nebo záložní kód."
+    },
+    "regenerate": {
+      "start": "Vytvořit nové záložní kódy",
+      "title": "Vytvořit nové záložní kódy",
+      "description": "Vaše staré záložní kódy přestanou fungovat, jakmile vytvoříte nové. Zadejte heslo a kód z aplikace pro ověřování (nebo záložní kód).",
+      "submit": "Vytvořit nové kódy",
+      "submitting": "Vytváření...",
+      "lowNotice": "{count, plural, one {Zbývá jen # záložní kód} few {Zbývají jen # záložní kódy} many {Zbývá jen # záložního kódu} other {Zbývá jen # záložních kódů}}. Vytvořte nové, než dojdou.",
+      "toast": "Nové záložní kódy jsou připraveny"
+    },
+    "disable": {
+      "title": "Vypnout dvoufázové ověření",
+      "description": "Zadejte heslo a kód z aplikace pro ověřování (nebo záložní kód).",
+      "start": "Vypnout",
+      "submit": "Vypnout dvoufázové ověření",
+      "submitting": "Vypínání...",
+      "blockedByPolicy": "Vaše organizace vyžaduje dvoufázové ověření, takže je nelze vypnout. Pokud jste ztratili zařízení, požádejte správce o jeho resetování."
+    },
+    "enabledToast": "Dvoufázové ověření je zapnuto",
+    "disabledToast": "Dvoufázové ověření je vypnuto",
+    "errors": {
+      "loadFailed": "Nastavení dvoufázového ověření se nepodařilo načíst.",
+      "setupFailed": "Nastavení nelze spustit. Zkuste to znovu.",
+      "enableFailed": "Dvoufázové ověření se nepodařilo zapnout.",
+      "regenerateFailed": "Nové záložní kódy se nepodařilo vytvořit.",
+      "disableFailed": "Dvoufázové ověření se nepodařilo vypnout.",
+      "copyFailed": "Do schránky se nepodařilo zkopírovat."
+    }
+  },
+  "connectedApps": {
+    "title": "Připojené aplikace",
+    "description": "Aplikace, kterým jste povolili používat váš účet přes přihlášení OAuth. Jednají s vašimi oprávněními. Odpojte aplikace, které již nepoužíváte.",
+    "loading": "Načítání...",
+    "empty": "K vašemu účtu nejsou připojeny žádné aplikace.",
+    "redirectsTo": "Vrací do {hosts}",
+    "connectedAt": "Připojeno {date}",
+    "lastUsed": "Naposledy použito {date}",
+    "neverUsed": "Nikdy nepoužito",
+    "disconnect": "Odpojit",
+    "disconnectLabel": "Odpojit {name}",
+    "disconnectConfirm": "Odpojit nyní",
+    "cancel": "Zrušit",
+    "disconnected": "Aplikace odpojena",
+    "close": "Zavřít",
+    "errors": {
+      "loadFailed": "Připojené aplikace se nepodařilo načíst.",
+      "disconnectFailed": "Aplikaci se nepodařilo odpojit."
+    },
+    "unnamedApp": "Nepojmenovaná aplikace"
+  }
+}

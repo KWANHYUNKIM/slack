@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(silențios)",
+    "mute": "Pune pe mut",
+    "unmute": "Scoate de pe mut",
+    "leave": "Părăsește huddle-ul"
+  },
+  "button": {
+    "leaveFirstError": "Părăsește mai întâi huddle-ul curent",
+    "cancelInviteFirstError": "Anulează mai întâi invitația curentă",
+    "cancelInvite": "Anulează invitația",
+    "calling": "Se sună...",
+    "inHuddle": "În huddle",
+    "leaveCurrentFirst": "Părăsește mai întâi huddle-ul curent",
+    "start": "Pornește huddle"
+  },
+  "incoming": {
+    "invite": "Invitație la huddle",
+    "secondsLeft": "{count} s",
+    "decline": "Refuză",
+    "accept": "Acceptă"
+  },
+  "system": {
+    "youStarted": "Ai pornit un huddle.",
+    "started": "A pornit un huddle.",
+    "ended": "Încheiat",
+    "youSentInvite": "Ai trimis o invitație la huddle.",
+    "sentInvite": "Ți-a trimis o invitație la huddle.",
+    "huddleStarted": "Huddle pornit",
+    "huddleEnded": "Huddle încheiat ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Părăsește mai întâi huddle-ul curent",
+    "cancelInviteFirst": "Anulează mai întâi invitația curentă",
+    "micDenied": "Accesul la microfon a fost refuzat",
+    "busy": "Sunt într-un alt huddle",
+    "declined": "Invitația a fost refuzată",
+    "expired": "Invitația a expirat",
+    "rateLimited": "Prea multe cereri. Încearcă din nou peste puțin timp",
+    "invalidInvite": "Cererea de invitație nu este validă",
+    "cannotInviteSelf": "Nu te poți invita pe tine însuți",
+    "userNotFound": "Utilizatorul nu a fost găsit",
+    "invalidAccept": "Cererea de acceptare nu este validă",
+    "inviteNotFound": "Invitația nu a fost găsită sau a expirat",
+    "peerOffline": "Sunt offline",
+    "generic": "Huddle-ul nu a putut fi pornit. Încearcă din nou"
+  }
+}

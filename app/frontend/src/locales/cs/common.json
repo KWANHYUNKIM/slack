@@ -1,0 +1,83 @@
+{
+  "actions": {
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "delete": "Smazat",
+    "edit": "Upravit",
+    "close": "Zavřít",
+    "send": "Odeslat",
+    "confirm": "Potvrdit",
+    "back": "Zpět",
+    "remove": "Odebrat",
+    "add": "Přidat",
+    "create": "Vytvořit",
+    "retry": "Zkusit znovu",
+    "search": "Hledat",
+    "copy": "Kopírovat",
+    "done": "Hotovo",
+    "next": "Další",
+    "more": "Více"
+  },
+  "emojiPicker": {
+    "loadFailed": "Emotikony se nepodařilo načíst. Zkontrolujte připojení a zkuste to znovu.",
+    "retry": "Zkusit znovu"
+  },
+  "status": {
+    "loading": "Načítání...",
+    "saving": "Ukládání...",
+    "deleting": "Mazání..."
+  },
+  "dates": {
+    "today": "Dnes",
+    "yesterday": "Včera"
+  },
+  "quickSwitcher": {
+    "title": "Rychlý přepínač",
+    "inputLabel": "Přejít na konverzaci",
+    "placeholder": "Přejděte na kanál nebo konverzaci",
+    "recent": "Nedávné",
+    "results": "Výsledky",
+    "clearRecent": "Vymazat nedávné",
+    "listLabel": "Konverzace",
+    "noResults": "Nenalezeny žádné odpovídající konverzace",
+    "starred": "Oblíbené",
+    "unread": "Nepřečtené",
+    "dnd": "Nerušit",
+    "footer": "{keys} pro otevření. Šipkami nahoru a dolů se pohybujte, Enter přejde, Esc zavře.",
+    "open": "Přejít na…",
+    "kind": {
+      "channel": "Kanál",
+      "dm": "Přímá zpráva",
+      "group": "Skupinová zpráva"
+    }
+  },
+  "shortcuts": {
+    "title": "Klávesové zkratky",
+    "groups": {
+      "navigation": "Navigace",
+      "general": "Obecné"
+    },
+    "items": {
+      "switcher": "Otevřít rychlý přepínač",
+      "prevChannel": "Předchozí konverzace",
+      "nextChannel": "Další konverzace",
+      "prevUnread": "Předchozí nepřečtená konverzace",
+      "nextUnread": "Další nepřečtená konverzace",
+      "help": "Zobrazit klávesové zkratky",
+      "closeTop": "Zavřít rychlý přepínač nebo toto okno"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  },
+  "workspace": {
+    "defaultName": "Pracovní prostor"
+  },
+  "organization": {
+    "defaultName": "Organizace"
+  }
+}

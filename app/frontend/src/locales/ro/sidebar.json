@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Activitate",
+    "unreads": "Necitite",
+    "later": "Mai târziu",
+    "files": "Fișiere",
+    "admin": "Administrare",
+    "threads": "Fire"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Mesaj nou"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Notificările sunt blocate",
+    "disableNotifications": "Dezactivează notificările",
+    "enableNotifications": "Activează notificările",
+    "signOut": "Deconectare",
+    "updateStatus": "Actualizează starea ta",
+    "pauseNotifications": "Pune notificările pe pauză",
+    "pausedUntil": "Pe pauză până la {time}",
+    "pausedIndefinitely": "Pe pauză până când starea ta este ștearsă",
+    "resumeNotifications": "Reia notificările",
+    "pause": {
+      "m30": "30 de minute",
+      "h1": "1 oră",
+      "h2": "2 ore",
+      "tomorrow": "Până mâine"
+    },
+    "pauseError": "Pauza notificărilor nu a putut fi modificată. Încearcă din nou.",
+    "accessTokens": "Token-uri personale de acces",
+    "sessions": "Dispozitive conectate",
+    "twoFactor": "Autentificare în doi pași",
+    "changePassword": "Schimbă parola",
+    "connectedApps": "Aplicații conectate"
+  },
+  "sections": {
+    "starred": "Marcate cu stea",
+    "channels": "Canale",
+    "addChannels": "Adaugă canale",
+    "directMessages": "Mesaje directe",
+    "addTeammates": "Adaugă colegi",
+    "starredEmpty": "Marchează un canal sau o conversație cu stea ca să rămână aici.",
+    "collapse": "Restrânge {section}",
+    "expand": "Extinde {section}"
+  },
+  "teammates": {
+    "title": "Mesaj direct",
+    "subtitle": "Găsește sau începe o conversație",
+    "searchPlaceholder": "Caută după nume...",
+    "noUsers": "Nu s-au găsit utilizatori",
+    "close": "Închide",
+    "pickSubtitle": "Selectează până la {max, plural, one {# persoană} few {# persoane} other {# de persoane}}",
+    "select": "Selectează {name}",
+    "selectedCount": "{count} din {max} selectate",
+    "start": "Începe conversația",
+    "startGroup": "Începe o conversație de grup"
+  },
+  "you": "(tu)",
+  "notifications": {
+    "someone": "Cineva",
+    "sentAttachment": "A trimis un atașament",
+    "threadTitle": "{name} (fir de discuție)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# membru} few {# membri} other {# de membri}}",
+    "createError": "Conversația de grup nu a putut fi începută. Încearcă din nou."
+  },
+  "statusDialog": {
+    "title": "Setează o stare",
+    "emojiLabel": "Alege un emoji",
+    "textLabel": "Care este starea ta?",
+    "textPlaceholder": "Care este starea ta?",
+    "durationLabel": "Șterge după",
+    "duration": {
+      "never": "Nu șterge",
+      "m30": "30 de minute",
+      "h1": "1 oră",
+      "h4": "4 ore",
+      "today": "Astăzi",
+      "week": "Săptămâna aceasta"
+    },
+    "pauseCheckbox": "Pune notificările pe pauză până când starea este ștearsă",
+    "save": "Salvează",
+    "clear": "Șterge starea",
+    "cancel": "Anulează",
+    "expiresAt": "Se șterge la {time}",
+    "saveError": "Starea nu a putut fi salvată. Încearcă din nou."
+  },
+  "findConversation": "Găsește o conversație"
+}

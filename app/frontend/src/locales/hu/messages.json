@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Értesítés mindenkinek, aki elérhető",
+    "channelLabel": "@channel",
+    "channelHint": "Értesítés mindenkinek ebben a csatornában"
+  },
+  "deleteDialog": {
+    "title": "Üzenet törlése",
+    "body": "Biztosan törölni szeretné ezt az üzenetet? Ez a művelet nem vonható vissza."
+  },
+  "editorToolbar": {
+    "attachFile": "Fájl csatolása",
+    "emoji": "Emodzsi",
+    "mention": "Valaki megemlítése",
+    "stopRecording": "Felvétel leállítása",
+    "recordVoice": "Hangüzenet rögzítése"
+  },
+  "emojiAutocomplete": {
+    "navigate": "a mozgáshoz",
+    "select": "a kiválasztáshoz",
+    "dismiss": "az elvetéshez",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "{name} eltávolítása"
+  },
+  "fileModal": {
+    "download": "Letöltés",
+    "loadFailed": "A fájl tartalmát nem sikerült betölteni",
+    "truncated": "... (csonkolva)",
+    "noPreview": "Nincs elérhető előnézet",
+    "downloadToView": "A megtekintéshez töltse le a fájlt"
+  },
+  "files": {
+    "allFiles": "Összes fájl",
+    "channelFiles": "Csatornafájlok",
+    "loadFailed": "A fájlokat nem sikerült betölteni.",
+    "empty": "Még nincs feltöltött fájl",
+    "download": "Letöltés",
+    "menu": "Menü",
+    "unavailable": "A fájl nem érhető el",
+    "preparing": "Fájl előkészítése"
+  },
+  "format": {
+    "bold": "Félkövér",
+    "italic": "Dőlt",
+    "strike": "Áthúzott",
+    "link": "Hivatkozás",
+    "orderedList": "Számozott lista",
+    "bulletList": "Felsorolás",
+    "code": "Kód",
+    "codeBlock": "Kódblokk",
+    "quote": "Idézet"
+  },
+  "notifications": {
+    "title": "Értesítések",
+    "empty": "Nincsenek új értesítések",
+    "unreadCount": "{count, plural, one {# olvasatlan üzenet} other {# olvasatlan üzenet}}"
+  },
+  "search": {
+    "placeholder": "Keresés",
+    "searching": "Keresés...",
+    "noResults": "Nincs találat",
+    "previewHint": "{count, plural, one {Legjobb # találat} other {Legjobb # találat}} · Összes megtekintése (Enter)",
+    "truncatedNotice": "Sok találat van. Adjon hozzá szűrőket a szűkítéshez.",
+    "retry": "Újrapróbálás",
+    "ignoredChip": "{token} (figyelmen kívül hagyva)",
+    "ignoredLimitChip": "{token} (figyelmen kívül hagyva: túl sok)",
+    "inChannel": "itt: #{channel}",
+    "title": "Keresési találatok",
+    "resultsFor": "Találatok erre: „{query}”",
+    "emptyQuery": "Írjon be keresőszót, vagy használjon szűrőket, például from:, in:, has:, before:, after:.",
+    "noResultsHint": "Próbáljon más kulcsszavakat, vagy távolítson el néhány szűrőt.",
+    "clearFilters": "Összes szűrő törlése",
+    "removeFilter": "{filter} szűrő eltávolítása",
+    "loadFailed": "A keresés sikertelen. Próbálja újra.",
+    "loadMore": "Továbbiak betöltése",
+    "threadReply": "Válasz szálban",
+    "directMessage": "Közvetlen üzenet",
+    "groupMessage": "Csoportos beszélgetés",
+    "joined": "Csatlakozva",
+    "privateChannel": "Privát",
+    "archivedChannel": "Archivált",
+    "back": "Vissza",
+    "tabs": {
+      "label": "Keresési találattípusok",
+      "messages": "Üzenetek",
+      "files": "Fájlok",
+      "people": "Személyek",
+      "channels": "Csatornák"
+    },
+    "sort": {
+      "label": "Rendezés",
+      "relevance": "Relevancia",
+      "recent": "Legújabbak"
+    }
+  },
+  "headerTabs": {
+    "files": "Fájlok",
+    "pins": "Kitűzések"
+  },
+  "lightbox": {
+    "close": "Bezárás"
+  },
+  "later": {
+    "title": "Később",
+    "saved": "Mentett",
+    "scheduled": "Ütemezett",
+    "loadFailed": "A mentett üzeneteket nem sikerült betölteni.",
+    "empty": "Még nincsenek mentett üzenetek. Bármely üzenetnél kattintson a könyvjelző ikonra a mentéshez.",
+    "removeSaved": "Eltávolítás a mentettek közül",
+    "menu": "Menü",
+    "reminders": "Emlékeztetők"
+  },
+  "linkModal": {
+    "title": "Hivatkozás hozzáadása",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Megjelenített szöveg",
+    "optional": "(nem kötelező)",
+    "textPlaceholder": "Hivatkozás szövege",
+    "close": "Bezárás"
+  },
+  "actionsMenu": {
+    "noActions": "Nincs elérhető művelet",
+    "markUnread": "Megjelölés olvasatlanként",
+    "pin": "Üzenet kitűzése",
+    "unpin": "Üzenet kitűzésének megszüntetése",
+    "edit": "Üzenet szerkesztése",
+    "delete": "Üzenet törlése",
+    "copyLink": "Hivatkozás másolása",
+    "remind": "Emlékeztessen erre"
+  },
+  "area": {
+    "selectChannel": "Válasszon csatornát az üzenetküldés megkezdéséhez",
+    "openMenu": "Menü megnyitása",
+    "placeholder": "Üzenet ide: #{channel}",
+    "viewing": "Megtekinti: <bold>#{channel}</bold>",
+    "joinChannel": "Csatlakozás a csatornához"
+  },
+  "header": {
+    "menu": "Menü",
+    "unstar": "Eltávolítás a csillagozottak közül",
+    "star": "Hozzáadás a csillagozottakhoz",
+    "members": "Tagok: {count}",
+    "search": "Keresés",
+    "channelMenu": "Csatornabeállítások",
+    "leaveChannel": "Kilépés a csatornából",
+    "leaveLastMember": "Nem lehet kilépni a csatornából, mert Ön az utolsó tag.",
+    "dismiss": "Elvetés",
+    "addTopic": "Téma hozzáadása",
+    "editDetails": "Csatornaadatok szerkesztése"
+  },
+  "message": {
+    "edited": "(szerkesztve)",
+    "pinned": "Kitűzve",
+    "showMore": "Több megjelenítése",
+    "showLess": "Kevesebb megjelenítése",
+    "repliedToThread": "Válasz szálra: {excerpt}",
+    "deletedPlaceholder": "Ez az üzenet törölve lett.",
+    "sendToChannel": "Küldés a csatornába is",
+    "removeFromChannel": "Eltávolítás a csatornából"
+  },
+  "input": {
+    "uploading": "Feltöltés...",
+    "scheduleMessage": "Üzenet ütemezése",
+    "send": "Üzenet küldése",
+    "hint": "Küldés: <kbd>Enter</kbd>, új sor: <kbd>Shift + Enter</kbd>",
+    "scheduledFor": "Ütemezve: {time}",
+    "scheduleFailed": "Az üzenet ütemezése sikertelen. Próbálja újra."
+  },
+  "list": {
+    "loading": "Üzenetek betöltése...",
+    "empty": "Még nincsenek üzenetek",
+    "emptyReadOnly": "Ebben a csatornában nincsenek üzenetek.",
+    "emptyFirst": "Legyen Ön az első, aki üzenetet küld!"
+  },
+  "reactions": {
+    "tooltip": "{names} reagált ezzel: {emoji}",
+    "add": "Reakció hozzáadása",
+    "you": "Ön"
+  },
+  "toolbar": {
+    "addReaction": "Reakció hozzáadása",
+    "replyInThread": "Válasz szálban",
+    "removeBookmark": "Könyvjelző eltávolítása",
+    "bookmark": "Könyvjelző ehhez az üzenethez",
+    "moreActions": "További műveletek"
+  },
+  "mobileSearch": {
+    "placeholder": "Üzenetek keresése...",
+    "hint": "Üzenetek keresése az összes csatornában és beszélgetésben",
+    "close": "Keresés bezárása"
+  },
+  "pins": {
+    "title": "Kitűzött üzenetek",
+    "loadFailed": "A kitűzött üzeneteket nem sikerült betölteni.",
+    "empty": "Még nincsenek kitűzött üzenetek"
+  },
+  "schedule": {
+    "menuTitle": "Üzenet ütemezése",
+    "in20": "20 perc múlva",
+    "in1h": "1 óra múlva",
+    "in3h": "3 óra múlva",
+    "tomorrow9": "Holnap 9:00-kor",
+    "custom": "Egyéni időpont...",
+    "modalTitle": "Üzenet ütemezése",
+    "dateTime": "Dátum és időpont",
+    "pickFuture": "Válasszon jövőbeli időpontot.",
+    "submit": "Ütemezés",
+    "submitting": "Ütemezés...",
+    "close": "Bezárás"
+  },
+  "scheduled": {
+    "loadFailed": "Az ütemezett üzeneteket nem sikerült betölteni.",
+    "cancelFailed": "Az üzenetet nem sikerült visszavonni.",
+    "sendFailed": "Az üzenetet nem sikerült elküldeni.",
+    "saveFailed": "A módosításokat nem sikerült menteni.",
+    "empty": "Nincsenek ütemezett üzenetek. Az üzenetszerkesztő óra ikonjával ütemezhet egyet.",
+    "sendAt": "Küldés ekkor:",
+    "edit": "Szerkesztés",
+    "sendNow": "Küldés most",
+    "cancel": "Mégse",
+    "failedDlp": "Ez az üzenet nem lett elküldve, mert egy adatvédelmi szabályra ({rule}) illeszkedett. Törölje, és írjon újat."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# válasz} other {# válasz}}"
+  },
+  "unreads": {
+    "title": "Olvasatlanok",
+    "loadFailed": "Az olvasatlan üzeneteket nem sikerült betölteni.",
+    "empty": "Nincsenek olvasatlan üzenetek. Minden naprakész! 🎉",
+    "menu": "Menü"
+  },
+  "threadPanel": {
+    "title": "Szál",
+    "replyPlaceholder": "Válasz...",
+    "loadFailed": "A szálat nem sikerült betölteni. Próbálja újra.",
+    "loading": "Szál betöltése...",
+    "replyFailed": "A választ nem sikerült elküldeni. Próbálja újra.",
+    "joinToReply": "Csatlakozzon a csatornához, hogy szálakban válaszolhasson",
+    "alsoSendToChannel": "Küldés a csatornába is"
+  },
+  "errors": {
+    "messageEmpty": "Az üzenet nem lehet üres.",
+    "pasteUploadFailed": "A beillesztett kép feltöltése sikertelen. Próbálja újra.",
+    "dropUploadFailed": "A húzott fájl feltöltése sikertelen. Próbálja újra.",
+    "uploadFailed": "A fájl feltöltése sikertelen. Próbálja újra.",
+    "voiceUploadFailed": "A hangüzenetet nem sikerült feltölteni.",
+    "micDenied": "A mikrofon-hozzáférés megtagadva. Engedélyezze a mikrofon használatát.",
+    "loadFailed": "Az üzeneteket nem sikerült betölteni.",
+    "sendTimeout": "Az üzenetküldés időtúllépés miatt megszakadt. Próbálja újra.",
+    "sendFailed": "Az üzenetet nem sikerült elküldeni. Próbálja újra.",
+    "pushNotConfigured": "A push-értesítések nincsenek beállítva a kiszolgálón",
+    "serviceWorkerUnavailable": "A szolgáltatásmunkás nem érhető el",
+    "subscribeFailed": "Az előfizetést nem sikerült regisztrálni",
+    "editFailed": "A szerkesztést nem sikerült menteni. Próbálja újra."
+  },
+  "details": {
+    "title": "Csatornaadatok",
+    "name": "Név",
+    "topic": "Téma",
+    "topicPlaceholder": "Miről szól ez a csatorna?",
+    "description": "Leírás",
+    "descriptionPlaceholder": "Leírás hozzáadása",
+    "createdBy": "Létrehozta: {name}",
+    "readOnly": "Ezeket az adatokat csak a csatorna tulajdonosai, moderátorai és a munkaterület adminisztrátorai módosíthatják.",
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "saveFailed": "A csatornaadatokat nem sikerült menteni."
+  },
+  "intro": {
+    "title": "Üdvözöljük a(z) #{name} csatornában",
+    "noDescription": "Még nincs leírás.",
+    "editDescription": "Leírás szerkesztése"
+  },
+  "threads": {
+    "title": "Szálak",
+    "menu": "Menü",
+    "loadFailed": "A szálakat nem sikerült betölteni.",
+    "empty": "Még nincsenek szálak",
+    "emptyHint": "Az Ön által indított vagy azokra adott válaszok itt jelennek meg.",
+    "newReplies": "{count, plural, one {# új válasz} other {# új válasz}}",
+    "replyCount": "{count, plural, one {# válasz} other {# válasz}}",
+    "olderReplies": "Nyissa meg a szálat a korábbi válaszok megtekintéséhez",
+    "replyPlaceholder": "Válasz...",
+    "send": "Küldés",
+    "replyFailed": "A választ nem sikerült elküldeni. Próbálja újra.",
+    "alsoSendToChannel": "Küldés a csatornába is",
+    "openThread": "Szál megnyitása",
+    "loadMore": "Továbbiak betöltése",
+    "loading": "Betöltés..."
+  },
+  "permalink": {
+    "copied": "Hivatkozás másolva",
+    "notFound": "Ez az üzenet nem található, vagy nincs jogosultsága a megtekintéséhez",
+    "goHome": "Vissza a kezdőlapra",
+    "copyManually": "Nem sikerült automatikusan másolni. Másolja ezt a hivatkozást: {url}"
+  },
+  "unread": {
+    "divider": "Új",
+    "newMessagesBar": "{count, plural, one {# új üzenet} other {# új üzenet}}",
+    "newMessagesBarAtLeast": "{count, plural, one {legalább # új üzenet} other {legalább # új üzenet}}",
+    "markRead": "Megjelölés olvasottként",
+    "jumpFailed": "Az olvasatlan üzenetek helyét nem sikerült betölteni"
+  },
+  "reminder": {
+    "set": "Emlékeztető beállítása",
+    "customLabel": "Emlékeztető dátuma és időpontja",
+    "preset": {
+      "in20": "20 perc múlva",
+      "in1h": "1 óra múlva",
+      "in3h": "3 óra múlva",
+      "tomorrow": "Holnap",
+      "nextWeek": "Jövő héten",
+      "custom": "Egyéni..."
+    },
+    "status": {
+      "pending": "Közelgő",
+      "done": "Befejezett"
+    },
+    "snooze": {
+      "m10": "10 perc",
+      "h1": "1 óra",
+      "tomorrow": "Holnap"
+    },
+    "loadFailed": "Az emlékeztetőket nem sikerült betölteni.",
+    "empty": "Nincsenek emlékeztetők. Használja az üzenet további műveletek menüjét, vagy írja be a /remind parancsot egy hozzáadásához.",
+    "emptyDone": "Nincsenek befejezett emlékeztetők.",
+    "dueAt": "Esedékes: {time}",
+    "firedAt": "Esedékes volt: {time}",
+    "completedAt": "Befejezve: {time}",
+    "messageDeleted": "Törölt üzenet",
+    "complete": "Megjelölés befejezettként",
+    "reopen": "Megjelölés nem befejezettként",
+    "delete": "Emlékeztető törlése",
+    "toast": {
+      "created": "Emlékeztető beállítva",
+      "due": "Emlékeztető: {text}",
+      "createFailed": "Az emlékeztetőt nem sikerült beállítani. Próbálja újra."
+    },
+    "command": {
+      "syntax": "Használat: /remind me [szöveg] in [szám] [perc|óra|nap]",
+      "tooShort": "Az emlékeztetőnek legalább 1 perccel a jövőben kell lennie.",
+      "tooLong": "Az emlékeztetőnek egy éven belülinek kell lennie.",
+      "created": "Emlékeztető beállítva erre az időpontra: {time}"
+    },
+    "pastTime": "Válasszon jövőbeli időpontot.",
+    "loadMore": "Továbbiak betöltése"
+  }
+}

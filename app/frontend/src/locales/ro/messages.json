@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Notifică pe toți cei care sunt online",
+    "channelLabel": "@channel",
+    "channelHint": "Notifică pe toți din acest canal"
+  },
+  "deleteDialog": {
+    "title": "Șterge mesajul",
+    "body": "Sigur vrei să ștergi acest mesaj? Acțiunea nu poate fi anulată."
+  },
+  "editorToolbar": {
+    "attachFile": "Atașează un fișier",
+    "emoji": "Emoji",
+    "mention": "Menționează pe cineva",
+    "stopRecording": "Oprește înregistrarea",
+    "recordVoice": "Înregistrează un mesaj vocal"
+  },
+  "emojiAutocomplete": {
+    "navigate": "pentru a naviga",
+    "select": "pentru a selecta",
+    "dismiss": "pentru a închide",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Elimină {name}"
+  },
+  "fileModal": {
+    "download": "Descarcă",
+    "loadFailed": "Conținutul fișierului nu a putut fi încărcat",
+    "truncated": "... (trunchiat)",
+    "noPreview": "Nu este disponibilă o previzualizare",
+    "downloadToView": "Descarcă fișierul pentru a-l vedea"
+  },
+  "files": {
+    "allFiles": "Toate fișierele",
+    "channelFiles": "Fișierele canalului",
+    "loadFailed": "Fișierele nu au putut fi încărcate.",
+    "empty": "Încă nu a fost încărcat niciun fișier",
+    "download": "Descarcă",
+    "menu": "Meniu",
+    "unavailable": "Fișier indisponibil",
+    "preparing": "Se pregătește fișierul"
+  },
+  "format": {
+    "bold": "Aldine",
+    "italic": "Cursiv",
+    "strike": "Tăiat",
+    "link": "Link",
+    "orderedList": "Listă numerotată",
+    "bulletList": "Listă cu marcatori",
+    "code": "Cod",
+    "codeBlock": "Bloc de cod",
+    "quote": "Citat"
+  },
+  "notifications": {
+    "title": "Notificări",
+    "empty": "Nicio notificare nouă",
+    "unreadCount": "{count, plural, one {# mesaj necitit} few {# mesaje necitite} other {# de mesaje necitite}}"
+  },
+  "search": {
+    "placeholder": "Caută",
+    "searching": "Se caută...",
+    "noResults": "Nu s-au găsit rezultate",
+    "previewHint": "{count, plural, one {Primul # rezultat} few {Primele # rezultate} other {Primele # de rezultate}} · Vezi toate (Enter)",
+    "truncatedNotice": "Sunt multe rezultate. Adaugă filtre pentru a le restrânge.",
+    "retry": "Reîncearcă",
+    "ignoredChip": "{token} (ignorat)",
+    "ignoredLimitChip": "{token} (ignorat: prea multe)",
+    "inChannel": "în #{channel}",
+    "title": "Rezultatele căutării",
+    "resultsFor": "Rezultate pentru „{query}”",
+    "emptyQuery": "Scrie un termen de căutare sau folosește filtre precum from:, in:, has:, before:, after:.",
+    "noResultsHint": "Încearcă alte cuvinte-cheie sau elimină câteva filtre.",
+    "clearFilters": "Șterge toate filtrele",
+    "removeFilter": "Elimină filtrul {filter}",
+    "loadFailed": "Căutarea a eșuat. Încearcă din nou.",
+    "loadMore": "Încarcă mai multe",
+    "threadReply": "Răspuns în fir",
+    "directMessage": "Mesaj direct",
+    "groupMessage": "Conversație de grup",
+    "joined": "Alăturat",
+    "privateChannel": "Privat",
+    "archivedChannel": "Arhivat",
+    "back": "Înapoi",
+    "tabs": {
+      "label": "Tipuri de rezultate ale căutării",
+      "messages": "Mesaje",
+      "files": "Fișiere",
+      "people": "Persoane",
+      "channels": "Canale"
+    },
+    "sort": {
+      "label": "Sortează după",
+      "relevance": "Relevanță",
+      "recent": "Cele mai recente"
+    }
+  },
+  "headerTabs": {
+    "files": "Fișiere",
+    "pins": "Fixate"
+  },
+  "lightbox": {
+    "close": "Închide"
+  },
+  "later": {
+    "title": "Mai târziu",
+    "saved": "Salvate",
+    "scheduled": "Programate",
+    "loadFailed": "Mesajele salvate nu au putut fi încărcate.",
+    "empty": "Încă nu ai mesaje salvate. Apasă pe iconița de marcaj de pe orice mesaj ca să-l salvezi.",
+    "removeSaved": "Elimină din salvate",
+    "menu": "Meniu",
+    "reminders": "Mementouri"
+  },
+  "linkModal": {
+    "title": "Adaugă link",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Text afișat",
+    "optional": "(opțional)",
+    "textPlaceholder": "Textul linkului",
+    "close": "Închide"
+  },
+  "actionsMenu": {
+    "noActions": "Nu sunt acțiuni disponibile",
+    "markUnread": "Marchează ca necitit",
+    "pin": "Fixează mesajul",
+    "unpin": "Anulează fixarea mesajului",
+    "edit": "Editează mesajul",
+    "delete": "Șterge mesajul",
+    "copyLink": "Copiază linkul",
+    "remind": "Amintește-mi despre asta"
+  },
+  "area": {
+    "selectChannel": "Selectează un canal pentru a începe să scrii mesaje",
+    "openMenu": "Deschide meniul",
+    "placeholder": "Mesaj în #{channel}",
+    "viewing": "Vizualizezi <bold>#{channel}</bold>",
+    "joinChannel": "Alătură-te canalului"
+  },
+  "header": {
+    "menu": "Meniu",
+    "unstar": "Elimină din marcate cu stea",
+    "star": "Adaugă la marcate cu stea",
+    "members": "Membri: {count}",
+    "search": "Caută",
+    "channelMenu": "Opțiuni canal",
+    "leaveChannel": "Părăsește canalul",
+    "leaveLastMember": "Nu poți părăsi canalul — ești ultimul membru.",
+    "dismiss": "Închide",
+    "addTopic": "Adaugă un subiect",
+    "editDetails": "Editează detaliile canalului"
+  },
+  "message": {
+    "edited": "(editat)",
+    "pinned": "Fixat",
+    "showMore": "Arată mai mult",
+    "showLess": "Arată mai puțin",
+    "repliedToThread": "Răspuns într-un fir: {excerpt}",
+    "deletedPlaceholder": "Acest mesaj a fost șters.",
+    "sendToChannel": "Trimite și în canal",
+    "removeFromChannel": "Elimină din canal"
+  },
+  "input": {
+    "uploading": "Se încarcă...",
+    "scheduleMessage": "Programează mesajul",
+    "send": "Trimite mesajul",
+    "hint": "Apasă <kbd>Enter</kbd> pentru a trimite, <kbd>Shift + Enter</kbd> pentru rând nou",
+    "scheduledFor": "Programat pentru {time}",
+    "scheduleFailed": "Mesajul nu a putut fi programat. Încearcă din nou."
+  },
+  "list": {
+    "loading": "Se încarcă mesajele...",
+    "empty": "Încă nu există mesaje",
+    "emptyReadOnly": "Acest canal nu are mesaje.",
+    "emptyFirst": "Fii primul care trimite un mesaj!"
+  },
+  "reactions": {
+    "tooltip": "{names} a reacționat cu {emoji}",
+    "add": "Adaugă reacție",
+    "you": "Tu"
+  },
+  "toolbar": {
+    "addReaction": "Adaugă reacție",
+    "replyInThread": "Răspunde în fir",
+    "removeBookmark": "Elimină marcajul",
+    "bookmark": "Marchează acest mesaj",
+    "moreActions": "Mai multe acțiuni"
+  },
+  "mobileSearch": {
+    "placeholder": "Caută mesaje...",
+    "hint": "Caută mesaje în toate canalele și conversațiile",
+    "close": "Închide căutarea"
+  },
+  "pins": {
+    "title": "Mesaje fixate",
+    "loadFailed": "Mesajele fixate nu au putut fi încărcate.",
+    "empty": "Încă nu există mesaje fixate"
+  },
+  "schedule": {
+    "menuTitle": "Programează mesajul",
+    "in20": "Peste 20 de minute",
+    "in1h": "Peste 1 oră",
+    "in3h": "Peste 3 ore",
+    "tomorrow9": "Mâine la 9:00",
+    "custom": "Oră personalizată...",
+    "modalTitle": "Programează mesajul",
+    "dateTime": "Data și ora",
+    "pickFuture": "Alege o oră din viitor.",
+    "submit": "Programează",
+    "submitting": "Se programează...",
+    "close": "Închide"
+  },
+  "scheduled": {
+    "loadFailed": "Mesajele programate nu au putut fi încărcate.",
+    "cancelFailed": "Mesajul nu a putut fi anulat.",
+    "sendFailed": "Mesajul nu a putut fi trimis.",
+    "saveFailed": "Modificările nu au putut fi salvate.",
+    "empty": "Nu există mesaje programate. Folosește iconița cu ceas din editorul de mesaje pentru a programa unul.",
+    "sendAt": "Se trimite la:",
+    "edit": "Editează",
+    "sendNow": "Trimite acum",
+    "cancel": "Anulează",
+    "failedDlp": "Acest mesaj nu a fost trimis, deoarece a corespuns unei reguli de protecție a datelor ({rule}). Șterge-l și scrie unul nou."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# răspuns} few {# răspunsuri} other {# de răspunsuri}}"
+  },
+  "unreads": {
+    "title": "Necitite",
+    "loadFailed": "Mesajele necitite nu au putut fi încărcate.",
+    "empty": "Niciun mesaj necitit. Ești la zi! 🎉",
+    "menu": "Meniu"
+  },
+  "threadPanel": {
+    "title": "Fir de discuție",
+    "replyPlaceholder": "Răspunde...",
+    "loadFailed": "Firul nu a putut fi încărcat. Încearcă din nou.",
+    "loading": "Se încarcă firul...",
+    "replyFailed": "Răspunsul nu a putut fi trimis. Încearcă din nou.",
+    "joinToReply": "Alătură-te canalului pentru a răspunde în fire",
+    "alsoSendToChannel": "Trimite și în canal"
+  },
+  "errors": {
+    "messageEmpty": "Mesajul nu poate fi gol.",
+    "pasteUploadFailed": "Imaginea lipită nu a putut fi încărcată. Încearcă din nou.",
+    "dropUploadFailed": "Fișierul trase nu a putut fi încărcat. Încearcă din nou.",
+    "uploadFailed": "Fișierul nu a putut fi încărcat. Încearcă din nou.",
+    "voiceUploadFailed": "Mesajul vocal nu a putut fi încărcat.",
+    "micDenied": "Accesul la microfon a fost refuzat. Permite accesul la microfon.",
+    "loadFailed": "Mesajele nu au putut fi încărcate.",
+    "sendTimeout": "Trimiterea mesajului a expirat. Încearcă din nou.",
+    "sendFailed": "Mesajul nu a putut fi trimis. Încearcă din nou.",
+    "pushNotConfigured": "Notificările push nu sunt configurate pe server",
+    "serviceWorkerUnavailable": "Service worker indisponibil",
+    "subscribeFailed": "Abonamentul nu a putut fi înregistrat",
+    "editFailed": "Modificarea nu a putut fi salvată. Încearcă din nou."
+  },
+  "details": {
+    "title": "Detalii canal",
+    "name": "Nume",
+    "topic": "Subiect",
+    "topicPlaceholder": "Despre ce este acest canal?",
+    "description": "Descriere",
+    "descriptionPlaceholder": "Adaugă o descriere",
+    "createdBy": "Creat de {name}",
+    "readOnly": "Doar proprietarii canalului, moderatorii și administratorii spațiului de lucru pot modifica aceste detalii.",
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "saveFailed": "Detaliile canalului nu au putut fi salvate."
+  },
+  "intro": {
+    "title": "Bine ai venit în #{name}",
+    "noDescription": "Încă nu există o descriere.",
+    "editDescription": "Editează descrierea"
+  },
+  "threads": {
+    "title": "Fire de discuție",
+    "menu": "Meniu",
+    "loadFailed": "Firele de discuție nu au putut fi încărcate.",
+    "empty": "Încă nu există fire de discuție",
+    "emptyHint": "Firele de discuție pe care le începi sau la care răspunzi vor apărea aici.",
+    "newReplies": "{count, plural, one {# răspuns nou} few {# răspunsuri noi} other {# de răspunsuri noi}}",
+    "replyCount": "{count, plural, one {# răspuns} few {# răspunsuri} other {# de răspunsuri}}",
+    "olderReplies": "Deschide firul ca să vezi răspunsurile anterioare",
+    "replyPlaceholder": "Răspunde...",
+    "send": "Trimite",
+    "replyFailed": "Răspunsul nu a putut fi trimis. Încearcă din nou.",
+    "alsoSendToChannel": "Trimite și în canal",
+    "openThread": "Deschide firul",
+    "loadMore": "Încarcă mai multe",
+    "loading": "Se încarcă..."
+  },
+  "permalink": {
+    "copied": "Link copiat",
+    "notFound": "Acest mesaj nu poate fi găsit sau nu ai permisiunea să-l vizualizezi",
+    "goHome": "Mergi la pagina principală",
+    "copyManually": "Nu s-a putut copia automat. Copiază acest link: {url}"
+  },
+  "unread": {
+    "divider": "Nou",
+    "newMessagesBar": "{count, plural, one {# mesaj nou} few {# mesaje noi} other {# de mesaje noi}}",
+    "newMessagesBarAtLeast": "{count, plural, one {cel puțin # mesaj nou} few {cel puțin # mesaje noi} other {cel puțin # de mesaje noi}}",
+    "markRead": "Marchează ca citit",
+    "jumpFailed": "Nu s-a putut încărca poziția mesajelor necitite"
+  },
+  "reminder": {
+    "set": "Setează memento",
+    "customLabel": "Data și ora mementoului",
+    "preset": {
+      "in20": "Peste 20 de minute",
+      "in1h": "Peste 1 oră",
+      "in3h": "Peste 3 ore",
+      "tomorrow": "Mâine",
+      "nextWeek": "Săptămâna viitoare",
+      "custom": "Personalizat..."
+    },
+    "status": {
+      "pending": "Urmează",
+      "done": "Finalizat"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 oră",
+      "tomorrow": "Mâine"
+    },
+    "loadFailed": "Mementourile nu au putut fi încărcate.",
+    "empty": "Nu există mementouri. Folosește meniul de acțiuni suplimentare de pe un mesaj sau scrie /remind pentru a adăuga unul.",
+    "emptyDone": "Nu există mementouri finalizate.",
+    "dueAt": "Scadent {time}",
+    "firedAt": "Era scadent {time}",
+    "completedAt": "Finalizat {time}",
+    "messageDeleted": "Mesaj șters",
+    "complete": "Marchează ca finalizat",
+    "reopen": "Marchează ca nefinalizat",
+    "delete": "Șterge memento",
+    "toast": {
+      "created": "Memento setat",
+      "due": "Memento: {text}",
+      "createFailed": "Mementoul nu a putut fi setat. Încearcă din nou."
+    },
+    "command": {
+      "syntax": "Utilizare: /remind me [text] in [număr] [minute|ore|zile]",
+      "tooShort": "Mementoul trebuie să fie cel puțin la 1 minut distanță.",
+      "tooLong": "Mementoul trebuie să fie în următorul an.",
+      "created": "Memento setat pentru {time}"
+    },
+    "pastTime": "Alege o oră din viitor.",
+    "loadMore": "Încarcă mai multe"
+  }
+}

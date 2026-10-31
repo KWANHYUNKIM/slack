@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Limbă",
+    "pending": "{name} (traducere în curând)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "dnd": "Notificările sunt pe pauză"
+  },
+  "profile": {
+    "title": "Profil",
+    "close": "Închide",
+    "loading": "Se încarcă...",
+    "notFound": "Profilul nu a fost găsit",
+    "uploadPhoto": "Încarcă fotografie",
+    "uploading": "Se încarcă...",
+    "name": "Nume",
+    "bio": "Despre mine",
+    "bioPlaceholder": "Spune-le celorlalți câteva lucruri despre tine",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "status": "Stare",
+    "joined": "Alăturat",
+    "message": "Mesaj",
+    "edit": "Editează profilul",
+    "statusValue": {
+      "online": "online",
+      "away": "plecat",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profilul nu a putut fi încărcat.",
+      "saveFailed": "Profilul nu a putut fi salvat. Încearcă din nou.",
+      "notImage": "Selectează un fișier imagine.",
+      "tooLarge": "Imaginea trebuie să aibă sub 5 MB.",
+      "uploadFailed": "Fotografia nu a putut fi încărcată. Încearcă din nou."
+    },
+    "statusUntil": "Până la {time}"
+  },
+  "crop": {
+    "title": "Decupează fotografia",
+    "close": "Închide",
+    "zoom": "Zoom",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "saving": "Se salvează...",
+    "failed": "Decuparea a eșuat"
+  },
+  "accessTokens": {
+    "title": "Token-uri personale de acces",
+    "description": "Token-urile permit Claude și altor clienți MCP să citească și, dacă permiți, să scrie în spațiul tău de lucru, cu permisiunile tale. Tratează-le ca pe o parolă.",
+    "nameLabel": "Nume token",
+    "namePlaceholder": "de ex. Claude Code pe laptopul meu",
+    "scopesLabel": "Permisiuni",
+    "scope": {
+      "channelsRead": "Listează canalele",
+      "channelsHistory": "Citește mesajele, firele și activitatea",
+      "usersRead": "Vezi persoanele",
+      "chatWrite": "Postează, editează și șterge mesajele tale",
+      "reactionsWrite": "Adaugă și elimină reacțiile tale",
+      "imRead": "Listează mesajele tale directe și de grup",
+      "imHistory": "Citește istoricul mesajelor tale directe",
+      "imWrite": "Trimite, editează și șterge mesajele tale directe",
+      "searchRead": "Caută mesaje, fișiere, persoane și canale (rezultatele din mesajele directe necesită istoricul mesajelor directe)",
+      "filesRead": "Listează fișierele și citește conținutul fișierelor text"
+    },
+    "expiryLabel": "Expiră",
+    "expiryDays": "{count, plural, one {# zi} few {# zile} other {# de zile}}",
+    "expiryNever": "Fără expirare",
+    "neverWarning": "Token-urile fără expirare rămân valabile până le revoci.",
+    "create": "Generează token",
+    "createdNotice": "Copiază acum noul tău token. Nu vei mai putea să-l vezi.",
+    "copy": "Copiază token-ul",
+    "copyCommand": "Copiază comanda",
+    "copied": "Copiat în clipboard",
+    "connectHint": "Conectează-te din Claude Code:",
+    "dismiss": "Gata, ascunde token-ul",
+    "loading": "Se încarcă...",
+    "empty": "Nu ai token-uri personale de acces.",
+    "expires": "Expiră la {date}",
+    "expired": "Expirat",
+    "noExpiry": "Fără expirare",
+    "lastUsed": "Ultima utilizare: {date}",
+    "neverUsed": "Niciodată utilizat",
+    "rename": "Redenumește",
+    "renameLabel": "Redenumește token-ul {name}",
+    "revoke": "Revocă",
+    "revokeLabel": "Revocă token-ul {name}",
+    "revokeConfirm": "Revocă acum",
+    "cancel": "Anulează",
+    "close": "Închide",
+    "errors": {
+      "loadFailed": "Token-urile nu au putut fi încărcate.",
+      "createFailed": "Token-ul nu a putut fi creat. Încearcă din nou.",
+      "renameFailed": "Token-ul nu a putut fi redenumit.",
+      "revokeFailed": "Token-ul nu a putut fi revocat.",
+      "copyFailed": "Nu s-a putut copia. Selectează textul și copiază-l manual.",
+      "limitReached": "Poți avea cel mult {max} token-uri active. Revocă unul pe care nu îl mai folosești și încearcă din nou.",
+      "codeRequired": "Introdu codul tău în doi pași pentru a crea un token.",
+      "invalidCode": "Codul în doi pași este incorect."
+    },
+    "codeLabel": "Cod în doi pași",
+    "codeHint": "Introdu un cod din aplicația ta de autentificare pentru a crea un token."
+  },
+  "sessions": {
+    "title": "Dispozitive conectate",
+    "description": "Aceste dispozitive sunt conectate la contul tău. Deconectează-le pe cele pe care nu le recunoști sau nu le mai folosești.",
+    "loading": "Se încarcă...",
+    "empty": "Niciun dispozitiv conectat.",
+    "thisDevice": "Acest dispozitiv",
+    "unknownDevice": "Dispozitiv necunoscut",
+    "signedInAt": "Conectat {date}",
+    "lastActive": "Ultima activitate {date}",
+    "signOut": "Deconectare",
+    "signOutLabel": "Deconectează {device}",
+    "signOutThisLabel": "Deconectează acest dispozitiv ({device})",
+    "signOutOthers": "Deconectează toate celelalte dispozitive",
+    "signOutOthersConfirm": "{count, plural, one {Deconectează # alt dispozitiv} few {Deconectează # alte dispozitive} other {Deconectează # de alte dispozitive}}",
+    "revoked": "Dispozitivul a fost deconectat",
+    "revokedOthers": "Toate celelalte dispozitive au fost deconectate",
+    "errors": {
+      "loadFailed": "Dispozitivele nu au putut fi încărcate.",
+      "revokeFailed": "Deconectarea a eșuat. Încearcă din nou."
+    },
+    "device": {
+      "desktop": "Aplicație desktop",
+      "desktopOn": "Aplicație desktop pe {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser} pe {os}",
+      "unknownOn": "Dispozitiv necunoscut pe {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Schimbă parola",
+    "description": "Introdu parola actuală și alege una nouă.",
+    "currentLabel": "Parola actuală",
+    "newLabel": "Parolă nouă",
+    "confirmLabel": "Confirmă noua parolă",
+    "sessionsNote": "Când schimbi parola, celelalte dispozitive conectate sunt deconectate.",
+    "submit": "Schimbă parola",
+    "submitting": "Se schimbă...",
+    "cancel": "Anulează",
+    "successToast": "Parola ta a fost schimbată",
+    "errors": {
+      "currentRequired": "Introdu parola actuală.",
+      "failed": "Parola nu a putut fi schimbată. Încearcă din nou."
+    }
+  },
+  "twoFactor": {
+    "title": "Autentificare în doi pași",
+    "description": "Cere un cod din aplicația ta de autentificare, pe lângă parolă, când te conectezi.",
+    "loading": "Se încarcă...",
+    "statusOn": "Activată",
+    "statusOff": "Dezactivată",
+    "enabledSince": "Activată {date}",
+    "recoveryRemaining": "{count, plural, one {Mai rămâne # cod de recuperare} few {Mai rămân # coduri de recuperare} other {Mai rămân # de coduri de recuperare}}",
+    "unavailable": "Autentificarea în doi pași nu este disponibilă pe acest server. Cere administratorului.",
+    "requiredNotice": "Organizația ta cere autentificarea în doi pași.",
+    "close": "Închide",
+    "setup": {
+      "start": "Configurează autentificarea în doi pași",
+      "starting": "Se pregătește...",
+      "step1": "1. Adaugă acest cont în aplicația ta de autentificare. Deschide linkul de pe telefon sau introdu manual cheia de configurare.",
+      "uriLabel": "Link de configurare",
+      "openInApp": "Deschide în aplicația de autentificare",
+      "qrLabel": "Cod QR pentru aplicația de autentificare",
+      "qrHint": "Scanează acest cod QR cu aplicația ta de autentificare sau folosește linkul sau cheia de mai jos.",
+      "keyLabel": "Cheie de configurare",
+      "copyKey": "Copiază cheia de configurare",
+      "copyUri": "Copiază linkul de configurare",
+      "copied": "Copiat",
+      "step2": "2. Introdu codul de 6 cifre afișat de aplicația ta.",
+      "codeLabel": "Cod de autentificare",
+      "codePlaceholder": "123456",
+      "verify": "Activează",
+      "verifying": "Se verifică...",
+      "cancel": "Anulează",
+      "passwordLabel": "3. Introdu parola actuală.",
+      "sessionsNote": "Când activezi această opțiune, celelalte dispozitive conectate sunt deconectate."
+    },
+    "recovery": {
+      "title": "Salvează codurile de recuperare",
+      "description": "Folosește un cod de recuperare pentru a te conecta dacă îți pierzi dispozitivul. Fiecare cod funcționează o singură dată. Nu vor mai fi afișate.",
+      "download": "Descarcă",
+      "copy": "Copiază tot",
+      "fileHeader": "Coduri de recuperare. Fiecare cod funcționează o singură dată. Păstrează-le într-un loc sigur.",
+      "confirmSaved": "Mi-am salvat codurile de recuperare",
+      "fileName": "coduri-recuperare.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Parolă",
+      "codeLabel": "Cod de autentificare sau de recuperare",
+      "cancel": "Anulează",
+      "passwordInvalid": "Introdu o parolă validă.",
+      "codeInvalid": "Introdu un cod de autentificare sau de recuperare valid."
+    },
+    "regenerate": {
+      "start": "Generează coduri de recuperare noi",
+      "title": "Generează coduri de recuperare noi",
+      "description": "Codurile tale vechi de recuperare nu mai funcționează imediat ce generezi altele noi. Introdu parola și un cod din aplicația ta de autentificare (sau un cod de recuperare).",
+      "submit": "Generează coduri noi",
+      "submitting": "Se generează...",
+      "lowNotice": "{count, plural, one {Mai rămâne doar # cod de recuperare} few {Mai rămân doar # coduri de recuperare} other {Mai rămân doar # de coduri de recuperare}}. Generează altele noi înainte să se termine.",
+      "toast": "Noile coduri de recuperare sunt gata"
+    },
+    "disable": {
+      "title": "Dezactivează autentificarea în doi pași",
+      "description": "Introdu parola și un cod din aplicația ta de autentificare (sau un cod de recuperare).",
+      "start": "Dezactivează",
+      "submit": "Dezactivează autentificarea în doi pași",
+      "submitting": "Se dezactivează...",
+      "blockedByPolicy": "Organizația ta cere autentificarea în doi pași, așa că nu o poți dezactiva. Dacă ți-ai pierdut dispozitivul, cere unui administrator să o reseteze."
+    },
+    "enabledToast": "Autentificarea în doi pași este activată",
+    "disabledToast": "Autentificarea în doi pași este dezactivată",
+    "errors": {
+      "loadFailed": "Setările pentru autentificarea în doi pași nu au putut fi încărcate.",
+      "setupFailed": "Configurarea nu a putut porni. Încearcă din nou.",
+      "enableFailed": "Autentificarea în doi pași nu a putut fi activată.",
+      "regenerateFailed": "Nu s-au putut genera coduri de recuperare noi.",
+      "disableFailed": "Autentificarea în doi pași nu a putut fi dezactivată.",
+      "copyFailed": "Nu s-a putut copia în clipboard."
+    }
+  },
+  "connectedApps": {
+    "title": "Aplicații conectate",
+    "description": "Aplicațiile cărora le-ai permis să folosească contul tău prin conectarea OAuth. Acționează cu permisiunile tale. Deconectează aplicațiile pe care nu le mai folosești.",
+    "loading": "Se încarcă...",
+    "empty": "Nicio aplicație nu este conectată la contul tău.",
+    "redirectsTo": "Revine la {hosts}",
+    "connectedAt": "Conectată {date}",
+    "lastUsed": "Ultima utilizare: {date}",
+    "neverUsed": "Niciodată utilizată",
+    "disconnect": "Deconectează",
+    "disconnectLabel": "Deconectează {name}",
+    "disconnectConfirm": "Deconectează acum",
+    "cancel": "Anulează",
+    "disconnected": "Aplicația a fost deconectată",
+    "close": "Închide",
+    "errors": {
+      "loadFailed": "Aplicațiile conectate nu au putut fi încărcate.",
+      "disconnectFailed": "Aplicația nu a putut fi deconectată."
+    },
+    "unnamedApp": "Aplicație fără nume"
+  }
+}

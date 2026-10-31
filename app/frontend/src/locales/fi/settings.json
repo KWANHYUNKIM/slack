@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "Kieli",
+    "pending": "{name} (käännös tulossa pian)",
+    "beta": "Beta",
+    "betaOption": "{name} (beta)"
+  },
+  "avatar": {
+    "alt": "Profiilikuva",
+    "dnd": "Ilmoitukset keskeytetty"
+  },
+  "profile": {
+    "title": "Profiili",
+    "close": "Sulje",
+    "loading": "Ladataan...",
+    "notFound": "Profiilia ei löytynyt",
+    "uploadPhoto": "Lataa kuva",
+    "uploading": "Ladataan...",
+    "name": "Nimi",
+    "bio": "Esittely",
+    "bioPlaceholder": "Kerro itsestäsi muille",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "status": "Tila",
+    "joined": "Liittynyt",
+    "message": "Viesti",
+    "edit": "Muokkaa profiilia",
+    "statusValue": {
+      "online": "paikalla",
+      "away": "poissa",
+      "offline": "offline"
+    },
+    "errors": {
+      "loadFailed": "Profiilin lataaminen epäonnistui.",
+      "saveFailed": "Profiilin tallentaminen epäonnistui. Yritä uudelleen.",
+      "notImage": "Valitse kuvatiedosto.",
+      "tooLarge": "Kuvan on oltava alle 5 Mt.",
+      "uploadFailed": "Kuvan lataaminen epäonnistui. Yritä uudelleen."
+    },
+    "statusUntil": "Asti {time}"
+  },
+  "crop": {
+    "title": "Rajaa kuvasi",
+    "close": "Sulje",
+    "zoom": "Zoomaus",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "saving": "Tallennetaan...",
+    "failed": "Rajaaminen epäonnistui"
+  },
+  "accessTokens": {
+    "title": "Henkilökohtaiset käyttöoikeustunnisteet",
+    "description": "Tunnisteiden avulla Claude ja muut MCP-asiakkaat voivat lukea työtilaasi ja, jos sallit sen, kirjoittaa siihen oikeuksillasi. Käsittele niitä kuin salasanaa.",
+    "nameLabel": "Tunnisteen nimi",
+    "namePlaceholder": "esim. Claude Code kannettavalla",
+    "scopesLabel": "Oikeudet",
+    "scope": {
+      "channelsRead": "Listaa kanavat",
+      "channelsHistory": "Lue viestit, ketjut ja toiminta",
+      "usersRead": "Näytä henkilöt",
+      "chatWrite": "Lähetä, muokkaa ja poista omat viestisi",
+      "reactionsWrite": "Lisää ja poista omat reaktiosi",
+      "imRead": "Listaa omat yksityisviestisi ja ryhmäviestisi",
+      "imHistory": "Lue yksityisviestihistoriasi",
+      "imWrite": "Lähetä, muokkaa ja poista yksityisviestisi",
+      "searchRead": "Hae viestejä, tiedostoja, henkilöitä ja kanavia (yksityisviestien tulokset vaativat yksityisviestihistorian)",
+      "filesRead": "Listaa tiedostot ja lue tekstitiedostojen sisältö"
+    },
+    "expiryLabel": "Vanhenee",
+    "expiryDays": "{count, plural, one {# päivä} other {# päivää}}",
+    "expiryNever": "Ei vanhene",
+    "neverWarning": "Tunnisteet, joilla ei ole vanhenemisaikaa, ovat voimassa, kunnes kumoat ne.",
+    "create": "Luo tunniste",
+    "createdNotice": "Kopioi uusi tunnisteesi nyt. Et näe sitä enää myöhemmin.",
+    "copy": "Kopioi tunniste",
+    "copyCommand": "Kopioi komento",
+    "copied": "Kopioitu leikepöydälle",
+    "connectHint": "Yhdistä Claude Codesta:",
+    "dismiss": "Valmis, piilota tunniste",
+    "loading": "Ladataan...",
+    "empty": "Sinulla ei ole henkilökohtaisia käyttöoikeustunnisteita.",
+    "expires": "Vanhenee {date}",
+    "expired": "Vanhentunut",
+    "noExpiry": "Ei vanhene",
+    "lastUsed": "Viimeksi käytetty {date}",
+    "neverUsed": "Ei koskaan käytetty",
+    "rename": "Nimeä uudelleen",
+    "renameLabel": "Nimeä tunniste {name} uudelleen",
+    "revoke": "Kumoa",
+    "revokeLabel": "Kumoa tunniste {name}",
+    "revokeConfirm": "Kumoa nyt",
+    "cancel": "Peruuta",
+    "close": "Sulje",
+    "errors": {
+      "loadFailed": "Tunnisteiden lataaminen epäonnistui.",
+      "createFailed": "Tunnisteen luominen epäonnistui. Yritä uudelleen.",
+      "renameFailed": "Tunnisteen nimeäminen uudelleen epäonnistui.",
+      "revokeFailed": "Tunnisteen kumoaminen epäonnistui.",
+      "copyFailed": "Kopiointi ei onnistunut. Valitse teksti ja kopioi se itse.",
+      "limitReached": "Voit olla enintään {max} aktiivisella tunnisteella. Kumoa tunniste, jota et enää käytä, ja yritä uudelleen.",
+      "codeRequired": "Anna kaksivaiheinen koodisi luodaksesi tunnisteen.",
+      "invalidCode": "Kaksivaiheinen koodi on väärin."
+    },
+    "codeLabel": "Kaksivaiheinen koodi",
+    "codeHint": "Luodaksesi tunnisteen anna koodi todennussovelluksestasi."
+  },
+  "sessions": {
+    "title": "Kirjautuneet laitteet",
+    "description": "Nämä laitteet ovat kirjautuneina tiliisi. Kirjaa ulos ne laitteet, joita et tunnista tai et enää käytä.",
+    "loading": "Ladataan...",
+    "empty": "Ei kirjautuneita laitteita.",
+    "thisDevice": "Tämä laite",
+    "unknownDevice": "Tuntematon laite",
+    "signedInAt": "Kirjautunut {date}",
+    "lastActive": "Viimeksi aktiivinen {date}",
+    "signOut": "Kirjaudu ulos",
+    "signOutLabel": "Kirjaudu ulos laitteelta {device}",
+    "signOutThisLabel": "Kirjaudu ulos tältä laitteelta ({device})",
+    "signOutOthers": "Kirjaudu ulos kaikilta muilta laitteilta",
+    "signOutOthersConfirm": "{count, plural, one {Kirjaudu ulos # muulta laitteelta} other {Kirjaudu ulos # muulta laitteelta}}",
+    "revoked": "Laite kirjattiin ulos",
+    "revokedOthers": "Kaikilta muilta laitteilta kirjattiin ulos",
+    "errors": {
+      "loadFailed": "Laitteiden lataaminen epäonnistui.",
+      "revokeFailed": "Uloskirjautuminen epäonnistui. Yritä uudelleen."
+    },
+    "device": {
+      "desktop": "Työpöytäsovellus",
+      "desktopOn": "Työpöytäsovellus, {os}",
+      "browser": "{browser}",
+      "browserOn": "{browser}, {os}",
+      "unknownOn": "Tuntematon laite, {os}"
+    }
+  },
+  "changePassword": {
+    "title": "Vaihda salasana",
+    "description": "Anna nykyinen salasanasi ja valitse uusi.",
+    "currentLabel": "Nykyinen salasana",
+    "newLabel": "Uusi salasana",
+    "confirmLabel": "Vahvista uusi salasana",
+    "sessionsNote": "Kun vaihdat salasanan, muut kirjautuneet laitteesi kirjataan ulos.",
+    "submit": "Vaihda salasana",
+    "submitting": "Vaihdetaan...",
+    "cancel": "Peruuta",
+    "successToast": "Salasanasi on vaihdettu",
+    "errors": {
+      "currentRequired": "Anna nykyinen salasanasi.",
+      "failed": "Salasanan vaihtaminen ei onnistunut. Yritä uudelleen."
+    }
+  },
+  "twoFactor": {
+    "title": "Kaksivaiheinen todennus",
+    "description": "Pyydä kirjautuessa salasanan lisäksi koodi todennussovelluksestasi.",
+    "loading": "Ladataan...",
+    "statusOn": "Käytössä",
+    "statusOff": "Ei käytössä",
+    "enabledSince": "Otettu käyttöön {date}",
+    "recoveryRemaining": "{count, plural, one {# palautuskoodi jäljellä} other {# palautuskoodia jäljellä}}",
+    "unavailable": "Kaksivaiheinen todennus ei ole käytettävissä tällä palvelimella. Kysy ylläpitäjältä.",
+    "requiredNotice": "Organisaatiosi edellyttää kaksivaiheista todennusta.",
+    "close": "Sulje",
+    "setup": {
+      "start": "Ota kaksivaiheinen todennus käyttöön",
+      "starting": "Valmistellaan...",
+      "step1": "1. Lisää tämä tili todennussovellukseesi. Avaa linkki puhelimellasi tai syötä määritysavain käsin.",
+      "uriLabel": "Asetuslinkki",
+      "openInApp": "Avaa todennussovelluksessa",
+      "qrLabel": "QR-koodi todennussovellukselle",
+      "qrHint": "Skannaa tämä QR-koodi todennussovelluksellasi tai käytä alla olevaa linkkiä tai avainta.",
+      "keyLabel": "Määritysavain",
+      "copyKey": "Kopioi määritysavain",
+      "copyUri": "Kopioi asetuslinkki",
+      "copied": "Kopioitu",
+      "step2": "2. Anna sovelluksesi näyttämä 6-numeroinen koodi.",
+      "codeLabel": "Todennuskoodi",
+      "codePlaceholder": "123456",
+      "verify": "Ota käyttöön",
+      "verifying": "Tarkistetaan...",
+      "cancel": "Peruuta",
+      "passwordLabel": "3. Anna nykyinen salasanasi.",
+      "sessionsNote": "Kun otat tämän käyttöön, muut kirjautuneet laitteesi kirjataan ulos."
+    },
+    "recovery": {
+      "title": "Tallenna palautuskoodisi",
+      "description": "Käytä palautuskoodia kirjautumiseen, jos menetät laitteesi. Jokaista koodia voi käyttää kerran. Niitä ei näytetä uudelleen.",
+      "download": "Lataa",
+      "copy": "Kopioi kaikki",
+      "fileHeader": "Palautuskoodit. Jokaista koodia voi käyttää kerran. Säilytä ne turvallisessa paikassa.",
+      "confirmSaved": "Olen tallentanut palautuskoodini",
+      "fileName": "palautuskoodit.txt"
+    },
+    "reauth": {
+      "passwordLabel": "Salasana",
+      "codeLabel": "Todennus- tai palautuskoodi",
+      "cancel": "Peruuta",
+      "passwordInvalid": "Anna kelvollinen salasana.",
+      "codeInvalid": "Anna kelvollinen todennus- tai palautuskoodi."
+    },
+    "regenerate": {
+      "start": "Luo uudet palautuskoodit",
+      "title": "Luo uudet palautuskoodit",
+      "description": "Vanhat palautuskoodit lakkaavat toimimasta heti, kun luot uudet. Anna salasanasi ja koodi todennussovelluksestasi (tai palautuskoodi).",
+      "submit": "Luo uudet koodit",
+      "submitting": "Luodaan...",
+      "lowNotice": "{count, plural, one {Vain # palautuskoodi on jäljellä} other {Vain # palautuskoodia on jäljellä}}. Luo uudet, ennen kuin ne loppuvat.",
+      "toast": "Uudet palautuskoodit ovat valmiit"
+    },
+    "disable": {
+      "title": "Poista kaksivaiheinen todennus käytöstä",
+      "description": "Anna salasanasi ja koodi todennussovelluksestasi (tai palautuskoodi).",
+      "start": "Poista käytöstä",
+      "submit": "Poista kaksivaiheinen todennus käytöstä",
+      "submitting": "Poistetaan käytöstä...",
+      "blockedByPolicy": "Organisaatiosi edellyttää kaksivaiheista todennusta, joten sitä ei voi poistaa käytöstä. Jos olet menettänyt laitteesi, pyydä ylläpitäjää nollaamaan se."
+    },
+    "enabledToast": "Kaksivaiheinen todennus on käytössä",
+    "disabledToast": "Kaksivaiheinen todennus on pois käytöstä",
+    "errors": {
+      "loadFailed": "Kaksivaiheisen todennuksen asetuksia ei voitu ladata.",
+      "setupFailed": "Käyttöönottoa ei voitu aloittaa. Yritä uudelleen.",
+      "enableFailed": "Kaksivaiheista todennusta ei voitu ottaa käyttöön.",
+      "regenerateFailed": "Uusia palautuskoodeja ei voitu luoda.",
+      "disableFailed": "Kaksivaiheista todennusta ei voitu poistaa käytöstä.",
+      "copyFailed": "Leikepöydälle kopiointi ei onnistunut."
+    }
+  },
+  "connectedApps": {
+    "title": "Yhdistetyt sovellukset",
+    "description": "Sovellukset, joille olet sallinut käyttää tiliäsi OAuth-kirjautumisen kautta. Ne toimivat oikeuksillasi. Katkaise yhteys sovelluksiin, joita et enää käytä.",
+    "loading": "Ladataan...",
+    "empty": "Tiliisi ei ole yhdistetty sovelluksia.",
+    "redirectsTo": "Palaa osoitteeseen {hosts}",
+    "connectedAt": "Yhdistetty {date}",
+    "lastUsed": "Viimeksi käytetty {date}",
+    "neverUsed": "Ei koskaan käytetty",
+    "disconnect": "Katkaise yhteys",
+    "disconnectLabel": "Katkaise yhteys sovellukseen {name}",
+    "disconnectConfirm": "Katkaise yhteys nyt",
+    "cancel": "Peruuta",
+    "disconnected": "Sovelluksen yhteys katkaistu",
+    "close": "Sulje",
+    "errors": {
+      "loadFailed": "Yhdistettyjen sovellusten lataaminen epäonnistui.",
+      "disconnectFailed": "Sovelluksen yhteyden katkaiseminen epäonnistui."
+    },
+    "unnamedApp": "Nimetön sovellus"
+  }
+}

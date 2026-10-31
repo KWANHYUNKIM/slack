@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Ilmoita kaikille, jotka ovat paikalla",
+    "channelLabel": "@channel",
+    "channelHint": "Ilmoita kaikille tämän kanavan jäsenille"
+  },
+  "deleteDialog": {
+    "title": "Poista viesti",
+    "body": "Haluatko varmasti poistaa tämän viestin? Tätä ei voi peruuttaa."
+  },
+  "editorToolbar": {
+    "attachFile": "Liitä tiedosto",
+    "emoji": "Emoji",
+    "mention": "Mainitse joku",
+    "stopRecording": "Lopeta tallennus",
+    "recordVoice": "Nauhoita äänipätkä"
+  },
+  "emojiAutocomplete": {
+    "navigate": "siirtyäksesi",
+    "select": "valitaksesi",
+    "dismiss": "sulkeaksesi",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Poista {name}"
+  },
+  "fileModal": {
+    "download": "Lataa",
+    "loadFailed": "Tiedoston sisältöä ei voitu ladata",
+    "truncated": "... (lyhennetty)",
+    "noPreview": "Esikatselua ei ole saatavilla",
+    "downloadToView": "Lataa tiedosto nähdäksesi sen"
+  },
+  "files": {
+    "allFiles": "Kaikki tiedostot",
+    "channelFiles": "Kanavan tiedostot",
+    "loadFailed": "Tiedostojen lataaminen epäonnistui.",
+    "empty": "Tiedostoja ei ole vielä ladattu",
+    "download": "Lataa",
+    "menu": "Valikko",
+    "unavailable": "Tiedosto ei ole saatavilla",
+    "preparing": "Valmistellaan tiedostoa"
+  },
+  "format": {
+    "bold": "Lihavoitu",
+    "italic": "Kursivoitu",
+    "strike": "Yliviivattu",
+    "link": "Linkki",
+    "orderedList": "Numeroitu luettelo",
+    "bulletList": "Luettelomerkeillä merkitty luettelo",
+    "code": "Koodi",
+    "codeBlock": "Koodilohko",
+    "quote": "Lainaus"
+  },
+  "notifications": {
+    "title": "Ilmoitukset",
+    "empty": "Ei uusia ilmoituksia",
+    "unreadCount": "{count, plural, one {# lukematon viesti} other {# lukematonta viestiä}}"
+  },
+  "search": {
+    "placeholder": "Hae",
+    "searching": "Haetaan...",
+    "noResults": "Tuloksia ei löytynyt",
+    "previewHint": "{count, plural, one {Paras # tulos} other {Parhaat # tulosta}} · Näytä kaikki (Enter)",
+    "truncatedNotice": "Tuloksia on paljon. Lisää suodattimia rajataksesi niitä.",
+    "retry": "Yritä uudelleen",
+    "ignoredChip": "{token} (ohitettu)",
+    "ignoredLimitChip": "{token} (ohitettu: liian monta)",
+    "inChannel": "kanavassa #{channel}",
+    "title": "Hakutulokset",
+    "resultsFor": "Hakutulokset haulle \"{query}\"",
+    "emptyQuery": "Kirjoita hakusana tai käytä suodattimia, kuten from:, in:, has:, before: tai after:.",
+    "noResultsHint": "Kokeile eri hakusanoja tai poista joitakin suodattimia.",
+    "clearFilters": "Tyhjennä kaikki suodattimet",
+    "removeFilter": "Poista suodatin {filter}",
+    "loadFailed": "Haku epäonnistui. Yritä uudelleen.",
+    "loadMore": "Lataa lisää",
+    "threadReply": "Ketjun vastaus",
+    "directMessage": "Yksityisviesti",
+    "groupMessage": "Ryhmäkeskustelu",
+    "joined": "Liitytty",
+    "privateChannel": "Yksityinen",
+    "archivedChannel": "Arkistoitu",
+    "back": "Takaisin",
+    "tabs": {
+      "label": "Hakutulosten tyypit",
+      "messages": "Viestit",
+      "files": "Tiedostot",
+      "people": "Ihmiset",
+      "channels": "Kanavat"
+    },
+    "sort": {
+      "label": "Lajittelu",
+      "relevance": "Osuvuus",
+      "recent": "Uusimmat ensin"
+    }
+  },
+  "headerTabs": {
+    "files": "Tiedostot",
+    "pins": "Kiinnitykset"
+  },
+  "lightbox": {
+    "close": "Sulje"
+  },
+  "later": {
+    "title": "Myöhemmin",
+    "saved": "Tallennetut",
+    "scheduled": "Ajastetut",
+    "loadFailed": "Tallennettujen viestien lataaminen epäonnistui.",
+    "empty": "Ei vielä tallennettuja viestejä. Napsauta minkä tahansa viestin kirjanmerkkikuvaketta tallentaaksesi sen.",
+    "removeSaved": "Poista tallennetuista",
+    "menu": "Valikko",
+    "reminders": "Muistutukset"
+  },
+  "linkModal": {
+    "title": "Lisää linkki",
+    "url": "URL-osoite",
+    "urlPlaceholder": "https://example.com",
+    "displayText": "Näytettävä teksti",
+    "optional": "(valinnainen)",
+    "textPlaceholder": "Linkin teksti",
+    "close": "Sulje"
+  },
+  "actionsMenu": {
+    "noActions": "Ei käytettävissä olevia toimintoja",
+    "markUnread": "Merkitse lukemattomaksi",
+    "pin": "Kiinnitä viesti",
+    "unpin": "Poista viestin kiinnitys",
+    "edit": "Muokkaa viestiä",
+    "delete": "Poista viesti",
+    "copyLink": "Kopioi linkki",
+    "remind": "Muistuta minua tästä"
+  },
+  "area": {
+    "selectChannel": "Valitse kanava aloittaaksesi viestittelyn",
+    "openMenu": "Avaa valikko",
+    "placeholder": "Viesti kanavalle #{channel}",
+    "viewing": "Katselet kanavaa <bold>#{channel}</bold>",
+    "joinChannel": "Liity kanavalle"
+  },
+  "header": {
+    "menu": "Valikko",
+    "unstar": "Poista tähdellisistä",
+    "star": "Lisää tähdellisiin",
+    "members": "Jäseniä: {count}",
+    "search": "Haku",
+    "channelMenu": "Kanavan asetukset",
+    "leaveChannel": "Poistu kanavalta",
+    "leaveLastMember": "Kanavalta ei voi poistua, koska olet viimeinen jäsen.",
+    "dismiss": "Sulje",
+    "addTopic": "Lisää aihe",
+    "editDetails": "Muokkaa kanavan tietoja"
+  },
+  "message": {
+    "edited": "(muokattu)",
+    "pinned": "Kiinnitetty",
+    "showMore": "Näytä lisää",
+    "showLess": "Näytä vähemmän",
+    "repliedToThread": "Vastattiin ketjuun: {excerpt}",
+    "deletedPlaceholder": "Tämä viesti on poistettu.",
+    "sendToChannel": "Lähetä myös kanavalle",
+    "removeFromChannel": "Poista kanavalta"
+  },
+  "input": {
+    "uploading": "Ladataan...",
+    "scheduleMessage": "Ajasta viesti",
+    "send": "Lähetä viesti",
+    "hint": "Lähetä painamalla <kbd>Enter</kbd>, rivinvaihto <kbd>Shift + Enter</kbd>",
+    "scheduledFor": "Ajastettu: {time}",
+    "scheduleFailed": "Viestin ajastaminen epäonnistui. Yritä uudelleen."
+  },
+  "list": {
+    "loading": "Ladataan viestejä...",
+    "empty": "Ei vielä viestejä",
+    "emptyReadOnly": "Tässä kanavassa ei ole viestejä.",
+    "emptyFirst": "Ole ensimmäinen, joka lähettää viestin!"
+  },
+  "reactions": {
+    "tooltip": "{names} reagoi emojilla {emoji}",
+    "add": "Lisää reaktio",
+    "you": "Sinä"
+  },
+  "toolbar": {
+    "addReaction": "Lisää reaktio",
+    "replyInThread": "Vastaa ketjuun",
+    "removeBookmark": "Poista kirjanmerkki",
+    "bookmark": "Lisää viesti kirjanmerkkeihin",
+    "moreActions": "Lisää toimintoja"
+  },
+  "mobileSearch": {
+    "placeholder": "Hae viestejä...",
+    "hint": "Hae viestejä kaikista kanavista ja keskusteluista",
+    "close": "Sulje haku"
+  },
+  "pins": {
+    "title": "Kiinnitetyt viestit",
+    "loadFailed": "Kiinnitettyjen viestien lataaminen epäonnistui.",
+    "empty": "Ei vielä kiinnitettyjä viestejä"
+  },
+  "schedule": {
+    "menuTitle": "Ajasta viesti",
+    "in20": "20 minuutin kuluttua",
+    "in1h": "1 tunnin kuluttua",
+    "in3h": "3 tunnin kuluttua",
+    "tomorrow9": "Huomenna klo 9.00",
+    "custom": "Mukautettu aika...",
+    "modalTitle": "Ajasta viesti",
+    "dateTime": "Päivämäärä ja kellonaika",
+    "pickFuture": "Valitse tulevaisuuden ajankohta.",
+    "submit": "Ajasta",
+    "submitting": "Ajastetaan...",
+    "close": "Sulje"
+  },
+  "scheduled": {
+    "loadFailed": "Ajastettujen viestien lataaminen epäonnistui.",
+    "cancelFailed": "Viestin peruuttaminen epäonnistui.",
+    "sendFailed": "Viestin lähettäminen epäonnistui.",
+    "saveFailed": "Muutosten tallentaminen epäonnistui.",
+    "empty": "Ei ajastettuja viestejä. Ajasta viesti viestikentän kellokuvakkeella.",
+    "sendAt": "Lähetetään:",
+    "edit": "Muokkaa",
+    "sendNow": "Lähetä nyt",
+    "cancel": "Peruuta",
+    "failedDlp": "Tätä viestiä ei lähetetty, koska se vastasi tietosuojasääntöä ({rule}). Poista se ja kirjoita uusi."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# vastaus} other {# vastausta}}"
+  },
+  "unreads": {
+    "title": "Lukemattomat",
+    "loadFailed": "Lukemattomien viestien lataaminen epäonnistui.",
+    "empty": "Ei lukemattomia viestejä. Olet ajan tasalla! 🎉",
+    "menu": "Valikko"
+  },
+  "threadPanel": {
+    "title": "Ketju",
+    "replyPlaceholder": "Vastaa...",
+    "loadFailed": "Ketjun lataaminen epäonnistui. Yritä uudelleen.",
+    "loading": "Ladataan ketjua...",
+    "replyFailed": "Vastauksen lähettäminen epäonnistui. Yritä uudelleen.",
+    "joinToReply": "Liity kanavalle vastataksesi ketjuihin",
+    "alsoSendToChannel": "Lähetä myös kanavalle"
+  },
+  "errors": {
+    "messageEmpty": "Viesti ei voi olla tyhjä.",
+    "pasteUploadFailed": "Liitetyn kuvan lataaminen epäonnistui. Yritä uudelleen.",
+    "dropUploadFailed": "Pudotetun tiedoston lataaminen epäonnistui. Yritä uudelleen.",
+    "uploadFailed": "Tiedoston lataaminen epäonnistui. Yritä uudelleen.",
+    "voiceUploadFailed": "Ääniviestin lataaminen epäonnistui.",
+    "micDenied": "Mikrofonin käyttö estetty. Salli mikrofonin käyttö.",
+    "loadFailed": "Viestien lataaminen epäonnistui.",
+    "sendTimeout": "Viestin lähetys aikakatkaistiin. Yritä uudelleen.",
+    "sendFailed": "Viestin lähettäminen epäonnistui. Yritä uudelleen.",
+    "pushNotConfigured": "Push-ilmoituksia ei ole määritetty palvelimelle",
+    "serviceWorkerUnavailable": "Palvelutyöntekijä ei ole käytettävissä",
+    "subscribeFailed": "Tilauksen rekisteröinti epäonnistui",
+    "editFailed": "Muokkausta ei voitu tallentaa. Yritä uudelleen."
+  },
+  "details": {
+    "title": "Kanavan tiedot",
+    "name": "Nimi",
+    "topic": "Aihe",
+    "topicPlaceholder": "Mistä tässä kanavassa on kyse?",
+    "description": "Kuvaus",
+    "descriptionPlaceholder": "Lisää kuvaus",
+    "createdBy": "Luonut {name}",
+    "readOnly": "Vain kanavan omistajat, moderaattorit ja työtilan ylläpitäjät voivat muokata näitä tietoja.",
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "saveFailed": "Kanavan tietojen tallentaminen epäonnistui."
+  },
+  "intro": {
+    "title": "Tervetuloa kanavalle #{name}",
+    "noDescription": "Kuvausta ei ole vielä.",
+    "editDescription": "Muokkaa kuvausta"
+  },
+  "threads": {
+    "title": "Ketjut",
+    "menu": "Valikko",
+    "loadFailed": "Ketjujen lataaminen epäonnistui.",
+    "empty": "Ei vielä ketjuja",
+    "emptyHint": "Ketjut, jotka aloitat tai joihin vastaat, näkyvät tässä.",
+    "newReplies": "{count, plural, one {# uusi vastaus} other {# uutta vastausta}}",
+    "replyCount": "{count, plural, one {# vastaus} other {# vastausta}}",
+    "olderReplies": "Avaa ketju nähdäksesi aiemmat vastaukset",
+    "replyPlaceholder": "Vastaa...",
+    "send": "Lähetä",
+    "replyFailed": "Vastauksen lähettäminen epäonnistui. Yritä uudelleen.",
+    "alsoSendToChannel": "Lähetä myös kanavalle",
+    "openThread": "Avaa ketju",
+    "loadMore": "Lataa lisää",
+    "loading": "Ladataan..."
+  },
+  "permalink": {
+    "copied": "Linkki kopioitu",
+    "notFound": "Tätä viestiä ei löydy, tai sinulla ei ole oikeutta nähdä sitä",
+    "goHome": "Etusivulle",
+    "copyManually": "Linkkiä ei voitu kopioida automaattisesti. Kopioi tämä linkki: {url}"
+  },
+  "unread": {
+    "divider": "Uusi",
+    "newMessagesBar": "{count, plural, one {# uusi viesti} other {# uutta viestiä}}",
+    "newMessagesBarAtLeast": "{count, plural, one {vähintään # uusi viesti} other {vähintään # uutta viestiä}}",
+    "markRead": "Merkitse luetuksi",
+    "jumpFailed": "Lukemattoman viestin kohdan lataaminen epäonnistui"
+  },
+  "reminder": {
+    "set": "Aseta muistutus",
+    "customLabel": "Muistutuksen päivämäärä ja kellonaika",
+    "preset": {
+      "in20": "20 minuutin kuluttua",
+      "in1h": "1 tunnin kuluttua",
+      "in3h": "3 tunnin kuluttua",
+      "tomorrow": "Huomenna",
+      "nextWeek": "Ensi viikolla",
+      "custom": "Mukautettu..."
+    },
+    "status": {
+      "pending": "Tulossa",
+      "done": "Valmis"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 tunti",
+      "tomorrow": "Huomenna"
+    },
+    "loadFailed": "Muistutusten lataaminen epäonnistui.",
+    "empty": "Ei muistutuksia. Käytä viestin lisätoimintovalikkoa tai kirjoita /remind lisätäksesi muistutuksen.",
+    "emptyDone": "Ei valmiita muistutuksia.",
+    "dueAt": "Erääntyy {time}",
+    "firedAt": "Erääntyi {time}",
+    "completedAt": "Valmistui {time}",
+    "messageDeleted": "Poistettu viesti",
+    "complete": "Merkitse valmiiksi",
+    "reopen": "Merkitse keskeneräiseksi",
+    "delete": "Poista muistutus",
+    "toast": {
+      "created": "Muistutus asetettu",
+      "due": "Muistutus: {text}",
+      "createFailed": "Muistutuksen asettaminen epäonnistui. Yritä uudelleen."
+    },
+    "command": {
+      "syntax": "Käyttö: /remind me [teksti] in [määrä] [minuuttia|tuntia|päivää]",
+      "tooShort": "Muistutuksen on oltava vähintään 1 minuutin päässä.",
+      "tooLong": "Muistutuksen on oltava enintään vuoden päässä.",
+      "created": "Muistutus asetettu ajalle {time}"
+    },
+    "pastTime": "Valitse tulevaisuuden ajankohta.",
+    "loadMore": "Lataa lisää"
+  }
+}

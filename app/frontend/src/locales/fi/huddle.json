@@ -1,0 +1,50 @@
+{
+  "bar": {
+    "muted": "(mykistetty)",
+    "mute": "Mykistä",
+    "unmute": "Poista mykistys",
+    "leave": "Poistu huddlesta"
+  },
+  "button": {
+    "leaveFirstError": "Poistu ensin nykyisestä huddlesta",
+    "cancelInviteFirstError": "Peruuta ensin nykyinen kutsu",
+    "cancelInvite": "Peruuta kutsu",
+    "calling": "Soitetaan...",
+    "inHuddle": "Huddlessa",
+    "leaveCurrentFirst": "Poistu ensin nykyisestä huddlesta",
+    "start": "Aloita huddle"
+  },
+  "incoming": {
+    "invite": "Huddle-kutsu",
+    "secondsLeft": "{count} s",
+    "decline": "Hylkää",
+    "accept": "Hyväksy"
+  },
+  "system": {
+    "youStarted": "Aloitit huddlen.",
+    "started": "Huddle aloitettiin.",
+    "ended": "Päättynyt",
+    "youSentInvite": "Lähetit huddle-kutsun.",
+    "sentInvite": "Lähetti sinulle huddle-kutsun.",
+    "huddleStarted": "Huddle alkoi",
+    "huddleEnded": "Huddle päättyi ({duration})",
+    "durationSeconds": "{seconds} s",
+    "durationMinutesSeconds": "{minutes} min {seconds} s"
+  },
+  "errors": {
+    "leaveFirst": "Poistu ensin nykyisestä huddlesta",
+    "cancelInviteFirst": "Peruuta ensin nykyinen kutsu",
+    "micDenied": "Mikrofonin käyttö estetty",
+    "busy": "Toinen osapuoli on toisessa huddlessa",
+    "declined": "Kutsu hylättiin",
+    "expired": "Kutsu on vanhentunut",
+    "rateLimited": "Liian monta pyyntöä. Yritä hetken kuluttua uudelleen",
+    "invalidInvite": "Kutsupyyntö oli virheellinen",
+    "cannotInviteSelf": "Et voi kutsua itseäsi",
+    "userNotFound": "Käyttäjää ei löytynyt",
+    "invalidAccept": "Hyväksymispyyntö oli virheellinen",
+    "inviteNotFound": "Kutsua ei löytynyt tai se on vanhentunut",
+    "peerOffline": "Toinen osapuoli on offline-tilassa",
+    "generic": "Huddlea ei voitu aloittaa. Yritä uudelleen"
+  }
+}

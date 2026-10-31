@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Panou de administrare",
+    "openSidebar": "Deschide bara laterală",
+    "tabs": {
+      "members": "Membri",
+      "invites": "Invitații",
+      "channels": "Canale",
+      "webhooks": "Webhook-uri",
+      "audit": "Jurnal de audit",
+      "retention": "Păstrarea datelor",
+      "security": "Securitate",
+      "dlp": "DLP",
+      "legalHolds": "Rețineri legale"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Canal",
+      "members": "Membri",
+      "messages": "Mesaje",
+      "created": "Creat"
+    },
+    "actions": {
+      "rename": "Redenumește canalul",
+      "archive": "Arhivează canalul",
+      "delete": "Șterge canalul",
+      "unarchive": "Dezarhivează canalul",
+      "deletePermanently": "Șterge definitiv"
+    },
+    "emptyActive": "Nu există canale active",
+    "archivedHeading": "Canale arhivate ({count})",
+    "archivedOn": "arhivat {date}",
+    "messageCount": "{count, plural, one {# mesaj} few {# mesaje} other {# de mesaje}}",
+    "deleteDialog": {
+      "title": "Șterge canalul",
+      "message": "Sigur vrei să ștergi definitiv #{name}? Toate mesajele vor fi pierdute. Acțiunea nu poate fi anulată."
+    },
+    "archiveDialog": {
+      "title": "Arhivează canalul",
+      "confirm": "Arhivează",
+      "message": "Arhivezi #{name}? Va fi ascuns din bara laterală, dar mesajele vor fi păstrate. Îl poți dezarhiva mai târziu."
+    },
+    "unarchiveDialog": {
+      "title": "Dezarhivează canalul",
+      "confirm": "Dezarhivează",
+      "message": "Dezarhivezi #{name}? Va reapărea în bara laterală pentru toți membrii."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Caută membri...",
+    "columns": {
+      "user": "Utilizator",
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Stare",
+      "actions": "Acțiuni"
+    },
+    "you": "(tu)",
+    "roles": {
+      "owner": "Proprietar",
+      "admin": "Administrator",
+      "member": "Membru",
+      "guest": "Invitat"
+    },
+    "status": {
+      "active": "Activ",
+      "deactivated": "Dezactivat"
+    },
+    "actions": {
+      "transfer": "Transferă proprietatea",
+      "reactivate": "Reactivează",
+      "deactivate": "Dezactivează",
+      "forceLogout": "Forțează deconectarea",
+      "resetMfa": "Resetează 2FA"
+    },
+    "empty": "Nu s-au găsit utilizatori",
+    "dialogs": {
+      "transfer": {
+        "title": "Transferă proprietatea spațiului de lucru",
+        "confirm": "Transferă",
+        "message": "Sigur vrei să transferi proprietatea spațiului de lucru către {name}? Vei fi trecut la rolul de administrator."
+      },
+      "deactivate": {
+        "title": "Dezactivează utilizatorul",
+        "confirm": "Dezactivează",
+        "message": "Sigur vrei să dezactivezi pe {name}? Va fi deconectat imediat și nu se va mai putea conecta."
+      },
+      "reactivate": {
+        "title": "Reactivează utilizatorul",
+        "confirm": "Reactivează",
+        "message": "Sigur vrei să reactivezi pe {name}? Se va putea conecta din nou."
+      },
+      "forceLogout": {
+        "title": "Forțează deconectarea",
+        "confirm": "Deconectează",
+        "message": "Deconectezi pe {name} de pe toate dispozitivele acum? Contul rămâne activ, iar utilizatorul se poate conecta din nou."
+      },
+      "resetMfa": {
+        "title": "Resetează autentificarea în doi pași",
+        "confirm": "Resetează",
+        "message": "Elimini autentificarea în doi pași pentru {name}? Va fi deconectat de pe toate dispozitivele și se va putea conecta doar cu parola."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Autentificarea în doi pași este activată"
+    }
+  },
+  "invites": {
+    "createHeading": "Creează link de invitație",
+    "fields": {
+      "role": "Rol",
+      "maxUses": "Număr maxim de utilizări",
+      "expiresIn": "Expiră în"
+    },
+    "unlimited": "Nelimitat",
+    "expiry": {
+      "1d": "1 zi",
+      "7d": "7 zile",
+      "30d": "30 de zile",
+      "never": "Niciodată"
+    },
+    "expired": "Expirat",
+    "columns": {
+      "url": "URL invitație",
+      "uses": "Utilizări",
+      "expires": "Expiră",
+      "createdBy": "Creat de"
+    },
+    "copyUrl": "Copiază URL-ul invitației",
+    "full": "(complet)",
+    "delete": "Șterge invitația",
+    "empty": "Încă nu există linkuri de invitație"
+  },
+  "webhooks": {
+    "createHeading": "Creează webhook",
+    "fields": {
+      "name": "Nume webhook",
+      "channel": "Canal"
+    },
+    "namePlaceholder": "Integrarea mea",
+    "selectChannel": "Selectează canalul...",
+    "columns": {
+      "name": "Nume",
+      "url": "URL webhook",
+      "lastUsed": "Ultima utilizare"
+    },
+    "never": "Niciodată",
+    "justNow": "Chiar acum",
+    "inactive": "Inactiv",
+    "copyUrl": "Copiază URL-ul webhook-ului",
+    "delete": "Șterge webhook-ul",
+    "empty": "Încă nu există webhook-uri configurate"
+  },
+  "audit": {
+    "empty": "Nu există intrări de jurnal care să corespundă. Acțiunile înregistrate apar aici.",
+    "loadMore": "Încarcă mai multe",
+    "targets": {
+      "user": "Utilizator",
+      "channel": "Canal",
+      "invite": "Invitație",
+      "webhook": "Webhook",
+      "message": "Mesaj",
+      "directMessage": "Mesaj direct",
+      "token": "Token de acces",
+      "auditLog": "Jurnal de audit",
+      "mcpTool": "Instrument MCP",
+      "workspace": "Spațiu de lucru",
+      "file": "Fișier",
+      "dlpRule": "Regulă DLP",
+      "legalHold": "Reținere legală"
+    },
+    "action": {
+      "authLogin": "S-a conectat",
+      "authLoginFailed": "Conectare eșuată",
+      "authLogout": "S-a deconectat",
+      "authPasswordChanged": "Parolă schimbată",
+      "userRoleChanged": "Rol schimbat",
+      "userDeactivated": "Dezactivat",
+      "userForceLogout": "Deconectare forțată",
+      "userReactivated": "Reactivat",
+      "ownershipTransferred": "Proprietate transferată",
+      "ownerBootstrapped": "Proprietar creat",
+      "channelCreated": "Canal creat",
+      "channelEdited": "Canal editat",
+      "channelArchived": "Canal arhivat",
+      "channelUnarchived": "Canal dezarhivat",
+      "channelDeleted": "Canal șters",
+      "channelMemberAdded": "Membru adăugat",
+      "channelMemberRemoved": "Membru eliminat",
+      "inviteCreated": "Invitație creată",
+      "inviteDeleted": "Invitație ștearsă",
+      "webhookCreated": "Webhook creat",
+      "webhookDeleted": "Webhook șters",
+      "tokenCreate": "Token creat",
+      "tokenRevoke": "Token revocat",
+      "mcpToolCall": "Apel de instrument MCP",
+      "auditExported": "Jurnal de audit exportat",
+      "authLoginLocked": "Cont blocat",
+      "sessionRevoked": "Dispozitiv deconectat",
+      "sessionRevokedAll": "Toate dispozitivele au fost deconectate",
+      "retentionPurged": "Date expirate șterse",
+      "retentionWorkspaceUpdated": "Politica de păstrare a fost modificată",
+      "retentionChannelUpdated": "Păstrarea canalului a fost modificată",
+      "retentionChannelCleared": "Păstrarea canalului a fost resetată",
+      "mfaEnabled": "Autentificare în doi pași activată",
+      "mfaDisabled": "Autentificare în doi pași dezactivată",
+      "mfaRecoveryUsed": "Cod de recuperare folosit",
+      "mfaRecoveryRegenerated": "Coduri de recuperare regenerate",
+      "mfaResetByAdmin": "Autentificare în doi pași resetată de administrator",
+      "mfaPolicyChanged": "Cerința pentru autentificarea în doi pași a fost modificată",
+      "dlpBlocked": "Mesaj blocat de DLP",
+      "dlpWarned": "Avertisment DLP",
+      "dlpRuleCreated": "Regulă DLP creată",
+      "dlpRuleUpdated": "Regulă DLP modificată",
+      "dlpRuleDeleted": "Regulă DLP ștearsă",
+      "dlpRuleTimeout": "Regulă DLP expirată",
+      "dlpRuleAutoDisabled": "Regulă DLP dezactivată automat",
+      "legalHoldCreated": "Reținere legală creată",
+      "legalHoldUpdated": "Reținere legală editată",
+      "legalHoldCustodianAdded": "Persoană adăugată în reținerea legală",
+      "legalHoldCustodianRemoved": "Persoană eliminată din reținerea legală",
+      "legalHoldReleased": "Reținere legală ridicată",
+      "ediscoverySearched": "Căutare eDiscovery",
+      "ediscoveryExportRequested": "Export eDiscovery solicitat",
+      "ediscoveryExported": "Export eDiscovery realizat"
+    },
+    "filters": {
+      "allActions": "Toate acțiunile",
+      "actionsSelected": "{count, plural, one {# acțiune} few {# acțiuni} other {# de acțiuni}}",
+      "actor": "Autor",
+      "allActors": "Toți autorii",
+      "targetType": "Tip țintă",
+      "allTargets": "Toate țintele",
+      "from": "De la",
+      "to": "Până la",
+      "apply": "Aplică",
+      "reset": "Resetează"
+    },
+    "export": {
+      "csv": "Exportă CSV",
+      "json": "Exportă JSON"
+    },
+    "unknownActor": "Necunoscut"
+  },
+  "errors": {
+    "archiveChannel": "Canalul nu a putut fi arhivat",
+    "createInvite": "Invitația nu a putut fi creată",
+    "createWebhook": "Webhook-ul nu a putut fi creat",
+    "deactivateUser": "Utilizatorul nu a putut fi dezactivat",
+    "deleteChannel": "Canalul nu a putut fi șters",
+    "deleteInvite": "Invitația nu a putut fi ștearsă",
+    "deleteWebhook": "Webhook-ul nu a putut fi șters",
+    "editChannel": "Canalul nu a putut fi editat",
+    "exportAuditLog": "Jurnalul de audit nu a putut fi exportat",
+    "fetchAuditLog": "Jurnalul de audit nu a putut fi încărcat",
+    "fetchChannels": "Canalele nu au putut fi încărcate",
+    "fetchInvites": "Invitațiile nu au putut fi încărcate",
+    "fetchUsers": "Utilizatorii nu au putut fi încărcați",
+    "fetchWebhooks": "Webhook-urile nu au putut fi încărcate",
+    "forceLogout": "Utilizatorul nu a putut fi deconectat",
+    "reactivateUser": "Utilizatorul nu a putut fi reactivat",
+    "removeChannelMember": "Membrul canalului nu a putut fi eliminat",
+    "transferOwnership": "Proprietatea nu a putut fi transferată",
+    "unarchiveChannel": "Canalul nu a putut fi dezarhivat",
+    "updateRole": "Rolul nu a putut fi actualizat",
+    "resetMfa": "Autentificarea în doi pași nu a putut fi resetată"
+  },
+  "retention": {
+    "title": "Păstrarea datelor",
+    "description": "Șterge automat mesajele după un număr setat de zile. Fișierele se șterg odată cu mesajele. Curățarea rulează o dată pe zi. Mementourile sunt păstrate și afișează „mesaj șters”.",
+    "loadError": "Politica de păstrare nu a putut fi încărcată",
+    "saveError": "Politica de păstrare nu a putut fi salvată",
+    "resetError": "Politica canalului nu a putut fi resetată",
+    "workspace": {
+      "heading": "Valoarea implicită a spațiului de lucru",
+      "hint": "Se aplică fiecărui canal fără setare proprie, precum și mesajelor directe și conversațiilor de grup."
+    },
+    "mode": {
+      "forever": "Păstrează pentru totdeauna",
+      "days": "Șterge după un număr de zile",
+      "inherit": "Folosește valoarea implicită a spațiului de lucru"
+    },
+    "daysLabel": "Zile",
+    "daysHint": "De la {min} la {max} zile",
+    "effective": {
+      "forever": "Păstrat pentru totdeauna",
+      "days": "{count, plural, one {# zi} few {# zile} other {# de zile}}"
+    },
+    "channels": {
+      "heading": "Canale",
+      "columns": {
+        "channel": "Canal",
+        "policy": "Politică",
+        "effective": "Se aplică"
+      },
+      "legalHold": "Reținere legală",
+      "reset": "Resetează la valoarea implicită",
+      "empty": "Nu există canale"
+    },
+    "save": "Salvează",
+    "saved": "Salvat",
+    "confirm": {
+      "title": "Ștergi definitiv mesajele vechi?",
+      "message": "La următoarea curățare, mesajele mai vechi de {count, plural, one {# zi} few {# zile} other {# de zile}} vor fi șterse definitiv împreună cu fișierele lor. Acțiunea nu poate fi anulată.",
+      "confirm": "Aplică politica"
+    }
+  },
+  "security": {
+    "title": "Autentificare în doi pași",
+    "requireMfa": "Cere autentificarea în doi pași pentru toți",
+    "requireMfaHint": "Membrii fără autentificare în doi pași pot accesa doar ecranul de configurare, până o activează.",
+    "unavailable": "Autentificarea în doi pași este dezactivată pe acest server, deoarece nu este setată nicio cheie de criptare (TOTP_ENCRYPTION_KEY). Cerința nu este aplicată.",
+    "saved": "Setările de securitate au fost salvate",
+    "loading": "Se încarcă...",
+    "errors": {
+      "loadFailed": "Setările de securitate nu au putut fi încărcate.",
+      "saveFailed": "Setările de securitate nu au putut fi salvate."
+    },
+    "allowOAuthApps": "Permite membrilor să conecteze aplicații OAuth",
+    "allowOAuthAppsHint": "Permite membrilor să conecteze aplicații, precum Claude, prin conectarea OAuth. Dezactivarea deconectează imediat toate aplicațiile."
+  },
+  "dlp": {
+    "title": "Prevenirea pierderii de date",
+    "description": "Detectează șabloane sensibile din mesaje, precum numere de carduri. O regulă de blocare împiedică salvarea mesajului. O regulă de avertizare salvează mesajul și îl înregistrează în jurnalul de audit. Textul mesajelor nu este scris niciodată în jurnal.",
+    "loadError": "Regulile DLP nu au putut fi încărcate",
+    "saveError": "Regula nu a putut fi salvată",
+    "toggleError": "Regula nu a putut fi modificată",
+    "deleteError": "Regula nu a putut fi ștearsă",
+    "testError": "Șablonul nu a putut fi testat",
+    "builtinBadge": "Integrat",
+    "builtinPattern": "Detector integrat",
+    "builtin": {
+      "credit_card": "Număr de card bancar",
+      "kr_rrn": "Număr de înregistrare a rezidentului (Coreea)",
+      "aws_access_key": "Cheie de acces AWS",
+      "private_key": "Cheie privată"
+    },
+    "action": {
+      "BLOCK": "Blochează",
+      "WARN": "Avertizează"
+    },
+    "columns": {
+      "name": "Regulă",
+      "pattern": "Șablon",
+      "action": "Acțiune",
+      "enabled": "Stare"
+    },
+    "on": "Activă",
+    "off": "Inactivă",
+    "toggleLabel": "Activează sau dezactivează {name}",
+    "edit": "Editează",
+    "editLabel": "Editează {name}",
+    "delete": "Șterge",
+    "deleteLabel": "Șterge {name}",
+    "form": {
+      "createHeading": "Adaugă o regulă",
+      "editHeading": "Editează regula",
+      "name": "Nume",
+      "pattern": "Șablon (expresie regulată)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Acțiune",
+      "add": "Adaugă regula",
+      "save": "Salvează",
+      "cancel": "Anulează",
+      "hint": "Până la {max} caractere. Repetările imbricate, precum (a+)+, referințele înapoi și numărul foarte mare de repetări sunt respinse."
+    },
+    "patternProblem": {
+      "empty": "Introdu un șablon.",
+      "tooLong": "Șablonul este prea lung.",
+      "invalid": "Aceasta nu este o expresie regulată validă.",
+      "backreference": "Referințele înapoi nu sunt permise.",
+      "nestedQuantifier": "Repetările imbricate pot încetini foarte mult verificarea și nu sunt permise.",
+      "repeatTooLarge": "Numărul de repetări este prea mare (cel mult 200)."
+    },
+    "test": {
+      "heading": "Testează un șablon",
+      "hint": "Nu se salvează nimic. Introdu un șablon mai sus sau alege o regulă salvată, apoi scrie un text de probă.",
+      "source": "Șablon de testat",
+      "sourceDraft": "Șablonul din formularul de mai sus",
+      "sample": "Text de probă",
+      "run": "Testează",
+      "matched": "Se potrivește. Acest text ar fi prins.",
+      "notMatched": "Nicio potrivire.",
+      "timedOut": "Verificarea a durat prea mult și a fost oprită. Simplifică șablonul."
+    },
+    "confirmDelete": {
+      "title": "Ștergi această regulă?",
+      "message": "Regula „{name}” va fi eliminată și nu va mai fi verificată."
+    }
+  },
+  "legalHolds": {
+    "description": "Păstrează tot ce a scris sau a primit o persoană, chiar dacă păstrarea datelor le-ar șterge. Administratorii pot căuta și exporta datele păstrate pentru verificare juridică.",
+    "statusFilter": "Arată",
+    "status": {
+      "active": "Active",
+      "released": "Ridicate",
+      "all": "Toate"
+    },
+    "empty": "Nu există rețineri legale",
+    "selectHint": "Selectează o reținere legală pentru a-i gestiona persoanele și a-i căuta datele.",
+    "loadMore": "Încarcă mai multe",
+    "custodianCount": "{count, plural, one {# persoană} few {# persoane} other {# de persoane}}",
+    "createdOn": "Creată {date}",
+    "releasedOn": "Ridicată {date}",
+    "createdBy": "Creată de {name} la {date}",
+    "releasedBy": "Ridicată de {name} la {date}",
+    "unknownUser": "Utilizator necunoscut",
+    "edit": "Editează",
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "fields": {
+      "name": "Nume",
+      "description": "Descriere (opțional)"
+    },
+    "create": {
+      "open": "Reținere nouă",
+      "submit": "Creează reținerea",
+      "hint": "Poți adăuga persoane după ce creezi reținerea."
+    },
+    "custodians": {
+      "heading": "Persoane reținute",
+      "pick": "Alege o persoană",
+      "add": "Adaugă",
+      "remove": "Elimină pe {name} din această reținere",
+      "empty": "Încă nimeni nu este în această reținere.",
+      "deactivated": "Dezactivat"
+    },
+    "release": {
+      "open": "Ridică reținerea",
+      "title": "Ridici această reținere legală?",
+      "message": "„{name}” nu va mai păstra date. Persoanele care nu se află într-o altă reținere activă revin la politica obișnuită de păstrare, iar mesajele lor vechi pot fi șterse la următoarea curățare. Reținerea și lista ei de persoane rămân înregistrate. Acțiunea nu poate fi anulată.",
+      "confirm": "Ridică"
+    },
+    "discovery": {
+      "heading": "Căutare și export",
+      "hint": "Acoperă mesajele scrise de persoanele reținute în orice canal (inclusiv cele private), mesajele directe și de grup la care au participat și detaliile fișierelor. Mesajele șterse sunt incluse și marcate.",
+      "query": "Cuvânt-cheie",
+      "from": "De la",
+      "to": "Până la",
+      "search": "Caută",
+      "export": "Exportă (JSONL)",
+      "exportHint": "Exportă rezultatele ultimei căutări. Fiecare căutare și export este înregistrat în jurnalul de audit.",
+      "searchFirst": "Caută mai întâi cu aceste filtre. Exportul folosește filtrele căutării afișate mai jos.",
+      "kinds": {
+        "channel": "Mesaje din canale",
+        "dm": "Mesaje directe",
+        "file": "Fișiere"
+      },
+      "empty": "Niciun rezultat",
+      "deleted": "Șters",
+      "edited": "Editat",
+      "reply": "Răspuns în fir",
+      "groupDm": "Mesaj direct de grup #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Reținerile legale nu au putut fi încărcate",
+      "create": "Reținerea legală nu a putut fi creată",
+      "update": "Reținerea legală nu a putut fi actualizată",
+      "custodians": "Persoanele din reținere nu au putut fi modificate",
+      "release": "Reținerea legală nu a putut fi ridicată",
+      "search": "Căutarea a eșuat",
+      "export": "Exportul a eșuat"
+    }
+  }
+}

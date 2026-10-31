@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Adminisztrációs panel",
+    "openSidebar": "Oldalsáv megnyitása",
+    "tabs": {
+      "members": "Tagok",
+      "invites": "Meghívók",
+      "channels": "Csatornák",
+      "webhooks": "Webhookok",
+      "audit": "Naplózás",
+      "retention": "Adatmegőrzés",
+      "security": "Biztonság",
+      "dlp": "DLP",
+      "legalHolds": "Jogi megőrzések"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Csatorna",
+      "members": "Tagok",
+      "messages": "Üzenetek",
+      "created": "Létrehozva"
+    },
+    "actions": {
+      "rename": "Csatorna átnevezése",
+      "archive": "Csatorna archiválása",
+      "delete": "Csatorna törlése",
+      "unarchive": "Csatorna visszaállítása az archívumból",
+      "deletePermanently": "Végleges törlés"
+    },
+    "emptyActive": "Nincsenek aktív csatornák",
+    "archivedHeading": "Archivált csatornák ({count})",
+    "archivedOn": "archiválva: {date}",
+    "messageCount": "{count, plural, one {# üzenet} other {# üzenet}}",
+    "deleteDialog": {
+      "title": "Csatorna törlése",
+      "message": "Biztosan véglegesen törli a #{name} csatornát? Minden üzenet elvész. Ez a művelet nem vonható vissza."
+    },
+    "archiveDialog": {
+      "title": "Csatorna archiválása",
+      "confirm": "Archiválás",
+      "message": "Archiválja a #{name} csatornát? Az oldalsávból elrejtjük, de az üzenetek megmaradnak. Később visszaállíthatja."
+    },
+    "unarchiveDialog": {
+      "title": "Csatorna visszaállítása az archívumból",
+      "confirm": "Visszaállítás",
+      "message": "Visszaállítja a #{name} csatornát? Mindenki oldalsávjában újra megjelenik."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Tagok keresése...",
+    "columns": {
+      "user": "Felhasználó",
+      "email": "E-mail",
+      "role": "Szerepkör",
+      "status": "Állapot",
+      "actions": "Műveletek"
+    },
+    "you": "(ön)",
+    "roles": {
+      "owner": "Tulajdonos",
+      "admin": "Adminisztrátor",
+      "member": "Tag",
+      "guest": "Vendég"
+    },
+    "status": {
+      "active": "Aktív",
+      "deactivated": "Deaktiválva"
+    },
+    "actions": {
+      "transfer": "Tulajdonjog átadása",
+      "reactivate": "Újraaktiválás",
+      "deactivate": "Deaktiválás",
+      "forceLogout": "Kényszerített kijelentkezés",
+      "resetMfa": "2FA visszaállítása"
+    },
+    "empty": "Nincs találat a felhasználók között",
+    "dialogs": {
+      "transfer": {
+        "title": "Munkaterület tulajdonjogának átadása",
+        "confirm": "Átadás",
+        "message": "Biztosan átadja a munkaterület tulajdonjogát ennek: {name}? Ön adminisztrátori szerepkörbe kerül."
+      },
+      "deactivate": {
+        "title": "Felhasználó deaktiválása",
+        "confirm": "Deaktiválás",
+        "message": "Biztosan deaktiválja ezt a felhasználót: {name}? Azonnal kijelentkeztetjük, és nem tud majd bejelentkezni."
+      },
+      "reactivate": {
+        "title": "Felhasználó újraaktiválása",
+        "confirm": "Aktiválás",
+        "message": "Biztosan újraaktiválja ezt a felhasználót: {name}? Ismét be tud majd jelentkezni."
+      },
+      "forceLogout": {
+        "title": "Kényszerített kijelentkezés",
+        "confirm": "Kijelentkezés",
+        "message": "Kijelentkeztesse ezt a felhasználót: {name} minden eszközről most? A fiókja aktív marad, és újra be tud majd jelentkezni."
+      },
+      "resetMfa": {
+        "title": "Kétlépcsős azonosítás visszaállítása",
+        "confirm": "Visszaállítás",
+        "message": "Eltávolítja a kétlépcsős azonosítást ennek a felhasználónak: {name}? Minden eszközről kijelentkezik, és csak jelszóval tud majd bejelentkezni."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "A kétlépcsős azonosítás be van kapcsolva"
+    }
+  },
+  "invites": {
+    "createHeading": "Meghívási hivatkozás létrehozása",
+    "fields": {
+      "role": "Szerepkör",
+      "maxUses": "Maximális használat",
+      "expiresIn": "Lejár ennyi idő múlva"
+    },
+    "unlimited": "Korlátlan",
+    "expiry": {
+      "1d": "1 nap",
+      "7d": "7 nap",
+      "30d": "30 nap",
+      "never": "Soha"
+    },
+    "expired": "Lejárt",
+    "columns": {
+      "url": "Meghívó URL-je",
+      "uses": "Használat",
+      "expires": "Lejár",
+      "createdBy": "Létrehozta"
+    },
+    "copyUrl": "Meghívó URL-jének másolása",
+    "full": "(betelt)",
+    "delete": "Meghívó törlése",
+    "empty": "Még nincsenek meghívási hivatkozások"
+  },
+  "webhooks": {
+    "createHeading": "Webhook létrehozása",
+    "fields": {
+      "name": "Webhook neve",
+      "channel": "Csatorna"
+    },
+    "namePlaceholder": "Saját integráció",
+    "selectChannel": "Csatorna kiválasztása...",
+    "columns": {
+      "name": "Név",
+      "url": "Webhook URL-je",
+      "lastUsed": "Utoljára használva"
+    },
+    "never": "Soha",
+    "justNow": "Az imént",
+    "inactive": "Inaktív",
+    "copyUrl": "Webhook URL-jének másolása",
+    "delete": "Webhook törlése",
+    "empty": "Még nincsenek beállított webhookok"
+  },
+  "audit": {
+    "empty": "Nincs a szűrésnek megfelelő naplóbejegyzés. A rögzített műveletek itt jelennek meg.",
+    "loadMore": "Továbbiak betöltése",
+    "targets": {
+      "user": "Felhasználó",
+      "channel": "Csatorna",
+      "invite": "Meghívó",
+      "webhook": "Webhook",
+      "message": "Üzenet",
+      "directMessage": "Közvetlen üzenet",
+      "token": "Hozzáférési token",
+      "auditLog": "Naplózás",
+      "mcpTool": "MCP-eszköz",
+      "workspace": "Munkaterület",
+      "file": "Fájl",
+      "dlpRule": "DLP-szabály",
+      "legalHold": "Jogi megőrzés"
+    },
+    "action": {
+      "authLogin": "Bejelentkezett",
+      "authLoginFailed": "Sikertelen bejelentkezés",
+      "authLogout": "Kijelentkezett",
+      "authPasswordChanged": "Jelszó módosítva",
+      "userRoleChanged": "Szerepkör módosítva",
+      "userDeactivated": "Deaktiválva",
+      "userForceLogout": "Kényszerített kijelentkezés",
+      "userReactivated": "Újraaktiválva",
+      "ownershipTransferred": "Tulajdonjog átadva",
+      "ownerBootstrapped": "Tulajdonos létrehozva",
+      "channelCreated": "Csatorna létrehozva",
+      "channelEdited": "Csatorna szerkesztve",
+      "channelArchived": "Csatorna archiválva",
+      "channelUnarchived": "Csatorna visszaállítva az archívumból",
+      "channelDeleted": "Csatorna törölve",
+      "channelMemberAdded": "Tag hozzáadva",
+      "channelMemberRemoved": "Tag eltávolítva",
+      "inviteCreated": "Meghívó létrehozva",
+      "inviteDeleted": "Meghívó törölve",
+      "webhookCreated": "Webhook létrehozva",
+      "webhookDeleted": "Webhook törölve",
+      "tokenCreate": "Token létrehozva",
+      "tokenRevoke": "Token visszavonva",
+      "mcpToolCall": "MCP-eszköz hívás",
+      "auditExported": "Naplózás exportálva",
+      "authLoginLocked": "Fiók zárolva",
+      "sessionRevoked": "Eszközről kijelentkeztetve",
+      "sessionRevokedAll": "Minden eszközről kijelentkeztetve",
+      "retentionPurged": "Lejárt adatok törölve",
+      "retentionWorkspaceUpdated": "Megőrzési szabályzat módosítva",
+      "retentionChannelUpdated": "Csatorna megőrzése módosítva",
+      "retentionChannelCleared": "Csatorna megőrzése visszaállítva",
+      "mfaEnabled": "Kétlépcsős azonosítás bekapcsolva",
+      "mfaDisabled": "Kétlépcsős azonosítás kikapcsolva",
+      "mfaRecoveryUsed": "Visszaállítókód felhasználva",
+      "mfaRecoveryRegenerated": "Visszaállítókódok újragenerálva",
+      "mfaResetByAdmin": "Kétlépcsős azonosítás visszaállítva adminisztrátor által",
+      "mfaPolicyChanged": "Kétlépcsős azonosítási követelmény módosítva",
+      "dlpBlocked": "Üzenet blokkolva DLP által",
+      "dlpWarned": "DLP-figyelmeztetés",
+      "dlpRuleCreated": "DLP-szabály létrehozva",
+      "dlpRuleUpdated": "DLP-szabály módosítva",
+      "dlpRuleDeleted": "DLP-szabály törölve",
+      "dlpRuleTimeout": "DLP-szabály időtúllépés",
+      "dlpRuleAutoDisabled": "DLP-szabály automatikusan kikapcsolva",
+      "legalHoldCreated": "Jogi megőrzés létrehozva",
+      "legalHoldUpdated": "Jogi megőrzés szerkesztve",
+      "legalHoldCustodianAdded": "Személy hozzáadva a jogi megőrzéshez",
+      "legalHoldCustodianRemoved": "Személy eltávolítva a jogi megőrzésből",
+      "legalHoldReleased": "Jogi megőrzés feloldva",
+      "ediscoverySearched": "eDiscovery-keresés",
+      "ediscoveryExportRequested": "eDiscovery-export kérve",
+      "ediscoveryExported": "eDiscovery exportálva"
+    },
+    "filters": {
+      "allActions": "Összes művelet",
+      "actionsSelected": "{count, plural, one {# művelet} other {# művelet}}",
+      "actor": "Végrehajtó",
+      "allActors": "Összes végrehajtó",
+      "targetType": "Célpont típusa",
+      "allTargets": "Összes célpont",
+      "from": "Kezdete",
+      "to": "Vége",
+      "apply": "Alkalmazás",
+      "reset": "Visszaállítás"
+    },
+    "export": {
+      "csv": "CSV exportálása",
+      "json": "JSON exportálása"
+    },
+    "unknownActor": "Ismeretlen"
+  },
+  "errors": {
+    "archiveChannel": "A csatorna archiválása sikertelen",
+    "createInvite": "A meghívó létrehozása sikertelen",
+    "createWebhook": "A webhook létrehozása sikertelen",
+    "deactivateUser": "A felhasználó deaktiválása sikertelen",
+    "deleteChannel": "A csatorna törlése sikertelen",
+    "deleteInvite": "A meghívó törlése sikertelen",
+    "deleteWebhook": "A webhook törlése sikertelen",
+    "editChannel": "A csatorna szerkesztése sikertelen",
+    "exportAuditLog": "A naplózás exportálása sikertelen",
+    "fetchAuditLog": "A naplózás lekérése sikertelen",
+    "fetchChannels": "A csatornák lekérése sikertelen",
+    "fetchInvites": "A meghívók lekérése sikertelen",
+    "fetchUsers": "A felhasználók lekérése sikertelen",
+    "fetchWebhooks": "A webhookok lekérése sikertelen",
+    "forceLogout": "A felhasználó kijelentkeztetése sikertelen",
+    "reactivateUser": "A felhasználó újraaktiválása sikertelen",
+    "removeChannelMember": "A csatornatag eltávolítása sikertelen",
+    "transferOwnership": "A tulajdonjog átadása sikertelen",
+    "unarchiveChannel": "A csatorna visszaállítása az archívumból sikertelen",
+    "updateRole": "A szerepkör frissítése sikertelen",
+    "resetMfa": "A kétlépcsős azonosítás visszaállítása sikertelen"
+  },
+  "retention": {
+    "title": "Adatmegőrzés",
+    "description": "Az üzenetek automatikus törlése a beállított számú nap után. A fájlok az üzenetekkel együtt törlődnek. A takarítás naponta egyszer fut. Az emlékeztetők megmaradnak, és „törölt üzenet” jelzéssel jelennek meg.",
+    "loadError": "A megőrzési szabályzatot nem sikerült betölteni",
+    "saveError": "A megőrzési szabályzatot nem sikerült menteni",
+    "resetError": "A csatorna szabályzatát nem sikerült alaphelyzetbe állítani",
+    "workspace": {
+      "heading": "Munkaterület alapértelmezése",
+      "hint": "Minden csatornára vonatkozik, amelyhez nincs saját beállítás, valamint a közvetlen és csoportos üzenetekre is."
+    },
+    "mode": {
+      "forever": "Örökké megőrzés",
+      "days": "Törlés adott számú nap után",
+      "inherit": "Munkaterület alapértelmezésének használata"
+    },
+    "daysLabel": "Napok",
+    "daysHint": "{min}–{max} nap",
+    "effective": {
+      "forever": "Örökké megőrizve",
+      "days": "{count, plural, one {# nap} other {# nap}}"
+    },
+    "channels": {
+      "heading": "Csatornák",
+      "columns": {
+        "channel": "Csatorna",
+        "policy": "Szabályzat",
+        "effective": "Érvényes"
+      },
+      "legalHold": "Jogi megőrzés",
+      "reset": "Visszaállítás az alapértelmezésre",
+      "empty": "Nincsenek csatornák"
+    },
+    "save": "Mentés",
+    "saved": "Mentve",
+    "confirm": {
+      "title": "Véglegesen törli a régi üzeneteket?",
+      "message": "A következő takarításkor a {count, plural, one {# napnál} other {# napnál}} régebbi üzenetek a fájlokkal együtt véglegesen törlődnek. Ez a művelet nem vonható vissza.",
+      "confirm": "Szabályzat alkalmazása"
+    }
+  },
+  "security": {
+    "title": "Kétlépcsős azonosítás",
+    "requireMfa": "Kétlépcsős azonosítás megkövetelése mindenkinek",
+    "requireMfaHint": "A kétlépcsős azonosítás nélküli tagok csak a beállítási képernyőt érik el, amíg be nem kapcsolják.",
+    "unavailable": "A kétlépcsős azonosítás ezen a kiszolgálón ki van kapcsolva, mert nincs titkosítókulcs beállítva (TOTP_ENCRYPTION_KEY). A követelmény nem érvényesül.",
+    "saved": "A biztonsági beállítások mentve",
+    "loading": "Betöltés...",
+    "errors": {
+      "loadFailed": "A biztonsági beállításokat nem sikerült betölteni.",
+      "saveFailed": "A biztonsági beállításokat nem sikerült menteni."
+    },
+    "allowOAuthApps": "Tagok OAuth-alkalmazások csatlakoztatásának engedélyezése",
+    "allowOAuthAppsHint": "Lehetővé teszi, hogy a tagok olyan alkalmazásokat csatlakoztassanak, mint a Claude, az OAuth-bejelentkezésen keresztül. A kikapcsolás azonnal lecsatlakoztat minden alkalmazást."
+  },
+  "dlp": {
+    "title": "Adatvesztés-megelőzés",
+    "description": "Az üzenetekben érzékeny mintákat észlel, például bankkártyaszámokat. Egy blokkoló szabály megakadályozza az üzenet mentését. Egy figyelmeztető szabály menti az üzenetet, és rögzíti a naplózásban. Az üzenet szövege soha nem kerül a naplóba.",
+    "loadError": "A DLP-szabályokat nem sikerült betölteni",
+    "saveError": "A szabályt nem sikerült menteni",
+    "toggleError": "A szabályt nem sikerült módosítani",
+    "deleteError": "A szabályt nem sikerült törölni",
+    "testError": "A mintát nem sikerült tesztelni",
+    "builtinBadge": "Beépített",
+    "builtinPattern": "Beépített detektor",
+    "builtin": {
+      "credit_card": "Bankkártyaszám",
+      "kr_rrn": "Koreai lakcímregiszter-szám",
+      "aws_access_key": "AWS-hozzáférési kulcs",
+      "private_key": "Privát kulcs"
+    },
+    "action": {
+      "BLOCK": "Blokkolás",
+      "WARN": "Figyelmeztetés"
+    },
+    "columns": {
+      "name": "Szabály",
+      "pattern": "Minta",
+      "action": "Művelet",
+      "enabled": "Állapot"
+    },
+    "on": "Be",
+    "off": "Ki",
+    "toggleLabel": "{name} be- vagy kikapcsolása",
+    "edit": "Szerkesztés",
+    "editLabel": "{name} szerkesztése",
+    "delete": "Törlés",
+    "deleteLabel": "{name} törlése",
+    "form": {
+      "createHeading": "Szabály hozzáadása",
+      "editHeading": "Szabály szerkesztése",
+      "name": "Név",
+      "pattern": "Minta (reguláris kifejezés)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Művelet",
+      "add": "Szabály hozzáadása",
+      "save": "Mentés",
+      "cancel": "Mégse",
+      "hint": "Legfeljebb {max} karakter. A beágyazott ismétlések, például (a+)+, a visszahivatkozások és a nagyon nagy ismétlésszámok nem engedélyezettek."
+    },
+    "patternProblem": {
+      "empty": "Adjon meg egy mintát.",
+      "tooLong": "A minta túl hosszú.",
+      "invalid": "Ez nem érvényes reguláris kifejezés.",
+      "backreference": "A visszahivatkozások nem engedélyezettek.",
+      "nestedQuantifier": "A beágyazott ismétlések nagyon lelassíthatják az ellenőrzést, ezért nem engedélyezettek.",
+      "repeatTooLarge": "Az ismétlésszám túl nagy (legfeljebb 200)."
+    },
+    "test": {
+      "heading": "Minta tesztelése",
+      "hint": "Semmi nem mentődik. Adjon meg egy mintát fent, vagy válasszon egy mentett szabályt, majd írjon mintaszöveget.",
+      "source": "Tesztelendő minta",
+      "sourceDraft": "A fenti űrlapban lévő minta",
+      "sample": "Mintaszöveg",
+      "run": "Tesztelés",
+      "matched": "Egyezik. Ezt a szöveget elkapná.",
+      "notMatched": "Nincs egyezés.",
+      "timedOut": "Az ellenőrzés túl sokáig tartott, ezért leállt. Egyszerűsítse a mintát."
+    },
+    "confirmDelete": {
+      "title": "Törli ezt a szabályt?",
+      "message": "A(z) „{name}” szabály törlődik, és többé nem lesz ellenőrizve."
+    }
+  },
+  "legalHolds": {
+    "description": "Megőriz mindent, amit valaki írt vagy kapott, akkor is, ha az adatmegőrzés törölné. Az adminisztrátorok keresést végezhetnek a megőrzött adatokban, és exportálhatják azokat jogi felülvizsgálathoz.",
+    "statusFilter": "Megjelenítés",
+    "status": {
+      "active": "Aktív",
+      "released": "Feloldott",
+      "all": "Összes"
+    },
+    "empty": "Nincsenek jogi megőrzések",
+    "selectHint": "Válasszon egy jogi megőrzést a személyeinek kezeléséhez és az adatainak kereséséhez.",
+    "loadMore": "Továbbiak betöltése",
+    "custodianCount": "{count, plural, one {# személy} other {# személy}}",
+    "createdOn": "Létrehozva: {date}",
+    "releasedOn": "Feloldva: {date}",
+    "createdBy": "Létrehozta: {name}, ekkor: {date}",
+    "releasedBy": "Feloldotta: {name}, ekkor: {date}",
+    "unknownUser": "Ismeretlen felhasználó",
+    "edit": "Szerkesztés",
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "fields": {
+      "name": "Név",
+      "description": "Leírás (nem kötelező)"
+    },
+    "create": {
+      "open": "Új megőrzés",
+      "submit": "Megőrzés létrehozása",
+      "hint": "Személyeket a megőrzés létrehozása után adhat hozzá."
+    },
+    "custodians": {
+      "heading": "Megőrzés alatt álló személyek",
+      "pick": "Válasszon személyt",
+      "add": "Hozzáadás",
+      "remove": "{name} eltávolítása ebből a megőrzésből",
+      "empty": "Még senki nincs ebben a megőrzésben.",
+      "deactivated": "Deaktiválva"
+    },
+    "release": {
+      "open": "Megőrzés feloldása",
+      "title": "Feloldja ezt a jogi megőrzést?",
+      "message": "A(z) „{name}” megőrzés nem tartja tovább meg az adatokat. Akik nincsenek másik aktív megőrzésben, visszakerülnek a normál adatmegőrzési szabályzat alá, és régi üzeneteik a következő takarításkor törlődhetnek. A megőrzés és a személyeinek listája a nyilvántartásban marad. Ez a művelet nem vonható vissza.",
+      "confirm": "Feloldás"
+    },
+    "discovery": {
+      "heading": "Keresés és export",
+      "hint": "A megőrzés alatt álló személyek által bármely csatornában írt üzeneteket (a privátokat is beleértve), az általuk részt vett közvetlen és csoportos üzeneteket, valamint a fájlok adatait fedi le. A törölt üzenetek is szerepelnek, és meg vannak jelölve.",
+      "query": "Kulcsszó",
+      "from": "Kezdete",
+      "to": "Vége",
+      "search": "Keresés",
+      "export": "Export (JSONL)",
+      "exportHint": "Az utolsó keresés eredményeit exportálja. Minden keresés és export rögzítésre kerül a naplózásban.",
+      "searchFirst": "Először keressen ezekkel a szűrőkkel. Az export a lent látható keresés szűrőit használja.",
+      "kinds": {
+        "channel": "Csatornaüzenetek",
+        "dm": "Közvetlen üzenetek",
+        "file": "Fájlok"
+      },
+      "empty": "Nincs találat",
+      "deleted": "Törölt",
+      "edited": "Szerkesztett",
+      "reply": "Válasz szálban",
+      "groupDm": "Csoportos közvetlen üzenet #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "A jogi megőrzéseket nem sikerült betölteni",
+      "create": "A jogi megőrzést nem sikerült létrehozni",
+      "update": "A jogi megőrzést nem sikerült frissíteni",
+      "custodians": "A megőrzés alatt álló személyeket nem sikerült módosítani",
+      "release": "A jogi megőrzést nem sikerült feloldani",
+      "search": "A keresés sikertelen",
+      "export": "Az exportálás sikertelen"
+    }
+  }
+}
