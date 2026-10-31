@@ -130,9 +130,10 @@ router.post('/register', async (req: Request, res: Response) => {
         select: { id: true },
       });
       // 계정과 워크스페이스 멤버십은 같은 트랜잭션에서 생긴다(멤버십 없는 계정이 남지 않게).
-      // 역할은 setUserRole 하나로 쓴다(조직 역할·워크스페이스 역할이 같은 규칙을 따른다).
-      await addWorkspaceMember(tx, { workspaceId, userId: created.id, role: assignedRole, invitedBy });
-      await setUserRole(tx, created.id, assignedRole);
+      // 역할과 기본 워크스페이스 멤버십은 setUserRole 하나로 쓴다. 다른 워크스페이스 초대(E1b 이후)는 그 워크스페이스 멤버십만 만든다.
+      const inDefault = workspaceId === DEFAULT_WORKSPACE_ID;
+      await setUserRole(tx, created.id, assignedRole, { joinDefaultWorkspace: inDefault, invitedBy });
+      if (!inDefault) await addWorkspaceMember(tx, { workspaceId, userId: created.id, invitedBy });
       return tx.user.findUniqueOrThrow({
         where: { id: created.id },
         select: {

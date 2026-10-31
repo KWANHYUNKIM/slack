@@ -611,8 +611,7 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
 
     const updated = await prisma.channel.update({
       where: { id },
-      // 보관한 채널은 기본 채널에서 빠진다(E1a). 보관 해제해도 자동으로 되돌리지 않는다.
-      data: { archivedAt: new Date(), workspaces: { updateMany: { where: {}, data: { isDefault: false } } } },
+      data: { archivedAt: new Date() },
       include: { _count: { select: { members: true, messages: true } } },
     });
 
@@ -893,8 +892,8 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
 
     // Atomic: demote current owner to ADMIN, promote target to OWNER
     await prisma.$transaction(async (tx) => {
-      // 올리는 쪽을 먼저: 이전 소유자가 강등될 때 주 소유자가 남은 활성 OWNER(새 소유자)로 넘어간다(E1a)
-      await setUserRole(tx, userId, 'OWNER');
+      // 이전 대상자를 조직 주 소유자로 명시 지정한다(E1a). 다른 OWNER가 있어도 주 소유자는 대상자다.
+      await setUserRole(tx, userId, 'OWNER', { makePrimaryOwner: true });
       await setUserRole(tx, ownerId, 'ADMIN');
     });
 

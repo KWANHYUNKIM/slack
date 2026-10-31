@@ -96,7 +96,8 @@ model WorkspaceMember {
 model ChannelWorkspace {
   channelId   Int
   workspaceId Int
-  isDefault   Boolean  @default(false) // 새 멤버가 자동으로 들어가는 기본 채널
+  isDefault   Boolean  @default(false) // 기본 채널로 지정됨. 자동 가입은 이 중 공개·미보관 채널만(defaultChannelService)
+  defaultSlot String?  @db.VarChar(20) // 이 행이 채우는 기본 채널 자리(general·random). 이름을 바꿔도 자리는 유지된다
   nameKey     String   @db.VarChar(80)
   sharedBy    Int?
   sharedAt    DateTime @default(now())
@@ -106,6 +107,7 @@ model ChannelWorkspace {
 
   @@id([channelId, workspaceId])
   @@unique([workspaceId, nameKey])
+  @@unique([workspaceId, defaultSlot])
   @@index([workspaceId, isDefault])
 }
 

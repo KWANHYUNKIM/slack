@@ -47,6 +47,7 @@ CREATE TABLE "ChannelWorkspace" (
     "channelId" INTEGER NOT NULL,
     "workspaceId" INTEGER NOT NULL,
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "defaultSlot" VARCHAR(20),
     "nameKey" VARCHAR(80) NOT NULL,
     "sharedBy" INTEGER,
     "sharedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -86,12 +87,16 @@ INSERT INTO "WorkspaceMember" ("workspaceId", "userId", "role", "joinedAt")
   SELECT 1, "id", "role", "createdAt" FROM "User";
 
 -- 모든 채널(보관·비공개 포함)을 기본 워크스페이스에 연결한다. 호스트 여부는 따로 저장하지 않고
--- Channel.workspaceId(=1)와 같은 워크스페이스의 행인지로 판단한다. 기본 채널은 공개·미보관 general·random만.
+-- Channel.workspaceId(=1)와 같은 워크스페이스의 행인지로 판단한다. 기본 채널은 공개·미보관 general·random만이고,
+-- 그 행에 기본 채널 자리(defaultSlot)를 기록한다. 이후 이름을 바꿔도 자리는 유지된다.
+-- nameKey는 PostgreSQL lower()로 만든다. 비ASCII 대문자는 정렬 규칙에 따라 JS와 다를 수 있어 서버 시작 때
+-- workspaceService.normalizeChannelNameKeys가 JS 규칙(정답)으로 한 번 맞춘다.
 -- Channel.name 유니크는 대소문자를 구분하므로 옛 데이터에 'Dev'와 'dev'가 함께 있을 수 있다. nameKey 유니크(소문자)에
 -- 걸리지 않게 같은 키의 두 번째 채널부터는 채널 이름에 쓸 수 없는 '~'와 채널 id를 붙인다(이름 자체는 바꾸지 않는다).
-INSERT INTO "ChannelWorkspace" ("channelId", "workspaceId", "isDefault", "nameKey", "sharedAt")
+INSERT INTO "ChannelWorkspace" ("channelId", "workspaceId", "isDefault", "defaultSlot", "nameKey", "sharedAt")
   SELECT "id", 1,
     ("name" IN ('general', 'random') AND "isPrivate" = false AND "archivedAt" IS NULL),
+    CASE WHEN "name" IN ('general', 'random') AND "isPrivate" = false AND "archivedAt" IS NULL THEN "name" END,
     CASE WHEN rn = 1 THEN key ELSE left(key, 80 - length('~' || "id")) || '~' || "id" END,
     "createdAt"
   FROM (
@@ -108,6 +113,7 @@ CREATE INDEX "WorkspaceMember_userId_leftAt_idx" ON "WorkspaceMember"("userId", 
 CREATE INDEX "WorkspaceMember_workspaceId_leftAt_role_idx" ON "WorkspaceMember"("workspaceId", "leftAt", "role");
 CREATE INDEX "ChannelWorkspace_workspaceId_isDefault_idx" ON "ChannelWorkspace"("workspaceId", "isDefault");
 CREATE UNIQUE INDEX "ChannelWorkspace_workspaceId_nameKey_key" ON "ChannelWorkspace"("workspaceId", "nameKey");
+CREATE UNIQUE INDEX "ChannelWorkspace_workspaceId_defaultSlot_key" ON "ChannelWorkspace"("workspaceId", "defaultSlot");
 CREATE INDEX "Channel_workspaceId_idx" ON "Channel"("workspaceId");
 CREATE INDEX "InviteLink_workspaceId_idx" ON "InviteLink"("workspaceId");
 

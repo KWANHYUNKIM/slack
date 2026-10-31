@@ -1,17 +1,28 @@
 import { Prisma } from '@prisma/client';
-import { DEFAULT_WORKSPACE_ID, channelHostData, channelNameKey } from './workspaceService.js';
+import { DEFAULT_WORKSPACE_ID, channelNameKey } from './workspaceService.js';
 
-// 기본 워크스페이스에 기본 채널이 하나도 없을 때 새로 만드는 이름. 가입(/auth/register)과 첫 OWNER 부트스트랩이 같은 규칙을 쓴다.
+// 기본 워크스페이스의 기본 채널 자리(ChannelWorkspace.defaultSlot). 가입(/auth/register)과 첫 OWNER 부트스트랩이 같은 규칙을 쓴다.
 export const DEFAULT_CHANNELS = ['general', 'random'];
 
 // 규칙(E1a)
-// - 기본 채널은 이름이 아니라 ChannelWorkspace.isDefault로 정한다. #general 이름을 바꿔도 기본 채널로 남고,
-//   비공개로 바꾸거나 보관하면 isDefault가 꺼진다(channelService·관리자 보관 경로).
-// - 공개(isPrivate:false)이고 보관되지 않은(archivedAt:null) 기본 채널에만 넣는다.
-// - 기본 채널이 하나도 없을 때만 DEFAULT_CHANNELS를 만든다. 같은 이름(대소문자 무시)의 채널이 이미 있으면 새로 만들지 않고,
-//   그 채널이 공개·미보관이면 기본 채널로 표시해 쓴다(보관 채널을 되살리거나 비공개 채널에 몰래 넣지 않는다).
+// - "기본 채널로 지정됨"(isDefault)과 "지금 자동 가입 대상"을 나눈다. isDefault는 비공개 전환·보관에도 그대로 두고,
+//   가입 때 공개(isPrivate:false)·미보관(archivedAt:null)인 기본 채널만 고른다. 공개로 되돌리거나 보관을 풀면 다시 대상이 된다.
+// - 자리(defaultSlot)는 이름이 아니라 행에 기록한다. #general 이름을 바꿔도 그 자리는 채워진 것으로 보고 새 general을 만들지 않는다.
+// - 자리가 비어 있을 때만 채운다. 같은 nameKey 채널이 기본 워크스페이스에 있으면 그 채널을 쓰고(비공개·보관이어도 자리만 채우고
+//   자동 가입은 하지 않는다), 없을 때만 새 공개 채널을 만든다.
+// - 트랜잭션 안(부트스트랩)과 밖(가입)이 같은 경로를 쓴다. PostgreSQL은 트랜잭션 안의 오류 하나로 트랜잭션 전체를 중단하므로
+//   유니크 충돌은 예외 대신 skipDuplicates(ON CONFLICT DO NOTHING)로 넘기고 다시 조회한다.
 export async function joinDefaultChannels(db: Prisma.TransactionClient, userId: number): Promise<number[]> {
-  const defaults = await db.channel.findMany({
+  const filled = await db.channelWorkspace.findMany({
+    where: { workspaceId: DEFAULT_WORKSPACE_ID, defaultSlot: { in: DEFAULT_CHANNELS } },
+    select: { defaultSlot: true },
+  });
+  const filledSlots = new Set(filled.map((r) => r.defaultSlot));
+  for (const slot of DEFAULT_CHANNELS) {
+    if (!filledSlots.has(slot)) await fillDefaultSlot(db, slot);
+  }
+
+  const targets = await db.channel.findMany({
     where: {
       isPrivate: false,
       archivedAt: null,
@@ -20,7 +31,7 @@ export async function joinDefaultChannels(db: Prisma.TransactionClient, userId: 
     select: { id: true },
     orderBy: { id: 'asc' },
   });
-  const channelIds = defaults.length > 0 ? defaults.map((c) => c.id) : await createDefaultChannels(db);
+  const channelIds = targets.map((c) => c.id);
   if (channelIds.length > 0) {
     await db.channelMember.createMany({
       data: channelIds.map((channelId) => ({ userId, channelId })),
@@ -30,57 +41,40 @@ export async function joinDefaultChannels(db: Prisma.TransactionClient, userId: 
   return channelIds;
 }
 
-async function createDefaultChannels(db: Prisma.TransactionClient): Promise<number[]> {
-  const ids: number[] = [];
-  for (const name of DEFAULT_CHANNELS) {
-    const id = await findOrCreateDefaultChannel(db, name);
-    if (id !== null) ids.push(id);
-  }
-  return ids;
-}
-
-function findSameName(db: Prisma.TransactionClient, name: string) {
-  return db.channel.findFirst({
-    where: {
-      OR: [
-        { name: { equals: name, mode: 'insensitive' } },
-        { workspaces: { some: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey: channelNameKey(name) } } },
-      ],
-    },
-    select: { id: true, name: true, workspaceId: true, isPrivate: true, archivedAt: true },
-    orderBy: { id: 'asc' },
+async function fillDefaultSlot(db: Prisma.TransactionClient, slot: string): Promise<void> {
+  const nameKey = channelNameKey(slot);
+  // 기본 워크스페이스의 nameKey로만 찾는다(다른 워크스페이스 채널과 섞이지 않게)
+  let row = await db.channelWorkspace.findUnique({
+    where: { workspaceId_nameKey: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey } },
+    select: { channelId: true },
   });
-}
-
-async function findOrCreateDefaultChannel(db: Prisma.TransactionClient, name: string): Promise<number | null> {
-  let existing = await findSameName(db, name);
-  if (!existing) {
-    try {
-      // 채널과 호스트 행(isDefault)을 한 번의 중첩 create로 만든다. 기존 가입 동작과 같이 createdBy는 비워 둔다.
-      const created = await db.channel.create({
-        data: { name, isPrivate: false, ...channelHostData(name, DEFAULT_WORKSPACE_ID, true) },
-        select: { id: true },
-      });
-      return created.id;
-    } catch (error) {
-      // 동시에 들어온 가입이 먼저 만든 경우(이름·nameKey 유니크). 트랜잭션 밖 호출(가입)에서만 다시 찾을 수 있다.
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;
-      existing = await findSameName(db, name);
-      if (!existing) throw error;
-    }
-  }
-  if (existing.isPrivate || existing.archivedAt) return null;
-  const marked = await db.channelWorkspace.updateMany({
-    where: { channelId: existing.id, workspaceId: DEFAULT_WORKSPACE_ID },
-    data: { isDefault: true },
-  });
-  if (marked.count === 0) {
-    // 다른 워크스페이스의 채널이면 쓰지 않는다. 기본 워크스페이스 호스트인데 행이 없으면(옛 경로로 만든 채널) 채운다.
-    if (existing.workspaceId !== DEFAULT_WORKSPACE_ID) return null;
-    await db.channelWorkspace.createMany({
-      data: [{ channelId: existing.id, workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true, nameKey: channelNameKey(existing.name) }],
+  if (!row) {
+    // 같은 이름 채널이 이미 있으면(Channel.name 전역 유니크) 만들지 않고 넘어간다. createdBy는 비워 둔다(시스템이 만든 채널).
+    await db.channel.createMany({
+      data: [{ name: slot, isPrivate: false, workspaceId: DEFAULT_WORKSPACE_ID }],
       skipDuplicates: true,
     });
+    // 방금 만든 채널이나, 호스트 행 없이 옛 경로로 만들어진 같은 이름의 기본 워크스페이스 채널에 호스트 행을 붙인다.
+    // 동시에 다른 채널이 같은 nameKey를 먼저 가져가면 이 행은 건너뛰고 아래 재조회가 그 채널을 쓴다.
+    const channel = await db.channel.findFirst({
+      where: { name: slot, workspaceId: DEFAULT_WORKSPACE_ID, workspaces: { none: { workspaceId: DEFAULT_WORKSPACE_ID } } },
+      select: { id: true },
+    });
+    if (channel) {
+      await db.channelWorkspace.createMany({
+        data: [{ channelId: channel.id, workspaceId: DEFAULT_WORKSPACE_ID, nameKey }],
+        skipDuplicates: true,
+      });
+    }
+    row = await db.channelWorkspace.findUnique({
+      where: { workspaceId_nameKey: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey } },
+      select: { channelId: true },
+    });
+    if (!row) return;
   }
-  return existing.id;
+  // 자리 표시. 동시에 같은 행을 채우는 가입은 defaultSlot:null 조건에 걸려 아무것도 바꾸지 않는다.
+  await db.channelWorkspace.updateMany({
+    where: { channelId: row.channelId, workspaceId: DEFAULT_WORKSPACE_ID, defaultSlot: null },
+    data: { isDefault: true, defaultSlot: slot },
+  });
 }

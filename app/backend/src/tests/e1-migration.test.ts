@@ -8,7 +8,8 @@ import app from '../app.js';
 import prisma from '../db.js';
 import { createInitialOwner } from '../services/bootstrapService.js';
 import {
-  DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID, channelHostData, isHostRow, setUserRole,
+  DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID, channelHostData, channelNameKey, channelNameKeyWithSuffix, isHostRow,
+  normalizeChannelNameKeys, setUserRole,
 } from '../services/workspaceService.js';
 
 // E1a 조직·워크스페이스 스키마와 백필(docs/specs/E1-multi-workspace.md 4.2절).
@@ -61,7 +62,10 @@ const LEGACY_DATA = [
      (23, 'Dev', false, NULL),
      (24, 'dev', false, NULL),
      (25, 'secret', true, NULL),
-     (26, 'old', false, '2026-03-01')`,
+     (26, 'old', false, '2026-03-01'),
+     (27, 'Équipe', false, NULL),
+     (28, 'équipe', false, NULL),
+     (29, 'İstanbul', false, NULL)`,
   `INSERT INTO "InviteLink" ("code", "createdBy") VALUES ('legacy-a', 11), ('legacy-b', 12)`,
 ];
 
@@ -111,9 +115,14 @@ describe('E1a migration backfill (transaction + ROLLBACK)', () => {
       members: await tx.$queryRaw<Array<{ userId: number; workspaceId: number; role: string; joinedOk: boolean; leftAt: Date | null }>>`
         SELECT m."userId", m."workspaceId", m."role"::text, m."joinedAt" = u."createdAt" AS "joinedOk", m."leftAt"
         FROM "WorkspaceMember" m JOIN "User" u ON u."id" = m."userId" ORDER BY m."userId"`,
-      channels: await tx.$queryRaw<Array<{ id: number; channelWorkspaceId: number; rowWorkspaceId: number; isDefault: boolean; nameKey: string }>>`
-        SELECT c."id", c."workspaceId" AS "channelWorkspaceId", cw."workspaceId" AS "rowWorkspaceId", cw."isDefault", cw."nameKey"
+      channels: await tx.$queryRaw<Array<{ id: number; channelWorkspaceId: number; rowWorkspaceId: number; isDefault: boolean; defaultSlot: string | null; nameKey: string }>>`
+        SELECT c."id", c."workspaceId" AS "channelWorkspaceId", cw."workspaceId" AS "rowWorkspaceId", cw."isDefault", cw."defaultSlot", cw."nameKey"
         FROM "Channel" c JOIN "ChannelWorkspace" cw ON cw."channelId" = c."id" ORDER BY c."id"`,
+      // 서버 시작 때 도는 nameKey 정규화(JS 규칙이 정답). 두 번째 실행은 바꿀 것이 없어야 한다(멱등)
+      normalizedFirst: await normalizeChannelNameKeys(tx),
+      normalizedSecond: await normalizeChannelNameKeys(tx),
+      keysAfterNormalize: await tx.$queryRaw<Array<{ id: number; name: string; nameKey: string }>>`
+        SELECT c."id", c."name", cw."nameKey" FROM "Channel" c JOIN "ChannelWorkspace" cw ON cw."channelId" = c."id" ORDER BY c."id"`,
       broken: await channelsBreakingHostInvariant(tx),
       invites: await tx.$queryRaw<Array<{ workspaceId: number }>>`SELECT "workspaceId" FROM "InviteLink"`,
       org: await tx.$queryRaw<Array<{ id: number; name: string; primaryOwnerId: number | null }>>`
@@ -126,7 +135,7 @@ describe('E1a migration backfill (transaction + ROLLBACK)', () => {
 
     // 행 수: User = WorkspaceMember, 채널마다 호스트 워크스페이스 행 하나
     expect(snapshot.members).toHaveLength(snapshot.users.length);
-    expect(snapshot.channels).toHaveLength(6);
+    expect(snapshot.channels).toHaveLength(9);
     expect(snapshot.broken).toEqual([]);
     expect(snapshot.channels.every((c) => c.channelWorkspaceId === 1 && isHostRow({ workspaceId: c.rowWorkspaceId }, { workspaceId: c.channelWorkspaceId }))).toBe(true);
 
@@ -147,14 +156,29 @@ describe('E1a migration backfill (transaction + ROLLBACK)', () => {
     // id를 직접 넣은 뒤에도 시퀀스가 맞아 다음 워크스페이스는 2다
     expect(snapshot.nextWorkspaceId).toBe(2);
 
-    // 기본 채널은 공개·미보관 general·random만, 대소문자만 다른 옛 이름은 nameKey가 겹치지 않게 접미사를 받는다
+    // 기본 채널은 공개·미보관 general·random만이고 자리(defaultSlot)를 기록한다.
+    // 대소문자만 다른 옛 이름은 nameKey가 겹치지 않게 접미사를 받는다
     const byId = Object.fromEntries(snapshot.channels.map((c) => [c.id, c]));
-    expect(byId[21]).toMatchObject({ isDefault: true, nameKey: 'general' });
-    expect(byId[22]).toMatchObject({ isDefault: false, nameKey: 'random' });
-    expect(byId[23]).toMatchObject({ isDefault: false, nameKey: 'dev' });
+    expect(byId[21]).toMatchObject({ isDefault: true, defaultSlot: 'general', nameKey: 'general' });
+    expect(byId[22]).toMatchObject({ isDefault: false, defaultSlot: null, nameKey: 'random' });
+    expect(byId[23]).toMatchObject({ isDefault: false, defaultSlot: null, nameKey: 'dev' });
     expect(byId[24]).toMatchObject({ isDefault: false, nameKey: 'dev~24' });
     expect(byId[25]).toMatchObject({ isDefault: false, nameKey: 'secret' });
     expect(byId[26]).toMatchObject({ isDefault: false, nameKey: 'old' });
+
+    // 정규화 뒤에는 모든 nameKey가 JS 규칙(또는 충돌 접미사 규칙)과 같다. 비ASCII 대문자(É, İ)도 JS와 같아진다
+    for (const row of snapshot.keysAfterNormalize) {
+      const expected = channelNameKey(row.name);
+      expect([expected, channelNameKeyWithSuffix(expected, row.id)]).toContain(row.nameKey);
+    }
+    const keyOf = Object.fromEntries(snapshot.keysAfterNormalize.map((r) => [r.id, r.nameKey]));
+    expect(keyOf[29]).toBe('İstanbul'.toLowerCase());
+    // Équipe·équipe는 하나가 'équipe'를 갖고 다른 하나는 접미사를 받는다
+    expect([keyOf[27], keyOf[28]].sort()).toEqual(
+      [keyOf[27] === 'équipe' ? 'équipe' : 'équipe~27', keyOf[28] === 'équipe' ? 'équipe' : 'équipe~28'].sort(),
+    );
+    expect([keyOf[27], keyOf[28]].filter((k) => k === 'équipe')).toHaveLength(1);
+    expect(snapshot.normalizedSecond).toBe(0);
 
     expect(snapshot.invites).toEqual([{ workspaceId: 1 }, { workspaceId: 1 }]);
 
@@ -301,41 +325,55 @@ describe('E1a creation paths write workspace rows', () => {
     }
   });
 
-  it('default channels follow isDefault: rename keeps it, private or archived drops it', async () => {
+  it('default channel slots survive rename; private or archived defaults are skipped until restored', async () => {
     await createInitialOwner({ email: 'e1-def-owner@example.com', password: TEST_PASSWORD, name: 'Def Owner' });
     const ownerToken = await login('e1-def-owner@example.com');
+    const auth = { Authorization: `Bearer ${ownerToken}` };
     const general = await prisma.channel.findFirstOrThrow({ where: { name: 'general' } });
     const random = await prisma.channel.findFirstOrThrow({ where: { name: 'random' } });
+    const row = (channelId: number) => prisma.channelWorkspace.findFirstOrThrow({ where: { channelId } });
+    expect(await row(general.id)).toMatchObject({ isDefault: true, defaultSlot: 'general' });
+    expect(await row(random.id)).toMatchObject({ isDefault: true, defaultSlot: 'random' });
 
-    // #general 이름을 바꿔도 기본 채널로 남고, 새 가입자가 들어가도 general이 새로 생기지 않는다
-    const renamed = await request(app).patch(`/channels/${general.id}`).set('Authorization', `Bearer ${ownerToken}`).send({ name: 'lobby' });
-    expect(renamed.status).toBe(200);
-    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: general.id } })).isDefault).toBe(true);
+    // #general 이름을 바꿔도 general 자리는 채워진 채라 새 general이 생기지 않는다
+    expect((await request(app).patch(`/channels/${general.id}`).set(auth).send({ name: 'lobby' })).status).toBe(200);
+    expect(await row(general.id)).toMatchObject({ isDefault: true, defaultSlot: 'general', nameKey: 'lobby' });
     const u1 = await register('e1-def-1@example.com');
     expect(await joinedChannelNames(u1.id)).toEqual(['lobby', 'random']);
     expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(0);
 
-    // 비공개로 바꾸면 자동 가입 대상이 아니다
-    const priv = await request(app).patch(`/admin/channels/${random.id}`).set('Authorization', `Bearer ${ownerToken}`).send({ isPrivate: true });
-    expect(priv.status).toBe(200);
-    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: random.id } })).isDefault).toBe(false);
+    // 비공개로 바꾸면 지정은 남지만 자동 가입 대상이 아니고, 공개로 되돌리면 다시 대상이 된다
+    expect((await request(app).patch(`/admin/channels/${random.id}`).set(auth).send({ isPrivate: true })).status).toBe(200);
+    expect(await row(random.id)).toMatchObject({ isDefault: true, defaultSlot: 'random' });
     const u2 = await register('e1-def-2@example.com');
     expect(await joinedChannelNames(u2.id)).toEqual(['lobby']);
-
-    // 보관해도 빠진다. 기본 채널이 하나도 남지 않으면 그때만 general을 새로 만들고(random은 비공개라 건너뜀)
-    const archived = await request(app).post(`/admin/channels/${general.id}/archive`).set('Authorization', `Bearer ${ownerToken}`);
-    expect(archived.status).toBe(200);
-    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: general.id } })).isDefault).toBe(false);
+    expect((await request(app).patch(`/admin/channels/${random.id}`).set(auth).send({ isPrivate: false })).status).toBe(200);
     const u3 = await register('e1-def-3@example.com');
-    expect(await joinedChannelNames(u3.id)).toEqual(['general']);
-    const fresh = await prisma.channel.findFirstOrThrow({ where: { name: 'general' }, include: { workspaces: true } });
-    expect(fresh.workspaces).toEqual([expect.objectContaining({ workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true, nameKey: 'general' })]);
-    expect(await prisma.channel.count({ where: { name: 'random' } })).toBe(1);
+    expect(await joinedChannelNames(u3.id)).toEqual(['lobby', 'random']);
 
-    // 다음 가입자는 다시 만들지 않고 같은 general에 들어간다
+    // 보관 → 해제도 같다
+    expect((await request(app).post(`/admin/channels/${random.id}/archive`).set(auth)).status).toBe(200);
+    expect(await row(random.id)).toMatchObject({ isDefault: true, defaultSlot: 'random' });
     const u4 = await register('e1-def-4@example.com');
-    expect(await joinedChannelNames(u4.id)).toEqual(['general']);
-    expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(1);
+    expect(await joinedChannelNames(u4.id)).toEqual(['lobby']);
+    expect((await request(app).post(`/admin/channels/${random.id}/unarchive`).set(auth)).status).toBe(200);
+    const u5 = await register('e1-def-5@example.com');
+    expect(await joinedChannelNames(u5.id)).toEqual(['lobby', 'random']);
+
+    // 기본 채널을 모두 보관해도 자리는 채워져 있어 새 채널을 만들지 않는다
+    expect((await request(app).post(`/admin/channels/${general.id}/archive`).set(auth)).status).toBe(200);
+    expect((await request(app).post(`/admin/channels/${random.id}/archive`).set(auth)).status).toBe(200);
+    const u6 = await register('e1-def-6@example.com');
+    expect(await joinedChannelNames(u6.id)).toEqual([]);
+    expect(await prisma.channel.count()).toBe(2);
+
+    // Delete: 자리를 채운 채널을 지우면 그 자리만 다시 채운다(같은 이름으로 새로 만든다)
+    await prisma.channel.delete({ where: { id: random.id } });
+    const u7 = await register('e1-def-7@example.com');
+    expect(await joinedChannelNames(u7.id)).toEqual(['random']);
+    const fresh = await prisma.channel.findFirstOrThrow({ where: { name: 'random' }, include: { workspaces: true } });
+    expect(fresh.workspaces).toEqual([expect.objectContaining({ workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true, defaultSlot: 'random', nameKey: 'random' })]);
+    expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(0);
   });
 
   it('uses an existing channel that differs only in case as the default instead of creating one', async () => {
@@ -343,7 +381,44 @@ describe('E1a creation paths write workspace rows', () => {
     const u = await register('e1-case@example.com');
     expect(await joinedChannelNames(u.id)).toEqual(['General', 'random']);
     expect(await prisma.channel.count({ where: { name: 'general' } })).toBe(0);
-    expect((await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: upper.id } })).isDefault).toBe(true);
+    expect(await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: upper.id } }))
+      .toMatchObject({ isDefault: true, defaultSlot: 'general' });
+    // 같은 자리를 다시 채우지 않는다(두 번째 가입은 조회만)
+    const u2 = await register('e1-case-2@example.com');
+    expect(await joinedChannelNames(u2.id)).toEqual(['General', 'random']);
+    expect(await prisma.channel.count()).toBe(2);
+  });
+
+  it('default slot filling inside a transaction does not abort on unique conflicts', async () => {
+    // 같은 이름의 채널이 호스트 행 없이 있어도(옛 경로) 트랜잭션 안의 부트스트랩이 예외 없이 그 채널을 쓴다
+    const legacy = await prisma.channel.create({ data: { name: 'general' } });
+    const owner = await createInitialOwner({ email: 'e1-tx@example.com', password: TEST_PASSWORD, name: 'Tx' });
+    expect(await joinedChannelNames(owner.id)).toEqual(['general', 'random']);
+    expect(await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId: legacy.id } }))
+      .toMatchObject({ workspaceId: DEFAULT_WORKSPACE_ID, isDefault: true, defaultSlot: 'general', nameKey: 'general' });
+  });
+
+  it('normalizeChannelNameKeys fixes keys that differ from the JS rule and is idempotent', async () => {
+    const equipeUpper = await prisma.channel.create({ data: { name: 'Équipe', ...channelHostData('Équipe') } });
+    const istanbul = await prisma.channel.create({ data: { name: 'İstanbul', ...channelHostData('İstanbul') } });
+    // 백필 SQL이 C 정렬 규칙에서 만들 수 있는 키(비ASCII 대문자가 그대로 남음)를 흉내 낸다
+    await prisma.channelWorkspace.update({
+      where: { channelId_workspaceId: { channelId: equipeUpper.id, workspaceId: DEFAULT_WORKSPACE_ID } },
+      data: { nameKey: 'Équipe' },
+    });
+    await prisma.channelWorkspace.update({
+      where: { channelId_workspaceId: { channelId: istanbul.id, workspaceId: DEFAULT_WORKSPACE_ID } },
+      data: { nameKey: 'istanbul' },
+    });
+    // 'équipe' 키는 다른 채널이 이미 갖고 있다 → Équipe는 접미사 규칙을 받는다
+    const equipeLower = await prisma.channel.create({ data: { name: 'équipe', ...channelHostData('équipe') } });
+
+    expect(await normalizeChannelNameKeys(prisma)).toBe(2);
+    const keyOf = async (channelId: number) => (await prisma.channelWorkspace.findFirstOrThrow({ where: { channelId } })).nameKey;
+    expect(await keyOf(istanbul.id)).toBe(channelNameKey('İstanbul'));
+    expect(await keyOf(equipeLower.id)).toBe('équipe');
+    expect(await keyOf(equipeUpper.id)).toBe(channelNameKeyWithSuffix('équipe', equipeUpper.id));
+    expect(await normalizeChannelNameKeys(prisma)).toBe(0);
   });
 
   it('role change and ownership transfer mirror into workspace role, org role and primary owner', async () => {
@@ -367,6 +442,23 @@ describe('E1a creation paths write workspace rows', () => {
     expect((await membership(owner.id))!.role).toBe('ADMIN');
     expect(await prisma.user.findUniqueOrThrow({ where: { id: owner.id } })).toMatchObject({ role: 'ADMIN', orgRole: 'ADMIN' });
     expect(await primaryOwnerId()).toBe(member.id);
+  });
+
+  it('ownership transfer makes the target the primary owner even when other OWNERs exist', async () => {
+    const a = await createInitialOwner({ email: 'e1-tr-a@example.com', password: TEST_PASSWORD, name: 'A' });
+    const b = await register('e1-tr-b@example.com');
+    const c = await register('e1-tr-c@example.com');
+    await prisma.$transaction((tx) => setUserRole(tx, b.id, 'OWNER'));
+    expect(await primaryOwnerId()).toBe(a.id);
+
+    const aToken = await login('e1-tr-a@example.com');
+    const res = await request(app).post('/admin/transfer-ownership').set('Authorization', `Bearer ${aToken}`).send({ userId: c.id });
+    expect(res.status).toBe(200);
+    // 가장 오래된 남은 OWNER(B)가 아니라 이전 대상자 C가 주 소유자다
+    expect(await primaryOwnerId()).toBe(c.id);
+    expect(await membership(a.id)).toMatchObject({ role: 'ADMIN' });
+    expect(await membership(c.id)).toMatchObject({ role: 'OWNER' });
+    expect(await membership(b.id)).toMatchObject({ role: 'OWNER' });
   });
 
   it('demoting the primary owner hands it to the oldest remaining active OWNER, or clears it', async () => {
