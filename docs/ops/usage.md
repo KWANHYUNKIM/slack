@@ -95,3 +95,5 @@
 | 2026-10-31 23:37 | dev-2 | sonnet | PR #49 리뷰 반영 | 30,295 |
 | 2026-10-31 23:37 | dev-3 | sonnet | security/file-scoped-download-token | 98,005 |
 | 2026-10-31 23:38 | code-review | (리뷰) | PR #51 medium | 64,163 |
+| 2026-10-31 23:41 | code-review | (리뷰) | PR #52 medium | 71,548 |
+| 2026-10-31 23:41 | dev-4 | sonnet | PR #51 리뷰 반영 | 24,515 |

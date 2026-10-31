@@ -13,7 +13,7 @@
 | fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | 완료(PR #5 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:48 | security, files, edge-cases, admin |
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 완료(PR #3 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
 | D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | 완료(PR #45 머지) | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
-| D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | dev-4 | sonnet | PR #51 리뷰 반영 중 | 1.5h | 2026-10-31 23:33 | | D1 이후 |
+| D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | dev-4 | sonnet | 완료(PR #51 머지) | 1.5h | 2026-10-31 23:33 | | D1 이후 |
 | E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
 | security/deps-upgrade-frontend: quill, react-router 등 | dev-3 | sonnet | 완료(PR #4 머지) | 1h | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3 |
@@ -24,7 +24,7 @@
 | 05-user-status-dnd | dev-1 | sonnet | 완료(PR #28 머지) | 1.5h | 2026-10-31 21:58 | 2026-10-31 22:07 | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 완료(PR #7 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | dev-5 | sonnet | 완료(PR #14 머지) | 1h | 12:23 | 12:33 | 총괄 결정: Slack과 같게 |
-| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | dev-3 | sonnet | PR #52 리뷰 중 | 1h | 2026-10-31 23:33 | | PR #5 리뷰에서 발견 |
+| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | dev-3 | sonnet | PR #52 리뷰 반영 중 | 1h | 2026-10-31 23:33 | | PR #5 리뷰에서 발견 |
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
