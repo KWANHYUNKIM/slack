@@ -185,6 +185,10 @@ jobs:
       - name: Check electron-builder config
         run: npm run check:builder
 
+      # 릴리스 태그 검증 스크립트(scripts/release-tag.mjs) 단위 테스트
+      - name: Release tag script tests
+        run: node --test ../../scripts/release-tag.test.mjs
+
       # 런타임 의존성이 없으므로(전부 devDependencies) 0건이어야 한다
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
