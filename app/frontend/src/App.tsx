@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useChannelStore } from '@/stores/useChannelStore';
 import { useMessageStore } from '@/stores/useMessageStore';
 import { useDMStore, groupConversationKey } from '@/stores/useDMStore';
+import { useUnreadStore } from '@/stores/useUnreadStore';
+import { dmUnreadScope } from '@/lib/unread';
 import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
@@ -317,8 +319,11 @@ function AppShell() {
           }).catch(() => {});
         }
       }
-      if (activeGroupId === dm.groupId && !isFromMe) {
-        // 보고 있는 그룹이면 읽음 커서를 바로 옮긴다(다른 기기·새로고침에서 안 읽음으로 남지 않게)
+      // 보고 있는 그룹이면 읽음 커서를 바로 옮긴다(다른 기기·새로고침에서 안 읽음으로 남지 않게).
+      // 단, 열 때의 안 읽음 기준점이 준비되기 전이면 미룬다(먼저 옮기면 기준점이 덮인다).
+      const unreadState = useUnreadStore.getState();
+      const baselineReady = unreadState.ready && unreadState.channelId === dmUnreadScope(groupConversationKey(dm.groupId));
+      if (activeGroupId === dm.groupId && !isFromMe && baselineReady) {
         markDMGroupRead(dm.groupId, dm.id).catch(() => {});
       }
       useDMStore.getState().addIncomingMessage(dm, currentUser.id);

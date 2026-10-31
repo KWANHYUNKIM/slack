@@ -79,6 +79,9 @@ export default defineConfig({
       '/bookmarks': { target: 'http://localhost:3000', changeOrigin: true },
       '/push': { target: 'http://localhost:3000', changeOrigin: true },
       '/health': { target: 'http://localhost:3000', changeOrigin: true },
+      // 개인 액세스 토큰 API와 MCP 엔드포인트(mcp-1). 화면 경로와 겹치지 않아 bypass가 필요 없다.
+      '/tokens': { target: 'http://localhost:3000', changeOrigin: true },
+      '/mcp': { target: 'http://localhost:3000', changeOrigin: true },
       '/socket.io': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
     },
   },

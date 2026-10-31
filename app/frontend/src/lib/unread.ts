@@ -67,3 +67,11 @@ export function previousTimelineId(messages: readonly UnreadCandidate[], message
 export function countUnreadFrom(messages: readonly UnreadCandidate[], messageId: number): number {
   return messages.filter((m) => m.id >= messageId && isTimeline(m)).length;
 }
+
+/**
+ * DM 대화 키(1:1은 상대 userId, 그룹은 -groupId)를 useUnreadStore의 범위 번호로 바꾼다.
+ * 채널 id(양수)와 겹치지 않게 음수로 보내고, 1:1은 짝수, 그룹은 홀수로 나눈다.
+ */
+export function dmUnreadScope(conversationKey: number): number {
+  return conversationKey > 0 ? -2 * conversationKey : -(2 * -conversationKey + 1);
+}

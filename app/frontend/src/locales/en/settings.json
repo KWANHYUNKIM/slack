@@ -86,7 +86,8 @@
       "createFailed": "Failed to create the token. Please try again.",
       "renameFailed": "Failed to rename the token.",
       "revokeFailed": "Failed to revoke the token.",
-      "copyFailed": "Couldn't copy. Select the text and copy it manually."
+      "copyFailed": "Couldn't copy. Select the text and copy it manually.",
+      "limitReached": "You can have up to {max} active tokens. Revoke one you no longer use and try again."
     }
   }
 }

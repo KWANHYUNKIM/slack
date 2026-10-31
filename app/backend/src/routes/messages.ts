@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import prisma from '../db.js';
+import { channelTimelineWhere } from '../db/timeline.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireChannelMembership, requirePublicChannelReadAccess } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
@@ -124,15 +125,8 @@ router.get('/:id/messages', authMiddleware, requirePublicChannelReadAccess, asyn
     const aroundRaw = req.query.around ? parseInt(req.query.around as string) : undefined;
     const around = aroundRaw !== undefined && !isNaN(aroundRaw) && aroundRaw > 0 ? aroundRaw : undefined;
 
-    // 채널 타임라인: 최상위 메시지 + "채널에도 보내기"로 보낸 스레드 답글
-    // 답글이 남은 삭제된 부모도 자리표시자로 포함한다.
-    const timelineWhere = {
-      channelId,
-      OR: [
-        { deletedAt: null, OR: [{ threadId: null }, { alsoSendToChannel: true }] },
-        { deletedAt: { not: null }, threadId: null, replies: { some: { deletedAt: null } } },
-      ],
-    };
+    // 채널 타임라인: 최상위 메시지 + "채널에도 보내기" 답글 + 답글이 남은 삭제된 부모(자리표시자)
+    const timelineWhere = channelTimelineWhere(channelId);
 
     const messageInclude = {
       ...MESSAGE_INCLUDE_FULL,

@@ -826,11 +826,22 @@ export function getDirectMessages() {
   return request<ApiDMConversation[]>('/dms');
 }
 
-export function getConversation(userId: number, cursor?: number, around?: number) {
+/** 안 읽음 구분선 기준점(?withUnread=1일 때만). 열기 직전 값이고, unreadCount는 내 메시지를 포함한다 */
+export interface ApiDMUnreadBaseline {
+  lastReadId?: number | null;
+  unreadCount?: number;
+}
+
+export function getConversation(userId: number, cursor?: number, around?: number, withUnread?: boolean) {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', String(cursor));
   if (around) params.set('around', String(around));
-  return request<{ messages: ApiDirectMessage[]; hasMore: boolean }>(`/dms/${userId}?${params}`);
+  if (withUnread) params.set('withUnread', '1');
+  return request<{ messages: ApiDirectMessage[]; hasMore: boolean } & ApiDMUnreadBaseline>(`/dms/${userId}?${params}`);
+}
+
+export function markDMRead(userId: number) {
+  return request<{ markedAsRead: number }>(`/dms/${userId}/read`, { method: 'POST' });
 }
 
 export function sendDM(toUserId: number, content: string, fileIds?: number[]) {
@@ -923,12 +934,13 @@ export function renameDMGroup(groupId: number, name: string | null) {
   });
 }
 
-export function getDMGroupMessages(groupId: number, cursor?: number, around?: number) {
+export function getDMGroupMessages(groupId: number, cursor?: number, around?: number, withUnread?: boolean) {
   const params = new URLSearchParams();
   if (cursor) params.set('cursor', String(cursor));
   if (around) params.set('around', String(around));
+  if (withUnread) params.set('withUnread', '1');
   // group은 첫 페이지(cursor 없음)에만 실린다
-  return request<{ group?: ApiDMGroup; messages: ApiDirectMessage[]; hasMore: boolean }>(
+  return request<{ group?: ApiDMGroup; messages: ApiDirectMessage[]; hasMore: boolean } & ApiDMUnreadBaseline>(
     `/dms/groups/${groupId}/messages?${params}`,
   );
 }

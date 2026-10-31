@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate, formatList, DATE_MEDIUM } from '@/lib/i18n/format';
 import type { AccessToken } from '@/lib/api';
@@ -19,8 +19,25 @@ export function AccessTokenRow({ token, onError }: AccessTokenRowProps) {
   const [name, setName] = useState(token.name);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  // 편집 한 번에 저장·취소는 한 번만: Enter 저장 뒤 입력창이 사라지며 나는 blur, Esc 취소 뒤 blur가
+  // 다시 저장하지 않게 막는다. state는 같은 틱의 blur에 아직 반영되지 않아 ref로 둔다.
+  const editSettledRef = useRef(false);
+
+  const startEditing = () => {
+    editSettledRef.current = false;
+    setName(token.name);
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    editSettledRef.current = true;
+    setEditing(false);
+    setName(token.name);
+  };
 
   const handleRename = async () => {
+    if (editSettledRef.current) return;
+    editSettledRef.current = true;
     const trimmed = name.trim();
     if (!trimmed || trimmed === token.name) {
       setEditing(false);
@@ -33,6 +50,8 @@ export function AccessTokenRow({ token, onError }: AccessTokenRowProps) {
       setEditing(false);
     } catch {
       onError(t('accessTokens.errors.renameFailed'));
+      // 실패하면 편집 상태로 남아 있으므로 다시 저장할 수 있게 연다
+      editSettledRef.current = false;
     } finally {
       setBusy(false);
     }
@@ -71,7 +90,7 @@ export function AccessTokenRow({ token, onError }: AccessTokenRowProps) {
             onBlur={handleRename}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleRename();
-              if (e.key === 'Escape') { e.stopPropagation(); setEditing(false); setName(token.name); }
+              if (e.key === 'Escape') { e.stopPropagation(); cancelEditing(); }
             }}
           />
         ) : (
@@ -118,7 +137,7 @@ export function AccessTokenRow({ token, onError }: AccessTokenRowProps) {
               type="button"
               data-testid="access-token-rename"
               aria-label={t('accessTokens.renameLabel', { name: token.name })}
-              onClick={() => setEditing(true)}
+              onClick={startEditing}
               className="rounded-md border border-slack-border px-3 py-1 text-[13px] text-slack-primary hover:bg-slack-hover"
             >
               {t('accessTokens.rename')}

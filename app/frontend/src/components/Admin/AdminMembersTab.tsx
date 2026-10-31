@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Avatar } from '@/components/ui/avatar';
+import { useAdminAction } from '@/hooks/useAdminAction';
 import { ConfirmDialog } from './ConfirmDialog';
 
 const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
@@ -23,8 +24,34 @@ export function AdminMembersTab() {
     userId: number;
     userName: string;
   } | null>(null);
+  // 역할 변경은 표 위에, 대화상자 동작은 대화상자 안에 실패 문구를 보여 준다. 인스턴스를 따로 둔다.
+  const roleAction = useAdminAction('admin:errors.updateRole');
+  const dialogAction = useAdminAction('admin:errors.transferOwnership');
 
   const isOwner = currentUser?.role === 'OWNER';
+
+  const handleRoleChange = (userId: number, role: 'ADMIN' | 'MEMBER' | 'GUEST') => {
+    void roleAction.run(() => updateUserRole(userId, role));
+  };
+
+  const handleConfirm = async () => {
+    if (!confirmAction) return;
+    const { type, userId } = confirmAction;
+    const fallbackKey = type === 'transfer'
+      ? 'admin:errors.transferOwnership'
+      : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
+    const ok = await dialogAction.run(() => {
+      if (type === 'transfer') return transferOwnership(userId);
+      if (type === 'deactivate') return deactivateUser(userId);
+      return reactivateUser(userId);
+    }, fallbackKey);
+    if (ok) setConfirmAction(null);
+  };
+
+  const closeConfirm = () => {
+    setConfirmAction(null);
+    dialogAction.reset();
+  };
 
   const filtered = users.filter(
     (u) =>
@@ -60,6 +87,10 @@ export function AdminMembersTab() {
           className="w-full rounded-lg border border-slack-border ps-10 pe-4 py-2 text-sm focus:border-slack-focus focus:outline-none focus:ring-1 focus:ring-slack-focus"
         />
       </div>
+
+      {roleAction.error && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{roleAction.error}</p>
+      )}
 
       <div className="rounded-lg border border-slack-border overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
@@ -99,7 +130,8 @@ export function AdminMembersTab() {
                     ) : (
                       <select
                         value={user.role}
-                        onChange={(e) => updateUserRole(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
+                        disabled={roleAction.busy}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
                         className="rounded border border-slack-border px-2 py-1 text-xs focus:border-slack-focus focus:outline-none"
                       >
                         {getRoleOptions().map((r) => (
@@ -159,17 +191,10 @@ export function AdminMembersTab() {
           title={t(`members.dialogs.${confirmAction.type}.title`)}
           message={t(`members.dialogs.${confirmAction.type}.message`, { name: confirmAction.userName })}
           confirmLabel={t(`members.dialogs.${confirmAction.type}.confirm`)}
-          onConfirm={() => {
-            if (confirmAction.type === 'transfer') {
-              transferOwnership(confirmAction.userId);
-            } else if (confirmAction.type === 'deactivate') {
-              deactivateUser(confirmAction.userId);
-            } else {
-              reactivateUser(confirmAction.userId);
-            }
-            setConfirmAction(null);
-          }}
-          onCancel={() => setConfirmAction(null)}
+          error={dialogAction.error}
+          busy={dialogAction.busy}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
         />
       )}
     </div>

@@ -5,6 +5,7 @@ import { MENTION_TYPES, serializeActivities, visibleActivityWhere } from '../ser
 import { STATUS_SELECT, toPublicUser } from '../services/statusService.js';
 import { isUserOnline } from '../websocket/index.js';
 import { USER_SELECT_BASIC } from '../db/selects.js';
+import { channelTimelineWhere } from '../db/timeline.js';
 import { paginateResults } from '../utils/pagination.js';
 
 // MCP 읽기 도구의 실제 조회. 모든 함수는 토큰 소유자(ctx)의 권한으로만 읽는다.
@@ -55,16 +56,12 @@ function toMessageView(m: MessageRow) {
 export async function listChannels(ctx: ToolContext, args: { limit: number; cursor?: number }) {
   const rows = await prisma.channel.findMany({
     where: { ...listableChannelsWhere(ctx.userId, ctx.role), ...(args.cursor && { id: { lt: args.cursor } }) },
-    include: { _count: { select: { members: true } } },
+    // 내 멤버십 행만 같이 가져와 isMember를 한 번의 조회로 판단한다
+    include: { _count: { select: { members: true } }, members: { where: { userId: ctx.userId }, select: { userId: true } } },
     orderBy: { id: 'desc' },
     take: args.limit + 1,
   });
   const { results, nextCursor } = paginateResults(rows, args.limit);
-  const memberships = await prisma.channelMember.findMany({
-    where: { userId: ctx.userId, channelId: { in: results.map((c) => c.id) } },
-    select: { channelId: true },
-  });
-  const memberSet = new Set(memberships.map((m) => m.channelId));
   return {
     items: results.map((c) => ({
       id: c.id,
@@ -72,7 +69,7 @@ export async function listChannels(ctx: ToolContext, args: { limit: number; curs
       topic: c.topic,
       description: c.description,
       isPrivate: c.isPrivate,
-      isMember: memberSet.has(c.id),
+      isMember: c.members.length > 0,
       memberCount: c._count.members,
     })),
     nextCursor: nextCursor ?? null,
@@ -87,16 +84,9 @@ async function assertChannelReadable(ctx: ToolContext, channelId: number) {
 
 export async function readChannel(ctx: ToolContext, args: { channelId: number; limit: number; cursor?: number }) {
   await assertChannelReadable(ctx, args.channelId);
-  // 채널 타임라인과 같은 범위: 최상위 메시지 + "채널에도 보내기" 답글 + 답글이 남은 삭제된 부모
+  // 채널 화면과 같은 타임라인(GET /channels/:id/messages와 같은 헬퍼)
   const rows = await prisma.message.findMany({
-    where: {
-      channelId: args.channelId,
-      OR: [
-        { deletedAt: null, OR: [{ threadId: null }, { alsoSendToChannel: true }] },
-        { deletedAt: { not: null }, threadId: null, replies: { some: { deletedAt: null } } },
-      ],
-      ...(args.cursor && { id: { lt: args.cursor } }),
-    },
+    where: { ...channelTimelineWhere(args.channelId), ...(args.cursor && { id: { lt: args.cursor } }) },
     include: MESSAGE_VIEW_INCLUDE,
     orderBy: { id: 'desc' },
     take: args.limit + 1,
@@ -107,7 +97,12 @@ export async function readChannel(ctx: ToolContext, args: { channelId: number; l
 }
 
 export async function readThread(ctx: ToolContext, args: { messageId: number }) {
-  const target = await prisma.message.findUnique({ where: { id: args.messageId }, select: { id: true, threadId: true } });
+  const target = await prisma.message.findUnique({
+    where: { id: args.messageId },
+    select: { id: true, threadId: true, deletedAt: true },
+  });
+  // 삭제된 답글 id는 없는 메시지와 같게 답한다(requireThreadReadAccess는 지워진 답글을 404로 막는다)
+  if (target?.deletedAt && target.threadId !== null) throw new ToolAccessError('Message not found or not accessible');
   const parentId = target ? (target.threadId ?? target.id) : null;
   const parent = parentId ? await prisma.message.findUnique({ where: { id: parentId }, include: MESSAGE_VIEW_INCLUDE }) : null;
   if (!parent) throw new ToolAccessError('Message not found or not accessible');

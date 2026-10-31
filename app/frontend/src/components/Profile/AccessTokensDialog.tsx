@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, KeyRound } from 'lucide-react';
-import type { AccessTokenScope } from '@/lib/api';
+import { ApiError, type AccessTokenScope } from '@/lib/api';
+import { getMcpUrl } from '@/lib/serverUrl';
 import { useAccessTokenStore, ACCESS_TOKEN_SCOPES } from '@/stores/useAccessTokenStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { AccessTokenRow } from './AccessTokenRow';
@@ -11,6 +12,8 @@ interface AccessTokensDialogProps {
 }
 
 const NAME_MAX = 100;
+// 서버 accessTokenService.MAX_ACTIVE_TOKENS와 같은 값(안내 문구에만 쓴다)
+const TOKEN_LIMIT = 20;
 const EXPIRY_OPTIONS = ['7', '30', '90', '365', 'never'] as const;
 type ExpiryOption = (typeof EXPIRY_OPTIONS)[number];
 
@@ -42,8 +45,10 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
     try {
       await create({ name: name.trim(), scopes, expiresInDays: expiry === 'never' ? null : Number(expiry) });
       setName('');
-    } catch {
-      setError(t('accessTokens.errors.createFailed'));
+    } catch (err) {
+      setError(err instanceof ApiError && err.code === 'TOKEN_LIMIT_REACHED'
+        ? t('accessTokens.errors.limitReached', { max: TOKEN_LIMIT })
+        : t('accessTokens.errors.createFailed'));
     } finally {
       setBusy(false);
     }
@@ -59,7 +64,7 @@ export function AccessTokensDialog({ onClose }: AccessTokensDialogProps) {
   };
 
   const connectCommand = justCreated
-    ? `claude mcp add --transport http slackclone ${window.location.origin}/mcp --header "Authorization: Bearer ${justCreated.token}"`
+    ? `claude mcp add --transport http slackclone ${getMcpUrl()} --header "Authorization: Bearer ${justCreated.token}"`
     : '';
 
   return (

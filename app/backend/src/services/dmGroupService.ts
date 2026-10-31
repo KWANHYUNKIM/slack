@@ -316,6 +316,22 @@ export async function markGroupRead(groupId: number, userId: number, upToDmId?: 
   return target;
 }
 
+/**
+ * 안 읽음 구분선용 읽음 기준점: 내 읽음 커서(lastReadDmId)와 그 이후 최상위 메시지 수(내 것 포함, 채널 응답과 같은 규칙).
+ * 읽음 처리(markGroupRead)보다 먼저 불러야 열기 직전 값이다.
+ */
+export async function getGroupUnreadBaseline(groupId: number, userId: number): Promise<{ lastReadId: number | null; unreadCount: number }> {
+  const member = await prisma.dMGroupMember.findUnique({
+    where: { groupId_userId: { groupId, userId } },
+    select: { lastReadDmId: true },
+  });
+  const lastReadId = member?.lastReadDmId ?? null;
+  const unreadCount = await prisma.directMessage.count({
+    where: { groupId, threadId: null, deletedAt: null, ...(lastReadId !== null && { id: { gt: lastReadId } }) },
+  });
+  return { lastReadId, unreadCount };
+}
+
 export interface GroupConversation {
   type: 'group';
   group: GroupView;
