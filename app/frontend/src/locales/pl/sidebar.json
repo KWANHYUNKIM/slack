@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Aktywność",
+    "unreads": "Nieprzeczytane",
+    "later": "Później",
+    "files": "Pliki",
+    "admin": "Administracja",
+    "threads": "Wątki"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nowa wiadomość"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "notificationsBlocked": "Powiadomienia zablokowane",
+    "disableNotifications": "Wyłącz powiadomienia",
+    "enableNotifications": "Włącz powiadomienia",
+    "signOut": "Wyloguj się",
+    "updateStatus": "Zaktualizuj status",
+    "pauseNotifications": "Wstrzymaj powiadomienia",
+    "pausedUntil": "Wstrzymano do {time}",
+    "pausedIndefinitely": "Wstrzymano do czasu wyczyszczenia statusu",
+    "resumeNotifications": "Wznów powiadomienia",
+    "pause": {
+      "m30": "30 minut",
+      "h1": "1 godzina",
+      "h2": "2 godziny",
+      "tomorrow": "Do jutra"
+    },
+    "pauseError": "Nie udało się zmienić wstrzymania powiadomień. Spróbuj ponownie.",
+    "accessTokens": "Osobiste tokeny dostępu",
+    "sessions": "Urządzenia zalogowane",
+    "twoFactor": "Uwierzytelnianie dwuskładnikowe",
+    "changePassword": "Zmień hasło",
+    "connectedApps": "Połączone aplikacje"
+  },
+  "sections": {
+    "starred": "Oznaczone",
+    "channels": "Kanały",
+    "addChannels": "Dodaj kanały",
+    "directMessages": "Wiadomości prywatne",
+    "addTeammates": "Dodaj współpracowników",
+    "starredEmpty": "Oznacz kanał lub rozmowę, aby były tutaj widoczne.",
+    "collapse": "Zwiń {section}",
+    "expand": "Rozwiń {section}"
+  },
+  "teammates": {
+    "title": "Wiadomość prywatna",
+    "subtitle": "Znajdź lub rozpocznij rozmowę",
+    "searchPlaceholder": "Szukaj po nazwie...",
+    "noUsers": "Nie znaleziono użytkowników",
+    "close": "Zamknij",
+    "pickSubtitle": "Wybierz najwyżej {max, plural, one {# osobę} few {# osoby} many {# osób} other {# osoby}}",
+    "select": "Wybierz {name}",
+    "selectedCount": "Wybrano {count} z {max}",
+    "start": "Rozpocznij rozmowę",
+    "startGroup": "Rozpocznij rozmowę grupową"
+  },
+  "you": "(Ty)",
+  "notifications": {
+    "someone": "Ktoś",
+    "sentAttachment": "Wysłano załącznik",
+    "threadTitle": "{name} (wątek)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# członek} few {# członkowie} many {# członków} other {# członka}}",
+    "createError": "Nie udało się rozpocząć rozmowy grupowej. Spróbuj ponownie."
+  },
+  "statusDialog": {
+    "title": "Ustaw status",
+    "emojiLabel": "Wybierz emoji",
+    "textLabel": "Jaki masz status?",
+    "textPlaceholder": "Jaki masz status?",
+    "durationLabel": "Wyczyść po",
+    "duration": {
+      "never": "Nie czyść",
+      "m30": "30 minut",
+      "h1": "1 godzina",
+      "h4": "4 godziny",
+      "today": "Dzisiaj",
+      "week": "W tym tygodniu"
+    },
+    "pauseCheckbox": "Wstrzymaj powiadomienia do czasu wyczyszczenia statusu",
+    "save": "Zapisz",
+    "clear": "Wyczyść status",
+    "cancel": "Anuluj",
+    "expiresAt": "Zostanie wyczyszczony o {time}",
+    "saveError": "Nie udało się zapisać statusu. Spróbuj ponownie."
+  },
+  "findConversation": "Znajdź rozmowę"
+}

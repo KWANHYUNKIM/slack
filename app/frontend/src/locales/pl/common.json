@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "close": "Zamknij",
+    "send": "Wyślij",
+    "confirm": "Potwierdź",
+    "back": "Wstecz",
+    "remove": "Usuń",
+    "add": "Dodaj",
+    "create": "Utwórz",
+    "retry": "Spróbuj ponownie",
+    "search": "Szukaj",
+    "copy": "Kopiuj",
+    "done": "Gotowe",
+    "next": "Dalej",
+    "more": "Więcej"
+  },
+  "emojiPicker": {
+    "loadFailed": "Nie udało się wczytać emoji. Sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie"
+  },
+  "status": {
+    "loading": "Ładowanie...",
+    "saving": "Zapisywanie...",
+    "deleting": "Usuwanie..."
+  },
+  "dates": {
+    "today": "Dziś",
+    "yesterday": "Wczoraj"
+  },
+  "quickSwitcher": {
+    "title": "Szybkie przejście",
+    "inputLabel": "Przejdź do rozmowy",
+    "placeholder": "Przejdź do kanału lub rozmowy",
+    "recent": "Ostatnie",
+    "results": "Wyniki",
+    "clearRecent": "Wyczyść ostatnie",
+    "listLabel": "Rozmowy",
+    "noResults": "Brak pasujących rozmów",
+    "starred": "Oznaczone",
+    "unread": "Nieprzeczytane",
+    "dnd": "Nie przeszkadzać",
+    "footer": "{keys}, aby otworzyć. Strzałki w górę i w dół, aby się przemieszczać, Enter, aby przejść, Esc, aby zamknąć.",
+    "open": "Przejdź do…",
+    "kind": {
+      "channel": "Kanał",
+      "dm": "Wiadomość prywatna",
+      "group": "Wiadomość grupowa"
+    }
+  },
+  "shortcuts": {
+    "title": "Skróty klawiaturowe",
+    "groups": {
+      "navigation": "Nawigacja",
+      "general": "Ogólne"
+    },
+    "items": {
+      "switcher": "Otwórz szybkie przejście",
+      "prevChannel": "Poprzednia rozmowa",
+      "nextChannel": "Następna rozmowa",
+      "prevUnread": "Poprzednia nieprzeczytana rozmowa",
+      "nextUnread": "Następna nieprzeczytana rozmowa",
+      "help": "Pokaż skróty klawiaturowe",
+      "closeTop": "Zamknij szybkie przejście lub to okno"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  }
+}

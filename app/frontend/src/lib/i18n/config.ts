@@ -31,6 +31,10 @@ export const SELECTABLE_LOCALES = [
   { code: 'fr', name: 'Français' },
   { code: 'de', name: 'Deutsch' },
   { code: 'pt-BR', name: 'Português (Brasil)' },
+  { code: 'it', name: 'Italiano' },
+  { code: 'ru', name: 'Русский' },
+  { code: 'uk', name: 'Українська' },
+  { code: 'pl', name: 'Polski' },
 ] as const;
 
 /**

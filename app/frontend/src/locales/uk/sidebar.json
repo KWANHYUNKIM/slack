@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Активність",
+    "unreads": "Непрочитані",
+    "later": "Пізніше",
+    "files": "Файли",
+    "admin": "Адміністрування",
+    "threads": "Треди"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Нове повідомлення"
+  },
+  "userMenu": {
+    "profile": "Профіль",
+    "notificationsBlocked": "Сповіщення заблоковано",
+    "disableNotifications": "Вимкнути сповіщення",
+    "enableNotifications": "Увімкнути сповіщення",
+    "signOut": "Вийти",
+    "updateStatus": "Оновити статус",
+    "pauseNotifications": "Призупинити сповіщення",
+    "pausedUntil": "Призупинено до {time}",
+    "pausedIndefinitely": "Призупинено, доки статус не буде очищено",
+    "resumeNotifications": "Поновити сповіщення",
+    "pause": {
+      "m30": "30 хвилин",
+      "h1": "1 година",
+      "h2": "2 години",
+      "tomorrow": "До завтра"
+    },
+    "pauseError": "Не вдалося змінити паузу сповіщень. Спробуйте ще раз.",
+    "accessTokens": "Особисті токени доступу",
+    "sessions": "Пристрої з входом",
+    "twoFactor": "Двофакторна автентифікація",
+    "changePassword": "Змінити пароль",
+    "connectedApps": "Підключені застосунки"
+  },
+  "sections": {
+    "starred": "Обране",
+    "channels": "Канали",
+    "addChannels": "Додати канали",
+    "directMessages": "Особисті повідомлення",
+    "addTeammates": "Додати колег",
+    "starredEmpty": "Додайте канал або розмову до обраного, щоб вони були тут.",
+    "collapse": "Згорнути розділ «{section}»",
+    "expand": "Розгорнути розділ «{section}»"
+  },
+  "teammates": {
+    "title": "Особисте повідомлення",
+    "subtitle": "Знайдіть або почніть розмову",
+    "searchPlaceholder": "Пошук за іменем...",
+    "noUsers": "Користувачів не знайдено",
+    "close": "Закрити",
+    "pickSubtitle": "Можна вибрати до {max, plural, one {# особи} few {# осіб} many {# осіб} other {# особи}}",
+    "select": "Вибрати {name}",
+    "selectedCount": "Вибрано: {count} з {max}",
+    "start": "Почати розмову",
+    "startGroup": "Почати групову розмову"
+  },
+  "you": "(ви)",
+  "notifications": {
+    "someone": "Хтось",
+    "sentAttachment": "Надіслав вкладення",
+    "threadTitle": "{name} (тред)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# учасник} few {# учасники} many {# учасників} other {# учасника}}",
+    "createError": "Не вдалося почати групову розмову. Спробуйте ще раз."
+  },
+  "statusDialog": {
+    "title": "Встановити статус",
+    "emojiLabel": "Виберіть емодзі",
+    "textLabel": "Який у вас статус?",
+    "textPlaceholder": "Який у вас статус?",
+    "durationLabel": "Очистити через",
+    "duration": {
+      "never": "Не очищати",
+      "m30": "30 хвилин",
+      "h1": "1 година",
+      "h4": "4 години",
+      "today": "Сьогодні",
+      "week": "Цього тижня"
+    },
+    "pauseCheckbox": "Призупинити сповіщення, доки статус не буде очищено",
+    "save": "Зберегти",
+    "clear": "Очистити статус",
+    "cancel": "Скасувати",
+    "expiresAt": "Буде очищено о {time}",
+    "saveError": "Не вдалося зберегти статус. Спробуйте ще раз."
+  },
+  "findConversation": "Знайти розмову"
+}

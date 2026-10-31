@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "Attività",
+    "unreads": "Non letti",
+    "later": "Più tardi",
+    "files": "File",
+    "admin": "Amministrazione",
+    "threads": "Thread"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "Nuovo messaggio"
+  },
+  "userMenu": {
+    "profile": "Profilo",
+    "notificationsBlocked": "Notifiche bloccate",
+    "disableNotifications": "Disattiva notifiche",
+    "enableNotifications": "Attiva notifiche",
+    "signOut": "Esci",
+    "updateStatus": "Aggiorna il tuo stato",
+    "pauseNotifications": "Metti in pausa le notifiche",
+    "pausedUntil": "In pausa fino alle {time}",
+    "pausedIndefinitely": "In pausa finché il tuo stato non viene cancellato",
+    "resumeNotifications": "Riprendi le notifiche",
+    "pause": {
+      "m30": "30 minuti",
+      "h1": "1 ora",
+      "h2": "2 ore",
+      "tomorrow": "Fino a domani"
+    },
+    "pauseError": "Impossibile modificare la pausa delle notifiche. Riprova.",
+    "accessTokens": "Token di accesso personali",
+    "sessions": "Dispositivi con accesso",
+    "twoFactor": "Autenticazione a due fattori",
+    "changePassword": "Cambia password",
+    "connectedApps": "App collegate"
+  },
+  "sections": {
+    "starred": "Preferiti",
+    "channels": "Canali",
+    "addChannels": "Aggiungi canali",
+    "directMessages": "Messaggi diretti",
+    "addTeammates": "Aggiungi colleghi",
+    "starredEmpty": "Aggiungi un canale o una conversazione ai preferiti per tenerlo qui.",
+    "collapse": "Comprimi {section}",
+    "expand": "Espandi {section}"
+  },
+  "teammates": {
+    "title": "Messaggio diretto",
+    "subtitle": "Trova o avvia una conversazione",
+    "searchPlaceholder": "Cerca per nome...",
+    "noUsers": "Nessun utente trovato",
+    "close": "Chiudi",
+    "pickSubtitle": "Seleziona fino a {max, plural, one {# persona} other {# persone}}",
+    "select": "Seleziona {name}",
+    "selectedCount": "{count} di {max} selezionati",
+    "start": "Avvia conversazione",
+    "startGroup": "Avvia conversazione di gruppo"
+  },
+  "you": "(tu)",
+  "notifications": {
+    "someone": "Qualcuno",
+    "sentAttachment": "Ha inviato un allegato",
+    "threadTitle": "{name} (thread)"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, one {# membro} other {# membri}}",
+    "createError": "Impossibile avviare la conversazione di gruppo. Riprova."
+  },
+  "statusDialog": {
+    "title": "Imposta uno stato",
+    "emojiLabel": "Scegli un'emoji",
+    "textLabel": "Qual è il tuo stato?",
+    "textPlaceholder": "Qual è il tuo stato?",
+    "durationLabel": "Cancella dopo",
+    "duration": {
+      "never": "Non cancellare",
+      "m30": "30 minuti",
+      "h1": "1 ora",
+      "h4": "4 ore",
+      "today": "Oggi",
+      "week": "Questa settimana"
+    },
+    "pauseCheckbox": "Metti in pausa le notifiche finché lo stato non viene cancellato",
+    "save": "Salva",
+    "clear": "Cancella stato",
+    "cancel": "Annulla",
+    "expiresAt": "Verrà cancellato alle {time}",
+    "saveError": "Impossibile salvare il tuo stato. Riprova."
+  },
+  "findConversation": "Trova una conversazione"
+}

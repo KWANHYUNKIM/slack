@@ -1,0 +1,352 @@
+{
+  "mention": {
+    "hereLabel": "@here",
+    "hereHint": "Avvisa tutti quelli online",
+    "channelLabel": "@channel",
+    "channelHint": "Avvisa tutti in questo canale"
+  },
+  "deleteDialog": {
+    "title": "Elimina messaggio",
+    "body": "Vuoi eliminare questo messaggio? Non è possibile annullare l'operazione."
+  },
+  "editorToolbar": {
+    "attachFile": "Allega file",
+    "emoji": "Emoji",
+    "mention": "Menziona qualcuno",
+    "stopRecording": "Interrompi registrazione",
+    "recordVoice": "Registra un messaggio vocale"
+  },
+  "emojiAutocomplete": {
+    "navigate": "per spostarti",
+    "select": "per selezionare",
+    "dismiss": "per chiudere",
+    "escKey": "esc"
+  },
+  "filePreview": {
+    "remove": "Rimuovi {name}"
+  },
+  "fileModal": {
+    "download": "Scarica",
+    "loadFailed": "Impossibile caricare il contenuto del file",
+    "truncated": "... (troncato)",
+    "noPreview": "Anteprima non disponibile",
+    "downloadToView": "Scarica il file per visualizzarlo"
+  },
+  "files": {
+    "allFiles": "Tutti i file",
+    "channelFiles": "File del canale",
+    "loadFailed": "Impossibile caricare i file.",
+    "empty": "Nessun file caricato per ora",
+    "download": "Scarica",
+    "menu": "Menu",
+    "unavailable": "File non disponibile",
+    "preparing": "Preparazione del file"
+  },
+  "format": {
+    "bold": "Grassetto",
+    "italic": "Corsivo",
+    "strike": "Barrato",
+    "link": "Link",
+    "orderedList": "Elenco numerato",
+    "bulletList": "Elenco puntato",
+    "code": "Codice",
+    "codeBlock": "Blocco di codice",
+    "quote": "Citazione"
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "empty": "Nessuna nuova notifica",
+    "unreadCount": "{count, plural, one {# messaggio non letto} other {# messaggi non letti}}"
+  },
+  "search": {
+    "placeholder": "Cerca",
+    "searching": "Ricerca in corso...",
+    "noResults": "Nessun risultato trovato",
+    "previewHint": "{count, plural, one {Primo # risultato} other {Primi # risultati}} · Vedi tutti (Invio)",
+    "truncatedNotice": "Ci sono molti risultati. Aggiungi filtri per restringerli.",
+    "retry": "Riprova",
+    "ignoredChip": "{token} (ignorato)",
+    "ignoredLimitChip": "{token} (ignorato: troppi)",
+    "inChannel": "in #{channel}",
+    "title": "Risultati della ricerca",
+    "resultsFor": "Risultati per \"{query}\"",
+    "emptyQuery": "Digita un termine di ricerca oppure usa filtri come from:, in:, has:, before:, after:.",
+    "noResultsHint": "Prova parole diverse o rimuovi alcuni filtri.",
+    "clearFilters": "Rimuovi tutti i filtri",
+    "removeFilter": "Rimuovi filtro {filter}",
+    "loadFailed": "Ricerca non riuscita. Riprova.",
+    "loadMore": "Carica altro",
+    "threadReply": "Risposta nel thread",
+    "directMessage": "Messaggio diretto",
+    "groupMessage": "Conversazione di gruppo",
+    "joined": "Iscritto",
+    "privateChannel": "Privato",
+    "archivedChannel": "Archiviato",
+    "back": "Indietro",
+    "tabs": {
+      "label": "Tipi di risultato della ricerca",
+      "messages": "Messaggi",
+      "files": "File",
+      "people": "Persone",
+      "channels": "Canali"
+    },
+    "sort": {
+      "label": "Ordina per",
+      "relevance": "Pertinenza",
+      "recent": "Più recenti"
+    }
+  },
+  "headerTabs": {
+    "files": "File",
+    "pins": "Fissati"
+  },
+  "lightbox": {
+    "close": "Chiudi"
+  },
+  "later": {
+    "title": "Più tardi",
+    "saved": "Salvati",
+    "scheduled": "Programmati",
+    "loadFailed": "Impossibile caricare i messaggi salvati.",
+    "empty": "Nessun messaggio salvato per ora. Fai clic sull'icona del segnalibro di un messaggio per salvarlo.",
+    "removeSaved": "Rimuovi dai salvati",
+    "menu": "Menu",
+    "reminders": "Promemoria"
+  },
+  "linkModal": {
+    "title": "Aggiungi link",
+    "url": "URL",
+    "urlPlaceholder": "https://esempio.com",
+    "displayText": "Testo visualizzato",
+    "optional": "(facoltativo)",
+    "textPlaceholder": "Testo del link",
+    "close": "Chiudi"
+  },
+  "actionsMenu": {
+    "noActions": "Nessuna azione disponibile",
+    "markUnread": "Segna come non letto",
+    "pin": "Fissa messaggio",
+    "unpin": "Rimuovi messaggio fissato",
+    "edit": "Modifica messaggio",
+    "delete": "Elimina messaggio",
+    "copyLink": "Copia link",
+    "remind": "Ricordamelo"
+  },
+  "area": {
+    "selectChannel": "Seleziona un canale per iniziare a scrivere",
+    "openMenu": "Apri menu",
+    "placeholder": "Scrivi in #{channel}",
+    "viewing": "Stai visualizzando <bold>#{channel}</bold>",
+    "joinChannel": "Unisciti al canale"
+  },
+  "header": {
+    "menu": "Menu",
+    "unstar": "Rimuovi dai preferiti",
+    "star": "Aggiungi ai preferiti",
+    "members": "Membri: {count}",
+    "search": "Cerca",
+    "channelMenu": "Opzioni del canale",
+    "leaveChannel": "Esci dal canale",
+    "leaveLastMember": "Impossibile uscire dal canale: sei l'ultimo membro.",
+    "dismiss": "Chiudi",
+    "addTopic": "Aggiungi un argomento",
+    "editDetails": "Modifica dettagli del canale"
+  },
+  "message": {
+    "edited": "(modificato)",
+    "pinned": "Fissato",
+    "showMore": "Mostra di più",
+    "showLess": "Mostra meno",
+    "repliedToThread": "Ha risposto in un thread: {excerpt}",
+    "deletedPlaceholder": "Questo messaggio è stato eliminato.",
+    "sendToChannel": "Invia anche al canale",
+    "removeFromChannel": "Rimuovi dal canale"
+  },
+  "input": {
+    "uploading": "Caricamento...",
+    "scheduleMessage": "Programma messaggio",
+    "send": "Invia messaggio",
+    "hint": "Premi <kbd>Invio</kbd> per inviare, <kbd>Maiusc + Invio</kbd> per andare a capo",
+    "scheduledFor": "Programmato per {time}",
+    "scheduleFailed": "Impossibile programmare il messaggio. Riprova."
+  },
+  "list": {
+    "loading": "Caricamento dei messaggi...",
+    "empty": "Nessun messaggio per ora",
+    "emptyReadOnly": "Questo canale non ha messaggi.",
+    "emptyFirst": "Sii il primo a inviare un messaggio!"
+  },
+  "reactions": {
+    "tooltip": "{names} ha reagito con {emoji}",
+    "add": "Aggiungi reazione",
+    "you": "Tu"
+  },
+  "toolbar": {
+    "addReaction": "Aggiungi reazione",
+    "replyInThread": "Rispondi nel thread",
+    "removeBookmark": "Rimuovi segnalibro",
+    "bookmark": "Aggiungi questo messaggio ai segnalibri",
+    "moreActions": "Altre azioni"
+  },
+  "mobileSearch": {
+    "placeholder": "Cerca messaggi...",
+    "hint": "Cerca messaggi in tutti i canali e le conversazioni",
+    "close": "Chiudi ricerca"
+  },
+  "pins": {
+    "title": "Messaggi fissati",
+    "loadFailed": "Impossibile caricare i messaggi fissati.",
+    "empty": "Nessun messaggio fissato per ora"
+  },
+  "schedule": {
+    "menuTitle": "Programma messaggio",
+    "in20": "Tra 20 minuti",
+    "in1h": "Tra 1 ora",
+    "in3h": "Tra 3 ore",
+    "tomorrow9": "Domani alle 9:00",
+    "custom": "Orario personalizzato...",
+    "modalTitle": "Programma messaggio",
+    "dateTime": "Data e ora",
+    "pickFuture": "Scegli un orario futuro.",
+    "submit": "Programma",
+    "submitting": "Programmazione...",
+    "close": "Chiudi"
+  },
+  "scheduled": {
+    "loadFailed": "Impossibile caricare i messaggi programmati.",
+    "cancelFailed": "Impossibile annullare il messaggio.",
+    "sendFailed": "Impossibile inviare il messaggio.",
+    "saveFailed": "Impossibile salvare le modifiche.",
+    "empty": "Nessun messaggio programmato. Usa l'icona dell'orologio nell'editor per programmarne uno.",
+    "sendAt": "Invia alle:",
+    "edit": "Modifica",
+    "sendNow": "Invia ora",
+    "cancel": "Annulla",
+    "failedDlp": "Questo messaggio non è stato inviato perché corrisponde a una regola di protezione dei dati ({rule}). Eliminalo e scrivine uno nuovo."
+  },
+  "thread": {
+    "replyCount": "{count, plural, one {# risposta} other {# risposte}}"
+  },
+  "unreads": {
+    "title": "Non letti",
+    "loadFailed": "Impossibile caricare i messaggi non letti.",
+    "empty": "Nessun messaggio non letto. Sei aggiornato! 🎉",
+    "menu": "Menu"
+  },
+  "threadPanel": {
+    "title": "Thread",
+    "replyPlaceholder": "Rispondi...",
+    "loadFailed": "Impossibile caricare il thread. Riprova.",
+    "loading": "Caricamento del thread...",
+    "replyFailed": "Impossibile inviare la risposta. Riprova.",
+    "joinToReply": "Unisciti al canale per rispondere nei thread",
+    "alsoSendToChannel": "Invia anche al canale"
+  },
+  "errors": {
+    "messageEmpty": "Il messaggio non può essere vuoto.",
+    "pasteUploadFailed": "Impossibile caricare l'immagine incollata. Riprova.",
+    "dropUploadFailed": "Impossibile caricare il file trascinato. Riprova.",
+    "uploadFailed": "Impossibile caricare il file. Riprova.",
+    "voiceUploadFailed": "Impossibile caricare il messaggio vocale.",
+    "micDenied": "Accesso al microfono negato. Consenti l'accesso al microfono.",
+    "loadFailed": "Impossibile caricare i messaggi.",
+    "sendTimeout": "Tempo scaduto per l'invio del messaggio. Riprova.",
+    "sendFailed": "Invio del messaggio non riuscito. Riprova.",
+    "pushNotConfigured": "Le notifiche push non sono configurate sul server",
+    "serviceWorkerUnavailable": "Service worker non disponibile",
+    "subscribeFailed": "Impossibile registrare l'iscrizione",
+    "editFailed": "Impossibile salvare la modifica. Riprova."
+  },
+  "details": {
+    "title": "Dettagli del canale",
+    "name": "Nome",
+    "topic": "Argomento",
+    "topicPlaceholder": "Di cosa parla questo canale?",
+    "description": "Descrizione",
+    "descriptionPlaceholder": "Aggiungi una descrizione",
+    "createdBy": "Creato da {name}",
+    "readOnly": "Solo i proprietari del canale, i moderatori e gli amministratori dello spazio di lavoro possono modificare questi dettagli.",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "saveFailed": "Impossibile salvare i dettagli del canale."
+  },
+  "intro": {
+    "title": "Benvenuto in #{name}",
+    "noDescription": "Nessuna descrizione per ora.",
+    "editDescription": "Modifica descrizione"
+  },
+  "threads": {
+    "title": "Thread",
+    "menu": "Menu",
+    "loadFailed": "Impossibile caricare i thread.",
+    "empty": "Nessun thread per ora",
+    "emptyHint": "I thread che avvii o a cui rispondi appariranno qui.",
+    "newReplies": "{count, plural, one {# nuova risposta} other {# nuove risposte}}",
+    "replyCount": "{count, plural, one {# risposta} other {# risposte}}",
+    "olderReplies": "Apri il thread per vedere le risposte precedenti",
+    "replyPlaceholder": "Rispondi...",
+    "send": "Invia",
+    "replyFailed": "Impossibile inviare la risposta. Riprova.",
+    "alsoSendToChannel": "Invia anche al canale",
+    "openThread": "Apri thread",
+    "loadMore": "Carica altro",
+    "loading": "Caricamento..."
+  },
+  "permalink": {
+    "copied": "Link copiato",
+    "notFound": "Questo messaggio non si trova, oppure non hai il permesso di visualizzarlo",
+    "goHome": "Vai alla home",
+    "copyManually": "Impossibile copiare automaticamente. Copia questo link: {url}"
+  },
+  "unread": {
+    "divider": "Nuovi",
+    "newMessagesBar": "{count, plural, one {# nuovo messaggio} other {# nuovi messaggi}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# o più nuovi messaggi} other {# o più nuovi messaggi}}",
+    "markRead": "Segna come letto",
+    "jumpFailed": "Impossibile caricare la posizione dei messaggi non letti"
+  },
+  "reminder": {
+    "set": "Imposta promemoria",
+    "customLabel": "Data e ora del promemoria",
+    "preset": {
+      "in20": "Tra 20 minuti",
+      "in1h": "Tra 1 ora",
+      "in3h": "Tra 3 ore",
+      "tomorrow": "Domani",
+      "nextWeek": "La settimana prossima",
+      "custom": "Personalizzato..."
+    },
+    "status": {
+      "pending": "In arrivo",
+      "done": "Completato"
+    },
+    "snooze": {
+      "m10": "10 min",
+      "h1": "1 ora",
+      "tomorrow": "Domani"
+    },
+    "loadFailed": "Impossibile caricare i promemoria.",
+    "empty": "Nessun promemoria. Usa il menu delle altre azioni su un messaggio o digita /remind per aggiungerne uno.",
+    "emptyDone": "Nessun promemoria completato.",
+    "dueAt": "Scade {time}",
+    "firedAt": "È scaduto {time}",
+    "completedAt": "Completato {time}",
+    "messageDeleted": "Messaggio eliminato",
+    "complete": "Segna come completato",
+    "reopen": "Segna come non completato",
+    "delete": "Elimina promemoria",
+    "toast": {
+      "created": "Promemoria impostato",
+      "due": "Promemoria: {text}",
+      "createFailed": "Impossibile impostare il promemoria. Riprova."
+    },
+    "command": {
+      "syntax": "Uso: /remind me [testo] tra [numero] [minuti|ore|giorni]",
+      "tooShort": "Il promemoria deve essere fissato ad almeno 1 minuto da ora.",
+      "tooLong": "Il promemoria deve essere entro un anno.",
+      "created": "Promemoria impostato per {time}"
+    },
+    "pastTime": "Scegli un orario futuro.",
+    "loadMore": "Carica altro"
+  }
+}

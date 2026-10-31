@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Активность",
+    "markAllRead": "Отметить все как прочитанные",
+    "loading": "Загрузка...",
+    "loadingMore": "Загрузка других...",
+    "loadFailed": "Не удалось загрузить активность.",
+    "empty": "Пока нет активности.",
+    "unread": "Не прочитано",
+    "menu": "Меню",
+    "someone": "Кто-то",
+    "directMessage": "личное сообщение",
+    "messageDeleted": "Сообщение удалено"
+  },
+  "tabs": {
+    "all": "Все",
+    "mentions": "Упоминания",
+    "threads": "Треды",
+    "reactions": "Реакции"
+  },
+  "describe": {
+    "mention": "{actor} упомянул вас в {where}",
+    "channelMention": "{actor} упомянул @channel в {where}",
+    "hereMention": "{actor} упомянул @here в {where}",
+    "threadReply": "{actor} ответил в треде в {where}",
+    "reaction": "{actor} отреагировал {emoji} на ваше сообщение в {where}",
+    "reminder": "Напоминание"
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Pannello di amministrazione",
+    "openSidebar": "Apri barra laterale",
+    "tabs": {
+      "members": "Membri",
+      "invites": "Inviti",
+      "channels": "Canali",
+      "webhooks": "Webhook",
+      "audit": "Registro attività",
+      "retention": "Conservazione dei dati",
+      "security": "Sicurezza",
+      "dlp": "DLP",
+      "legalHolds": "Blocchi legali"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Canale",
+      "members": "Membri",
+      "messages": "Messaggi",
+      "created": "Creato"
+    },
+    "actions": {
+      "rename": "Rinomina canale",
+      "archive": "Archivia canale",
+      "delete": "Elimina canale",
+      "unarchive": "Ripristina canale",
+      "deletePermanently": "Elimina definitivamente"
+    },
+    "emptyActive": "Nessun canale attivo",
+    "archivedHeading": "Canali archiviati ({count})",
+    "archivedOn": "archiviato il {date}",
+    "messageCount": "{count, plural, one {# messaggio} other {# messaggi}}",
+    "deleteDialog": {
+      "title": "Elimina canale",
+      "message": "Vuoi eliminare definitivamente #{name}? Tutti i messaggi andranno persi. Non è possibile annullare l'operazione."
+    },
+    "archiveDialog": {
+      "title": "Archivia canale",
+      "confirm": "Archivia",
+      "message": "Archiviare #{name}? Sarà nascosto dalla barra laterale, ma i messaggi resteranno. Potrai ripristinarlo in seguito."
+    },
+    "unarchiveDialog": {
+      "title": "Ripristina canale",
+      "confirm": "Ripristina",
+      "message": "Ripristinare #{name}? Tornerà visibile nella barra laterale per tutti i membri."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Cerca membri...",
+    "columns": {
+      "user": "Utente",
+      "email": "Email",
+      "role": "Ruolo",
+      "status": "Stato",
+      "actions": "Azioni"
+    },
+    "you": "(tu)",
+    "roles": {
+      "owner": "Proprietario",
+      "admin": "Amministratore",
+      "member": "Membro",
+      "guest": "Ospite"
+    },
+    "status": {
+      "active": "Attivo",
+      "deactivated": "Disattivato"
+    },
+    "actions": {
+      "transfer": "Trasferisci proprietà",
+      "reactivate": "Riattiva",
+      "deactivate": "Disattiva",
+      "forceLogout": "Forza disconnessione",
+      "resetMfa": "Reimposta 2FA"
+    },
+    "empty": "Nessun utente trovato",
+    "dialogs": {
+      "transfer": {
+        "title": "Trasferisci proprietà dello spazio di lavoro",
+        "confirm": "Trasferisci",
+        "message": "Vuoi trasferire la proprietà dello spazio di lavoro a {name}? Tu diventerai amministratore."
+      },
+      "deactivate": {
+        "title": "Disattiva utente",
+        "confirm": "Disattiva",
+        "message": "Vuoi disattivare {name}? Verrà disconnesso subito e non potrà accedere."
+      },
+      "reactivate": {
+        "title": "Riattiva utente",
+        "confirm": "Riattiva",
+        "message": "Vuoi riattivare {name}? Potrà di nuovo accedere."
+      },
+      "forceLogout": {
+        "title": "Forza disconnessione",
+        "confirm": "Disconnetti",
+        "message": "Disconnettere {name} da tutti i dispositivi ora? Il suo account resta attivo e potrà accedere di nuovo."
+      },
+      "resetMfa": {
+        "title": "Reimposta l'autenticazione a due fattori",
+        "confirm": "Reimposta",
+        "message": "Rimuovere l'autenticazione a due fattori per {name}? Verrà disconnesso da tutti i dispositivi e potrà accedere solo con la password."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "L'autenticazione a due fattori è attiva"
+    }
+  },
+  "invites": {
+    "createHeading": "Crea link di invito",
+    "fields": {
+      "role": "Ruolo",
+      "maxUses": "Utilizzi massimi",
+      "expiresIn": "Scade tra"
+    },
+    "unlimited": "Illimitati",
+    "expiry": {
+      "1d": "1 giorno",
+      "7d": "7 giorni",
+      "30d": "30 giorni",
+      "never": "Mai"
+    },
+    "expired": "Scaduto",
+    "columns": {
+      "url": "URL di invito",
+      "uses": "Utilizzi",
+      "expires": "Scadenza",
+      "createdBy": "Creato da"
+    },
+    "copyUrl": "Copia URL di invito",
+    "full": "(esaurito)",
+    "delete": "Elimina invito",
+    "empty": "Nessun link di invito per ora"
+  },
+  "webhooks": {
+    "createHeading": "Crea webhook",
+    "fields": {
+      "name": "Nome del webhook",
+      "channel": "Canale"
+    },
+    "namePlaceholder": "La mia integrazione",
+    "selectChannel": "Seleziona canale...",
+    "columns": {
+      "name": "Nome",
+      "url": "URL del webhook",
+      "lastUsed": "Ultimo utilizzo"
+    },
+    "never": "Mai",
+    "justNow": "Adesso",
+    "inactive": "Inattivo",
+    "copyUrl": "Copia URL del webhook",
+    "delete": "Elimina webhook",
+    "empty": "Nessun webhook configurato per ora"
+  },
+  "audit": {
+    "empty": "Nessuna voce corrisponde al registro. Le azioni registrate appariranno qui.",
+    "loadMore": "Carica altro",
+    "targets": {
+      "user": "Utente",
+      "channel": "Canale",
+      "invite": "Invito",
+      "webhook": "Webhook",
+      "message": "Messaggio",
+      "directMessage": "Messaggio diretto",
+      "token": "Token di accesso",
+      "auditLog": "Registro attività",
+      "mcpTool": "Strumento MCP",
+      "workspace": "Spazio di lavoro",
+      "file": "File",
+      "dlpRule": "Regola DLP",
+      "legalHold": "Blocco legale"
+    },
+    "action": {
+      "authLogin": "Accesso eseguito",
+      "authLoginFailed": "Accesso non riuscito",
+      "authLogout": "Disconnessione eseguita",
+      "authPasswordChanged": "Password modificata",
+      "userRoleChanged": "Ruolo modificato",
+      "userDeactivated": "Disattivato",
+      "userForceLogout": "Disconnessione forzata",
+      "userReactivated": "Riattivato",
+      "ownershipTransferred": "Proprietà trasferita",
+      "ownerBootstrapped": "Proprietario creato",
+      "channelCreated": "Canale creato",
+      "channelEdited": "Canale modificato",
+      "channelArchived": "Canale archiviato",
+      "channelUnarchived": "Canale ripristinato",
+      "channelDeleted": "Canale eliminato",
+      "channelMemberAdded": "Membro aggiunto",
+      "channelMemberRemoved": "Membro rimosso",
+      "inviteCreated": "Invito creato",
+      "inviteDeleted": "Invito eliminato",
+      "webhookCreated": "Webhook creato",
+      "webhookDeleted": "Webhook eliminato",
+      "tokenCreate": "Token creato",
+      "tokenRevoke": "Token revocato",
+      "mcpToolCall": "Chiamata allo strumento MCP",
+      "auditExported": "Registro attività esportato",
+      "authLoginLocked": "Account bloccato",
+      "sessionRevoked": "Dispositivo disconnesso",
+      "sessionRevokedAll": "Tutti i dispositivi disconnessi",
+      "retentionPurged": "Dati scaduti eliminati",
+      "retentionWorkspaceUpdated": "Politica di conservazione modificata",
+      "retentionChannelUpdated": "Conservazione del canale modificata",
+      "retentionChannelCleared": "Conservazione del canale ripristinata",
+      "mfaEnabled": "Autenticazione a due fattori attivata",
+      "mfaDisabled": "Autenticazione a due fattori disattivata",
+      "mfaRecoveryUsed": "Codice di recupero utilizzato",
+      "mfaRecoveryRegenerated": "Codici di recupero rigenerati",
+      "mfaResetByAdmin": "Due fattori reimpostati dall'amministratore",
+      "mfaPolicyChanged": "Requisito dei due fattori modificato",
+      "dlpBlocked": "Messaggio bloccato dal DLP",
+      "dlpWarned": "Avviso DLP",
+      "dlpRuleCreated": "Regola DLP creata",
+      "dlpRuleUpdated": "Regola DLP modificata",
+      "dlpRuleDeleted": "Regola DLP eliminata",
+      "dlpRuleTimeout": "Regola DLP scaduta",
+      "dlpRuleAutoDisabled": "Regola DLP disattivata automaticamente",
+      "legalHoldCreated": "Blocco legale creato",
+      "legalHoldUpdated": "Blocco legale modificato",
+      "legalHoldCustodianAdded": "Persona aggiunta al blocco legale",
+      "legalHoldCustodianRemoved": "Persona rimossa dal blocco legale",
+      "legalHoldReleased": "Blocco legale rilasciato",
+      "ediscoverySearched": "Ricerca eDiscovery",
+      "ediscoveryExportRequested": "Esportazione eDiscovery richiesta",
+      "ediscoveryExported": "Esportazione eDiscovery completata"
+    },
+    "filters": {
+      "allActions": "Tutte le azioni",
+      "actionsSelected": "{count, plural, one {# azione} other {# azioni}}",
+      "actor": "Autore",
+      "allActors": "Tutti gli autori",
+      "targetType": "Tipo di destinazione",
+      "allTargets": "Tutte le destinazioni",
+      "from": "Da",
+      "to": "A",
+      "apply": "Applica",
+      "reset": "Ripristina"
+    },
+    "export": {
+      "csv": "Esporta CSV",
+      "json": "Esporta JSON"
+    },
+    "unknownActor": "Sconosciuto"
+  },
+  "errors": {
+    "archiveChannel": "Impossibile archiviare il canale",
+    "createInvite": "Impossibile creare l'invito",
+    "createWebhook": "Impossibile creare il webhook",
+    "deactivateUser": "Impossibile disattivare l'utente",
+    "deleteChannel": "Impossibile eliminare il canale",
+    "deleteInvite": "Impossibile eliminare l'invito",
+    "deleteWebhook": "Impossibile eliminare il webhook",
+    "editChannel": "Impossibile modificare il canale",
+    "exportAuditLog": "Impossibile esportare il registro attività",
+    "fetchAuditLog": "Impossibile caricare il registro attività",
+    "fetchChannels": "Impossibile caricare i canali",
+    "fetchInvites": "Impossibile caricare gli inviti",
+    "fetchUsers": "Impossibile caricare gli utenti",
+    "fetchWebhooks": "Impossibile caricare i webhook",
+    "forceLogout": "Impossibile disconnettere l'utente",
+    "reactivateUser": "Impossibile riattivare l'utente",
+    "removeChannelMember": "Impossibile rimuovere il membro dal canale",
+    "transferOwnership": "Impossibile trasferire la proprietà",
+    "unarchiveChannel": "Impossibile ripristinare il canale",
+    "updateRole": "Impossibile aggiornare il ruolo",
+    "resetMfa": "Impossibile reimpostare l'autenticazione a due fattori"
+  },
+  "retention": {
+    "title": "Conservazione dei dati",
+    "description": "Elimina automaticamente i messaggi dopo un numero di giorni impostato. I file vengono eliminati insieme ai messaggi. La pulizia viene eseguita una volta al giorno. I promemoria vengono conservati e mostrano \"messaggio eliminato\".",
+    "loadError": "Impossibile caricare la politica di conservazione",
+    "saveError": "Impossibile salvare la politica di conservazione",
+    "resetError": "Impossibile reimpostare la politica del canale",
+    "workspace": {
+      "heading": "Predefinito dello spazio di lavoro",
+      "hint": "Si applica a ogni canale senza una propria impostazione, nonché ai messaggi diretti e ai DM di gruppo."
+    },
+    "mode": {
+      "forever": "Conserva per sempre",
+      "days": "Elimina dopo un numero di giorni",
+      "inherit": "Usa il predefinito dello spazio di lavoro"
+    },
+    "daysLabel": "Giorni",
+    "daysHint": "Da {min} a {max} giorni",
+    "effective": {
+      "forever": "Conservato per sempre",
+      "days": "{count, plural, one {# giorno} other {# giorni}}"
+    },
+    "channels": {
+      "heading": "Canali",
+      "columns": {
+        "channel": "Canale",
+        "policy": "Politica",
+        "effective": "Si applica"
+      },
+      "legalHold": "Blocco legale",
+      "reset": "Ripristina il predefinito",
+      "empty": "Nessun canale"
+    },
+    "save": "Salva",
+    "saved": "Salvato",
+    "confirm": {
+      "title": "Eliminare definitivamente i messaggi vecchi?",
+      "message": "Alla prossima pulizia, i messaggi più vecchi di {count, plural, one {# giorno} other {# giorni}} verranno eliminati definitivamente insieme ai file. Non è possibile annullare l'operazione.",
+      "confirm": "Applica politica"
+    }
+  },
+  "security": {
+    "title": "Autenticazione a due fattori",
+    "requireMfa": "Richiedi l'autenticazione a due fattori a tutti",
+    "requireMfaHint": "I membri senza autenticazione a due fattori possono accedere solo alla schermata di configurazione finché non la attivano.",
+    "unavailable": "L'autenticazione a due fattori è disattivata su questo server perché non è impostata nessuna chiave di cifratura (TOTP_ENCRYPTION_KEY). Il requisito non viene applicato.",
+    "saved": "Impostazioni di sicurezza salvate",
+    "loading": "Caricamento...",
+    "errors": {
+      "loadFailed": "Impossibile caricare le impostazioni di sicurezza.",
+      "saveFailed": "Impossibile salvare le impostazioni di sicurezza."
+    },
+    "allowOAuthApps": "Consenti ai membri di collegare app OAuth",
+    "allowOAuthAppsHint": "Permette ai membri di collegare app come Claude tramite il flusso di accesso OAuth. Disattivando questa opzione, tutte le app vengono scollegate subito."
+  },
+  "dlp": {
+    "title": "Prevenzione della perdita di dati",
+    "description": "Rileva schemi sensibili, come i numeri di carta, nei messaggi. Una regola di blocco impedisce il salvataggio del messaggio. Una regola di avviso lo salva e lo registra nel registro attività. Il testo dei messaggi non viene mai scritto nel registro.",
+    "loadError": "Impossibile caricare le regole DLP",
+    "saveError": "Impossibile salvare la regola",
+    "toggleError": "Impossibile modificare la regola",
+    "deleteError": "Impossibile eliminare la regola",
+    "testError": "Impossibile verificare lo schema",
+    "builtinBadge": "Integrata",
+    "builtinPattern": "Rilevatore integrato",
+    "builtin": {
+      "credit_card": "Numero di carta di credito",
+      "kr_rrn": "Numero di registrazione dei residenti coreani",
+      "aws_access_key": "Chiave di accesso AWS",
+      "private_key": "Chiave privata"
+    },
+    "action": {
+      "BLOCK": "Blocca",
+      "WARN": "Avvisa"
+    },
+    "columns": {
+      "name": "Regola",
+      "pattern": "Schema",
+      "action": "Azione",
+      "enabled": "Stato"
+    },
+    "on": "Attiva",
+    "off": "Disattiva",
+    "toggleLabel": "Attiva o disattiva {name}",
+    "edit": "Modifica",
+    "editLabel": "Modifica {name}",
+    "delete": "Elimina",
+    "deleteLabel": "Elimina {name}",
+    "form": {
+      "createHeading": "Aggiungi una regola",
+      "editHeading": "Modifica regola",
+      "name": "Nome",
+      "pattern": "Schema (espressione regolare)",
+      "patternPlaceholder": "PROGETTO-\\d{4}",
+      "action": "Azione",
+      "add": "Aggiungi regola",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "hint": "Fino a {max} caratteri. Ripetizioni annidate come (a+)+, riferimenti all'indietro e conteggi di ripetizione molto grandi vengono rifiutati."
+    },
+    "patternProblem": {
+      "empty": "Inserisci uno schema.",
+      "tooLong": "Lo schema è troppo lungo.",
+      "invalid": "Questa non è un'espressione regolare valida.",
+      "backreference": "I riferimenti all'indietro non sono consentiti.",
+      "nestedQuantifier": "Le ripetizioni annidate possono rallentare molto i controlli e non sono consentite.",
+      "repeatTooLarge": "Il numero di ripetizioni è troppo grande (massimo 200)."
+    },
+    "test": {
+      "heading": "Prova uno schema",
+      "hint": "Non viene salvato nulla. Inserisci uno schema sopra o scegli una regola salvata, poi digita un testo di esempio.",
+      "source": "Schema da provare",
+      "sourceDraft": "Schema nel modulo qui sopra",
+      "sample": "Testo di esempio",
+      "run": "Prova",
+      "matched": "Corrispondenza. Questo testo verrebbe intercettato.",
+      "notMatched": "Nessuna corrispondenza.",
+      "timedOut": "Il controllo ha impiegato troppo tempo ed è stato interrotto. Semplifica lo schema."
+    },
+    "confirmDelete": {
+      "title": "Eliminare questa regola?",
+      "message": "La regola \"{name}\" verrà rimossa e non sarà più controllata."
+    }
+  },
+  "legalHolds": {
+    "description": "Conserva tutto ciò che una persona ha scritto o ricevuto, anche quando la conservazione dei dati lo eliminerebbe. Gli amministratori possono cercare ed esportare i dati conservati per una verifica legale.",
+    "statusFilter": "Mostra",
+    "status": {
+      "active": "Attivi",
+      "released": "Rilasciati",
+      "all": "Tutti"
+    },
+    "empty": "Nessun blocco legale",
+    "selectHint": "Seleziona un blocco legale per gestire le sue persone e cercare i suoi dati.",
+    "loadMore": "Carica altro",
+    "custodianCount": "{count, plural, one {# persona} other {# persone}}",
+    "createdOn": "Creato il {date}",
+    "releasedOn": "Rilasciato il {date}",
+    "createdBy": "Creato da {name} il {date}",
+    "releasedBy": "Rilasciato da {name} il {date}",
+    "unknownUser": "Utente sconosciuto",
+    "edit": "Modifica",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "fields": {
+      "name": "Nome",
+      "description": "Descrizione (facoltativa)"
+    },
+    "create": {
+      "open": "Nuovo blocco",
+      "submit": "Crea blocco",
+      "hint": "Puoi aggiungere persone dopo aver creato il blocco."
+    },
+    "custodians": {
+      "heading": "Persone nel blocco",
+      "pick": "Scegli una persona",
+      "add": "Aggiungi",
+      "remove": "Rimuovi {name} da questo blocco",
+      "empty": "Nessuno è ancora nel blocco.",
+      "deactivated": "Disattivato"
+    },
+    "release": {
+      "open": "Rilascia blocco",
+      "title": "Rilasciare questo blocco legale?",
+      "message": "\"{name}\" smetterà di conservare i dati. Le persone che non si trovano in un altro blocco attivo tornano alla normale politica di conservazione e i loro vecchi messaggi potrebbero essere eliminati alla prossima pulizia. Il blocco e l'elenco delle persone restano registrati. Non è possibile annullare l'operazione.",
+      "confirm": "Rilascia"
+    },
+    "discovery": {
+      "heading": "Ricerca ed esportazione",
+      "hint": "Include i messaggi scritti dalle persone nel blocco in qualsiasi canale (anche privato), i messaggi diretti e di gruppo a cui hanno partecipato e i dettagli dei file. I messaggi eliminati sono inclusi e contrassegnati.",
+      "query": "Parola chiave",
+      "from": "Da",
+      "to": "A",
+      "search": "Cerca",
+      "export": "Esporta (JSONL)",
+      "exportHint": "Esporta i risultati dell'ultima ricerca. Ogni ricerca ed esportazione viene registrata nel registro attività.",
+      "searchFirst": "Cerca prima con questi filtri. L'esportazione usa i filtri della ricerca mostrata qui sotto.",
+      "kinds": {
+        "channel": "Messaggi dei canali",
+        "dm": "Messaggi diretti",
+        "file": "File"
+      },
+      "empty": "Nessun risultato",
+      "deleted": "Eliminato",
+      "edited": "Modificato",
+      "reply": "Risposta nel thread",
+      "groupDm": "DM di gruppo #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Impossibile caricare i blocchi legali",
+      "create": "Impossibile creare il blocco legale",
+      "update": "Impossibile aggiornare il blocco legale",
+      "custodians": "Impossibile modificare le persone nel blocco",
+      "release": "Impossibile rilasciare il blocco legale",
+      "search": "Ricerca non riuscita",
+      "export": "Esportazione non riuscita"
+    }
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "Panel administratora",
+    "openSidebar": "Otwórz pasek boczny",
+    "tabs": {
+      "members": "Członkowie",
+      "invites": "Zaproszenia",
+      "channels": "Kanały",
+      "webhooks": "Webhooki",
+      "audit": "Dziennik audytu",
+      "retention": "Przechowywanie danych",
+      "security": "Bezpieczeństwo",
+      "dlp": "DLP",
+      "legalHolds": "Wstrzymania prawne"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "Kanał",
+      "members": "Członkowie",
+      "messages": "Wiadomości",
+      "created": "Utworzono"
+    },
+    "actions": {
+      "rename": "Zmień nazwę kanału",
+      "archive": "Zarchiwizuj kanał",
+      "delete": "Usuń kanał",
+      "unarchive": "Przywróć kanał",
+      "deletePermanently": "Usuń trwale"
+    },
+    "emptyActive": "Brak aktywnych kanałów",
+    "archivedHeading": "Zarchiwizowane kanały ({count})",
+    "archivedOn": "zarchiwizowano {date}",
+    "messageCount": "{count, plural, one {# wiadomość} few {# wiadomości} many {# wiadomości} other {# wiadomości}}",
+    "deleteDialog": {
+      "title": "Usuń kanał",
+      "message": "Czy na pewno chcesz trwale usunąć #{name}? Wszystkie wiadomości zostaną utracone. Tej operacji nie można cofnąć."
+    },
+    "archiveDialog": {
+      "title": "Zarchiwizuj kanał",
+      "confirm": "Zarchiwizuj",
+      "message": "Zarchiwizować #{name}? Kanał zniknie z paska bocznego, ale wiadomości zostaną zachowane. Później możesz go przywrócić."
+    },
+    "unarchiveDialog": {
+      "title": "Przywróć kanał",
+      "confirm": "Przywróć",
+      "message": "Przywrócić #{name}? Kanał pojawi się ponownie na pasku bocznym u wszystkich członków."
+    }
+  },
+  "members": {
+    "searchPlaceholder": "Szukaj członków...",
+    "columns": {
+      "user": "Użytkownik",
+      "email": "E-mail",
+      "role": "Rola",
+      "status": "Stan",
+      "actions": "Działania"
+    },
+    "you": "(Ty)",
+    "roles": {
+      "owner": "Właściciel",
+      "admin": "Administrator",
+      "member": "Członek",
+      "guest": "Gość"
+    },
+    "status": {
+      "active": "Aktywny",
+      "deactivated": "Dezaktywowany"
+    },
+    "actions": {
+      "transfer": "Przekaż własność",
+      "reactivate": "Aktywuj ponownie",
+      "deactivate": "Dezaktywuj",
+      "forceLogout": "Wymuś wylogowanie",
+      "resetMfa": "Zresetuj 2FA"
+    },
+    "empty": "Nie znaleziono użytkowników",
+    "dialogs": {
+      "transfer": {
+        "title": "Przekaż własność przestrzeni roboczej",
+        "confirm": "Przekaż",
+        "message": "Czy na pewno chcesz przekazać własność przestrzeni roboczej użytkownikowi {name}? Zostaniesz administratorem."
+      },
+      "deactivate": {
+        "title": "Dezaktywuj użytkownika",
+        "confirm": "Dezaktywuj",
+        "message": "Czy na pewno chcesz dezaktywować {name}? Zostanie od razu wylogowany i nie będzie mógł się zalogować."
+      },
+      "reactivate": {
+        "title": "Aktywuj ponownie użytkownika",
+        "confirm": "Aktywuj",
+        "message": "Czy na pewno chcesz ponownie aktywować {name}? Będzie mógł ponownie się zalogować."
+      },
+      "forceLogout": {
+        "title": "Wymuś wylogowanie",
+        "confirm": "Wyloguj",
+        "message": "Wylogować {name} ze wszystkich urządzeń teraz? Jego konto pozostanie aktywne i będzie mógł się ponownie zalogować."
+      },
+      "resetMfa": {
+        "title": "Zresetuj uwierzytelnianie dwuskładnikowe",
+        "confirm": "Zresetuj",
+        "message": "Usunąć uwierzytelnianie dwuskładnikowe dla {name}? Zostanie wylogowany ze wszystkich urządzeń i będzie mógł logować się tylko hasłem."
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "Uwierzytelnianie dwuskładnikowe jest włączone"
+    }
+  },
+  "invites": {
+    "createHeading": "Utwórz link z zaproszeniem",
+    "fields": {
+      "role": "Rola",
+      "maxUses": "Maks. liczba użyć",
+      "expiresIn": "Wygasa za"
+    },
+    "unlimited": "Bez limitu",
+    "expiry": {
+      "1d": "1 dzień",
+      "7d": "7 dni",
+      "30d": "30 dni",
+      "never": "Nigdy"
+    },
+    "expired": "Wygasło",
+    "columns": {
+      "url": "Adres zaproszenia",
+      "uses": "Użycia",
+      "expires": "Wygasa",
+      "createdBy": "Utworzył"
+    },
+    "copyUrl": "Kopiuj adres zaproszenia",
+    "full": "(wyczerpano)",
+    "delete": "Usuń zaproszenie",
+    "empty": "Nie ma jeszcze linków z zaproszeniami"
+  },
+  "webhooks": {
+    "createHeading": "Utwórz webhook",
+    "fields": {
+      "name": "Nazwa webhooka",
+      "channel": "Kanał"
+    },
+    "namePlaceholder": "Moja integracja",
+    "selectChannel": "Wybierz kanał...",
+    "columns": {
+      "name": "Nazwa",
+      "url": "Adres webhooka",
+      "lastUsed": "Ostatnio użyty"
+    },
+    "never": "Nigdy",
+    "justNow": "Przed chwilą",
+    "inactive": "Nieaktywny",
+    "copyUrl": "Kopiuj adres webhooka",
+    "delete": "Usuń webhook",
+    "empty": "Nie skonfigurowano jeszcze webhooków"
+  },
+  "audit": {
+    "empty": "Brak wpisów pasujących do filtrów. Zarejestrowane działania pojawią się tutaj.",
+    "loadMore": "Załaduj więcej",
+    "targets": {
+      "user": "Użytkownik",
+      "channel": "Kanał",
+      "invite": "Zaproszenie",
+      "webhook": "Webhook",
+      "message": "Wiadomość",
+      "directMessage": "Wiadomość prywatna",
+      "token": "Token dostępu",
+      "auditLog": "Dziennik audytu",
+      "mcpTool": "Narzędzie MCP",
+      "workspace": "Przestrzeń robocza",
+      "file": "Plik",
+      "dlpRule": "Reguła DLP",
+      "legalHold": "Wstrzymanie prawne"
+    },
+    "action": {
+      "authLogin": "Zalogowano",
+      "authLoginFailed": "Logowanie nieudane",
+      "authLogout": "Wylogowano",
+      "authPasswordChanged": "Zmieniono hasło",
+      "userRoleChanged": "Zmieniono rolę",
+      "userDeactivated": "Dezaktywowano",
+      "userForceLogout": "Wymuszono wylogowanie",
+      "userReactivated": "Aktywowano ponownie",
+      "ownershipTransferred": "Przekazano własność",
+      "ownerBootstrapped": "Utworzono właściciela",
+      "channelCreated": "Utworzono kanał",
+      "channelEdited": "Zmieniono kanał",
+      "channelArchived": "Zarchiwizowano kanał",
+      "channelUnarchived": "Przywrócono kanał",
+      "channelDeleted": "Usunięto kanał",
+      "channelMemberAdded": "Dodano członka",
+      "channelMemberRemoved": "Usunięto członka",
+      "inviteCreated": "Utworzono zaproszenie",
+      "inviteDeleted": "Usunięto zaproszenie",
+      "webhookCreated": "Utworzono webhook",
+      "webhookDeleted": "Usunięto webhook",
+      "tokenCreate": "Utworzono token",
+      "tokenRevoke": "Unieważniono token",
+      "mcpToolCall": "Wywołanie narzędzia MCP",
+      "auditExported": "Wyeksportowano dziennik audytu",
+      "authLoginLocked": "Konto zablokowane",
+      "sessionRevoked": "Wylogowano urządzenie",
+      "sessionRevokedAll": "Wylogowano wszystkie urządzenia",
+      "retentionPurged": "Usunięto wygasłe dane",
+      "retentionWorkspaceUpdated": "Zmieniono politykę przechowywania",
+      "retentionChannelUpdated": "Zmieniono przechowywanie kanału",
+      "retentionChannelCleared": "Zresetowano przechowywanie kanału",
+      "mfaEnabled": "Włączono uwierzytelnianie dwuskładnikowe",
+      "mfaDisabled": "Wyłączono uwierzytelnianie dwuskładnikowe",
+      "mfaRecoveryUsed": "Użyto kodu odzyskiwania",
+      "mfaRecoveryRegenerated": "Wygenerowano nowe kody odzyskiwania",
+      "mfaResetByAdmin": "Administrator zresetował uwierzytelnianie dwuskładnikowe",
+      "mfaPolicyChanged": "Zmieniono wymóg uwierzytelniania dwuskładnikowego",
+      "dlpBlocked": "Wiadomość zablokowana przez DLP",
+      "dlpWarned": "Ostrzeżenie DLP",
+      "dlpRuleCreated": "Utworzono regułę DLP",
+      "dlpRuleUpdated": "Zmieniono regułę DLP",
+      "dlpRuleDeleted": "Usunięto regułę DLP",
+      "dlpRuleTimeout": "Przekroczono czas reguły DLP",
+      "dlpRuleAutoDisabled": "Reguła DLP została automatycznie wyłączona",
+      "legalHoldCreated": "Utworzono wstrzymanie prawne",
+      "legalHoldUpdated": "Zmieniono wstrzymanie prawne",
+      "legalHoldCustodianAdded": "Dodano osobę do wstrzymania prawnego",
+      "legalHoldCustodianRemoved": "Usunięto osobę z wstrzymania prawnego",
+      "legalHoldReleased": "Zwolniono wstrzymanie prawne",
+      "ediscoverySearched": "Wyszukiwanie eDiscovery",
+      "ediscoveryExportRequested": "Zażądano eksportu eDiscovery",
+      "ediscoveryExported": "Wyeksportowano eDiscovery"
+    },
+    "filters": {
+      "allActions": "Wszystkie działania",
+      "actionsSelected": "{count, plural, one {# działanie} few {# działania} many {# działań} other {# działania}}",
+      "actor": "Wykonujący",
+      "allActors": "Wszyscy wykonujący",
+      "targetType": "Typ obiektu",
+      "allTargets": "Wszystkie obiekty",
+      "from": "Od",
+      "to": "Do",
+      "apply": "Zastosuj",
+      "reset": "Resetuj"
+    },
+    "export": {
+      "csv": "Eksportuj CSV",
+      "json": "Eksportuj JSON"
+    },
+    "unknownActor": "Nieznany"
+  },
+  "errors": {
+    "archiveChannel": "Nie udało się zarchiwizować kanału",
+    "createInvite": "Nie udało się utworzyć zaproszenia",
+    "createWebhook": "Nie udało się utworzyć webhooka",
+    "deactivateUser": "Nie udało się dezaktywować użytkownika",
+    "deleteChannel": "Nie udało się usunąć kanału",
+    "deleteInvite": "Nie udało się usunąć zaproszenia",
+    "deleteWebhook": "Nie udało się usunąć webhooka",
+    "editChannel": "Nie udało się zmienić kanału",
+    "exportAuditLog": "Nie udało się wyeksportować dziennika audytu",
+    "fetchAuditLog": "Nie udało się pobrać dziennika audytu",
+    "fetchChannels": "Nie udało się pobrać kanałów",
+    "fetchInvites": "Nie udało się pobrać zaproszeń",
+    "fetchUsers": "Nie udało się pobrać użytkowników",
+    "fetchWebhooks": "Nie udało się pobrać webhooków",
+    "forceLogout": "Nie udało się wylogować użytkownika",
+    "reactivateUser": "Nie udało się aktywować użytkownika ponownie",
+    "removeChannelMember": "Nie udało się usunąć członka z kanału",
+    "transferOwnership": "Nie udało się przekazać własności",
+    "unarchiveChannel": "Nie udało się przywrócić kanału",
+    "updateRole": "Nie udało się zaktualizować roli",
+    "resetMfa": "Nie udało się zresetować uwierzytelniania dwuskładnikowego"
+  },
+  "retention": {
+    "title": "Przechowywanie danych",
+    "description": "Automatycznie usuwaj wiadomości po określonej liczbie dni. Pliki są usuwane razem z wiadomościami. Czyszczenie odbywa się raz dziennie. Przypomnienia są zachowywane i pokazują „usunięta wiadomość”.",
+    "loadError": "Nie udało się wczytać polityki przechowywania",
+    "saveError": "Nie udało się zapisać polityki przechowywania",
+    "resetError": "Nie udało się zresetować polityki kanału",
+    "workspace": {
+      "heading": "Ustawienie domyślne przestrzeni roboczej",
+      "hint": "Dotyczy każdego kanału bez własnego ustawienia oraz wiadomości prywatnych i grupowych."
+    },
+    "mode": {
+      "forever": "Zachowuj na zawsze",
+      "days": "Usuń po określonej liczbie dni",
+      "inherit": "Użyj ustawienia przestrzeni roboczej"
+    },
+    "daysLabel": "Dni",
+    "daysHint": "Od {min} do {max} dni",
+    "effective": {
+      "forever": "Zachowywane na zawsze",
+      "days": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}"
+    },
+    "channels": {
+      "heading": "Kanały",
+      "columns": {
+        "channel": "Kanał",
+        "policy": "Polityka",
+        "effective": "Obowiązuje"
+      },
+      "legalHold": "Wstrzymanie prawne",
+      "reset": "Przywróć ustawienie domyślne",
+      "empty": "Brak kanałów"
+    },
+    "save": "Zapisz",
+    "saved": "Zapisano",
+    "confirm": {
+      "title": "Trwale usunąć stare wiadomości?",
+      "message": "Podczas następnego czyszczenia wiadomości starsze niż {count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}} zostaną trwale usunięte wraz z plikami. Tej operacji nie można cofnąć.",
+      "confirm": "Zastosuj politykę"
+    }
+  },
+  "security": {
+    "title": "Uwierzytelnianie dwuskładnikowe",
+    "requireMfa": "Wymagaj uwierzytelniania dwuskładnikowego od wszystkich",
+    "requireMfaHint": "Członkowie bez uwierzytelniania dwuskładnikowego mogą wejść tylko na ekran konfiguracji, dopóki go nie włączą.",
+    "unavailable": "Uwierzytelnianie dwuskładnikowe jest wyłączone na tym serwerze, ponieważ nie ustawiono klucza szyfrowania (TOTP_ENCRYPTION_KEY). Wymóg nie jest egzekwowany.",
+    "saved": "Zapisano ustawienia bezpieczeństwa",
+    "loading": "Ładowanie...",
+    "errors": {
+      "loadFailed": "Nie udało się wczytać ustawień bezpieczeństwa.",
+      "saveFailed": "Nie udało się zapisać ustawień bezpieczeństwa."
+    },
+    "allowOAuthApps": "Zezwól członkom na łączenie aplikacji OAuth",
+    "allowOAuthAppsHint": "Pozwala członkom łączyć aplikacje, takie jak Claude, przez logowanie OAuth. Wyłączenie tej opcji od razu odłączy wszystkie aplikacje."
+  },
+  "dlp": {
+    "title": "Zapobieganie utracie danych",
+    "description": "Wykrywa w wiadomościach wrażliwe wzorce, na przykład numery kart. Reguła blokująca nie pozwala zapisać wiadomości. Reguła ostrzegająca zapisuje ją i rejestruje w dzienniku audytu. Treść wiadomości nigdy nie jest zapisywana w dzienniku.",
+    "loadError": "Nie udało się wczytać reguł DLP",
+    "saveError": "Nie udało się zapisać reguły",
+    "toggleError": "Nie udało się zmienić reguły",
+    "deleteError": "Nie udało się usunąć reguły",
+    "testError": "Nie udało się sprawdzić wzorca",
+    "builtinBadge": "Wbudowana",
+    "builtinPattern": "Wbudowany detektor",
+    "builtin": {
+      "credit_card": "Numer karty kredytowej",
+      "kr_rrn": "Koreański numer ewidencyjny mieszkańca",
+      "aws_access_key": "Klucz dostępu AWS",
+      "private_key": "Klucz prywatny"
+    },
+    "action": {
+      "BLOCK": "Blokuj",
+      "WARN": "Ostrzegaj"
+    },
+    "columns": {
+      "name": "Reguła",
+      "pattern": "Wzorzec",
+      "action": "Działanie",
+      "enabled": "Stan"
+    },
+    "on": "Wł.",
+    "off": "Wył.",
+    "toggleLabel": "Włącz lub wyłącz {name}",
+    "edit": "Edytuj",
+    "editLabel": "Edytuj {name}",
+    "delete": "Usuń",
+    "deleteLabel": "Usuń {name}",
+    "form": {
+      "createHeading": "Dodaj regułę",
+      "editHeading": "Edytuj regułę",
+      "name": "Nazwa",
+      "pattern": "Wzorzec (wyrażenie regularne)",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "Działanie",
+      "add": "Dodaj regułę",
+      "save": "Zapisz",
+      "cancel": "Anuluj",
+      "hint": "Do {max} znaków. Zagnieżdżone powtórzenia, np. (a+)+, odwołania wsteczne oraz bardzo duże liczby powtórzeń są odrzucane."
+    },
+    "patternProblem": {
+      "empty": "Wpisz wzorzec.",
+      "tooLong": "Wzorzec jest za długi.",
+      "invalid": "To nieprawidłowe wyrażenie regularne.",
+      "backreference": "Odwołania wsteczne są niedozwolone.",
+      "nestedQuantifier": "Zagnieżdżone powtórzenia mogą bardzo spowolnić sprawdzanie, dlatego są niedozwolone.",
+      "repeatTooLarge": "Liczba powtórzeń jest za duża (maksymalnie 200)."
+    },
+    "test": {
+      "heading": "Przetestuj wzorzec",
+      "hint": "Nic nie jest zapisywane. Wpisz wzorzec powyżej lub wybierz zapisaną regułę, a następnie wpisz przykładowy tekst.",
+      "source": "Wzorzec do przetestowania",
+      "sourceDraft": "Wzorzec z formularza powyżej",
+      "sample": "Przykładowy tekst",
+      "run": "Testuj",
+      "matched": "Dopasowanie. Ten tekst zostałby wykryty.",
+      "notMatched": "Brak dopasowania.",
+      "timedOut": "Sprawdzanie trwało zbyt długo i zostało zatrzymane. Uprość wzorzec."
+    },
+    "confirmDelete": {
+      "title": "Usunąć tę regułę?",
+      "message": "Reguła „{name}” zostanie usunięta i nie będzie już sprawdzana."
+    }
+  },
+  "legalHolds": {
+    "description": "Zachowuje wszystko, co dana osoba napisała lub otrzymała, nawet gdy polityka przechowywania miałaby to usunąć. Administratorzy mogą wyszukiwać i eksportować zachowane dane do przeglądu prawnego.",
+    "statusFilter": "Pokaż",
+    "status": {
+      "active": "Aktywne",
+      "released": "Zwolnione",
+      "all": "Wszystkie"
+    },
+    "empty": "Brak wstrzymań prawnych",
+    "selectHint": "Wybierz wstrzymanie prawne, aby zarządzać jego osobami i przeszukać jego dane.",
+    "loadMore": "Załaduj więcej",
+    "custodianCount": "{count, plural, one {# osoba} few {# osoby} many {# osób} other {# osoby}}",
+    "createdOn": "Utworzono {date}",
+    "releasedOn": "Zwolniono {date}",
+    "createdBy": "Utworzył(a) {name}, {date}",
+    "releasedBy": "Zwolnił(a) {name}, {date}",
+    "unknownUser": "Nieznany użytkownik",
+    "edit": "Edytuj",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "fields": {
+      "name": "Nazwa",
+      "description": "Opis (opcjonalnie)"
+    },
+    "create": {
+      "open": "Nowe wstrzymanie",
+      "submit": "Utwórz wstrzymanie",
+      "hint": "Osoby możesz dodać po utworzeniu wstrzymania."
+    },
+    "custodians": {
+      "heading": "Osoby objęte wstrzymaniem",
+      "pick": "Wybierz osobę",
+      "add": "Dodaj",
+      "remove": "Usuń {name} z tego wstrzymania",
+      "empty": "Nikt jeszcze nie jest objęty tym wstrzymaniem.",
+      "deactivated": "Dezaktywowany"
+    },
+    "release": {
+      "open": "Zwolnij wstrzymanie",
+      "title": "Zwolnić to wstrzymanie prawne?",
+      "message": "„{name}” przestanie zachowywać dane. Osoby, które nie są objęte innym aktywnym wstrzymaniem, wrócą do zwykłej polityki przechowywania, a ich stare wiadomości mogą zostać usunięte podczas następnego czyszczenia. Wstrzymanie i lista osób pozostaną w rejestrze. Tej operacji nie można cofnąć.",
+      "confirm": "Zwolnij"
+    },
+    "discovery": {
+      "heading": "Wyszukiwanie i eksport",
+      "hint": "Obejmuje wiadomości osób objętych wstrzymaniem we wszystkich kanałach (także prywatnych), wiadomości prywatne i grupowe, w których uczestniczyły, oraz szczegóły plików. Usunięte wiadomości są uwzględniane i oznaczane.",
+      "query": "Słowo kluczowe",
+      "from": "Od",
+      "to": "Do",
+      "search": "Szukaj",
+      "export": "Eksportuj (JSONL)",
+      "exportHint": "Eksportuje wyniki ostatniego wyszukiwania. Każde wyszukiwanie i eksport jest zapisywane w dzienniku audytu.",
+      "searchFirst": "Najpierw wyszukaj z tymi filtrami. Eksport używa filtrów wyszukiwania pokazanego poniżej.",
+      "kinds": {
+        "channel": "Wiadomości z kanałów",
+        "dm": "Wiadomości prywatne",
+        "file": "Pliki"
+      },
+      "empty": "Brak wyników",
+      "deleted": "Usunięte",
+      "edited": "Edytowane",
+      "reply": "Odpowiedź w wątku",
+      "groupDm": "Rozmowa grupowa #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "Nie udało się wczytać wstrzymań prawnych",
+      "create": "Nie udało się utworzyć wstrzymania prawnego",
+      "update": "Nie udało się zaktualizować wstrzymania prawnego",
+      "custodians": "Nie udało się zmienić listy osób objętych wstrzymaniem",
+      "release": "Nie udało się zwolnić wstrzymania prawnego",
+      "search": "Wyszukiwanie nie powiodło się",
+      "export": "Eksport nie powiódł się"
+    }
+  }
+}
