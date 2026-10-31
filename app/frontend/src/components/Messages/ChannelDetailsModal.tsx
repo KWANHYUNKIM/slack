@@ -6,7 +6,6 @@ import { useChannelStore } from '@/stores/useChannelStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import {
-  CHANNEL_NAME_ADMIN_MAX,
   CHANNEL_NAME_MAX,
   channelNameErrorMessage,
   checkChannelName,
@@ -56,11 +55,10 @@ export function ChannelDetailsModal({ channel, onClose }: ChannelDetailsModalPro
   }, [channel.id, user?.id]);
 
   const canEdit = isWorkspaceAdmin || memberRole === 'OWNER' || memberRole === 'MODERATOR';
-  const nameMax = isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : CHANNEL_NAME_MAX;
   // 이름을 바꾸지 않았으면 이름 검사로 저장을 막지 않는다(길이·대문자 규칙이 달랐던 옛 이름 보호)
   const nameChanged = name !== channel.name;
-  const nameReason = !nameChanged ? null : name.trim().length > 0 ? checkChannelName(name, nameMax) : 'required';
-  const nameError = nameReason ? channelNameErrorMessage(tChannels, nameReason, nameMax) : '';
+  const nameReason = !nameChanged ? null : name.trim().length > 0 ? checkChannelName(name, CHANNEL_NAME_MAX) : 'required';
+  const nameError = nameReason ? channelNameErrorMessage(tChannels, nameReason, CHANNEL_NAME_MAX) : '';
 
   const handleSave = async () => {
     if (!canEdit || nameReason) return;
@@ -74,7 +72,7 @@ export function ChannelDetailsModal({ channel, onClose }: ChannelDetailsModalPro
       });
       onClose();
     } catch (err) {
-      setError(apiErrorMessage(err, 'messages:details.saveFailed', nameMax));
+      setError(apiErrorMessage(err, 'messages:details.saveFailed', CHANNEL_NAME_MAX));
     } finally {
       setSaving(false);
     }

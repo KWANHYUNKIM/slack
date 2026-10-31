@@ -4,7 +4,7 @@ import { Lock, Hash, Trash2, Archive, ArchiveRestore, Pencil, X, Check } from 'l
 import { useAdminStore } from '@/stores/useAdminStore';
 import { formatDate } from '@/lib/i18n/format';
 import { apiErrorMessage } from '@/lib/apiErrors';
-import { CHANNEL_NAME_ADMIN_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
+import { CHANNEL_NAME_MAX, channelNameErrorMessage, checkChannelName, normalizeChannelName } from '@/lib/channelName';
 import { useAdminAction } from '@/hooks/useAdminAction';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -41,9 +41,9 @@ export function AdminChannelsTab() {
     const channel = channels.find((c) => c.id === id);
     const name = normalizeChannelName(editName);
     if (channel && name !== channel.name) {
-      const reason = checkChannelName(name, CHANNEL_NAME_ADMIN_MAX);
+      const reason = checkChannelName(name, CHANNEL_NAME_MAX);
       if (reason) {
-        setEditError(channelNameErrorMessage(t, reason, CHANNEL_NAME_ADMIN_MAX));
+        setEditError(channelNameErrorMessage(t, reason, CHANNEL_NAME_MAX));
         return;
       }
       savingRef.current = true;
@@ -54,7 +54,7 @@ export function AdminChannelsTab() {
         // 실패하면 편집 행을 그대로 열어 두고, 서버 코드(예: 중복 이름)에 맞는 번역 문구를 보여 준다.
         // 그사이 다른 행을 편집했거나 취소했다면 그 행의 상태는 건드리지 않는다.
         if (editingRef.current === id) {
-          setEditError(apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_ADMIN_MAX));
+          setEditError(apiErrorMessage(err, 'admin:errors.editChannel', CHANNEL_NAME_MAX));
         }
         return;
       } finally {

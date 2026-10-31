@@ -41,7 +41,7 @@ describe('POST /channels failure paths always carry a code', () => {
       expectCoded(await request(app).post('/channels').set(auth()).send({ name: name.toUpperCase() }), 400, 'CHANNEL_NAME_TAKEN');
 
       // 이름 규칙 위반(보이지 않는 문자, 공백, 비문자열, 너무 긺, 다른 문자 체계 혼용)
-      for (const bad of ['dev᠋', 'dev᠎', '   ', 'two words', 'gеneral', 'x'.repeat(26), 123, null, ['a']]) {
+      for (const bad of ['dev᠋', 'dev᠎', '   ', 'two words', 'gеneral', 'x'.repeat(81), 123, null, ['a']]) {
         expectCoded(await request(app).post('/channels').set(auth()).send({ name: bad }), 400, 'CHANNEL_NAME_INVALID');
       }
 

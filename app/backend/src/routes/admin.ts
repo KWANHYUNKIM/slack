@@ -8,7 +8,6 @@ import { AuthRequest } from '../types.js';
 import { getIO, kickUser, kickSession } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
 import { updateChannel } from '../services/channelService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
@@ -600,12 +599,11 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
     }
 
     // 이름 검증·중복·감사 로그·알림은 채널 수정 경로와 같은 서비스 함수가 맡는다.
-    // 이름은 생성 경로와 같은 검증을 쓰고, 상한만 관리자 상한(CHANNEL_NAME_ADMIN_MAX)이다.
+    // 이름은 생성 경로와 같은 검증(같은 CHANNEL_NAME_MAX 상한)을 쓴다.
     const result = await updateChannel({
       channel,
       actorId: req.user!.userId,
       input: { name: parsed.data.name, isPrivate: parsed.data.isPrivate },
-      nameMax: CHANNEL_NAME_ADMIN_MAX,
     });
     if (!result.ok) {
       res.status(result.status).json(result.body);

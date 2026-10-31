@@ -11,7 +11,7 @@ import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { writeAuditLog } from '../utils/auditLog.js';
-import { validateChannelName, CHANNEL_NAME_ADMIN_MAX } from '../utils/channelName.js';
+import { validateChannelName } from '../utils/channelName.js';
 import { updateChannel, CHANNEL_NAME_TAKEN } from '../services/channelService.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
 
@@ -32,7 +32,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const parsed = createChannelSchema.parse(req.body);
     const nameResult = validateChannelName(parsed.name);
     if (!nameResult.ok) {
-      res.status(400).json({ error: nameResult.error, code: nameResult.code });
+      res.status(400).json({ error: nameResult.error, code: nameResult.code, reason: nameResult.reason });
       return;
     }
     const name = nameResult.name;
@@ -298,12 +298,10 @@ router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => 
     }
 
     // 이름 검증·중복·알림은 관리자 경로와 같은 서비스 함수가 맡는다.
-    // 이미 25자를 넘는 기존 이름이 있어 관리자는 관리자 상한을 쓴다.
     const result = await updateChannel({
       channel,
       actorId: userId,
       input: parsed.data,
-      nameMax: isWorkspaceAdmin ? CHANNEL_NAME_ADMIN_MAX : undefined,
     });
     if (!result.ok) {
       res.status(result.status).json(result.body);

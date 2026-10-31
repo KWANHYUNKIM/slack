@@ -4,12 +4,15 @@
 
 import type { TFunction } from 'i18next';
 
-export const CHANNEL_NAME_MAX = 25;
-// 관리자 이름 변경의 상한(기존 관리자 상한, DB 컬럼 크기)
-export const CHANNEL_NAME_ADMIN_MAX = 80;
+// 생성, 수정, 관리자 변경이 모두 같은 상한을 쓴다(Slack 기준 80자, DB 컬럼 VarChar(80)과 같다).
+export const CHANNEL_NAME_MAX = 80;
+// 한 글자 뒤에 이어지는 결합 문자의 최대 개수. 넘으면 zalgo 이름(글자 위아래로 쌓이는 장식)으로 본다.
+// 데바나가리·아랍 하라카트·태국어·NFD 베트남어는 보통 1~3개라 통과한다.
+export const CHANNEL_NAME_MAX_MARKS = 4;
 
 // 첫 글자는 글자·숫자, 결합 문자는 글자·숫자 뒤에만, `-`·`_`는 어디든(첫 글자 제외).
 // 글자/숫자와 결합 문자 집합이 겹치지 않아 백트래킹이 폭발하지 않는다. 제어/서식 문자(\p{C}), 공백, 기호, 이모지는 걸러진다.
+const TOO_MANY_MARKS_PATTERN = new RegExp(`\\p{M}{${CHANNEL_NAME_MAX_MARKS + 1},}`, 'u');
 const CHANNEL_NAME_PATTERN = /^[\p{L}\p{N}]\p{M}*(?:[\p{L}\p{N}]\p{M}*|[_-])*$/u;
 // 소문자 변환 뒤에도 남는 대문자/제목 문자(대소문자 짝이 없는 문자는 \p{Lo}라 해당 없음)
 const UPPERCASE_PATTERN = /[\p{Lu}\p{Lt}]/u;
@@ -66,7 +69,7 @@ function hasMixedScripts(name: string): boolean {
   return false;
 }
 
-export type ChannelNameReason = 'required' | 'tooLong' | 'invalidChars' | 'mixedScripts';
+export type ChannelNameReason = 'required' | 'tooLong' | 'invalidChars' | 'tooManyMarks' | 'mixedScripts';
 
 /** 정규화된 이름이 규칙에 맞는지 검사한다. 맞으면 null, 아니면 이유. */
 export function checkChannelName(name: string, maxLength: number = CHANNEL_NAME_MAX): ChannelNameReason | null {
@@ -81,6 +84,7 @@ export function checkChannelName(name: string, maxLength: number = CHANNEL_NAME_
   ) {
     return 'invalidChars';
   }
+  if (TOO_MANY_MARKS_PATTERN.test(name)) return 'tooManyMarks';
   if (hasMixedScripts(name)) return 'mixedScripts';
   return null;
 }

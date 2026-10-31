@@ -66,17 +66,17 @@ describe('Channels', () => {
       expect(res.status).toBe(400);
     });
 
-    it('should reject channel names longer than 25 characters', async () => {
+    it('should reject channel names longer than 80 characters', async () => {
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ name: 'this-channel-name-is-way-too-long' });
+        .send({ name: 'a'.repeat(81) });
 
       expect(res.status).toBe(400);
     });
 
-    it('should accept channel names of exactly 25 characters', async () => {
-      const name = 'a'.repeat(25);
+    it('should accept channel names of exactly 80 characters', async () => {
+      const name = 'a'.repeat(80);
       const res = await request(app)
         .post('/channels')
         .set('Authorization', `Bearer ${authToken}`)
