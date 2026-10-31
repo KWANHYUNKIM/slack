@@ -222,3 +222,4 @@
 | 2026-11-01 00:43 | i18n-3 리베이스 완료 확인(충돌 0, origin/main 기준 최신), 남은 테스트 수정은 총괄이 별도 커밋. tsc·eslint·i18n·외부 URL·i18n-backend 18·dms 27·auth 24·search 33 → PR #71, /code-review |
 | 2026-11-01 00:45 | PR #71 리뷰 10건 → dev-4 반영 지시. 총괄 결정: 상태별 기본 code는 "구체 code 없음"으로 보고 화면별 fallback 문구 우선, JSON-RPC 응답엔 code 미부착, userPrefsSync는 400 거부만 기억·로그아웃 시 초기화, VALIDATION_FAILED에 fields(path·reason) 추가로 가입·로그인 필드별 문구 |
 | 2026-11-01 00:48 | 자원 정상(여유 30%, 스왑 89%) 한도 3. 배정: dev-1 E4 감사 로그 강화(sonnet, 엔터프라이즈 첫 파트·선행 없음), dev-3 i18n-4 RTL(sonnet, i18n-3·E4 파일은 최소 수정). 진행: dev-4 PR #71 반영 |
+| 2026-11-01 00:57 | PR #71(i18n-3) 머지(d9511ed): 리베이스 충돌 없음 확인 후 i18n-backend 22·auth 24·admin-channel-errors 5·i18nbackend:test 7, 비어 있지 않은 diff(44파일) 가드 후 푸시. 마이그레이션 20261101010000_add_user_locale을 dev1·2·3·5·slackclone·slackclone_dev에 적용. RTL(i18n-4) 검토: 리베이스 중 package.json 스크립트 충돌 양쪽 유지, 결과에 emoji:test 키 중복이 생겨 총괄이 제거 커밋 → PR #74, /code-review. 진행: dev-1 E4 |
