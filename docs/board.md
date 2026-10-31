@@ -12,8 +12,8 @@
 | 규칙 문서(git, FE, BE, 보안, 기술 스택, 엔터프라이즈·배포) | 총괄 | - | 완료 | 30분 | 2026-10-31 09:15 | 2026-10-31 09:35 | |
 | fix/baseline-failing-tests: 기준 테스트 실패 6건과 Jest 미종료 | dev-1 | sonnet | 완료(PR #5 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:48 | security, files, edge-cases, admin |
 | ci: GitHub Actions ci.yml (backend 테스트 + frontend 빌드/린트) | dev-2 | haiku | 완료(PR #3 머지) | 1h | 2026-10-31 09:23 | 2026-10-31 09:26 | |
-| D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | PR #45 리뷰 반영 중 | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
-| D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | - | sonnet | 대기 | 1.5h | | | D1 이후 |
+| D1 desktop-shell: Electron 셸, 서버 주소 입력, preload API, electron-builder | dev-4 | opus | 완료(PR #45 머지) | 2h | 2026-10-31 23:07 | | 보안 문서 9절 |
+| D2 release: release.yml(Windows exe, dmg, AppImage를 Releases에 업로드), release-please | dev-4 | sonnet | 진행 | 1.5h | 2026-10-31 23:33 | | D1 이후 |
 | E1~E10 엔터프라이즈 (architecture 문서 3절) | - | opus/sonnet | 대기 | | | | P0 이후 |
 | 2026-10-31 09:00 | planner-2: Slack 기술 구조 조사 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:00 | 2026-10-31 09:02 | docs/research/slack-architecture.md |
 | security/deps-upgrade-frontend: quill, react-router 등 | dev-3 | sonnet | 완료(PR #4 머지) | 1h | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3 |
@@ -24,7 +24,7 @@
 | 05-user-status-dnd | dev-1 | sonnet | 완료(PR #28 머지) | 1.5h | 2026-10-31 21:58 | 2026-10-31 22:07 | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
 | fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-5 | sonnet | 완료(PR #7 머지) | 1.5h | 2026-10-31 09:58 | 2026-10-31 10:06 | CI frontend job 통과 조건 |
 | feat/channel-name-unicode: 채널 이름에 한국어 등 유니코드 글자, 밑줄 허용 (백엔드 zod + 프런트 다이얼로그) | dev-5 | sonnet | 완료(PR #14 머지) | 1h | 12:23 | 12:33 | 총괄 결정: Slack과 같게 |
-| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | - | sonnet | 대기 | 1h | | | PR #5 리뷰에서 발견 |
+| security/file-scoped-download-token: 프런트가 파일별 토큰을 쓰게 하고 범위 없는 토큰 제거 검토 | dev-3 | sonnet | 진행 | 1h | 2026-10-31 23:33 | | PR #5 리뷰에서 발견 |
 | perf/jwt-double-verify: rate limit 키 계산과 authMiddleware에서 JWT를 두 번 검증하는 것 정리 | - | haiku | 기록만 | 30분 | | | PR #5 리뷰 7번 |
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
@@ -43,7 +43,7 @@
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
-| mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | 진행 | 2h | 2026-10-31 23:23 | | |
+| mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | dev-2 | sonnet | PR #49 리뷰 중 | 2h | 2026-10-31 23:23 | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | - | sonnet | 대기(06 이후) | 1.5h | | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
 | fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 완료(PR #12 머지) | 45분 | | | PR #9 브라우저 확인에서 발견 |
@@ -64,3 +64,4 @@
 | 00c-slack-browser-verify: Claude in Chrome으로 #claude-test CRUD 재관찰, 06~10 "검증 필요" 확인 | - | sonnet | 대기(브라우저 도구 필요) | 1h | | | 사용자 확인 필요 |
 | feat/dm-unread-divider: 1:1 DM·그룹 DM 안 읽음 구분선(기준점 필드, 열 때 읽음 처리 순서) | dev-3 | sonnet | 완료(PR #41 머지) | 1h | 2026-10-31 23:01 | | PR #36 남은 이슈 |
 | fix/admin-store-actions: useAdminStore 나머지 액션(delete/archive/role) 실패 전달과 호출 측 처리 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #38 남은 이슈 |
+| mcp-2b send_dm: MCP DM·그룹 DM 쓰기·읽기 도구(DM 공용 서비스 추출) | - | sonnet | 대기 | 1.5h | | | PR #49 남은 이슈 |
