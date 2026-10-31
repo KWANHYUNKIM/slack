@@ -27,7 +27,7 @@ test.describe('Search result scrolls to matched message', () => {
     const searchInput = page.locator('header input[placeholder="Search"]');
     await searchInput.click();
     await searchInput.fill(unique);
-    await page.keyboard.press('Enter');
+    // 입력하면 300ms 뒤 드롭다운 미리보기가 열린다(Enter는 /search 페이지로 이동한다)
 
     // Wait for search results dropdown
     const dropdown = page.getByTestId('search-results-dropdown');

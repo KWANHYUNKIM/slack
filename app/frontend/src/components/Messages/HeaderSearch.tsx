@@ -8,6 +8,9 @@ import { Avatar } from '@/components/ui/avatar';
 import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
+/** 드롭다운 미리보기에 보여 줄 최대 결과 수 */
+const PREVIEW_LIMIT = 5;
+
 interface HeaderSearchProps {
   testIdPrefix?: string;
 }
@@ -41,7 +44,7 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
     setIsSearching(true);
     setShowResults(true);
     try {
-      const data = await searchMessages(q);
+      const data = await searchMessages(q, undefined, PREVIEW_LIMIT);
       setSearchResults(data.results);
     } catch {
       setSearchResults([]);
@@ -67,7 +70,13 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-      handleSearch();
+      const q = searchQuery.trim();
+      if (!q) return;
+      // Enter는 전체 검색 페이지로 보낸다. 드롭다운은 입력 중 미리보기(상위 5건)다.
+      navigate(`/search?${new URLSearchParams({ q })}`);
+      setSearchQuery('');
+      setShowResults(false);
+      setSearchResults([]);
     } else if (e.key === 'Escape') {
       setSearchQuery('');
       setShowResults(false);
@@ -111,7 +120,7 @@ export function HeaderSearch({ testIdPrefix = '' }: HeaderSearchProps) {
           ) : (
             <div>
               <div className="px-3 py-2 text-xs font-medium text-slack-hint border-b">
-                {t('search.resultCount', { count: searchResults.length })}
+                {t('search.previewHint', { count: searchResults.length })}
               </div>
               {searchResults.map((result) => (
                 <button

@@ -60,8 +60,39 @@
     "placeholder": "Search",
     "searching": "Searching...",
     "noResults": "No results found",
-    "resultCount": "{count, plural, one {# result} other {# results}}",
-    "inChannel": "in #{channel}"
+    "previewHint": "{count, plural, one {Top # result} other {Top # results}} · View all (Enter)",
+    "truncatedNotice": "There are many results. Add filters to narrow them down.",
+    "retry": "Retry",
+    "ignoredChip": "{token} (ignored)",
+    "ignoredLimitChip": "{token} (ignored: too many)",
+    "inChannel": "in #{channel}",
+    "title": "Search results",
+    "resultsFor": "Results for \"{query}\"",
+    "emptyQuery": "Type a search term, or use filters such as from:, in:, has:, before:, after:.",
+    "noResultsHint": "Try different keywords or remove some filters.",
+    "clearFilters": "Clear all filters",
+    "removeFilter": "Remove filter {filter}",
+    "loadFailed": "Search failed. Please try again.",
+    "loadMore": "Load more",
+    "threadReply": "Thread reply",
+    "directMessage": "Direct message",
+    "groupMessage": "Group conversation",
+    "joined": "Joined",
+    "privateChannel": "Private",
+    "archivedChannel": "Archived",
+    "back": "Back",
+    "tabs": {
+      "label": "Search result types",
+      "messages": "Messages",
+      "files": "Files",
+      "people": "People",
+      "channels": "Channels"
+    },
+    "sort": {
+      "label": "Sort by",
+      "relevance": "Relevance",
+      "recent": "Most recent"
+    }
   },
   "headerTabs": {
     "files": "Files",
