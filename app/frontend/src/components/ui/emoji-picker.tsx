@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Picker } from 'emoji-mart';
-import data from '@emoji-mart/data';
+import { loadEmojiData } from '@/lib/emoji/emojiData';
+import { useTranslation } from 'react-i18next';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { cn } from '@/lib/utils';
 import i18n from '@/lib/i18n';
 import { loadEmojiMartI18n } from '@/lib/i18n/emojiI18n';
@@ -15,6 +17,10 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const onEmojiSelectRef = useRef(onEmojiSelect);
   const onClickOutsideRef = useRef(onClickOutside);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation('common');
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useLayoutEffect(() => {
     onEmojiSelectRef.current = onEmojiSelect;
@@ -29,16 +35,28 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
 
     // Delay picker creation to avoid the opening click triggering onClickOutside
     const timer = setTimeout(async () => {
-      // 번들에 포함된 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
-      // 실패하면 i18n 없이 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      // 번들에 포함된 데이터(lazy 청크)와 번역을 넘겨 CDN 요청을 막는다 (규칙 17)
+      // data를 안 넘기면 emoji-mart가 jsdelivr에서 받으므로 로드 실패 시에는 피커를 띄우지 않는다.
+      // i18n이 실패하면 en으로 띄운다 (emoji-mart 내장 영어, 외부 요청 없음)
+      // data와 i18n은 서로 의존하지 않으므로 병렬로 읽는다.
+      const [dataResult, i18nResult] = await Promise.allSettled([
+        loadEmojiData(),
+        loadEmojiMartI18n(i18n.language),
+      ]);
+      if (cancelled) return;
+      if (dataResult.status === 'rejected') {
+        console.warn('emoji data load failed, picker not shown', dataResult.reason);
+        setLoadFailed(true);
+        return;
+      }
+      const data = dataResult.value;
       let locale = 'en';
       let pickerI18n: Record<string, unknown> | undefined;
-      try {
-        ({ locale, i18n: pickerI18n } = await loadEmojiMartI18n(i18n.language));
-      } catch (err) {
-        console.warn('emoji-mart i18n load failed, falling back to en', err);
+      if (i18nResult.status === 'fulfilled') {
+        ({ locale, i18n: pickerI18n } = i18nResult.value);
+      } else {
+        console.warn('emoji-mart i18n load failed, falling back to en', i18nResult.reason);
       }
-      if (cancelled) return;
       const picker = new Picker({
         data,
         i18n: pickerI18n,
@@ -63,9 +81,44 @@ export function EmojiPicker({ onEmojiSelect, onClickOutside }: EmojiPickerProps)
       clearTimeout(timer);
       container.replaceChildren();
     };
-  }, []);
+  }, [attempt]);
 
-  return <div ref={containerRef} />;
+  // 로드 실패 안내도 바깥 클릭과 Esc로 닫힌다 (피커 자체의 바깥 클릭은 emoji-mart가 처리)
+  const closeOnFailure = useCallback(() => onClickOutsideRef.current?.(), []);
+  useClickOutside(errorRef, closeOnFailure, loadFailed);
+  useEffect(() => {
+    if (!loadFailed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeOnFailure();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [loadFailed, closeOnFailure]);
+
+  return (
+    <>
+      <div ref={containerRef} />
+      {loadFailed && (
+        <div
+          ref={errorRef}
+          role="alert"
+          className="flex w-[352px] flex-col items-center gap-3 rounded-lg border border-slack-border bg-white p-6 text-sm text-slack-primary shadow-lg"
+        >
+          <p>{t('emojiPicker.loadFailed')}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoadFailed(false);
+              setAttempt((n) => n + 1);
+            }}
+            className="rounded border border-slack-border px-3 py-1 hover:bg-slack-hover"
+          >
+            {t('emojiPicker.retry')}
+          </button>
+        </div>
+      )}
+    </>
+  );
 }
 
 /**

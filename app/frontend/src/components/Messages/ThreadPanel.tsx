@@ -17,6 +17,7 @@ import { useThreadStore } from '@/stores/useThreadStore';
 import { cn } from '@/lib/utils';
 import { getSocket } from '@/lib/socket';
 import { serializeDelta } from '@/lib/serializeDelta';
+import { convertShortcodesForSend } from '@/lib/emoji/emojiData';
 import { FormatToolbar } from './FormatToolbar';
 import { FilePreview } from './FilePreview';
 import { MentionDropdown } from './MentionDropdown';
@@ -310,7 +311,7 @@ export function ThreadPanel({ messageId, onClose, onReplyCountChange, variant = 
   const handleSendReply = useCallback(async () => {
     const quill = editor.quillRef.current;
     if (!quill) return;
-    const text = serializeDelta(quill);
+    const text = await convertShortcodesForSend(serializeDelta(quill));
     if (!text && editor.pendingFiles.length === 0) return;
     const content = text || ' ';
 

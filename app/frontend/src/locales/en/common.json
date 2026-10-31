@@ -18,6 +18,10 @@
     "next": "Next",
     "more": "More"
   },
+  "emojiPicker": {
+    "loadFailed": "Couldn't load emoji. Check your connection and try again.",
+    "retry": "Try again"
+  },
   "status": {
     "loading": "Loading...",
     "saving": "Saving...",

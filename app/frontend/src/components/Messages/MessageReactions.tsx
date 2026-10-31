@@ -7,30 +7,22 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { PortalEmojiPicker } from '@/components/ui/emoji-picker';
 import type { Reaction } from '@/lib/types';
-import data from '@emoji-mart/data';
+import { useEmojiData } from '@/lib/emoji/emojiData';
+import { shortcodeToNative } from '@/lib/emoji/emojiLookup';
 
-const SHORTCODE_ALIASES: Record<string, string> = {
-  mind_blown: 'exploding_head',
-};
-
-type EmojiDataShape = { emojis?: Record<string, { skins?: { native?: string }[] }> };
-const emojiData: EmojiDataShape = data as EmojiDataShape;
-
-function shortcodeToNative(emoji: string): string {
-  const key = SHORTCODE_ALIASES[emoji] ?? emoji;
-  const emojiEntry = emojiData.emojis?.[key];
-  const native = emojiEntry?.skins?.[0]?.native;
-  if (native) return native;
-  return emoji;
-}
+// 단축코드 형태(thumbsup 등)면 데이터가 와야 이모지로 바뀐다. 이미 네이티브 이모지면 바로 보여 준다.
+const SHORTCODE_LIKE = /^[a-z0-9_+-]+$/i;
 
 function ReactionPill({
   reaction,
+  emoji,
   hasReacted,
   tooltip,
   onClick,
 }: {
   reaction: Reaction;
+  /** 표시할 이모지. null이면 이모지 데이터를 기다리는 중이라 자리표시자를 그린다. */
+  emoji: string | null;
   hasReacted: boolean;
   tooltip: string | undefined;
   onClick: () => void;
@@ -64,7 +56,7 @@ function ReactionPill({
             : 'border-slack-border bg-white text-slack-primary hover:bg-slack-hover'
         )}
       >
-        <span data-testid="reaction-emoji" className="text-sm leading-none">{shortcodeToNative(reaction.emoji)}</span>
+        <span data-testid="reaction-emoji" className="text-sm leading-none">{emoji ?? <span aria-hidden className="inline-block h-[14px] w-[14px] rounded-sm bg-slack-border align-middle" />}</span>
         <span className="text-[13px] font-medium">{reaction.count}</span>
       </button>
       {hovered && tooltip && pos && createPortal(
@@ -91,6 +83,7 @@ interface MessageReactionsProps {
 export function MessageReactions({ reactions, messageId, onAddReaction, onRemoveReaction }: MessageReactionsProps) {
   const { t } = useTranslation('messages');
   const user = useAuthStore((s) => s.user);
+  const emojiData = useEmojiData();
   const [showPicker, setShowPicker] = useState(false);
   const currentUserId = user?.id ?? -1;
 
@@ -112,13 +105,15 @@ export function MessageReactions({ reactions, messageId, onAddReaction, onRemove
       {reactions.map((reaction) => {
         const hasReacted = reaction.userIds.includes(currentUserId);
         const names = reaction.userNames.filter(Boolean);
-        const tooltip = names.length > 0
-          ? t('reactions.tooltip', { names: formatList(names), emoji: shortcodeToNative(reaction.emoji) })
+        const emoji = !emojiData && SHORTCODE_LIKE.test(reaction.emoji) ? null : shortcodeToNative(emojiData, reaction.emoji);
+        const tooltip = names.length > 0 && emoji !== null
+          ? t('reactions.tooltip', { names: formatList(names), emoji })
           : undefined;
         return (
           <ReactionPill
             key={reaction.emoji}
             reaction={reaction}
+            emoji={emoji}
             hasReacted={hasReacted}
             tooltip={tooltip}
             onClick={() => handleReactionClick(reaction.emoji, hasReacted)}
