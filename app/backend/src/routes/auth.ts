@@ -10,6 +10,7 @@ import { AuthRequest } from '../types.js';
 import { logError } from '../utils/logger.js';
 import { kickUser } from '../websocket/index.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
+import { joinDefaultChannels } from '../services/defaultChannelService.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -126,33 +127,12 @@ router.post('/register', async (req: Request, res: Response) => {
     });
 
     // Auto-join default channels — guests get NO auto-join (admin assigns channels)
-    const channelsToJoin = user.role === 'GUEST' ? [] : ['general', 'random'];
-    for (const channelName of channelsToJoin) {
+    if (user.role !== 'GUEST') {
       try {
-        let channel = await prisma.channel.findFirst({
-          where: { name: channelName, isPrivate: false, archivedAt: null },
-        });
-        if (!channel) {
-          try {
-            channel = await prisma.channel.create({
-              data: { name: channelName, isPrivate: false },
-            });
-          } catch {
-            // Race condition: another request created it concurrently
-            channel = await prisma.channel.findFirst({
-              where: { name: channelName, isPrivate: false, archivedAt: null },
-            });
-          }
-        }
-        if (channel) {
-          await prisma.channelMember.create({
-            data: { userId: user.id, channelId: channel.id },
-          }).catch(() => {
-            // Ignore if already a member
-          });
-        }
-      } catch {
+        await joinDefaultChannels(prisma, user.id);
+      } catch (error) {
         // Non-critical: don't fail registration if auto-join fails
+        logError('Default channel join error', error);
       }
     }
 
