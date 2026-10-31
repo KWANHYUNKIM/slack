@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
@@ -41,7 +42,7 @@ describe('세션 관리 (E7)', () => {
 
   function connect(token: string): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
-      const s = Client(`http://localhost:${port}`, { auth: { token }, transports: ['websocket'], reconnection: false });
+      const s = Client(`http://127.0.0.1:${port}`, { auth: { token }, transports: ['websocket'], reconnection: false });
       sockets.push(s);
       s.on('connect', () => resolve(s));
       s.on('connect_error', reject);
@@ -71,13 +72,7 @@ describe('세션 관리 (E7)', () => {
 
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
-    await new Promise<void>((resolve) => {
-      httpServer.listen(() => {
-        const a = httpServer.address();
-        port = typeof a === 'object' && a ? a.port : 3001;
-        resolve();
-      });
-    });
+    port = await listenOnLoopback(httpServer);
   });
 
   afterEach(() => {

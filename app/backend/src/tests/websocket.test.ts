@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
@@ -49,13 +50,7 @@ describe('WebSocket', () => {
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
 
-    await new Promise<void>((resolve) => {
-      httpServer.listen(() => {
-        const address = httpServer.address();
-        port = typeof address === 'object' && address ? address.port : 3001;
-        resolve();
-      });
-    });
+    port = await listenOnLoopback(httpServer);
   });
 
   afterAll(async () => {
@@ -74,7 +69,7 @@ describe('WebSocket', () => {
   });
 
   it('should connect with valid token', (done) => {
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: authToken },
     });
 
@@ -89,7 +84,7 @@ describe('WebSocket', () => {
   });
 
   it('should reject connection without token', (done) => {
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: {},
     });
 
@@ -104,7 +99,7 @@ describe('WebSocket', () => {
   });
 
   it('should reject connection with invalid token', (done) => {
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: 'invalid-token' },
     });
 
@@ -120,7 +115,7 @@ describe('WebSocket', () => {
 
   it('should reject a correctly signed token whose payload has no userId', (done) => {
     const malformed = jwt.sign({ tokenVersion: 0 }, JWT_SECRET, { algorithm: 'HS256' });
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: malformed },
     });
 
@@ -140,7 +135,7 @@ describe('WebSocket', () => {
       .mockRejectedValueOnce(new Error('connection to db refused (secret host)'));
     const logSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: authToken },
     });
 
@@ -162,7 +157,7 @@ describe('WebSocket', () => {
   });
 
   it('should join a channel room', (done) => {
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: authToken },
     });
 
@@ -176,7 +171,7 @@ describe('WebSocket', () => {
   });
 
   it('should send and receive messages', (done) => {
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: authToken },
     });
 
@@ -219,14 +214,14 @@ describe('WebSocket', () => {
       })
       .then(() => {
         // Connect both clients
-        clientSocket = Client(`http://localhost:${port}`, {
+        clientSocket = Client(`http://127.0.0.1:${port}`, {
           auth: { token: authToken },
         });
 
         clientSocket.on('connect', () => {
           clientSocket.emit('join:channel', channelId);
 
-          clientSocket2 = Client(`http://localhost:${port}`, {
+          clientSocket2 = Client(`http://127.0.0.1:${port}`, {
             auth: { token: secondToken },
           });
 
@@ -276,7 +271,7 @@ describe('WebSocket', () => {
         channel2Id = res.body.id;
 
         // Connect client 1 to channel 1
-        clientSocket = Client(`http://localhost:${port}`, {
+        clientSocket = Client(`http://127.0.0.1:${port}`, {
           auth: { token: authToken },
         });
 
@@ -293,7 +288,7 @@ describe('WebSocket', () => {
           });
 
           // Connect client 2 to channel 2
-          clientSocket2 = Client(`http://localhost:${port}`, {
+          clientSocket2 = Client(`http://127.0.0.1:${port}`, {
             auth: { token: secondToken },
           });
 
@@ -333,7 +328,7 @@ describe('WebSocket', () => {
       .then((res) => {
         channel2Id = res.body.id;
 
-        clientSocket = Client(`http://localhost:${port}`, {
+        clientSocket = Client(`http://127.0.0.1:${port}`, {
           auth: { token: authToken },
         });
 
@@ -383,7 +378,7 @@ describe('WebSocket', () => {
       { algorithm: 'HS256', expiresIn: '7d' },
     );
 
-    clientSocket = Client(`http://localhost:${port}`, {
+    clientSocket = Client(`http://127.0.0.1:${port}`, {
       auth: { token: craftedToken },
     });
 

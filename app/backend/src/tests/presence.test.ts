@@ -3,6 +3,7 @@ import request from 'supertest';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
@@ -25,13 +26,7 @@ describe('User Presence', () => {
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
 
-    await new Promise<void>((resolve) => {
-      httpServer.listen(0, () => {
-        const address = httpServer.address();
-        serverPort = typeof address === 'object' && address ? address.port : 3001;
-        resolve();
-      });
-    });
+    serverPort = await listenOnLoopback(httpServer);
   });
 
   afterAll(async () => {
@@ -102,7 +97,7 @@ describe('User Presence', () => {
     });
 
     it('should mark user online when connected', (done) => {
-      clientSocket = Client(`http://localhost:${serverPort}`, {
+      clientSocket = Client(`http://127.0.0.1:${serverPort}`, {
         auth: { token: authToken },
       });
 
@@ -124,7 +119,7 @@ describe('User Presence', () => {
     });
 
     it('should mark user offline and update lastSeen on disconnect', (done) => {
-      clientSocket = Client(`http://localhost:${serverPort}`, {
+      clientSocket = Client(`http://127.0.0.1:${serverPort}`, {
         auth: { token: authToken },
       });
 
@@ -155,11 +150,11 @@ describe('User Presence', () => {
     });
 
     it('should stay online with multiple connections', (done) => {
-      const socket1 = Client(`http://localhost:${serverPort}`, {
+      const socket1 = Client(`http://127.0.0.1:${serverPort}`, {
         auth: { token: authToken },
       });
 
-      const socket2 = Client(`http://localhost:${serverPort}`, {
+      const socket2 = Client(`http://127.0.0.1:${serverPort}`, {
         auth: { token: authToken },
       });
 
@@ -221,7 +216,7 @@ describe('User Presence', () => {
           .set('Authorization', `Bearer ${user2Token}`);
 
         // User2 connects to WebSocket
-        const socket2 = Client(`http://localhost:${serverPort}`, {
+        const socket2 = Client(`http://127.0.0.1:${serverPort}`, {
           auth: { token: user2Token },
         });
 
@@ -236,7 +231,7 @@ describe('User Presence', () => {
           });
 
           // User1 connects - should trigger presence:update to user2
-          clientSocket = Client(`http://localhost:${serverPort}`, {
+          clientSocket = Client(`http://127.0.0.1:${serverPort}`, {
             auth: { token: authToken },
           });
         });

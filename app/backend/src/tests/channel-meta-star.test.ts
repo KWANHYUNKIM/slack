@@ -2,6 +2,7 @@ import { TEST_PASSWORD } from './test-constants.js';
 import { createServer } from 'http';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import request from 'supertest';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { clearTokenCache } from '../middleware/auth.js';
@@ -37,9 +38,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
   beforeAll(async () => {
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
-    await new Promise<void>((resolve) => httpServer.listen(() => resolve()));
-    const address = httpServer.address();
-    port = typeof address === 'object' && address ? address.port : 0;
+    port = await listenOnLoopback(httpServer);
   });
 
   afterEach(() => {
@@ -208,7 +207,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
       expect(createDup.body.code).toBe('CHANNEL_NAME_TAKEN');
 
       // 비멤버도 공개 채널의 이름 변경 알림을 받는다(io.emit)
-      const socket = Client(`http://localhost:${port}`, { auth: { token: outsiderToken } });
+      const socket = Client(`http://127.0.0.1:${port}`, { auth: { token: outsiderToken } });
       sockets.push(socket);
       await new Promise<void>((resolve, reject) => {
         socket.on('connect', () => resolve());
@@ -226,7 +225,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
     it('sends channel:updated for private channels only to members', async () => {
       const priv = await request(app).post('/channels').set(auth(ownerToken)).send({ name: 'priv-ch', isPrivate: true });
       const connect = async (token: string) => {
-        const sk = Client(`http://localhost:${port}`, { auth: { token } });
+        const sk = Client(`http://127.0.0.1:${port}`, { auth: { token } });
         sockets.push(sk);
         await new Promise<void>((resolve, reject) => {
           sk.on('connect', () => resolve());
@@ -258,7 +257,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
     });
 
     it('broadcasts channel:updated to channel members', async () => {
-      const socket = Client(`http://localhost:${port}`, { auth: { token: memberToken } });
+      const socket = Client(`http://127.0.0.1:${port}`, { auth: { token: memberToken } });
       sockets.push(socket);
       await new Promise<void>((resolve, reject) => {
         socket.on('connect', () => resolve());
@@ -334,7 +333,7 @@ describe('Channel meta, stars, sidebar prefs', () => {
     });
 
     it('emits star:updated to the user own room', async () => {
-      const socket = Client(`http://localhost:${port}`, { auth: { token: memberToken } });
+      const socket = Client(`http://127.0.0.1:${port}`, { auth: { token: memberToken } });
       sockets.push(socket);
       await new Promise<void>((resolve, reject) => {
         socket.on('connect', () => resolve());

@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import request from 'supertest';
 import webpush from 'web-push';
+import { listenOnLoopback } from './listenLoopback.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
@@ -50,7 +51,7 @@ describe('Custom status and Do Not Disturb', () => {
 
   function connect(u: TestUser): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
-      const s = Client(`http://localhost:${port}`, { auth: { token: u.token }, forceNew: true });
+      const s = Client(`http://127.0.0.1:${port}`, { auth: { token: u.token }, forceNew: true });
       sockets.push(s);
       s.on('connect', () => resolve(s));
       s.on('connect_error', reject);
@@ -80,13 +81,7 @@ describe('Custom status and Do Not Disturb', () => {
 
     httpServer = createServer(app);
     io = initializeWebSocket(httpServer);
-    await new Promise<void>((resolve) => {
-      httpServer.listen(() => {
-        const address = httpServer.address();
-        port = typeof address === 'object' && address ? address.port : 3001;
-        resolve();
-      });
-    });
+    port = await listenOnLoopback(httpServer);
   });
 
   afterAll(async () => {
