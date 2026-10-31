@@ -51,6 +51,10 @@ export function matchLocale(tag: string): string | null {
   for (const code of availableLocales) {
     if (code.toLowerCase() === base) return code;
   }
+  // 기본 언어 파일이 없으면 같은 언어의 지역 변형을 쓴다(pt, pt-PT → pt-BR)
+  for (const code of availableLocales) {
+    if (code.toLowerCase().startsWith(`${base}-`)) return code;
+  }
   return null;
 }
 
