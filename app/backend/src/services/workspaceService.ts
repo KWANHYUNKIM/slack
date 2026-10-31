@@ -393,12 +393,14 @@ export async function changeWorkspaceRole(
 /**
  * 워크스페이스에서 뺀다(제거, 나가기). 행은 지우지 않고 leftAt을 채운다. 행이 없던 기본 워크스페이스 암묵 멤버는
  * 나간 행을 새로 만든다(다시 암묵 멤버가 되지 않게). 그 워크스페이스를 기본으로 기억하고 있으면 비운다.
- * 채널 정리(그 워크스페이스에만 보이는 채널의 ChannelMember 삭제)는 E1c가 붙인다.
+ * 채널 정리(E1c, 스펙 5.3): 그 워크스페이스에 보이는 채널 중 남은 활성 워크스페이스 어디에도 보이지 않는 채널에서
+ * ChannelMember와 즐겨찾기를 지운다. 공유 채널은 남은 워크스페이스에 여전히 보이면 유지한다. 읽음 행은 채널 나가기처럼 남긴다.
+ * 멤버십을 잃은 채널 id를 돌려준다(호출한 쪽이 소켓 room 정리와 channel:member-left를 보낸다).
  */
 export async function leaveWorkspace(
   db: Prisma.TransactionClient,
   params: { workspaceId: number; userId: number; currentRole: Role },
-): Promise<void> {
+): Promise<number[]> {
   const { workspaceId, userId, currentRole } = params;
   const now = new Date();
   await db.workspaceMember.upsert({
@@ -407,6 +409,23 @@ export async function leaveWorkspace(
     update: { leftAt: now },
   });
   await db.user.updateMany({ where: { id: userId, defaultWorkspaceId: workspaceId }, data: { defaultWorkspaceId: null } });
+
+  const remaining = (await loadUserWorkspaceState(db, userId))?.memberships.map((m) => m.workspaceId) ?? [];
+  const lost = await db.channelMember.findMany({
+    where: {
+      userId,
+      channel: {
+        workspaces: { some: { workspaceId }, none: { workspaceId: { in: remaining } } },
+      },
+    },
+    select: { channelId: true },
+  });
+  const channelIds = lost.map((m) => m.channelId);
+  if (channelIds.length > 0) {
+    await db.channelMember.deleteMany({ where: { userId, channelId: { in: channelIds } } });
+    await db.channelStar.deleteMany({ where: { userId, channelId: { in: channelIds } } });
+  }
+  return channelIds;
 }
 
 /** 공개·미보관 기본 채널 가입(기본 워크스페이스가 아닌 곳). 기본 워크스페이스는 자리 채우기까지 하는 joinDefaultChannels를 쓴다 */

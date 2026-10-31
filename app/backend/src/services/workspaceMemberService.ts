@@ -80,6 +80,20 @@ export async function addMember(params: {
   });
 }
 
+/** 워크스페이스를 떠나며 멤버십을 잃은 채널: 채널 나가기와 같은 이벤트를 보내고 대상 소켓을 채널 room에서 뺀다 */
+async function announceChannelsLeft(userId: number, channelIds: number[]): Promise<void> {
+  const io = getIO();
+  if (!io || channelIds.length === 0) return;
+  const counts = await prisma.channelMember.groupBy({
+    by: ['channelId'], where: { channelId: { in: channelIds } }, _count: { _all: true },
+  });
+  const countOf = new Map(counts.map((c) => [c.channelId, c._count._all]));
+  for (const channelId of channelIds) {
+    io.to(`channel:${channelId}`).emit('channel:member-left', { channelId, userId, memberCount: countOf.get(channelId) ?? 0 });
+    io.in(`user:${userId}`).socketsLeave(`channel:${channelId}`);
+  }
+}
+
 export async function updateMemberRole(params: {
   workspaceId: number; userId: number; role: Role; actorId: number;
 }): Promise<Role> {
@@ -106,14 +120,15 @@ export async function removeMember(params: {
   workspaceId: number; userId: number; actorId: number; self: boolean;
 }): Promise<void> {
   const { workspaceId, userId, actorId, self } = params;
-  const currentRole = await prisma.$transaction(async (tx) => {
+  const { currentRole, lostChannelIds } = await prisma.$transaction(async (tx) => {
     const current = await lockAndReadMemberRole(tx, workspaceId, userId, null);
-    await leaveWorkspace(tx, { workspaceId, userId, currentRole: current });
-    return current;
+    const lost = await leaveWorkspace(tx, { workspaceId, userId, currentRole: current });
+    return { currentRole: current, lostChannelIds: lost };
   });
   invalidateTokenCache(userId);
   // 연결은 끊지 않는다. 대상 소켓을 ws:<id> room에서 빼고 workspace:member:removed로 알린다
   announceRemoved(workspaceId, userId);
+  await announceChannelsLeft(userId, lostChannelIds);
   void writeAuditLog({
     action: self ? 'workspace.left' : 'workspace.member_removed', actorId, targetType: 'user', targetId: userId,
     details: `workspaceId=${workspaceId}; role=${currentRole}`,

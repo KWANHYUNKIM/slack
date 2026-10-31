@@ -1,12 +1,24 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types.js';
 import { ERR } from '../utils/errorCodes.js';
-import { isOrgAdminRole } from '../services/workspaceService.js';
+import { DEFAULT_WORKSPACE_ID, isOrgAdminRole, isWorkspaceAdminRole } from '../services/workspaceService.js';
 
 // requireAdmin·requireOwner는 req.user.role(기본 워크스페이스 역할 = User.role)을 본다. 헤더로 고른 워크스페이스 역할은
 // 쓰지 않는다(다른 워크스페이스 OWNER가 헤더만 바꿔 기본 워크스페이스 관리 API를 쓰는 권한 상승 방지). 범위는 E1c·E1h에서 생긴다.
 export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
   if (req.user?.role !== 'ADMIN' && req.user?.role !== 'OWNER') {
+    res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });
+    return;
+  }
+  next();
+}
+
+// /admin(채널·사용자·초대·웹훅 관리)은 기본 워크스페이스 범위다(E1c, 조직 단위 관리 화면 분리는 E1h).
+// requireAdmin에 더해 기본 워크스페이스의 활성 관리자 멤버십을 본다. 기본 워크스페이스 역할은 User.role이라 결과는 같지만,
+// 기본 워크스페이스 멤버가 아닌 조직 관리자(User.role이 ADMIN이어도)는 여기를 쓰지 못하고 /org를 쓴다(스펙 5.2).
+export function requireDefaultWorkspaceAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+  const membership = req.workspaceState?.memberships.find((m) => m.workspaceId === DEFAULT_WORKSPACE_ID);
+  if (!isWorkspaceAdminRole(membership?.role) || (req.user?.role !== 'ADMIN' && req.user?.role !== 'OWNER')) {
     res.status(403).json({ error: 'Admin access required', code: ERR.ADMIN_REQUIRED });
     return;
   }

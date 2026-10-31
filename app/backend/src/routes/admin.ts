@@ -3,24 +3,35 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import prisma from '../db.js';
 import { authMiddleware, invalidateTokenCache } from '../middleware/auth.js';
-import { requireAdmin } from '../middleware/adminAuth.js';
+import { requireDefaultWorkspaceAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../types.js';
 import { getIO, kickUser, kickSession, MFA_KICK_MESSAGE } from '../websocket/index.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { updateChannel } from '../services/channelService.js';
+import { updateChannel, channelAudience, emitToChannelAudience } from '../services/channelService.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { listActiveSessions, revokeSession, revokeUserSessions } from '../services/sessionService.js';
 import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
-import { setUserRole } from '../services/workspaceService.js';
+import { DEFAULT_WORKSPACE_ID, activeMemberWhere, setUserRole } from '../services/workspaceService.js';
+import { memberOfWorkspaceWhere, targetRoleInChannelWorkspaces, channelWorkspaceIds } from '../services/workspaceScopeService.js';
 
 const router = Router();
 
 // All admin routes require authentication + admin role
-router.use(authMiddleware, requireAdmin);
+// /admin은 기본 워크스페이스 범위다(E1c). 사용자·채널·초대는 기본 워크스페이스의 것만 보이고 고칠 수 있으며,
+// 다른 워크스페이스의 대상은 존재를 숨겨 404다. 다른 워크스페이스 관리는 /workspaces/:id, 조직 단위는 /org(E1h에서 화면 분리).
+router.use(authMiddleware, requireDefaultWorkspaceAdmin);
+
+const ADMIN_WORKSPACE_ID = DEFAULT_WORKSPACE_ID;
+
+/** 대상 사용자 조건: 기본 워크스페이스 활성 멤버(계정 비활성 사용자 포함) */
+const adminUserWhere = (id: number) => memberOfWorkspaceWhere(ADMIN_WORKSPACE_ID, { id });
+
+/** 대상 채널 조건: 기본 워크스페이스에 보이는 채널(공유 채널 포함) */
+const adminChannelWhere = (id: number) => ({ id, workspaces: { some: { workspaceId: ADMIN_WORKSPACE_ID } } });
 
 const ADMIN_USER_SELECT = {
   id: true,
@@ -39,6 +50,7 @@ const ADMIN_USER_SELECT = {
 router.get('/users', async (req: AuthRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany({
+      where: activeMemberWhere(ADMIN_WORKSPACE_ID),
       select: ADMIN_USER_SELECT,
       orderBy: { createdAt: 'asc' },
     });
@@ -73,8 +85,8 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
     const { role } = updateRoleSchema.parse(req.body);
     const actorRole = req.user!.role || 'MEMBER';
 
-    const target = await prisma.user.findUnique({
-      where: { id: userId },
+    const target = await prisma.user.findFirst({
+      where: adminUserWhere(userId),
       select: { id: true, role: true },
     });
 
@@ -144,8 +156,8 @@ router.post('/users/:id/deactivate', async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id: userId },
+    const target = await prisma.user.findFirst({
+      where: adminUserWhere(userId),
       select: { id: true, role: true },
     });
 
@@ -198,7 +210,7 @@ async function loadSessionTarget(req: AuthRequest, res: Response): Promise<{ id:
     res.status(400).json({ error: 'Invalid user ID' });
     return null;
   }
-  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, role: true } });
+  const target = await prisma.user.findFirst({ where: adminUserWhere(userId), select: { id: true, name: true, role: true } });
   if (!target) {
     res.status(404).json({ error: 'User not found' });
     return null;
@@ -409,8 +421,8 @@ router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id: userId },
+    const target = await prisma.user.findFirst({
+      where: adminUserWhere(userId),
       select: { id: true, role: true },
     });
     if (!target) {
@@ -452,6 +464,7 @@ router.post('/users/:id/reactivate', async (req: AuthRequest, res: Response) => 
 router.get('/invites', async (_req: AuthRequest, res: Response) => {
   try {
     const invites = await prisma.inviteLink.findMany({
+      where: { workspaceId: ADMIN_WORKSPACE_ID },
       include: {
         creator: { select: { id: true, name: true } },
       },
@@ -480,6 +493,7 @@ router.post('/invites', async (req: AuthRequest, res: Response) => {
     const invite = await prisma.inviteLink.create({
       data: {
         code,
+        workspaceId: ADMIN_WORKSPACE_ID,
         createdBy: req.user!.userId,
         role,
         maxUses: maxUses ?? null,
@@ -518,6 +532,12 @@ router.delete('/invites/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
+    // 다른 워크스페이스의 초대는 없는 것으로 답한다
+    const invite = await prisma.inviteLink.findFirst({ where: { id, workspaceId: ADMIN_WORKSPACE_ID }, select: { id: true } });
+    if (!invite) {
+      res.status(404).json({ error: 'Invite not found', code: ERR.NOT_FOUND });
+      return;
+    }
     await prisma.inviteLink.delete({ where: { id } });
 
     writeAuditLog({
@@ -538,6 +558,7 @@ router.delete('/invites/:id', async (req: AuthRequest, res: Response) => {
 router.get('/channels', async (_req: AuthRequest, res: Response) => {
   try {
     const channels = await prisma.channel.findMany({
+      where: { workspaces: { some: { workspaceId: ADMIN_WORKSPACE_ID } } },
       include: {
         _count: {
           select: { members: true, messages: true },
@@ -561,19 +582,18 @@ router.delete('/channels/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const channel = await prisma.channel.findUnique({ where: { id }, select: { name: true } });
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id), select: { id: true, name: true, isPrivate: true } });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
     }
 
+    // 지우면 워크스페이스·멤버 행이 함께 사라지므로 알릴 대상은 먼저 계산한다
+    const audience = await channelAudience(channel);
     await prisma.channel.delete({ where: { id } });
 
-    const io = getIO();
-    if (io) {
-      io.emit('channel:deleted', { channelId: id });
-      io.in(`channel:${id}`).socketsLeave(`channel:${id}`);
-    }
+    emitToChannelAudience(audience, 'channel:deleted', { channelId: id });
+    getIO()?.in(`channel:${id}`).socketsLeave(`channel:${id}`);
 
     writeAuditLog({
       action: 'channel.deleted',
@@ -599,7 +619,7 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
       return;
     }
 
-    const channel = await prisma.channel.findUnique({ where: { id } });
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -615,10 +635,7 @@ router.post('/channels/:id/archive', async (req: AuthRequest, res: Response) => 
       include: { _count: { select: { members: true, messages: true } } },
     });
 
-    const io = getIO();
-    if (io) {
-      io.emit('channel:archived', { channelId: id, name: channel.name });
-    }
+    emitToChannelAudience(await channelAudience(channel), 'channel:archived', { channelId: id, name: channel.name });
 
     writeAuditLog({
       action: 'channel.archived',
@@ -644,7 +661,7 @@ router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) =
       return;
     }
 
-    const channel = await prisma.channel.findUnique({ where: { id } });
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -660,10 +677,7 @@ router.post('/channels/:id/unarchive', async (req: AuthRequest, res: Response) =
       include: { _count: { select: { members: true, messages: true } } },
     });
 
-    const io = getIO();
-    if (io) {
-      io.emit('channel:unarchived', { channelId: id, name: channel.name });
-    }
+    emitToChannelAudience(await channelAudience(channel), 'channel:unarchived', { channelId: id, name: channel.name });
 
     writeAuditLog({
       action: 'channel.unarchived',
@@ -701,7 +715,7 @@ router.patch('/channels/:id', async (req: AuthRequest, res: Response) => {
       res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid input' });
       return;
     }
-    const channel = await prisma.channel.findUnique({ where: { id } });
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(id) });
     if (!channel) {
       res.status(404).json({ error: 'Channel not found' });
       return;
@@ -733,6 +747,11 @@ router.get('/channels/:id/members', async (req: AuthRequest, res: Response) => {
     const channelId = parseIntParam(req.params.id);
     if (!channelId) {
       res.status(400).json({ error: 'Invalid channel ID' });
+      return;
+    }
+
+    if (!(await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { id: true } }))) {
+      res.status(404).json({ error: 'Channel not found' });
       return;
     }
 
@@ -768,6 +787,12 @@ router.post('/channels/:id/members', async (req: AuthRequest, res: Response) => 
 
     const { userId } = addMemberSchema.parse(req.body);
 
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { name: true } });
+    if (!channel) {
+      res.status(404).json({ error: 'Channel not found' });
+      return;
+    }
+
     // Verify user exists and is active
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -781,18 +806,22 @@ router.post('/channels/:id/members', async (req: AuthRequest, res: Response) => 
       res.status(400).json({ error: 'Cannot add a deactivated user to a channel' });
       return;
     }
+    // 대상은 채널이 보이는 워크스페이스 중 하나의 활성 멤버여야 한다(E1c, 5.3)
+    if ((await targetRoleInChannelWorkspaces(userId, await channelWorkspaceIds(channelId))) === null) {
+      res.status(400).json({ error: 'User is not a member of this channel\'s workspace', code: ERR.USER_NOT_IN_WORKSPACE });
+      return;
+    }
 
     await prisma.channelMember.create({
       data: { userId, channelId },
     });
 
-    const channel = await prisma.channel.findUnique({ where: { id: channelId }, select: { name: true } });
     await writeAuditLog({
       action: 'channel.member_added',
       actorId: req.user!.userId,
       targetType: 'channel',
       targetId: channelId,
-      targetName: channel?.name,
+      targetName: channel.name,
       details: `Added user ${userId} to channel`,
     });
 
@@ -817,7 +846,11 @@ router.delete('/channels/:id/members/:userId', async (req: AuthRequest, res: Res
       return;
     }
 
-    const channel = await prisma.channel.findUnique({ where: { id: channelId }, select: { name: true } });
+    const channel = await prisma.channel.findFirst({ where: adminChannelWhere(channelId), select: { name: true } });
+    if (!channel) {
+      res.status(404).json({ error: 'Channel not found' });
+      return;
+    }
 
     await prisma.channelMember.delete({
       where: { userId_channelId: { userId, channelId } },
@@ -839,7 +872,7 @@ router.delete('/channels/:id/members/:userId', async (req: AuthRequest, res: Res
       actorId: req.user!.userId,
       targetType: 'channel',
       targetId: channelId,
-      targetName: channel?.name,
+      targetName: channel.name,
       details: `Removed user ${userId} from channel`,
     });
 
@@ -870,8 +903,8 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id: userId },
+    const target = await prisma.user.findFirst({
+      where: adminUserWhere(userId),
       select: { id: true, name: true, role: true, deactivatedAt: true },
     });
 

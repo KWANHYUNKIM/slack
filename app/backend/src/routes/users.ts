@@ -9,7 +9,8 @@ import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { guestVisibleUserIds } from '../middleware/authorize.js';
 import { invalidateWorkspaceCache, requestWorkspaceState } from '../middleware/workspace.js';
-import { workspaceSummaryForUser } from '../services/workspaceService.js';
+import { activeMemberWhere, workspaceSummaryForUser } from '../services/workspaceService.js';
+import { canSeeUser } from '../services/workspaceScopeService.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -458,19 +459,10 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // Guests can only view profiles of shared-channel members
-    if (req.user!.role === 'GUEST' && userId !== req.user!.userId) {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${req.user!.userId} AND cm2."userId" = ${userId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
-        res.status(404).json({ error: 'User not found' });
-        return;
-      }
+    // 같은 워크스페이스 사람이나 DM 이력이 있는 사람만 보인다(E1c, 5.3). 게스트는 같은 채널에 있는 사람만
+    if (!(await canSeeUser(req.user!.userId, userId, req.workspaceState?.memberships))) {
+      res.status(404).json({ error: 'User not found', code: ERR.USER_NOT_FOUND });
+      return;
     }
 
     // Enrich with real-time presence status
@@ -496,13 +488,18 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const search = rawSearch || undefined;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
 
-    // Guests can only see users who share a channel with them
-    const visibleUserIds = await guestVisibleUserIds(req.user!.userId, req.user!.role);
+    // 현재 워크스페이스의 활성 멤버만(E1c). 게스트(이 워크스페이스에서의 역할)는 같은 채널에 있는 사람만
+    const visibleUserIds = await guestVisibleUserIds(req.user!.userId, req.workspace!.role);
 
     const where = {
-      deactivatedAt: null,
-      ...(visibleUserIds && { id: { in: visibleUserIds } }),
-      ...(search && { name: { contains: search, mode: 'insensitive' as const } }),
+      AND: [
+        activeMemberWhere(req.workspace!.id),
+        {
+          deactivatedAt: null,
+          ...(visibleUserIds && { id: { in: visibleUserIds } }),
+          ...(search && { name: { contains: search, mode: 'insensitive' as const } }),
+        },
+      ],
     };
 
     const users = await prisma.user.findMany({
@@ -586,19 +583,10 @@ router.get('/:id/presence', authMiddleware, async (req: AuthRequest, res: Respon
       return;
     }
 
-    // Guests can only check presence of shared-channel members
-    if (req.user!.role === 'GUEST' && userId !== req.user!.userId) {
-      const sharedChannel = await prisma.$queryRaw<Array<{ id: number }>>`
-        SELECT cm1."channelId" AS id
-        FROM "ChannelMember" cm1
-        JOIN "ChannelMember" cm2 ON cm2."channelId" = cm1."channelId"
-        WHERE cm1."userId" = ${req.user!.userId} AND cm2."userId" = ${userId}
-        LIMIT 1
-      `;
-      if (sharedChannel.length === 0) {
-        res.status(404).json({ error: 'User not found' });
-        return;
-      }
+    // 프로필 단건과 같은 규칙(E1c)
+    if (!(await canSeeUser(req.user!.userId, userId, req.workspaceState?.memberships))) {
+      res.status(404).json({ error: 'User not found', code: ERR.USER_NOT_FOUND });
+      return;
     }
 
     // Check real-time online status from WebSocket connections

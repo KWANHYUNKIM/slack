@@ -4,6 +4,7 @@ import { getIO } from '../websocket/index.js';
 import { validateChannelName } from '../utils/channelName.js';
 import { writeAuditLog } from '../utils/auditLog.js';
 import { channelNameKey } from './workspaceService.js';
+import { channelWorkspaceIds } from './workspaceScopeService.js';
 
 // 채널 이름이 이미 쓰이고 있을 때의 오류 코드(클라이언트가 번역 키로 바꿔 보여 준다)
 export const CHANNEL_NAME_TAKEN = 'CHANNEL_NAME_TAKEN';
@@ -41,10 +42,14 @@ export async function updateChannel(params: {
       return { ok: false, status: 400, body: { error: nameResult.error, code: nameResult.code, reason: nameResult.reason } };
     }
     if (nameResult.name !== channel.name) {
-      // 대소문자 무시 중복 검사(DB 유니크 제약은 대소문자를 구분한다)
-      const existing = await prisma.channel.findFirst({
-        where: { name: { equals: nameResult.name, mode: 'insensitive' }, id: { not: channel.id } },
-        select: { id: true },
+      // 채널이 보이는 모든 워크스페이스에서 대소문자 무시 중복 검사(이름 유일성은 워크스페이스 단위, E1c)
+      const existing = await prisma.channelWorkspace.findFirst({
+        where: {
+          nameKey: channelNameKey(nameResult.name),
+          channelId: { not: channel.id },
+          workspace: { channels: { some: { channelId: channel.id } } },
+        },
+        select: { channelId: true },
       });
       if (existing) {
         return { ok: false, status: 409, body: { error: CHANNEL_NAME_TAKEN_MESSAGE, code: CHANNEL_NAME_TAKEN } };
@@ -80,7 +85,7 @@ export async function updateChannel(params: {
     }
     updated = await prisma.channel.update({ where: { id: channel.id }, data, include: channelWithCounts });
   } catch (error) {
-    // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(Channel.name 또는 ChannelWorkspace.nameKey 유니크 제약)
+    // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(ChannelWorkspace.nameKey 유니크 제약)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return { ok: false, status: 409, body: { error: CHANNEL_NAME_TAKEN_MESSAGE, code: CHANNEL_NAME_TAKEN } };
     }
@@ -100,26 +105,38 @@ export async function updateChannel(params: {
   return { ok: true, channel: updated, changed: true };
 }
 
-// DB 커밋 뒤 알림: 공개 채널은 모두에게(archived·deleted와 같은 방식), 비공개 채널은 멤버 각자의 개인 룸으로
-async function emitChannelUpdated(channel: Channel): Promise<void> {
+// ─── 채널 이벤트 대상(E1c, 스펙 5.4) ───────────────────────────────
+// 공개 채널 이벤트는 채널이 보이는 워크스페이스의 room(ws:<id>)으로, 비공개 채널은 멤버 각자의 user:<id>로 보낸다.
+// 전체 방송(io.emit)은 쓰지 않는다(다른 워크스페이스로 채널 이름이 새지 않게). socket.io의 배열 대상은 중복 수신을 막는다.
+// payload에는 workspaceIds를 붙인다. 클라이언트는 현재 워크스페이스가 아니면 사이드바 목록만 갱신한다.
+
+export interface ChannelAudience {
+  workspaceIds: number[];
+  rooms: string[];
+}
+
+/** 이벤트를 보낼 room을 지금 상태로 계산한다. 삭제처럼 행이 사라지는 변경은 변경 전에 부른다 */
+export async function channelAudience(channel: { id: number; isPrivate: boolean }): Promise<ChannelAudience> {
+  const workspaceIds = await channelWorkspaceIds(channel.id);
+  if (!channel.isPrivate) return { workspaceIds, rooms: workspaceIds.map((id) => `ws:${id}`) };
+  const members = await prisma.channelMember.findMany({ where: { channelId: channel.id }, select: { userId: true } });
+  return { workspaceIds, rooms: members.map((m) => `user:${m.userId}`) };
+}
+
+export function emitToChannelAudience(audience: ChannelAudience, event: string, payload: Record<string, unknown>): void {
   const io = getIO();
-  if (!io) return;
+  if (!io || audience.rooms.length === 0) return;
+  io.to(audience.rooms).emit(event, { ...payload, workspaceIds: audience.workspaceIds });
+}
+
+// DB 커밋 뒤 알림. 공개로 바뀐 채널은 워크스페이스 room, 비공개로 바뀐 채널은 멤버에게 간다(바뀐 뒤 상태 기준).
+async function emitChannelUpdated(channel: Channel): Promise<void> {
+  if (!getIO()) return;
   const payload = {
     id: channel.id,
     name: channel.name,
     topic: channel.topic,
     description: channel.description,
   };
-  if (!channel.isPrivate) {
-    io.emit('channel:updated', payload);
-    return;
-  }
-  const members = await prisma.channelMember.findMany({
-    where: { channelId: channel.id },
-    select: { userId: true },
-  });
-  if (members.length === 0) return;
-  let target = io.to(`user:${members[0].userId}`);
-  for (const m of members.slice(1)) target = target.to(`user:${m.userId}`);
-  target.emit('channel:updated', payload);
+  emitToChannelAudience(await channelAudience(channel), 'channel:updated', payload);
 }

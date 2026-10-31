@@ -14,8 +14,9 @@ import { getIO } from '../websocket/index.js';
 import {
   MEMBERSHIP_USER_SELECT, WORKSPACE_PUBLIC_SELECT, WORKSPACE_SLUG_RE, activeMemberWhere,
   activeMembershipsOf, isDefaultWorkspaceArchived, isOrgAdminRole, materializeImplicitDefaultMembership, parseWorkspaceId,
-  DEFAULT_WORKSPACE_ID,
+  DEFAULT_WORKSPACE_ID, joinWorkspaceDefaultChannels,
 } from '../services/workspaceService.js';
+import { fillDefaultSlot } from '../services/defaultChannelService.js';
 import { workspaceRoom } from '../services/workspaceMemberService.js';
 
 // 조직 관리(E1b, docs/specs/E1-multi-workspace.md 6.1). 서버당 조직은 하나(D1)라 조직 생성 API는 없다.
@@ -206,7 +207,7 @@ router.get('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Response
 });
 
 // POST /org/workspaces - 만들기. 만든 사람이 워크스페이스 OWNER가 된다.
-// 기본 채널 general 생성은 Channel.name 전역 유니크를 없애는 E1c 뒤에 붙인다(지금은 기본 워크스페이스 general과 충돌).
+// 기본 채널 general도 함께 만들고 만든 사람을 넣는다(E1c, 채널 이름 유일성이 워크스페이스 단위가 된 뒤).
 router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
   try {
     const body = createWorkspaceSchema.parse(req.body);
@@ -232,6 +233,8 @@ router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Respons
       });
       await materializeImplicitDefaultMembership(tx, actorId);
       await tx.workspaceMember.create({ data: { workspaceId: created.id, userId: actorId, role: 'OWNER' } });
+      await fillDefaultSlot(tx, 'general', created.id);
+      await joinWorkspaceDefaultChannels(tx, created.id, actorId);
       return created;
     });
     // 멤버십이 바뀐 사람은 만든 사람뿐이다

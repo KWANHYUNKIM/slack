@@ -266,7 +266,8 @@ describe('Channel meta, stars, sidebar prefs', () => {
       const res = await patch(ownerToken, channelId, { topic: 'live topic', name: 'live-name' });
       expect(res.status).toBe(200);
       const payload = await received;
-      expect(payload).toEqual({ id: channelId, name: 'live-name', topic: 'live topic', description: null });
+      // 공개 채널이라 워크스페이스 room으로 가고 채널이 보이는 워크스페이스를 함께 싣는다(E1c)
+      expect(payload).toEqual({ id: channelId, name: 'live-name', topic: 'live topic', description: null, workspaceIds: [1] });
     });
   });
 

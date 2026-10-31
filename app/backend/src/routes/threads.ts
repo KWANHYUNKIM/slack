@@ -256,7 +256,7 @@ router.get('/:id/locate', authMiddleware, async (req: AuthRequest, res: Response
         : 0;
       if (liveReplies === 0) return notFound();
     }
-    const access = await canReadChannel(userId, req.user!.role, message.channelId);
+    const access = await canReadChannel(userId, message.channelId, req.workspaceState?.memberships);
     if (!access.exists || !access.allowed) return notFound();
     res.json({
       messageId: message.id,

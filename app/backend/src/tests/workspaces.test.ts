@@ -121,23 +121,36 @@ describe('Workspaces (E1b)', () => {
       const headers = { ...auth(fx.users.bOwner.token), 'X-Workspace-Id': String(fx.workspaceB) };
       const transfer = await request(app).post('/admin/transfer-ownership').set(headers).send({ userId: fx.users.b.id });
       expect(transfer.status).toBe(403);
+      // b는 기본 워크스페이스 멤버가 아니라 /admin(기본 워크스페이스 범위, E1c)에서는 보이지 않는다
       const promote = await request(app).patch(`/admin/users/${fx.users.b.id}`).set(headers).send({ role: 'ADMIN' });
-      expect(promote.status).toBe(403);
+      expect(promote.status).toBe(404);
+      // 기본 워크스페이스 멤버를 올리는 것도 OWNER만 된다(헤더의 B OWNER 권한은 쓰이지 않는다)
+      await setUserRole(prisma, fx.users.a.id, 'MEMBER');
+      const promoteDefault = await request(app).patch(`/admin/users/${fx.users.a.id}`).set(headers).send({ role: 'ADMIN' });
+      expect(promoteDefault.status).toBe(403);
       expect((await prisma.user.findUnique({ where: { id: fx.users.b.id }, select: { role: true } }))?.role).toBe('MEMBER');
       // 새 API에서는 B의 OWNER 권한이 그대로 쓰인다
       const wsPromote = await request(app).patch(`/workspaces/${fx.workspaceB}/members/${fx.users.b.id}`).set(auth(fx.users.bOwner.token)).send({ role: 'ADMIN' });
       expect(wsPromote.status).toBe(200);
     });
 
-    it('a default workspace GUEST stays guest-scoped in GET /users even with a header for a workspace where they are MEMBER', async () => {
+    it('a default workspace GUEST stays guest-scoped in the default workspace; a header only shows that workspace with its own role', async () => {
+      // E1c: GET /users는 현재 워크스페이스 멤버만 돌려주고 게스트 제한은 그 워크스페이스의 역할로 본다.
+      // B의 MEMBER는 B 멤버를 볼 수 있지만 B 밖의 사람은 여전히 보이지 않는다(헤더로 넓어지는 범위가 없다).
       const g = await createFixtureUser('wsx-guest@example.com', 'Guest');
       await setUserRole(prisma, g.id, 'GUEST');
       await addFixtureMember(fx.workspaceB, g.id, 'MEMBER');
+      const legacyMember = await createFixtureUser('wsx-guest-peer@example.com', 'Peer');
+      const inDefault = await request(app).get('/users').set(auth(g.token));
+      expect(inDefault.status).toBe(200);
+      expect(inDefault.body.map((u: { id: number }) => u.id)).not.toContain(legacyMember.id);
+
       const res = await request(app).get('/users').set(auth(g.token)).set('X-Workspace-Id', String(fx.workspaceB));
       expect(res.status).toBe(200);
       const ids = res.body.map((u: { id: number }) => u.id);
-      expect(ids).not.toContain(fx.users.b.id);
-      expect(ids).not.toContain(fx.users.bOwner.id);
+      expect(ids).toContain(fx.users.b.id);
+      expect(ids).not.toContain(fx.users.a.id);
+      expect(ids).not.toContain(legacyMember.id);
     });
 
     it('keeps User.role as the default workspace role (legacy users and direct prisma promotions)', async () => {

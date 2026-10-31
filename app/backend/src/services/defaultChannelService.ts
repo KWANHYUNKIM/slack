@@ -41,40 +41,46 @@ export async function joinDefaultChannels(db: Prisma.TransactionClient, userId: 
   return channelIds;
 }
 
-async function fillDefaultSlot(db: Prisma.TransactionClient, slot: string): Promise<void> {
+// 워크스페이스의 기본 채널 자리 하나를 채운다. 기본 워크스페이스는 가입·부트스트랩이, 새 워크스페이스는 POST /org/workspaces가 부른다.
+export async function fillDefaultSlot(
+  db: Prisma.TransactionClient,
+  slot: string,
+  workspaceId: number = DEFAULT_WORKSPACE_ID,
+): Promise<number | null> {
   const nameKey = channelNameKey(slot);
-  // 기본 워크스페이스의 nameKey로만 찾는다(다른 워크스페이스 채널과 섞이지 않게)
+  // 그 워크스페이스의 nameKey로만 찾는다(다른 워크스페이스의 같은 이름 채널과 섞이지 않게, E1c)
   let row = await db.channelWorkspace.findUnique({
-    where: { workspaceId_nameKey: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey } },
+    where: { workspaceId_nameKey: { workspaceId, nameKey } },
     select: { channelId: true },
   });
   if (!row) {
-    // 같은 이름 채널이 이미 있으면(Channel.name 전역 유니크) 만들지 않고 넘어간다. createdBy는 비워 둔다(시스템이 만든 채널).
-    await db.channel.createMany({
-      data: [{ name: slot, isPrivate: false, workspaceId: DEFAULT_WORKSPACE_ID }],
-      skipDuplicates: true,
-    });
-    // 방금 만든 채널이나, 호스트 행 없이 옛 경로로 만들어진 같은 이름의 기본 워크스페이스 채널에 호스트 행을 붙인다.
-    // 동시에 다른 채널이 같은 nameKey를 먼저 가져가면 이 행은 건너뛰고 아래 재조회가 그 채널을 쓴다.
-    const channel = await db.channel.findFirst({
-      where: { name: slot, workspaceId: DEFAULT_WORKSPACE_ID, workspaces: { none: { workspaceId: DEFAULT_WORKSPACE_ID } } },
+    // 호스트 행 없이 옛 경로로 만들어진 같은 이름의 채널이 있으면 그것을 쓰고, 없으면 새로 만든다(createdBy는 비워 둔다: 시스템이 만든 채널).
+    // Channel.name 전역 유니크가 없으므로(E1c) 동시에 두 요청이 채널을 만들 수 있다. 이름 유일성은 아래 호스트 행의
+    // nameKey 유니크가 정하고, 진 쪽은 방금 만든 채널을 지운다. 유니크 충돌은 예외 대신 skipDuplicates(ON CONFLICT DO NOTHING)로
+    // 넘긴다(트랜잭션 안의 오류 하나가 트랜잭션 전체를 중단하므로).
+    const orphan = await db.channel.findFirst({
+      where: { name: slot, workspaceId, workspaces: { none: { workspaceId } } },
       select: { id: true },
     });
-    if (channel) {
-      await db.channelWorkspace.createMany({
-        data: [{ channelId: channel.id, workspaceId: DEFAULT_WORKSPACE_ID, nameKey }],
-        skipDuplicates: true,
-      });
-    }
+    const channel = orphan ?? await db.channel.create({
+      data: { name: slot, isPrivate: false, workspaceId },
+      select: { id: true },
+    });
+    const attached = await db.channelWorkspace.createMany({
+      data: [{ channelId: channel.id, workspaceId, nameKey }],
+      skipDuplicates: true,
+    });
+    if (attached.count === 0 && !orphan) await db.channel.delete({ where: { id: channel.id } });
     row = await db.channelWorkspace.findUnique({
-      where: { workspaceId_nameKey: { workspaceId: DEFAULT_WORKSPACE_ID, nameKey } },
+      where: { workspaceId_nameKey: { workspaceId, nameKey } },
       select: { channelId: true },
     });
-    if (!row) return;
+    if (!row) return null;
   }
   // 자리 표시. 동시에 같은 행을 채우는 가입은 defaultSlot:null 조건에 걸려 아무것도 바꾸지 않는다.
   await db.channelWorkspace.updateMany({
-    where: { channelId: row.channelId, workspaceId: DEFAULT_WORKSPACE_ID, defaultSlot: null },
+    where: { channelId: row.channelId, workspaceId, defaultSlot: null },
     data: { isDefault: true, defaultSlot: slot },
   });
+  return row.channelId;
 }

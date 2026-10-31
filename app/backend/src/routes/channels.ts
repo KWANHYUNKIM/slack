@@ -14,7 +14,9 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { validateChannelName } from '../utils/channelName.js';
 import { updateChannel, CHANNEL_NAME_TAKEN } from '../services/channelService.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
-import { channelHostData } from '../services/workspaceService.js';
+import { channelHostData, channelNameKey, isWorkspaceAdminRole } from '../services/workspaceService.js';
+import { channelScopeFor, targetRoleInChannelWorkspaces } from '../services/workspaceScopeService.js';
+import { ERR } from '../utils/errorCodes.js';
 
 const router = Router();
 
@@ -26,7 +28,9 @@ const createChannelSchema = z.object({
 // POST /channels - Create channel
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user!.role === 'GUEST') {
+    // 채널은 현재 워크스페이스에 만든다(E1c). 게스트 여부도 그 워크스페이스의 역할로 본다
+    const workspace = req.workspace!;
+    if (workspace.role === 'GUEST') {
       res.status(403).json({ error: 'Guests cannot create channels' });
       return;
     }
@@ -40,9 +44,10 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const isPrivate = parsed.isPrivate;
     const userId = req.user!.userId;
 
-    // Case-insensitive uniqueness check (DB unique constraint is case-sensitive)
-    const existing = await prisma.channel.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' } },
+    // 이름 유일성은 워크스페이스 단위(대소문자 무시 nameKey). 다른 워크스페이스의 같은 이름은 상관없다
+    const existing = await prisma.channelWorkspace.findUnique({
+      where: { workspaceId_nameKey: { workspaceId: workspace.id, nameKey: channelNameKey(name) } },
+      select: { channelId: true },
     });
     if (existing) {
       res.status(400).json({ error: 'Channel name already exists', code: CHANNEL_NAME_TAKEN });
@@ -54,8 +59,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         name,
         isPrivate,
         createdBy: userId,
-        // 기본 워크스페이스에 호스트로 연결한다(현재 워크스페이스 해석은 E1b)
-        ...channelHostData(name),
+        ...channelHostData(name, workspace.id),
         members: {
           create: {
             userId,
@@ -103,12 +107,14 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
 
+    // 현재 워크스페이스에 보이는 채널만(공유 채널 포함, E1c). 게스트 여부는 이 워크스페이스의 역할로 본다
     const channels = await prisma.channel.findMany({
-      where: listableChannelsWhere(userId, req.user!.role),
+      where: listableChannelsWhere(userId, req.workspace!.role, req.workspace!.id),
       include: {
         _count: {
           select: { members: true, messages: true },
         },
+        workspaces: { select: { workspaceId: true }, orderBy: { workspaceId: 'asc' } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -145,8 +151,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const starredSet = new Set(stars.map(st => st.channelId));
     const unreadMap = new Map(unreadRows.map(r => [r.channelId, Number(r.unreadCount)]));
 
-    const channelsWithUnread = channels.map((channel) => ({
+    const channelsWithUnread = channels.map(({ workspaces, ...channel }) => ({
       ...channel,
+      workspaceIds: workspaces.map((w) => w.workspaceId),
+      isShared: workspaces.length > 1,
       unreadCount: memberSet.has(channel.id) ? (unreadMap.get(channel.id) || 0) : 0,
       mentionCount: memberSet.has(channel.id) ? (mentionMap.get(channel.id) || 0) : 0,
       isMember: memberSet.has(channel.id),
@@ -214,10 +222,14 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const isMember = channel.members.some(m => m.userId === userId);
 
-    // Check access: private channels require membership; guests can only access their own channels
-    if (!isMember && (channel.isPrivate || req.user!.role === 'GUEST')) {
-      res.status(404).json({ error: 'Channel not found' });
-      return;
+    // Check access: private channels require membership; guests can only access their own channels.
+    // 비멤버는 채널이 보이는 워크스페이스의 활성 멤버여야 하고, 게스트 여부도 그 워크스페이스 역할로 본다(E1c)
+    if (!isMember) {
+      const scope = await channelScopeFor(userId, channelId, req.workspaceState?.memberships);
+      if (scope.role === null || channel.isPrivate || scope.role === 'GUEST') {
+        res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
+        return;
+      }
     }
 
     const isStarred = !!star;
@@ -273,14 +285,16 @@ router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => 
       return;
     }
     const userId = req.user!.userId;
-    const isWorkspaceAdmin = req.user!.role === 'ADMIN' || req.user!.role === 'OWNER';
 
-    const [channel, membership] = await Promise.all([
+    const [channel, membership, scope] = await Promise.all([
       prisma.channel.findUnique({ where: { id: channelId } }),
       prisma.channelMember.findUnique({ where: { userId_channelId: { userId, channelId } } }),
+      channelScopeFor(userId, channelId, req.workspaceState?.memberships),
     ]);
-    // 비공개 채널의 비멤버에게는 존재 자체를 숨긴다(워크스페이스 관리자는 예외)
-    if (!channel || (!membership && channel.isPrivate && !isWorkspaceAdmin)) {
+    // 워크스페이스 관리자는 채널이 보이는 워크스페이스의 관리자다(E1c). 다른 워크스페이스 관리자 권한으로 고칠 수 없다
+    const isWorkspaceAdmin = isWorkspaceAdminRole(scope.role);
+    // 다른 워크스페이스의 채널과 비공개 채널의 비멤버에게는 존재 자체를 숨긴다(워크스페이스 관리자는 예외)
+    if (!channel || (!membership && (scope.role === null || (channel.isPrivate && !isWorkspaceAdmin)))) {
       res.status(404).json({ error: 'Channel not found' });
       return;
     }
@@ -354,10 +368,6 @@ router.delete('/:id/star', authMiddleware, requireChannelMembership, async (req:
 // POST /channels/:id/join - Join a channel
 router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user!.role === 'GUEST') {
-      res.status(403).json({ error: 'Guests cannot join channels' });
-      return;
-    }
     const channelId = parseIntParam(req.params.id);
     if (!channelId) {
       res.status(400).json({ error: 'Invalid channel ID' });
@@ -365,12 +375,18 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
     }
     const userId = req.user!.userId;
 
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-    });
+    const [channel, scope] = await Promise.all([
+      prisma.channel.findUnique({ where: { id: channelId } }),
+      channelScopeFor(userId, channelId, req.workspaceState?.memberships),
+    ]);
 
-    if (!channel) {
-      res.status(404).json({ error: 'Channel not found' });
+    // 채널이 보이는 워크스페이스의 활성 멤버만 참여할 수 있다. 아니면 존재를 숨긴다(E1c, D7)
+    if (!channel || scope.role === null) {
+      res.status(404).json({ error: 'Channel not found', code: ERR.CHANNEL_NOT_FOUND });
+      return;
+    }
+    if (scope.role === 'GUEST') {
+      res.status(403).json({ error: 'Guests cannot join channels' });
       return;
     }
 
@@ -527,7 +543,7 @@ router.post('/:id/members', authMiddleware, requireChannelMembership, async (req
     // Check user exists and is active
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, role: true, deactivatedAt: true },
+      select: { id: true, deactivatedAt: true },
     });
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -538,9 +554,18 @@ router.post('/:id/members', authMiddleware, requireChannelMembership, async (req
       return;
     }
 
+    // 추가 대상은 채널이 보이는 워크스페이스 중 하나의 활성 멤버여야 한다(E1c, 5.3).
+    // 역할(게스트·관리자)은 둘 다 채널의 워크스페이스에서의 역할로 본다
+    const actorScope = await channelScopeFor(req.user!.userId, channelId, req.workspaceState?.memberships);
+    const targetRole = await targetRoleInChannelWorkspaces(userId, actorScope.workspaceIds);
+    if (targetRole === null) {
+      res.status(400).json({ error: 'User is not a member of this channel\'s workspace', code: ERR.USER_NOT_IN_WORKSPACE });
+      return;
+    }
+
     // Only admins/owners can add guest users to channels (prevents
     // regular members from expanding guest access beyond admin intent)
-    if (user.role === 'GUEST' && req.user!.role !== 'ADMIN' && req.user!.role !== 'OWNER') {
+    if (targetRole === 'GUEST' && !isWorkspaceAdminRole(actorScope.role)) {
       res.status(403).json({ error: 'Only workspace admins can add guest users to channels' });
       return;
     }
