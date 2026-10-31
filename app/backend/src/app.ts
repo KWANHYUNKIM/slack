@@ -93,7 +93,7 @@ app.use((req, res, next) => {
 // In production, intercept browser navigations (Accept: text/html) for SPA routes
 // that collide with API routes (e.g. /files, /admin) and serve index.html
 if (process.env.NODE_ENV === 'production') {
-  const spaRoutes = ['/files', '/admin', '/dms'];
+  const spaRoutes = ['/files', '/admin', '/dms', '/activity'];
   const frontendDist = path.join(process.cwd(), 'public');
   app.use(spaRoutes, (req, res, next) => {
     // Skip API calls: they carry Authorization or explicitly request JSON

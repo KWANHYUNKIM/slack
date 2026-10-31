@@ -8,6 +8,7 @@ import { useBookmarkStore } from '@/stores/useBookmarkStore';
 import { connectSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
+import { useActivityStore } from '@/stores/useActivityStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
@@ -105,6 +106,13 @@ function LaterRouteSync() {
 }
 
 function UnreadsRouteSync() {
+  useEffect(() => {
+    useChannelStore.setState({ activeChannelId: null, activeDMId: null });
+  }, []);
+  return null;
+}
+
+function ActivityRouteSync() {
   useEffect(() => {
     useChannelStore.setState({ activeChannelId: null, activeDMId: null });
   }, []);
@@ -241,7 +249,9 @@ function AppShell() {
     const handleConnect = () => {
       useAuthStore.getState().updateUser({ status: 'online' });
       useConnectionStore.getState().setConnected(true);
+      void useActivityStore.getState().fetchUnreadCount();
     };
+    const unbindActivity = useActivityStore.getState().bindSocket(socket);
     // If already connected (reconnect scenario), update immediately
     if (socket.connected) handleConnect();
 
@@ -468,6 +478,7 @@ function AppShell() {
     socket.on('disconnect', handleDisconnect);
 
     return () => {
+      unbindActivity();
       socket.off('connect', handleConnect);
       socket.off('message:new', handleNewMessage);
       socket.off('message:updated', handleUpdatedMessage);
@@ -575,6 +586,7 @@ function App() {
           <Route path="files" element={<FileRouteSync />} />
           <Route path="unreads" element={<UnreadsRouteSync />} />
           <Route path="later" element={<LaterRouteSync />} />
+          <Route path="activity" element={<ActivityRouteSync />} />
           <Route path="admin" element={<AdminGuard><AdminRouteSync /></AdminGuard>} />
           <Route path="*" element={<DefaultRedirect />} />
         </Route>

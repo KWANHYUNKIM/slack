@@ -26,6 +26,8 @@ export interface Channel {
   isMember: boolean;
   isMuted?: boolean;
   isStarred?: boolean;
+  /** Unread messages that mention me (shown as a red number) */
+  mentionCount: number;
 }
 
 export interface DirectMessage {
@@ -35,6 +37,7 @@ export interface DirectMessage {
   userAvatar: string;
   userStatus: UserStatus;
   unreadCount: number;
+  mentionCount: number;
 }
 
 export interface Reaction {
@@ -57,6 +60,10 @@ export interface MessageFile {
 export type MessageUser = Pick<User, 'id' | 'name' | 'avatar' | 'displayName'>;
 
 /** Entry in the @mention dropdown; the @here pseudo-user has no email. */
+/** Pseudo-user ids for broadcast mentions in the @ dropdown */
+export const MENTION_HERE_ID = -1;
+export const MENTION_CHANNEL_ID = -2;
+
 export type MentionUser = Pick<User, 'id' | 'name' | 'avatar'>;
 
 export interface Message {

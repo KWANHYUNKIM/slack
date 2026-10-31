@@ -43,6 +43,8 @@ export function serializeDelta(quill: Quill): string {
       const m = op.insert.mention as { id: number; name: string };
       if (m.id === -1 && m.name === 'here') {
         pendingText += '<@here>';
+      } else if (m.id === -2 && m.name === 'channel') {
+        pendingText += '<@channel>';
       } else {
         pendingText += `<@${m.id}|${m.name}>`;
       }

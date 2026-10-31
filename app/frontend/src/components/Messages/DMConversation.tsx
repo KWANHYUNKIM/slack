@@ -117,7 +117,8 @@ export function DMConversation({ userId, userName, userAvatar }: DMConversationP
       didScrollToTarget.current = true;
       useChannelStore.setState({ dmScrollToMessageId: null, dmHighlightedMessageId: dmScrollToMessageId });
     }
-  }, [dmScrollToMessageId, messages.length]);
+  // Re-run when the messages array changes: the refs are reset on re-fetch around the target.
+  }, [dmScrollToMessageId, messages]);
 
   // Auto-clear highlight after 2s
   useEffect(() => {

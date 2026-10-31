@@ -97,7 +97,9 @@ export function MessageList({ channelId, onOpenThread, readOnly }: MessageListPr
       didScrollToTarget.current = true;
       useChannelStore.setState({ scrollToMessageId: null, highlightedMessageId: scrollToMessageId });
     }
-  }, [scrollToMessageId, messages.length]);
+  // Depend on `messages` (not just its length): the refs are reset when the channel's
+  // messages are re-fetched around the target, so the effect must run again afterwards.
+  }, [scrollToMessageId, messages]);
 
   // Auto-clear highlight after 2s
   useEffect(() => {

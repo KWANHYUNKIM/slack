@@ -3,7 +3,7 @@ import Quill, { Delta, type Range } from 'quill';
 import Embed from 'quill/blots/embed';
 import 'quill/dist/quill.snow.css';
 import { uploadFile, getUsers, type ApiFile } from '@/lib/api';
-import type { MentionUser } from '@/lib/types';
+import { MENTION_CHANNEL_ID, MENTION_HERE_ID, type MentionUser } from '@/lib/types';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import emojiData from '@emoji-mart/data';
 import type { EmojiOption } from '@/components/Messages/EmojiAutocomplete';
@@ -19,7 +19,7 @@ class MentionBlot extends Embed {
     node.setAttribute('data-mention-id', String(data.id));
     node.setAttribute('data-mention-name', data.name);
     node.textContent = `@${data.name}`;
-    const isHere = data.id === -1 && data.name === 'here';
+    const isHere = (data.id === -1 && data.name === 'here') || (data.id === -2 && data.name === 'channel');
     node.style.cssText = isHere
       ? 'background:rgba(255,183,77,0.3);color:#b25e00;border-radius:3px;padding:0 2px;font-weight:500;cursor:pointer;'
       : 'background:rgba(29,155,209,0.1);color:#1264a3;border-radius:3px;padding:0 2px;font-weight:500;cursor:pointer;';
@@ -553,11 +553,17 @@ export function useQuillEditor({
             ? users.filter((u) => dmParticipantIds.includes(u.id))
             : users;
           // Add @here special option (filtered by query) — only in channels, not DMs
-          const hereOption: MentionUser = { id: -1, name: 'here', avatar: null };
+          const hereOption: MentionUser = { id: MENTION_HERE_ID, name: 'here', avatar: null };
+          const channelOption: MentionUser = { id: MENTION_CHANNEL_ID, name: 'channel', avatar: null };
           const q = mentionQuery.toLowerCase();
-          const showHere = !dmParticipantIds && (!q || 'here'.startsWith(q));
-          const withHere = showHere ? [hereOption, ...filtered] : filtered;
-          setMentionUsers(withHere);
+          const showBroadcast = !dmParticipantIds;
+          const showHere = showBroadcast && (!q || 'here'.startsWith(q));
+          const showChannel = showBroadcast && (!q || 'channel'.startsWith(q));
+          const broadcastOptions = [
+            ...(showHere ? [hereOption] : []),
+            ...(showChannel ? [channelOption] : []),
+          ];
+          setMentionUsers([...broadcastOptions, ...filtered]);
         }
       } catch {
         // ignore
@@ -588,8 +594,10 @@ export function useQuillEditor({
       const deleteLength = sel ? sel.index - startIndex : 0;
       if (deleteLength <= 0) return;
       quill.deleteText(startIndex, deleteLength);
-      if (user.id === -1 && user.name === 'here') {
-        quill.insertEmbed(startIndex, 'mention', { id: -1, name: 'here' }, 'user');
+      if (user.id === MENTION_HERE_ID && user.name === 'here') {
+        quill.insertEmbed(startIndex, 'mention', { id: MENTION_HERE_ID, name: 'here' }, 'user');
+      } else if (user.id === MENTION_CHANNEL_ID && user.name === 'channel') {
+        quill.insertEmbed(startIndex, 'mention', { id: MENTION_CHANNEL_ID, name: 'channel' }, 'user');
       } else {
         quill.insertEmbed(startIndex, 'mention', { id: user.id, name: user.name }, 'user');
       }

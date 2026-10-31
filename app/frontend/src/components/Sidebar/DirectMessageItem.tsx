@@ -14,7 +14,7 @@ export function DirectMessageItem({
   isActive,
   onClick,
 }: DirectMessageItemProps) {
-  const hasUnread = dm.unreadCount > 0;
+  const hasUnread = dm.unreadCount > 0 || dm.mentionCount > 0;
   const currentUser = useAuthStore((s) => s.user);
   const isSelf = dm.userId === currentUser?.id;
 
@@ -24,6 +24,7 @@ export function DirectMessageItem({
       isActive={isActive}
       hasUnread={hasUnread}
       unreadCount={dm.unreadCount}
+      mentionCount={dm.mentionCount}
       onClick={onClick}
       leftSlot={
         <Avatar
