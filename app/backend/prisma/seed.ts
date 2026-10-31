@@ -462,16 +462,36 @@ async function main() {
           status: u.status,
           avatar: u.avatar,
           lastSeen: u.status === 'offline' ? minsAgo(300) : minsAgo(5),
-          ...(i === 0 ? { role: 'OWNER' as const } : {}),
+          ...(i === 0 ? { role: 'OWNER' as const, orgRole: 'OWNER' as const } : {}),
+          defaultWorkspaceId: 1,
         },
       })
     )
   );
+  // 기본 워크스페이스(id=1, 마이그레이션이 만든다) 멤버십과 조직 주 소유자(E1a)
+  await prisma.workspaceMember.createMany({
+    data: users.map((u) => ({ workspaceId: 1, userId: u.id, role: u.role })),
+  });
+  await prisma.organization.update({ where: { id: 1 }, data: { primaryOwnerId: users[0].id } });
   console.log(`  Created ${users.length} users`);
 
   // Channels
   const channels = await Promise.all(
-    CHANNELS.map(c => prisma.channel.create({ data: { name: c.name, isPrivate: c.isPrivate } }))
+    CHANNELS.map(c => prisma.channel.create({
+      data: {
+        name: c.name,
+        isPrivate: c.isPrivate,
+        // 기본 워크스페이스의 호스트 행. general·random 공개 채널은 새 멤버가 들어가는 기본 채널이다(E1a)
+        workspaces: {
+          create: {
+            workspaceId: 1,
+            isHost: true,
+            isDefault: !c.isPrivate && (c.name === 'general' || c.name === 'random'),
+            nameKey: c.name.toLowerCase(),
+          },
+        },
+      },
+    }))
   );
   console.log(`  Created ${channels.length} channels`);
 

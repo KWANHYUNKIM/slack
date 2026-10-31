@@ -15,6 +15,7 @@ import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
+import { mirrorUserRole } from '../services/workspaceService.js';
 
 const router = Router();
 
@@ -94,10 +95,15 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { role },
-      select: ADMIN_USER_SELECT,
+    // 기본 워크스페이스 역할·조직 역할도 같은 트랜잭션에서 따라간다(E1a, workspaceService.mirrorUserRole)
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.user.update({
+        where: { id: userId },
+        data: { role },
+        select: ADMIN_USER_SELECT,
+      });
+      await mirrorUserRole(tx, userId, role);
+      return result;
     });
 
     // Invalidate cached auth so the new role takes effect immediately
@@ -890,10 +896,13 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
     }
 
     // Atomic: demote current owner to ADMIN, promote target to OWNER
-    await prisma.$transaction([
-      prisma.user.update({ where: { id: ownerId }, data: { role: 'ADMIN' } }),
-      prisma.user.update({ where: { id: userId }, data: { role: 'OWNER' } }),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: ownerId }, data: { role: 'ADMIN' } });
+      await tx.user.update({ where: { id: userId }, data: { role: 'OWNER' } });
+      // 기본 워크스페이스 역할·조직 역할과 조직 주 소유자도 함께 넘긴다(E1a)
+      await mirrorUserRole(tx, ownerId, 'ADMIN');
+      await mirrorUserRole(tx, userId, 'OWNER');
+    });
 
     // Invalidate cached auth so the new roles take effect immediately
     invalidateTokenCache(ownerId);

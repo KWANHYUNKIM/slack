@@ -5,6 +5,7 @@ import prisma from '../db.js';
 import { bindEphemeralListenToLoopback } from './loopback.js';
 import { clearTokenCache } from '../middleware/auth.js';
 import { settleBackgroundWork } from '../services/mentionService.js';
+import { DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID } from '../services/workspaceService.js';
 
 bindEphemeralListenToLoopback();
 
@@ -44,6 +45,20 @@ beforeAll(async () => {
   await prisma.directMessage.deleteMany();
   await prisma.dMGroup.deleteMany();
   await prisma.user.deleteMany();
+  // 조직·워크스페이스(E1a). WorkspaceMember·ChannelWorkspace는 사용자·채널 삭제에 연쇄로 지워진다.
+  // 기본 조직·워크스페이스(id=1)는 마이그레이션이 만든 행이라 지우지 않고, 테스트가 바꾼 값만 되돌린다.
+  await prisma.workspace.deleteMany({ where: { id: { not: DEFAULT_WORKSPACE_ID } } });
+  await prisma.organization.deleteMany({ where: { id: { not: DEFAULT_ORGANIZATION_ID } } });
+  await prisma.organization.upsert({
+    where: { id: DEFAULT_ORGANIZATION_ID },
+    create: { id: DEFAULT_ORGANIZATION_ID, name: 'Organization' },
+    update: { name: 'Organization', primaryOwnerId: null },
+  });
+  await prisma.workspace.upsert({
+    where: { id: DEFAULT_WORKSPACE_ID },
+    create: { id: DEFAULT_WORKSPACE_ID, organizationId: DEFAULT_ORGANIZATION_ID, slug: 'main', name: 'Workspace' },
+    update: { organizationId: DEFAULT_ORGANIZATION_ID, slug: 'main', name: 'Workspace', description: null, discoverability: 'INVITE_ONLY', icon: null, archivedAt: null },
+  });
 });
 
 afterAll(async () => {

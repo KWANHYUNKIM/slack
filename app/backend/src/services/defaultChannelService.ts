@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { DEFAULT_WORKSPACE_ID, channelNameKey } from './workspaceService.js';
 
 // 새 사용자를 넣는 기본 채널. 가입(/auth/register)과 첫 OWNER 부트스트랩이 같은 규칙을 쓴다.
 export const DEFAULT_CHANNELS = ['general', 'random'];
@@ -22,6 +23,16 @@ export async function joinDefaultChannels(db: Prisma.TransactionClient, userId: 
       select: { id: true },
     });
     if (!channel) continue;
+    // 기본 워크스페이스의 기본 채널로 연결한다(E1a). 이미 연결돼 있으면 isDefault만 맞춘다.
+    // 같은 nameKey를 다른 채널이 쓰고 있으면(대문자 옛 이름) 연결을 건너뛴다. 예외를 내면 트랜잭션 전체가 중단된다.
+    await db.channelWorkspace.createMany({
+      data: [{ channelId: channel.id, workspaceId: DEFAULT_WORKSPACE_ID, isHost: true, isDefault: true, nameKey: channelNameKey(name) }],
+      skipDuplicates: true,
+    });
+    await db.channelWorkspace.updateMany({
+      where: { channelId: channel.id, workspaceId: DEFAULT_WORKSPACE_ID, isDefault: false },
+      data: { isDefault: true },
+    });
     await db.channelMember.createMany({
       data: [{ userId, channelId: channel.id }],
       skipDuplicates: true,

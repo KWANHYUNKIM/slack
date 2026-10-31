@@ -11,6 +11,7 @@ import { rotateSessions } from '../services/sessionRotation.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
+import { DEFAULT_WORKSPACE_ID, addWorkspaceMember, orgRoleFor } from '../services/workspaceService.js';
 import { createSessionToken, revokeSession } from '../services/sessionService.js';
 import { writeAuditLog, hashEmailForAudit, throttleUnknownLogin } from '../utils/auditLog.js';
 import {
@@ -92,19 +93,22 @@ router.post('/register', async (req: Request, res: Response) => {
     // Use transaction to atomically validate invite + create user + increment useCount
     const user = await prisma.$transaction(async (tx) => {
       let assignedRole: 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST' = 'MEMBER';
+      // 초대가 가리키는 워크스페이스(E1a). 초대 없이 가입하는 테스트 환경은 기본 워크스페이스다.
+      let workspaceId = DEFAULT_WORKSPACE_ID;
+      let invitedBy: number | null = null;
 
       if (inviteCode) {
         // Atomic check-and-increment: a single UPDATE with WHERE conditions
         // eliminates the race window between findUnique and update that existed
         // under READ COMMITTED isolation (two concurrent registrations could
         // both read useCount=0 with maxUses=1, both pass the check, both increment).
-        const claimed = await tx.$queryRaw<Array<{ id: number; role: string }>>`
+        const claimed = await tx.$queryRaw<Array<{ id: number; role: string; workspaceId: number; createdBy: number }>>`
           UPDATE "InviteLink"
           SET "useCount" = "useCount" + 1
           WHERE "code" = ${inviteCode}
             AND ("expiresAt" IS NULL OR "expiresAt" >= NOW())
             AND ("maxUses" IS NULL OR "useCount" < "maxUses")
-          RETURNING id, role
+          RETURNING id, role, "workspaceId", "createdBy"
         `;
         if (claimed.length === 0) {
           throw new Error('INVITE_INVALID');
@@ -112,14 +116,18 @@ router.post('/register', async (req: Request, res: Response) => {
         // Cap self-service registration to MEMBER/GUEST — OWNER/ADMIN require admin action
         const inviteRole = claimed[0].role;
         assignedRole = (inviteRole === 'MEMBER' || inviteRole === 'GUEST') ? inviteRole as 'MEMBER' | 'GUEST' : 'MEMBER';
+        workspaceId = claimed[0].workspaceId;
+        invitedBy = claimed[0].createdBy;
       }
 
-      return tx.user.create({
+      const created = await tx.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
           role: assignedRole,
+          orgRole: orgRoleFor(assignedRole),
+          defaultWorkspaceId: workspaceId,
         },
         select: {
           id: true,
@@ -128,6 +136,9 @@ router.post('/register', async (req: Request, res: Response) => {
           createdAt: true,
         },
       });
+      // 계정과 워크스페이스 멤버십은 같은 트랜잭션에서 생긴다(멤버십 없는 계정이 남지 않게)
+      await addWorkspaceMember(tx, { workspaceId, userId: created.id, role: assignedRole, invitedBy });
+      return created;
     });
 
     // Auto-join default channels — guests get NO auto-join (admin assigns channels)

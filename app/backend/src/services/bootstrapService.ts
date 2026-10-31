@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../db.js';
 import { BCRYPT_ROUNDS, displayNameSchema, emailSchema, newPasswordSchema } from '../utils/authSchemas.js';
 import { joinDefaultChannels } from './defaultChannelService.js';
+import { DEFAULT_ORGANIZATION_ID, DEFAULT_WORKSPACE_ID, addWorkspaceMember } from './workspaceService.js';
 
 // 빈 DB에 첫 OWNER를 만드는 경로. 가입은 초대 코드가 필요하고 초대는 기존 사용자가 만들어야 하므로,
 // 운영 이미지에서는 이 서비스(scripts/create-owner.ts)로만 첫 계정을 만든다.
@@ -43,9 +44,13 @@ export async function createInitialOwner(input: BootstrapOwnerInput) {
     }
 
     const owner = await tx.user.create({
-      data: { email, password: hashedPassword, name, role: 'OWNER' },
+      data: { email, password: hashedPassword, name, role: 'OWNER', orgRole: 'OWNER', defaultWorkspaceId: DEFAULT_WORKSPACE_ID },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
+
+    // 첫 OWNER는 조직의 주 소유자이자 기본 워크스페이스의 OWNER다(E1a).
+    await addWorkspaceMember(tx, { workspaceId: DEFAULT_WORKSPACE_ID, userId: owner.id, role: 'OWNER' });
+    await tx.organization.update({ where: { id: DEFAULT_ORGANIZATION_ID }, data: { primaryOwnerId: owner.id } });
 
     // 가입과 같은 규칙으로 기본 채널에 넣는다. 첫 OWNER는 워크스페이스를 바로 쓸 수 있어야 한다.
     await joinDefaultChannels(tx, owner.id);

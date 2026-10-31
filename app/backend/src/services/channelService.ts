@@ -3,6 +3,7 @@ import prisma from '../db.js';
 import { getIO } from '../websocket/index.js';
 import { validateChannelName } from '../utils/channelName.js';
 import { writeAuditLog } from '../utils/auditLog.js';
+import { channelNameKey } from './workspaceService.js';
 
 // 채널 이름이 이미 쓰이고 있을 때의 오류 코드(클라이언트가 번역 키로 바꿔 보여 준다)
 export const CHANNEL_NAME_TAKEN = 'CHANNEL_NAME_TAKEN';
@@ -32,6 +33,7 @@ export async function updateChannel(params: {
   const { channel, actorId, input } = params;
   const data: Prisma.ChannelUpdateInput = {};
   const changes: string[] = [];
+  let newName: string | undefined;
 
   if (input.name !== undefined && input.name !== channel.name) {
     const nameResult = validateChannelName(input.name);
@@ -48,6 +50,7 @@ export async function updateChannel(params: {
         return { ok: false, status: 409, body: { error: CHANNEL_NAME_TAKEN_MESSAGE, code: CHANNEL_NAME_TAKEN } };
       }
       data.name = nameResult.name;
+      newName = nameResult.name;
       changes.push(`Renamed from #${channel.name} to #${nameResult.name}`);
     }
   }
@@ -70,9 +73,17 @@ export async function updateChannel(params: {
 
   let updated;
   try {
-    updated = await prisma.channel.update({ where: { id: channel.id }, data, include: channelWithCounts });
+    const nameKey = newName === undefined ? undefined : channelNameKey(newName);
+    updated = nameKey === undefined
+      ? await prisma.channel.update({ where: { id: channel.id }, data, include: channelWithCounts })
+      // 이름이 바뀌면 채널이 보이는 모든 워크스페이스의 nameKey도 같은 트랜잭션에서 바꾼다(워크스페이스 단위 유일성)
+      : await prisma.$transaction(async (tx) => {
+        const result = await tx.channel.update({ where: { id: channel.id }, data, include: channelWithCounts });
+        await tx.channelWorkspace.updateMany({ where: { channelId: channel.id }, data: { nameKey } });
+        return result;
+      });
   } catch (error) {
-    // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(유니크 제약)
+    // 중복 검사와 update 사이에 같은 이름이 먼저 저장된 경우(Channel.name 또는 ChannelWorkspace.nameKey 유니크 제약)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return { ok: false, status: 409, body: { error: CHANNEL_NAME_TAKEN_MESSAGE, code: CHANNEL_NAME_TAKEN } };
     }
