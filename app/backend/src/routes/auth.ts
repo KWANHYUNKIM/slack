@@ -337,7 +337,8 @@ router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Re
         current.count = 0;
       }
       passwordChangeAttempts.set(userId, current);
-      res.status(401).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
+      // 401은 프런트가 자동 로그아웃하는 신호이므로, 입력이 틀린 것은 400으로 답한다(토큰은 그대로 유효)
+      res.status(400).json({ error: 'Current password is incorrect', code: ERR.AUTH_CURRENT_PASSWORD_INCORRECT });
       return;
     }
 
