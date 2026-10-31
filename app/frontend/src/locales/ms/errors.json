@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Permintaan sambungan ini tidak sah. Mulakan sambungan semula daripada aplikasi.",
     "OAUTH_APPS_DISABLED": "Pentadbir ruang kerja anda telah mematikan sambungan aplikasi.",
     "OAUTH_CONNECTION_NOT_FOUND": "Aplikasi ini belum disambungkan.",
-    "OAUTH_NOT_CONFIGURED": "Sambungan aplikasi belum dikonfigurasi pada pelayan ini. Minta pentadbir menetapkan alamat pelayan awam."
+    "OAUTH_NOT_CONFIGURED": "Sambungan aplikasi belum dikonfigurasi pada pelayan ini. Minta pentadbir menetapkan alamat pelayan awam.",
+    "INVALID_WORKSPACE_ID": "Alamat ruang kerja itu tidak sah.",
+    "WORKSPACE_NOT_FOUND": "Ruang kerja tidak ditemui, atau anda tidak mempunyai akses kepadanya.",
+    "NO_WORKSPACE": "Anda belum berada dalam mana-mana ruang kerja. Sertai satu ruang kerja atau minta jemputan.",
+    "WORKSPACE_NOT_OPEN": "Ruang kerja ini hanya dibuka melalui jemputan.",
+    "WORKSPACE_ADMIN_REQUIRED": "Hanya pentadbir ruang kerja boleh melakukan ini.",
+    "ORG_ADMIN_REQUIRED": "Hanya pentadbir organisasi boleh melakukan ini.",
+    "ORG_OWNER_REQUIRED": "Hanya pemilik organisasi boleh melakukan ini.",
+    "LAST_WORKSPACE_OWNER": "Ruang kerja memerlukan sekurang-kurangnya seorang pemilik. Jadikan orang lain pemilik dahulu.",
+    "LAST_WORKSPACE": "Anda tidak boleh mengarkibkan ruang kerja aktif yang terakhir.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Orang ini sudah berada dalam ruang kerja.",
+    "USER_NOT_FOUND": "Pengguna tidak ditemui.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Pemilik utama organisasi tidak boleh dibuang.",
+    "WORKSPACE_SLUG_TAKEN": "URL ruang kerja ini sudah digunakan.",
+    "WORKSPACE_NAME_TAKEN": "Ruang kerja dengan nama ini sudah wujud.",
+    "INVALID_WORKSPACE_SLUG": "Gunakan 1 hingga 21 huruf kecil, nombor atau sengkang untuk URL ruang kerja.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Anda tidak boleh memberi atau menukar peranan ini.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Orang tidak boleh keluar daripada ruang kerja lalai atau dibuang daripadanya. Untuk membuang seseorang, nyahaktifkan akaunnya dalam tetapan pentadbir.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Ruang kerja lalai tidak boleh diarkibkan."
   }
 }

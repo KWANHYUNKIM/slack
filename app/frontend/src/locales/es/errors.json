@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Esta solicitud de conexión no es válida. Empieza a conectar de nuevo desde la aplicación.",
     "OAUTH_APPS_DISABLED": "El administrador del espacio de trabajo ha desactivado las conexiones de aplicaciones.",
     "OAUTH_CONNECTION_NOT_FOUND": "Esta aplicación no está conectada.",
-    "OAUTH_NOT_CONFIGURED": "Las conexiones de aplicaciones no están configuradas en este servidor. Pide a tu administrador que establezca la dirección pública del servidor."
+    "OAUTH_NOT_CONFIGURED": "Las conexiones de aplicaciones no están configuradas en este servidor. Pide a tu administrador que establezca la dirección pública del servidor.",
+    "INVALID_WORKSPACE_ID": "Esa dirección de espacio de trabajo no es válida.",
+    "WORKSPACE_NOT_FOUND": "No se encontró el espacio de trabajo o no tienes acceso a él.",
+    "NO_WORKSPACE": "Todavía no formas parte de ningún espacio de trabajo. Únete a uno o pide una invitación.",
+    "WORKSPACE_NOT_OPEN": "Este espacio de trabajo es solo por invitación.",
+    "WORKSPACE_ADMIN_REQUIRED": "Solo los administradores del espacio de trabajo pueden hacer esto.",
+    "ORG_ADMIN_REQUIRED": "Solo los administradores de la organización pueden hacer esto.",
+    "ORG_OWNER_REQUIRED": "Solo los propietarios de la organización pueden hacer esto.",
+    "LAST_WORKSPACE_OWNER": "Un espacio de trabajo necesita al menos un propietario. Primero asigna el rol de propietario a otra persona.",
+    "LAST_WORKSPACE": "No puedes archivar el último espacio de trabajo activo.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Esta persona ya está en el espacio de trabajo.",
+    "USER_NOT_FOUND": "No se encontró a la persona.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "No se puede eliminar al propietario principal de la organización.",
+    "WORKSPACE_SLUG_TAKEN": "Esa URL de espacio de trabajo ya está en uso.",
+    "WORKSPACE_NAME_TAKEN": "Ya existe un espacio de trabajo con este nombre.",
+    "INVALID_WORKSPACE_SLUG": "Usa de 1 a 21 letras minúsculas, números o guiones para la URL del espacio de trabajo.",
+    "WORKSPACE_ROLE_FORBIDDEN": "No puedes asignar ni cambiar este rol.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "No se puede salir ni eliminar a personas del espacio de trabajo predeterminado. Para quitar a alguien, desactiva su cuenta en la configuración de administración.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "El espacio de trabajo predeterminado no se puede archivar."
   }
 }

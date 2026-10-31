@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Denne forbindelsesanmodning er ikke gyldig. Start forbindelsen forfra fra appen.",
     "OAUTH_APPS_DISABLED": "Din administrator for arbejdsområdet har slået appforbindelser fra.",
     "OAUTH_CONNECTION_NOT_FOUND": "Denne app er ikke forbundet.",
-    "OAUTH_NOT_CONFIGURED": "Appforbindelser er ikke konfigureret på denne server. Bed din administrator om at angive den offentlige serveradresse."
+    "OAUTH_NOT_CONFIGURED": "Appforbindelser er ikke konfigureret på denne server. Bed din administrator om at angive den offentlige serveradresse.",
+    "INVALID_WORKSPACE_ID": "Denne arbejdsområdeadresse er ikke gyldig.",
+    "WORKSPACE_NOT_FOUND": "Arbejdsområdet blev ikke fundet, eller du har ikke adgang til det.",
+    "NO_WORKSPACE": "Du er endnu ikke med i et arbejdsområde. Deltag i et, eller bed om en invitation.",
+    "WORKSPACE_NOT_OPEN": "Dette arbejdsområde er kun åbent for inviterede.",
+    "WORKSPACE_ADMIN_REQUIRED": "Kun administratorer af arbejdsområdet kan gøre dette.",
+    "ORG_ADMIN_REQUIRED": "Kun organisationsadministratorer kan gøre dette.",
+    "ORG_OWNER_REQUIRED": "Kun organisationsejere kan gøre dette.",
+    "LAST_WORKSPACE_OWNER": "Et arbejdsområde skal have mindst én ejer. Gør en anden til ejer først.",
+    "LAST_WORKSPACE": "Du kan ikke arkivere det sidste aktive arbejdsområde.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Denne person er allerede i arbejdsområdet.",
+    "USER_NOT_FOUND": "Personen blev ikke fundet.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Organisationens primære ejer kan ikke fjernes.",
+    "WORKSPACE_SLUG_TAKEN": "Denne arbejdsområde-URL er allerede i brug.",
+    "WORKSPACE_NAME_TAKEN": "Der findes allerede et arbejdsområde med dette navn.",
+    "INVALID_WORKSPACE_SLUG": "Brug 1 til 21 små bogstaver, tal eller bindestreger til arbejdsområdets URL.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Du kan ikke tildele eller ændre denne rolle.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Personer kan ikke forlade eller fjernes fra standardarbejdsområdet. Hvis du vil fjerne nogen, skal du deaktivere deres konto i administratorindstillingerne.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Standardarbejdsområdet kan ikke arkiveres."
   }
 }

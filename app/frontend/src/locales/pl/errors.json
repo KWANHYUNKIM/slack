@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Ta prośba o połączenie jest nieprawidłowa. Rozpocznij łączenie z aplikacji od nowa.",
     "OAUTH_APPS_DISABLED": "Administrator przestrzeni roboczej wyłączył łączenie aplikacji.",
     "OAUTH_CONNECTION_NOT_FOUND": "Ta aplikacja nie jest połączona.",
-    "OAUTH_NOT_CONFIGURED": "Łączenie aplikacji nie jest skonfigurowane na tym serwerze. Poproś administratora o ustawienie publicznego adresu serwera."
+    "OAUTH_NOT_CONFIGURED": "Łączenie aplikacji nie jest skonfigurowane na tym serwerze. Poproś administratora o ustawienie publicznego adresu serwera.",
+    "INVALID_WORKSPACE_ID": "Ten adres obszaru roboczego jest nieprawidłowy.",
+    "WORKSPACE_NOT_FOUND": "Nie znaleziono obszaru roboczego albo nie masz do niego dostępu.",
+    "NO_WORKSPACE": "Nie należysz jeszcze do żadnego obszaru roboczego. Dołącz do jednego lub poproś o zaproszenie.",
+    "WORKSPACE_NOT_OPEN": "Do tego obszaru roboczego można dołączyć tylko na zaproszenie.",
+    "WORKSPACE_ADMIN_REQUIRED": "Tylko administratorzy obszaru roboczego mogą to zrobić.",
+    "ORG_ADMIN_REQUIRED": "Tylko administratorzy organizacji mogą to zrobić.",
+    "ORG_OWNER_REQUIRED": "Tylko właściciele organizacji mogą to zrobić.",
+    "LAST_WORKSPACE_OWNER": "Obszar roboczy musi mieć co najmniej jednego właściciela. Najpierw nadaj prawa właściciela komuś innemu.",
+    "LAST_WORKSPACE": "Nie można zarchiwizować ostatniego aktywnego obszaru roboczego.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Ta osoba jest już w obszarze roboczym.",
+    "USER_NOT_FOUND": "Nie znaleziono osoby.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Nie można usunąć głównego właściciela organizacji.",
+    "WORKSPACE_SLUG_TAKEN": "Ten adres URL obszaru roboczego jest już zajęty.",
+    "WORKSPACE_NAME_TAKEN": "Obszar roboczy o tej nazwie już istnieje.",
+    "INVALID_WORKSPACE_SLUG": "Adres URL obszaru roboczego może zawierać od 1 do 21 małych liter, cyfr lub myślników.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Nie można nadać ani zmienić tej roli.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Osoby nie mogą opuścić domyślnego obszaru roboczego ani zostać z niego usunięte. Aby usunąć kogoś, dezaktywuj jego konto w ustawieniach administracyjnych.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Domyślnego obszaru roboczego nie można zarchiwizować."
   }
 }

@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Bu bağlantı isteği geçerli değil. Uygulamadan bağlanmayı yeniden başlatın.",
     "OAUTH_APPS_DISABLED": "Çalışma alanı yöneticiniz uygulama bağlantılarını kapattı.",
     "OAUTH_CONNECTION_NOT_FOUND": "Bu uygulama bağlı değil.",
-    "OAUTH_NOT_CONFIGURED": "Bu sunucuda uygulama bağlantıları yapılandırılmamış. Yöneticinizden genel sunucu adresini ayarlamasını isteyin."
+    "OAUTH_NOT_CONFIGURED": "Bu sunucuda uygulama bağlantıları yapılandırılmamış. Yöneticinizden genel sunucu adresini ayarlamasını isteyin.",
+    "INVALID_WORKSPACE_ID": "Bu çalışma alanı adresi geçerli değil.",
+    "WORKSPACE_NOT_FOUND": "Çalışma alanı bulunamadı veya buna erişim izniniz yok.",
+    "NO_WORKSPACE": "Henüz hiçbir çalışma alanına katılmadınız. Bir çalışma alanına katılın veya davet isteyin.",
+    "WORKSPACE_NOT_OPEN": "Bu çalışma alanı yalnızca davetle katılıma açıktır.",
+    "WORKSPACE_ADMIN_REQUIRED": "Bunu yalnızca çalışma alanı yöneticileri yapabilir.",
+    "ORG_ADMIN_REQUIRED": "Bunu yalnızca kuruluş yöneticileri yapabilir.",
+    "ORG_OWNER_REQUIRED": "Bunu yalnızca kuruluş sahipleri yapabilir.",
+    "LAST_WORKSPACE_OWNER": "Bir çalışma alanında en az bir sahip olmalıdır. Önce başka birini sahip yapın.",
+    "LAST_WORKSPACE": "Etkin olan son çalışma alanı arşivlenemez.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Bu kişi zaten çalışma alanında.",
+    "USER_NOT_FOUND": "Kişi bulunamadı.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Kuruluşun birincil sahibi kaldırılamaz.",
+    "WORKSPACE_SLUG_TAKEN": "Bu çalışma alanı URL'si zaten kullanılıyor.",
+    "WORKSPACE_NAME_TAKEN": "Bu adla bir çalışma alanı zaten var.",
+    "INVALID_WORKSPACE_SLUG": "Çalışma alanı URL'si için 1 ila 21 arasında küçük harf, rakam veya kısa çizgi kullanın.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Bu rolü veremez veya değiştiremezsiniz.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Kişiler varsayılan çalışma alanından ayrılamaz veya çıkarılamaz. Birini çıkarmak için yönetici ayarlarından hesabını devre dışı bırakın.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Varsayılan çalışma alanı arşivlenemez."
   }
 }

@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Esta solicitação de conexão não é válida. Comece a conexão novamente pelo aplicativo.",
     "OAUTH_APPS_DISABLED": "O administrador do seu espaço de trabalho desativou as conexões de aplicativos.",
     "OAUTH_CONNECTION_NOT_FOUND": "Este aplicativo não está conectado.",
-    "OAUTH_NOT_CONFIGURED": "As conexões de aplicativos não estão configuradas neste servidor. Peça ao administrador para definir o endereço público do servidor."
+    "OAUTH_NOT_CONFIGURED": "As conexões de aplicativos não estão configuradas neste servidor. Peça ao administrador para definir o endereço público do servidor.",
+    "INVALID_WORKSPACE_ID": "Este endereço de workspace não é válido.",
+    "WORKSPACE_NOT_FOUND": "Workspace não encontrado ou você não tem acesso a ele.",
+    "NO_WORKSPACE": "Você ainda não está em nenhum workspace. Entre em um ou peça um convite.",
+    "WORKSPACE_NOT_OPEN": "Este workspace é somente por convite.",
+    "WORKSPACE_ADMIN_REQUIRED": "Somente administradores do workspace podem fazer isso.",
+    "ORG_ADMIN_REQUIRED": "Somente administradores da organização podem fazer isso.",
+    "ORG_OWNER_REQUIRED": "Somente proprietários da organização podem fazer isso.",
+    "LAST_WORKSPACE_OWNER": "Um workspace precisa de pelo menos um proprietário. Primeiro torne outra pessoa proprietária.",
+    "LAST_WORKSPACE": "Não é possível arquivar o último workspace ativo.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Esta pessoa já está no workspace.",
+    "USER_NOT_FOUND": "Pessoa não encontrada.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "O proprietário principal da organização não pode ser removido.",
+    "WORKSPACE_SLUG_TAKEN": "Este URL de workspace já está em uso.",
+    "WORKSPACE_NAME_TAKEN": "Já existe um workspace com este nome.",
+    "INVALID_WORKSPACE_SLUG": "Use de 1 a 21 letras minúsculas, números ou hífens no URL do workspace.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Você não pode atribuir nem alterar este papel.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Não é possível sair do workspace padrão nem ser removido dele. Para remover alguém, desative a conta dessa pessoa nas configurações de administração.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "O workspace padrão não pode ser arquivado."
   }
 }

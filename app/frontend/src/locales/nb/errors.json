@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Denne tilkoblingsforespørselen er ikke gyldig. Start tilkoblingen på nytt fra appen.",
     "OAUTH_APPS_DISABLED": "Administratoren for arbeidsområdet ditt har slått av app-tilkoblinger.",
     "OAUTH_CONNECTION_NOT_FOUND": "Denne appen er ikke tilkoblet.",
-    "OAUTH_NOT_CONFIGURED": "App-tilkoblinger er ikke satt opp på denne serveren. Be administratoren din om å angi den offentlige serveradressen."
+    "OAUTH_NOT_CONFIGURED": "App-tilkoblinger er ikke satt opp på denne serveren. Be administratoren din om å angi den offentlige serveradressen.",
+    "INVALID_WORKSPACE_ID": "Den arbeidsområdeadressen er ikke gyldig.",
+    "WORKSPACE_NOT_FOUND": "Fant ikke arbeidsområdet, eller så har du ikke tilgang til det.",
+    "NO_WORKSPACE": "Du er ikke med i noe arbeidsområde ennå. Bli med i et, eller be om en invitasjon.",
+    "WORKSPACE_NOT_OPEN": "Dette arbeidsområdet er bare åpent for inviterte.",
+    "WORKSPACE_ADMIN_REQUIRED": "Bare administratorer for arbeidsområdet kan gjøre dette.",
+    "ORG_ADMIN_REQUIRED": "Bare organisasjonsadministratorer kan gjøre dette.",
+    "ORG_OWNER_REQUIRED": "Bare eiere av organisasjonen kan gjøre dette.",
+    "LAST_WORKSPACE_OWNER": "Et arbeidsområde må ha minst én eier. Gjør noen andre til eier først.",
+    "LAST_WORKSPACE": "Du kan ikke arkivere det siste aktive arbeidsområdet.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Denne personen er allerede i arbeidsområdet.",
+    "USER_NOT_FOUND": "Fant ikke personen.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Hovedeieren av organisasjonen kan ikke fjernes.",
+    "WORKSPACE_SLUG_TAKEN": "Denne arbeidsområde-nettadressen er allerede i bruk.",
+    "WORKSPACE_NAME_TAKEN": "Det finnes allerede et arbeidsområde med dette navnet.",
+    "INVALID_WORKSPACE_SLUG": "Bruk 1 til 21 små bokstaver, tall eller bindestreker i nettadressen til arbeidsområdet.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Du kan ikke gi eller endre denne rollen.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Folk kan ikke forlate eller fjernes fra standardarbeidsområdet. Hvis du vil fjerne noen, deaktiverer du kontoen deres i admininnstillingene.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Standardarbeidsområdet kan ikke arkiveres."
   }
 }

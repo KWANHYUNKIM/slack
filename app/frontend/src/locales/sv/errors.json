@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Den här anslutningsbegäran är inte giltig. Börja ansluta från appen igen.",
     "OAUTH_APPS_DISABLED": "Din administratör för arbetsytan har stängt av appanslutningar.",
     "OAUTH_CONNECTION_NOT_FOUND": "Den här appen är inte ansluten.",
-    "OAUTH_NOT_CONFIGURED": "Appanslutningar är inte konfigurerade på den här servern. Be din administratör ange den publika serveradressen."
+    "OAUTH_NOT_CONFIGURED": "Appanslutningar är inte konfigurerade på den här servern. Be din administratör ange den publika serveradressen.",
+    "INVALID_WORKSPACE_ID": "Den här arbetsytans adress är inte giltig.",
+    "WORKSPACE_NOT_FOUND": "Arbetsytan hittades inte, eller så har du inte åtkomst till den.",
+    "NO_WORKSPACE": "Du är ännu inte med i någon arbetsyta. Gå med i en eller be om en inbjudan.",
+    "WORKSPACE_NOT_OPEN": "Den här arbetsytan är endast öppen för inbjudna.",
+    "WORKSPACE_ADMIN_REQUIRED": "Endast administratörer för arbetsytan kan göra detta.",
+    "ORG_ADMIN_REQUIRED": "Endast organisationsadministratörer kan göra detta.",
+    "ORG_OWNER_REQUIRED": "Endast organisationsägare kan göra detta.",
+    "LAST_WORKSPACE_OWNER": "En arbetsyta behöver minst en ägare. Gör någon annan till ägare först.",
+    "LAST_WORKSPACE": "Du kan inte arkivera den sista aktiva arbetsytan.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Den här personen finns redan i arbetsytan.",
+    "USER_NOT_FOUND": "Personen hittades inte.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Organisationens huvudägare kan inte tas bort.",
+    "WORKSPACE_SLUG_TAKEN": "Den här arbetsytans webbadress används redan.",
+    "WORKSPACE_NAME_TAKEN": "Det finns redan en arbetsyta med det här namnet.",
+    "INVALID_WORKSPACE_SLUG": "Använd 1 till 21 gemener, siffror eller bindestreck i arbetsytans webbadress.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Du kan inte ge eller ändra den här rollen.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Personer kan inte lämna eller tas bort från standardarbetsytan. Inaktivera personens konto i admininställningarna för att ta bort någon.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Standardarbetsytan kan inte arkiveras."
   }
 }

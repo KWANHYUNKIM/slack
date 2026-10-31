@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Yêu cầu kết nối này không hợp lệ. Hãy bắt đầu kết nối lại từ ứng dụng.",
     "OAUTH_APPS_DISABLED": "Quản trị viên không gian làm việc đã tắt tính năng kết nối ứng dụng.",
     "OAUTH_CONNECTION_NOT_FOUND": "Ứng dụng này chưa được kết nối.",
-    "OAUTH_NOT_CONFIGURED": "Máy chủ này chưa cấu hình kết nối ứng dụng. Hãy nhờ quản trị viên đặt địa chỉ máy chủ công khai."
+    "OAUTH_NOT_CONFIGURED": "Máy chủ này chưa cấu hình kết nối ứng dụng. Hãy nhờ quản trị viên đặt địa chỉ máy chủ công khai.",
+    "INVALID_WORKSPACE_ID": "Địa chỉ không gian làm việc này không hợp lệ.",
+    "WORKSPACE_NOT_FOUND": "Không tìm thấy không gian làm việc hoặc bạn không có quyền truy cập.",
+    "NO_WORKSPACE": "Bạn chưa tham gia không gian làm việc nào. Hãy tham gia một không gian làm việc hoặc yêu cầu lời mời.",
+    "WORKSPACE_NOT_OPEN": "Không gian làm việc này chỉ dành cho người được mời.",
+    "WORKSPACE_ADMIN_REQUIRED": "Chỉ quản trị viên không gian làm việc mới có thể thực hiện việc này.",
+    "ORG_ADMIN_REQUIRED": "Chỉ quản trị viên tổ chức mới có thể thực hiện việc này.",
+    "ORG_OWNER_REQUIRED": "Chỉ chủ sở hữu tổ chức mới có thể thực hiện việc này.",
+    "LAST_WORKSPACE_OWNER": "Không gian làm việc cần có ít nhất một chủ sở hữu. Hãy đặt người khác làm chủ sở hữu trước.",
+    "LAST_WORKSPACE": "Không thể lưu trữ không gian làm việc đang hoạt động cuối cùng.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Người này đã có trong không gian làm việc.",
+    "USER_NOT_FOUND": "Không tìm thấy người dùng.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Không thể xóa chủ sở hữu chính của tổ chức.",
+    "WORKSPACE_SLUG_TAKEN": "URL không gian làm việc này đã được sử dụng.",
+    "WORKSPACE_NAME_TAKEN": "Đã có không gian làm việc với tên này.",
+    "INVALID_WORKSPACE_SLUG": "Dùng từ 1 đến 21 chữ cái thường, chữ số hoặc dấu gạch nối cho URL không gian làm việc.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Bạn không thể gán hoặc thay đổi vai trò này.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Mọi người không thể rời hoặc bị xóa khỏi không gian làm việc mặc định. Để xóa một người, hãy vô hiệu hóa tài khoản của họ trong cài đặt quản trị.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Không thể lưu trữ không gian làm việc mặc định."
   }
 }

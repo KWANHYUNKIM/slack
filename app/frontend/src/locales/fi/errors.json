@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Tämä yhdistämispyyntö ei ole kelvollinen. Aloita yhdistäminen uudelleen sovelluksesta.",
     "OAUTH_APPS_DISABLED": "Työtilasi ylläpitäjä on poistanut sovellusyhteydet käytöstä.",
     "OAUTH_CONNECTION_NOT_FOUND": "Tämä sovellus ei ole yhdistetty.",
-    "OAUTH_NOT_CONFIGURED": "Sovellusyhteyksiä ei ole määritetty tälle palvelimelle. Pyydä ylläpitäjää asettamaan palvelimen julkinen osoite."
+    "OAUTH_NOT_CONFIGURED": "Sovellusyhteyksiä ei ole määritetty tälle palvelimelle. Pyydä ylläpitäjää asettamaan palvelimen julkinen osoite.",
+    "INVALID_WORKSPACE_ID": "Tämä työtilan osoite ei ole kelvollinen.",
+    "WORKSPACE_NOT_FOUND": "Työtilaa ei löytynyt tai sinulla ei ole siihen käyttöoikeutta.",
+    "NO_WORKSPACE": "Et ole vielä minkään työtilan jäsen. Liity johonkin tai pyydä kutsu.",
+    "WORKSPACE_NOT_OPEN": "Tähän työtilaan pääsee vain kutsulla.",
+    "WORKSPACE_ADMIN_REQUIRED": "Vain työtilan ylläpitäjät voivat tehdä tämän.",
+    "ORG_ADMIN_REQUIRED": "Vain organisaation ylläpitäjät voivat tehdä tämän.",
+    "ORG_OWNER_REQUIRED": "Vain organisaation omistajat voivat tehdä tämän.",
+    "LAST_WORKSPACE_OWNER": "Työtilalla on oltava vähintään yksi omistaja. Tee ensin joku toinen omistajaksi.",
+    "LAST_WORKSPACE": "Viimeistä aktiivista työtilaa ei voi arkistoida.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Tämä henkilö on jo työtilassa.",
+    "USER_NOT_FOUND": "Henkilöä ei löytynyt.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Organisaation pääomistajaa ei voi poistaa.",
+    "WORKSPACE_SLUG_TAKEN": "Tämä työtilan osoite on jo käytössä.",
+    "WORKSPACE_NAME_TAKEN": "Tämän niminen työtila on jo olemassa.",
+    "INVALID_WORKSPACE_SLUG": "Työtilan osoitteessa käytä 1–21 pientä kirjainta, numeroa tai väliviivaa.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Et voi antaa tai muuttaa tätä roolia.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Ihmisiä ei voi poistua oletustyötilasta tai poistaa siitä. Jos haluat poistaa jonkun, poista hänen tilinsä käytöstä ylläpitoasetuksissa.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Oletustyötilaa ei voi arkistoida."
   }
 }

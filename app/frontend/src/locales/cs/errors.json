@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Tato žádost o připojení není platná. Začněte připojování znovu v aplikaci.",
     "OAUTH_APPS_DISABLED": "Správce vašeho pracovního prostoru vypnul připojování aplikací.",
     "OAUTH_CONNECTION_NOT_FOUND": "Tato aplikace není připojena.",
-    "OAUTH_NOT_CONFIGURED": "Připojení aplikací není na tomto serveru nastaveno. Požádejte správce, aby nastavil veřejnou adresu serveru."
+    "OAUTH_NOT_CONFIGURED": "Připojení aplikací není na tomto serveru nastaveno. Požádejte správce, aby nastavil veřejnou adresu serveru.",
+    "INVALID_WORKSPACE_ID": "Tato adresa pracovního prostoru není platná.",
+    "WORKSPACE_NOT_FOUND": "Pracovní prostor nebyl nalezen nebo k němu nemáte přístup.",
+    "NO_WORKSPACE": "Zatím nejste v žádném pracovním prostoru. Připojte se k některému nebo si vyžádejte pozvánku.",
+    "WORKSPACE_NOT_OPEN": "Do tohoto pracovního prostoru se lze připojit pouze na pozvání.",
+    "WORKSPACE_ADMIN_REQUIRED": "Tuto akci mohou provést jen správci pracovního prostoru.",
+    "ORG_ADMIN_REQUIRED": "Tuto akci mohou provést jen správci organizace.",
+    "ORG_OWNER_REQUIRED": "Tuto akci mohou provést jen vlastníci organizace.",
+    "LAST_WORKSPACE_OWNER": "Pracovní prostor musí mít alespoň jednoho vlastníka. Nejdříve jiného člena jmenujte vlastníkem.",
+    "LAST_WORKSPACE": "Poslední aktivní pracovní prostor nelze archivovat.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Tato osoba je již v pracovním prostoru.",
+    "USER_NOT_FOUND": "Osoba nebyla nalezena.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "Hlavního vlastníka organizace nelze odebrat.",
+    "WORKSPACE_SLUG_TAKEN": "Tato adresa URL pracovního prostoru je již obsazena.",
+    "WORKSPACE_NAME_TAKEN": "Pracovní prostor s tímto názvem již existuje.",
+    "INVALID_WORKSPACE_SLUG": "Pro adresu URL pracovního prostoru použijte 1 až 21 malých písmen, číslic nebo pomlček.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Tuto roli nelze přiřadit ani změnit.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Z výchozího pracovního prostoru nelze odejít ani z něj nikoho odebrat. Chcete-li někoho odebrat, deaktivujte jeho účet v nastavení správce.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "Výchozí pracovní prostor nelze archivovat."
   }
 }

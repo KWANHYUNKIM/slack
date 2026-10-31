@@ -73,6 +73,24 @@
     "OAUTH_INVALID_REQUEST": "Dit verbindingsverzoek is niet geldig. Begin het verbinden opnieuw vanuit de app.",
     "OAUTH_APPS_DISABLED": "De beheerder van je werkruimte heeft app-verbindingen uitgeschakeld.",
     "OAUTH_CONNECTION_NOT_FOUND": "Deze app is niet verbonden.",
-    "OAUTH_NOT_CONFIGURED": "App-verbindingen zijn niet ingesteld op deze server. Vraag je beheerder het publieke serveradres in te stellen."
+    "OAUTH_NOT_CONFIGURED": "App-verbindingen zijn niet ingesteld op deze server. Vraag je beheerder het publieke serveradres in te stellen.",
+    "INVALID_WORKSPACE_ID": "Dat werkruimteadres is niet geldig.",
+    "WORKSPACE_NOT_FOUND": "Werkruimte niet gevonden, of je hebt er geen toegang toe.",
+    "NO_WORKSPACE": "Je zit nog niet in een werkruimte. Word lid van een werkruimte of vraag om een uitnodiging.",
+    "WORKSPACE_NOT_OPEN": "Deze werkruimte is alleen op uitnodiging toegankelijk.",
+    "WORKSPACE_ADMIN_REQUIRED": "Alleen beheerders van de werkruimte kunnen dit doen.",
+    "ORG_ADMIN_REQUIRED": "Alleen organisatiebeheerders kunnen dit doen.",
+    "ORG_OWNER_REQUIRED": "Alleen eigenaren van de organisatie kunnen dit doen.",
+    "LAST_WORKSPACE_OWNER": "Een werkruimte heeft minstens één eigenaar nodig. Maak eerst iemand anders eigenaar.",
+    "LAST_WORKSPACE": "Je kunt de laatste actieve werkruimte niet archiveren.",
+    "USER_ALREADY_WORKSPACE_MEMBER": "Deze persoon zit al in de werkruimte.",
+    "USER_NOT_FOUND": "Persoon niet gevonden.",
+    "CANNOT_REMOVE_PRIMARY_OWNER": "De hoofdeigenaar van de organisatie kan niet worden verwijderd.",
+    "WORKSPACE_SLUG_TAKEN": "Deze werkruimte-URL is al in gebruik.",
+    "WORKSPACE_NAME_TAKEN": "Er bestaat al een werkruimte met deze naam.",
+    "INVALID_WORKSPACE_SLUG": "Gebruik voor de werkruimte-URL 1 tot 21 kleine letters, cijfers of streepjes.",
+    "WORKSPACE_ROLE_FORBIDDEN": "Je kunt deze rol niet toekennen of wijzigen.",
+    "DEFAULT_WORKSPACE_MEMBERSHIP_REQUIRED": "Mensen kunnen de standaardwerkruimte niet verlaten en er ook niet uit worden verwijderd. Om iemand te verwijderen, deactiveer je zijn account in de beheerinstellingen.",
+    "DEFAULT_WORKSPACE_ARCHIVE_FORBIDDEN": "De standaardwerkruimte kan niet worden gearchiveerd."
   }
 }
