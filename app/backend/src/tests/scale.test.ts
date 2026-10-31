@@ -12,7 +12,7 @@ import { settleBackgroundWork } from '../services/mentionService.js';
 // 상태를 확인하지 않으면 실패한 POST가 뒤의 개수 검증에서야 원인 없이 드러난다. 실패하면 응답 전체를 메시지에 담는다.
 function expectCreated(res: request.Response, i: number): void {
   if (res.status !== 201) {
-    throw new Error(`message #${i} POST ${res.req?.path} -> ${res.status} ${JSON.stringify(res.body)} ${res.text?.slice(0, 200)}`);
+    throw new Error(`message #${i} POST -> ${res.status} ${JSON.stringify(res.body)} ${res.text?.slice(0, 200)}`);
   }
 }
 
