@@ -373,14 +373,29 @@ describe('File Uploads', () => {
       expect(res.body.error).toMatch(/invalid/i);
     });
 
-    it('should reject download token without fileId', async () => {
+    // fileId is optional: the frontend requests one general-purpose token for all <img>/<a> downloads.
+    it('should issue an unscoped download token without fileId', async () => {
+      const uploadRes = await request(app)
+        .post('/files')
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('file', testFilePath);
+      const fileId = uploadRes.body.id;
+
       const res = await request(app)
         .post('/files/download-token')
         .set('Authorization', `Bearer ${authToken}`)
         .send({});
 
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBe('fileId is required');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('token');
+
+      // Unscoped token still passes the per-file access check
+      const downloadRes = await request(app).get(`/files/${fileId}/download?token=${res.body.token}`);
+      expect(downloadRes.status).toBe(200);
+
+      // ...and cannot be used as a general auth token
+      const misuse = await request(app).get('/channels').set('Authorization', `Bearer ${res.body.token}`);
+      expect(misuse.status).toBe(401);
     });
 
     it('should reject download token with invalid fileId', async () => {
@@ -390,7 +405,7 @@ describe('File Uploads', () => {
         .send({ fileId: 'abc' });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('fileId is required');
+      expect(res.body.error).toBe('Invalid request');
     });
 
     it('should issue a file-scoped download token', async () => {

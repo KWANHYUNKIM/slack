@@ -21,4 +21,4 @@
 | refactor/ws-write-path: 소켓 쓰기(message:send/edit/delete)를 REST 저장 + 소켓 push로 전환, 이벤트 이름 매핑 표 | - | opus | 대기 | 2h | | | REA run1·조사 문서 권장. 01·02와 websocket/index.ts 충돌 |
 | 04-threads-view | - | sonnet | 대기(01 이후) | 2h | | | 스키마 변경(ThreadRead) |
 | 05-user-status-dnd | - | sonnet | 대기(01 이후) | 1.5h | | | 스키마 변경(User 상태 필드), 01 shouldNotify 훅 |
-| fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | dev-4 | sonnet | 진행 중 | 1.5h | 2026-10-31 09:40 | | CI frontend job 통과 조건 |
+| fix/frontend-typecheck-lint: slawk 원래 있던 tsc 30건, lint 76건 | - | sonnet | 대기(감속, dev-1 이후) | 1.5h | | | CI frontend job 통과 조건 |
