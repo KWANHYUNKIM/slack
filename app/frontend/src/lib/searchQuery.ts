@@ -64,6 +64,39 @@ export function stripFilters(query: string, chips: FilterChip[]): string {
   return chips.reduce((q, chip) => removeChip(q, chip), query);
 }
 
+/**
+ * 문자열에서 키워드가 일치하는 구간 [시작, 끝)을 찾는다(대소문자 무시, 한글은 NFC와 NFD 둘 다).
+ * 렌더된 텍스트 노드마다 호출하므로 서버 오프셋에 의존하지 않는다.
+ */
+export function matchRanges(text: string, terms: string[]): Array<[number, number]> {
+  if (!text || terms.length === 0) return [];
+  const lower = text.toLowerCase();
+  // toLowerCase로 길이가 바뀌는 문자가 있으면 오프셋이 어긋나므로 이 노드는 하이라이트하지 않는다.
+  if (lower.length !== text.length) return [];
+  const ranges: Array<[number, number]> = [];
+  for (const term of terms) {
+    const nfc = term.normalize('NFC').toLowerCase();
+    for (const needle of new Set([nfc, nfc.normalize('NFD')])) {
+      if (!needle) continue;
+      let from = 0;
+      for (;;) {
+        const i = lower.indexOf(needle, from);
+        if (i === -1) break;
+        ranges.push([i, i + needle.length]);
+        from = i + needle.length;
+      }
+    }
+  }
+  ranges.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const merged: Array<[number, number]> = [];
+  for (const r of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+    else merged.push([r[0], r[1]]);
+  }
+  return merged;
+}
+
 export interface HighlightPart { text: string; mark: boolean }
 
 /** 서버가 준 [시작, 끝) 구간으로 본문을 조각낸다. HTML이 아니라 조각 목록이라 XSS 위험이 없다. */

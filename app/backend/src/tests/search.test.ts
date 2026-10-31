@@ -133,6 +133,37 @@ describe('Search v2', () => {
       expect(contents(bad)).toEqual([]);
     });
 
+    it('on:/after:/before: follow the tz parameter (KST) and fall back to UTC for bad zones', async () => {
+      // 2026-09-15T16:00Z = 2026-09-16 01:00 KST
+      const id = await post(alice, pub, 'kstboundary message');
+      await prisma.message.update({ where: { id }, data: { createdAt: new Date('2026-09-15T16:00:00Z') } });
+      const kst = (q: string) => search(alice, { q, tz: 'Asia/Seoul' });
+      expect(contents(await kst('kstboundary on:2026-09-16'))).toEqual(['kstboundary message']);
+      expect(contents(await kst('kstboundary on:2026-09-15'))).toEqual([]);
+      expect(contents(await kst('kstboundary after:2026-09-15'))).toEqual(['kstboundary message']);
+      expect(contents(await kst('kstboundary before:2026-09-16'))).toEqual([]);
+      // tz 없음 또는 잘못된 값은 UTC 기준이다
+      expect(contents(await search(alice, { q: 'kstboundary on:2026-09-15' }))).toEqual(['kstboundary message']);
+      expect(contents(await search(alice, { q: 'kstboundary on:2026-09-15', tz: 'Bogus/Zone' }))).toEqual(['kstboundary message']);
+      expect(contents(await search(alice, { q: 'kstboundary on:2026-09-16', tz: 'Bogus/Zone' }))).toEqual([]);
+    });
+
+    it('one-character keywords are ignored and reported; all-ignored without filters is 400', async () => {
+      const res = await search(alice, { q: 'x plan alpha' });
+      expect(contents(res)).toEqual(['plan alpha kickoff']);
+      expect(res.body.parsedFilters.ignored).toEqual([{ token: 'x', reason: 'short' }]);
+      expect((await search(alice, { q: 'x z' })).status).toBe(400);
+      const withFilter = await search(alice, { q: 'x from:@Alicesr in:srch-private' });
+      expect(withFilter.status).toBe(200);
+      expect(contents(withFilter)).toEqual(['plan secret kickoff']);
+    });
+
+    it('operator values over the limit are reported in parsedFilters.ignored', async () => {
+      const res = await search(alice, { q: 'in:a1 in:b1 in:c1 in:d1 in:e1 in:srch-public plan' });
+      expect(res.body.parsedFilters.in.length).toBe(5);
+      expect(res.body.parsedFilters.ignored).toEqual([{ token: 'in:srch-public', reason: 'limit' }]);
+    });
+
     it('has:file, has:link, has:pin, has:reaction', async () => {
       expect(contents(await search(alice, { q: 'has:file kickoff' }))).toEqual(['plan with attachment kickoff']);
       expect(contents(await search(alice, { q: 'has:link kickoff' }))).toEqual(['plan link kickoff https://example.com/x']);
@@ -240,7 +271,17 @@ describe('Search v2', () => {
       const res = await search(alice, { q: 'sr', type: 'people' });
       expect(res.body.results.map((u: any) => u.name)).toEqual(expect.arrayContaining(['Alicesr', 'Bobsr']));
       expect(res.body.results[0]).not.toHaveProperty('email');
-      const g = await search(gus, { q: 'sr', type: 'people' });      expect(g.body.results.map((u: any) => u.name).sort()).toEqual(['Alicesr', 'Gussr']);
+      const g = await search(gus, { q: 'sr', type: 'people' });
+      // Alice: 공유 채널, Eve: 같은 그룹 DM(앞 테스트에서 만든 그룹). Bob은 그룹에서 나갔고 Carol은 공유가 없다.
+      expect(g.body.results.map((u: any) => u.name).sort()).toEqual(['Alicesr', 'Evesr', 'Gussr']);
+    });
+
+    it('guest people search ignores channelId and includes group DM co-members', async () => {
+      const g = await search(gus, { q: 'sr', type: 'people', channelId: guestCh });
+      expect(g.body.results.map((u: any) => u.name).sort()).toEqual(['Alicesr', 'Evesr', 'Gussr']);
+      // 멤버인 사람에게는 channelId와 무관하게 모두 보인다
+      const a = await search(alice, { q: 'sr', type: 'people', channelId: priv });
+      expect(a.body.results.map((u: any) => u.name)).toEqual(expect.arrayContaining(['Bobsr', 'Carolsr']));
     });
 
     it('channels tab lists public channels and own private ones only', async () => {
@@ -302,6 +343,48 @@ describe('Search v2', () => {
       } while (cursor && pages < 10);
       expect(pages).toBe(3);
       expect(seen).toEqual([...ids].reverse());
+    });
+
+    it('new messages arriving between pages do not shift or duplicate results', async () => {
+      const first = await search(alice, { q: 'pagetoken', sort: 'recent', limit: 10 });
+      const seen: number[] = first.body.results.map((r: any) => r.id);
+      let cursor: string | null = first.body.nextCursor;
+      // 첫 요청 뒤에 새 메시지 3개가 올라온다
+      await new Promise((r) => setTimeout(r, 20));
+      for (let i = 0; i < 3; i++) await post(alice, pub, `pagetoken arrived late ${i}`);
+      while (cursor) {
+        const res = await search(alice, { q: 'pagetoken', sort: 'recent', limit: 10, cursor });
+        seen.push(...res.body.results.map((r: any) => r.id));
+        cursor = res.body.nextCursor;
+      }
+      expect(new Set(seen).size).toBe(seen.length);
+      expect(seen.length).toBe(25);
+      // 처음부터 다시 조회하면 새 메시지가 맨 앞에 나온다
+      const fresh = await search(alice, { q: 'pagetoken', sort: 'recent', limit: 5 });
+      expect(contents(fresh)[0]).toBe('pagetoken arrived late 2');
+    });
+
+    it('relevance and recent share the 450 cap and report truncation', async () => {
+      await prisma.message.createMany({
+        data: Array.from({ length: 460 }, (_, i) => ({ content: `capword item ${i}`, userId: alice.id, channelId: pub })),
+      });
+      for (const sort of ['recent', 'relevance'] as const) {
+        const seen = new Set<number>();
+        let cursor: string | null = null;
+        let last: any;
+        let pages = 0;
+        do {
+          last = (await search(alice, { q: 'capword', sort, limit: 50, ...(cursor ? { cursor } : {}) })).body;
+          last.results.forEach((r: any) => seen.add(r.id));
+          cursor = last.nextCursor;
+          pages++;
+        } while (cursor && pages < 20);
+        expect(seen.size).toBe(450);
+        expect(last.hasMore).toBe(false);
+        expect(last.truncated).toBe(true);
+      }
+      const small = await search(alice, { q: 'pagetoken', limit: 5 });
+      expect(small.body.truncated).toBe(false);
     });
   });
 

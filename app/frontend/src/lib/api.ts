@@ -600,14 +600,19 @@ export interface SearchParsedFilters {
   on?: string;
   has: string[];
   is: string[];
+  /** 무시된 토큰: 상한을 넘은 연산자 값·키워드(limit) 또는 한 글자 키워드(short) */
+  ignored?: Array<{ token: string; reason: 'limit' | 'short' }>;
 }
 
 export interface SearchResponse {
   results: SearchResult[];
   query: string;
+  /** 이번 페이지에 담긴 결과의 종류별 개수다. 전체 일치 개수가 아니다 */
   counts: { messages: number; dms: number; total: number };
   parsedFilters?: SearchParsedFilters;
   hasMore?: boolean;
+  /** 결과가 상한(450)에 닿아 잘렸으면 true */
+  truncated?: boolean;
   nextCursor?: string | null;
 }
 
@@ -615,8 +620,17 @@ export interface SearchPageResponse extends Omit<SearchResponse, 'results'> {
   results: Array<SearchResult | SearchFileResult | SearchPersonResult | SearchChannelResult>;
 }
 
+/** 날짜 연산자(on:, before:, after:)를 사용자의 하루 경계로 해석하도록 서버에 보내는 IANA 시간대 */
+function localTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+}
+
 export function searchMessages(query: string, channelId?: number, limit?: number) {
-  const params = new URLSearchParams({ q: query });
+  const params = new URLSearchParams({ q: query, tz: localTimeZone() });
   if (channelId) params.set('channelId', String(channelId));
   if (limit) params.set('limit', String(limit));
   return request<SearchResponse>(`/search?${params}`);
@@ -624,7 +638,7 @@ export function searchMessages(query: string, channelId?: number, limit?: number
 
 /** 검색 페이지용: 탭, 정렬, 커서를 지원한다. 메시지 탭은 채널 메시지와 DM을 함께 돌려준다 */
 export function searchAll(query: string, opts: { tab: SearchTab; sort: SearchSort; cursor?: string | null; limit?: number }) {
-  const params = new URLSearchParams({ q: query, type: opts.tab === 'messages' ? 'all' : opts.tab, sort: opts.sort });
+  const params = new URLSearchParams({ q: query, type: opts.tab === 'messages' ? 'all' : opts.tab, sort: opts.sort, tz: localTimeZone() });
   params.set('limit', String(opts.limit ?? 20));
   if (opts.cursor) params.set('cursor', opts.cursor);
   return request<SearchPageResponse>(`/search?${params}`);
