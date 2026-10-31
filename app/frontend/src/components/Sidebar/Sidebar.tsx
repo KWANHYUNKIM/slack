@@ -327,7 +327,7 @@ export function Sidebar() {
                 )}
                 <DesktopServerMenuItem onDone={() => setShowAvatarMenu(false)} />
                 <Button variant="menu-item" onClick={() => { setShowAvatarMenu(false); logout(); }}>
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 rtl:-scale-x-100" />
                   {t('userMenu.signOut')}
                 </Button>
               </div>

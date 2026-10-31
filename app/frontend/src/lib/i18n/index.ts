@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import ICU from 'i18next-icu';
+import { pickLocale } from './pickLocale';
 import { initReactI18next } from 'react-i18next';
 
 /** 네임스페이스 목록 (docs/conventions/i18n.md 1절) */
@@ -76,18 +77,19 @@ function resolveLocale(tag: string): string | null {
 
 /** 사용자 설정(localStorage) → navigator.languages → en 순서로 로캘을 정한다. */
 export function detectLocale(): string {
+  let stored: string | null = null;
   try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    const matched = stored ? resolveLocale(stored) : null;
-    if (matched) return matched;
+    stored = localStorage.getItem(LOCALE_STORAGE_KEY);
   } catch {
     // localStorage를 못 쓰는 환경이면 다음 단계로 넘어간다
   }
-  for (const tag of navigator.languages ?? []) {
-    const matched = resolveLocale(tag);
-    if (matched) return matched;
-  }
-  return FALLBACK_LOCALE;
+  return pickLocale({
+    stored,
+    languages: navigator.languages ?? [],
+    match: matchLocale,
+    resolve: resolveLocale,
+    fallback: FALLBACK_LOCALE,
+  });
 }
 
 async function loadNamespaces(locale: string) {

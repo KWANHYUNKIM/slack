@@ -186,7 +186,7 @@ export function MessageHeader({ channel, showMembers, onToggleMembers, onToggleP
                     variant="menu-item-danger"
                     onClick={handleLeaveChannel}
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 rtl:-scale-x-100" />
                     {t('header.leaveChannel')}
                   </Button>
                 </div>
