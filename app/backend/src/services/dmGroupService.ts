@@ -4,6 +4,7 @@ import { getIO, isUserOnline } from '../websocket/index.js';
 import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from './pushService.js';
+import { createActivitiesForDm } from './mentionService.js';
 
 // 그룹 DM(본인 포함 3~9명) 공용 로직. HTTP 라우트(routes/dmGroups.ts, routes/dms.ts의 메시지 단위 경로)와
 // 소켓(dmgroup:send)이 같은 함수를 불러 동작을 맞춘다. 권한 검사(멤버 여부)는 호출한 쪽이 먼저 한다.
@@ -234,7 +235,7 @@ export interface GroupMessageInput {
 /**
  * 그룹 메시지(또는 스레드 답글) 전송의 단일 경로. 커밋 뒤 멤버 전원에게 dm:new(답글은 dm:reply)를 보내고,
  * 오프라인 멤버에게 푸시한다. 보낸 사람의 읽음 커서는 자기 메시지까지 옮긴다.
- * 활동(멘션·스레드)은 호출자가 응답 뒤에 createActivitiesForDm으로 만든다(1:1 경로와 같은 순서).
+ * 활동(멘션·스레드)도 여기서 만든다(await하지 않는다). 호출자는 따로 createActivitiesForDm을 부르지 않는다.
  */
 export async function sendGroupMessage(input: GroupMessageInput) {
   const { groupId, fromUserId, content, fileIds, threadId } = input;
@@ -294,6 +295,8 @@ export async function sendGroupMessage(input: GroupMessageInput) {
     ).catch((err) => logError('Push notification dispatch failed', err));
   }
 
+  // 푸시까지 보낸 뒤 활동 생성(await하지 않는다)
+  void createActivitiesForDm(dm);
   return dm;
 }
 
@@ -386,4 +389,54 @@ export async function listGroupConversations(userId: number): Promise<GroupConve
   });
   const sortKey = (c: GroupConversation) => (c.lastMessage?.createdAt ?? c.group.createdAt).getTime();
   return result.sort((a, b) => sortKey(b) - sortKey(a));
+}
+
+export interface GroupConversationSummary {
+  groupId: number;
+  name: string | null;
+  members: { id: number; name: string }[];
+  lastMessage: { id: number; content: string; fromUserId: number; createdAt: Date } | null;
+  unreadCount: number;
+}
+
+/**
+ * 도구·API용 가벼운 그룹 대화 목록. listGroupConversations와 같은 순서(마지막 메시지 시각, 없으면 생성 시각)이지만
+ * limit을 SQL 단계에서 적용하고, 별표와 접속 상태를 읽지 않으며, 멤버는 id와 이름만 가져온다.
+ */
+export async function listGroupConversationSummaries(userId: number, limit: number): Promise<GroupConversationSummary[]> {
+  const rows = await prisma.$queryRaw<Array<{
+    groupId: number; lastId: number | null; lastContent: string | null; lastFrom: number | null; lastAt: Date | null; unreadCount: number;
+  }>>`
+    SELECT g.id AS "groupId", last.id AS "lastId", last.content AS "lastContent", last."fromUserId" AS "lastFrom", last."createdAt" AS "lastAt",
+      (SELECT COUNT(*)::int FROM "DirectMessage" d
+        WHERE d."groupId" = g.id AND d."deletedAt" IS NULL AND d."threadId" IS NULL AND d."fromUserId" <> ${userId}
+          AND (gm."lastReadDmId" IS NULL OR d.id > gm."lastReadDmId")) AS "unreadCount"
+    FROM "DMGroupMember" gm
+    JOIN "DMGroup" g ON g.id = gm."groupId"
+    LEFT JOIN LATERAL (
+      SELECT dm.id, dm.content, dm."fromUserId", dm."createdAt" FROM "DirectMessage" dm
+      WHERE dm."groupId" = g.id AND dm."deletedAt" IS NULL AND dm."threadId" IS NULL
+      ORDER BY dm.id DESC LIMIT 1
+    ) last ON true
+    WHERE gm."userId" = ${userId}
+    ORDER BY COALESCE(last."createdAt", g."createdAt") DESC, g.id DESC
+    LIMIT ${limit}
+  `;
+  if (rows.length === 0) return [];
+  const groups = await prisma.dMGroup.findMany({
+    where: { id: { in: rows.map((r) => r.groupId) } },
+    select: { id: true, name: true, members: { orderBy: { joinedAt: 'asc' }, select: { user: { select: { id: true, name: true } } } } },
+  });
+  const byId = new Map(groups.map((g) => [g.id, g]));
+  return rows.flatMap((r) => {
+    const g = byId.get(r.groupId);
+    if (!g) return [];
+    return [{
+      groupId: g.id,
+      name: g.name,
+      members: g.members.map((m) => m.user),
+      lastMessage: r.lastId === null ? null : { id: r.lastId, content: r.lastContent!, fromUserId: r.lastFrom!, createdAt: r.lastAt! },
+      unreadCount: Number(r.unreadCount),
+    }];
+  });
 }

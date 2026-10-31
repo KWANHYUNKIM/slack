@@ -32,7 +32,7 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | `dmgroup:member:removed` | 서버 -> 클라이언트 | 나가기 전 멤버 전원(나간 사람 포함)의 `user:<id>` | `{ groupId, userId }` | `DELETE /dms/groups/:id/members/me` |
 | `dmgroup:updated` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | `{ id, name }` | `PATCH /dms/groups/:id`로 이름이 바뀌었을 때 |
 | `dm:new` / `dm:reply` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | DM 객체(`groupId` 있음, `toUserId`는 null) | 그룹 메시지·답글 전송(HTTP, 소켓) |
-| `dm:updated` / `dm:deleted` | 서버 -> 클라이언트 | 보낸 사람을 뺀 멤버의 `user:<id>`(핀은 전원) | `dm:deleted`는 `{ dmId, fromUserId, toUserId: null, groupId, threadId }` | 그룹 메시지 편집·삭제·핀 |
+| `dm:updated` / `dm:deleted` | 서버 -> 클라이언트 | 보낸 사람 본인을 포함한 멤버 전원의 `user:<id>`(보낸 사람의 다른 탭·기기도 갱신. 클라이언트가 id로 교체·제거하므로 중복 수신해도 같다) | `dm:deleted`는 `{ dmId, fromUserId, toUserId, groupId, threadId }`(1:1은 `toUserId`가 상대, 그룹은 null이고 `groupId`가 있음. `threadId`는 최상위면 null) | 그룹 메시지 편집·삭제·핀. 1:1과 나와의 대화(self-DM)도 같은 규칙 |
 | `dm:reaction:added` / `dm:reaction:removed` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | 1:1과 같은 모양 + `groupId` | 그룹 메시지 리액션 |
 | `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'group', id: groupId, isStarred }` | `PUT/DELETE /dms/groups/:id/star` |
 

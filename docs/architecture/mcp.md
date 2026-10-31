@@ -17,7 +17,8 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 1. **개인 액세스 토큰(PAT)**: 1단계
    - 사용자가 설정 화면에서 토큰을 발급한다. 이름, 권한 범위, 만료일을 정하고, 토큰 원문은 한 번만 보여 준다. DB에는 해시만 저장한다.
    - Claude Code에서는 `claude mcp add --transport http team-messenger https://<서버>/mcp --header "Authorization: Bearer <PAT>"`로 연결한다.
-   - 권한 범위: `channels:read`, `channels:history`, `chat:write`, `reactions:write`, `search:read`, `users:read`, `files:read`
+   - 권한 범위: `channels:read`, `channels:history`, `chat:write`, `reactions:write`, `search:read`, `users:read`, `files:read`, `im:read`, `im:history`, `im:write`
+   - DM 범위(`im:*`)는 개인 대화를 다루므로 토큰 생성 화면에서 기본으로 해제되어 있고, 범위를 주지 않고 만든 토큰에도 들어가지 않는다.
 2. **OAuth 2.1**: 2단계, claude.ai 커넥터용
    - MCP 인가 사양을 따른다: Authorization Server Metadata, Protected Resource Metadata, PKCE, Dynamic Client Registration.
    - 사용자가 동의 화면에서 권한 범위를 승인한다. 엔터프라이즈 관리자는 조직 단위로 MCP 사용을 끄거나 범위를 제한할 수 있다(E8 관리자 역할과 연동).
@@ -32,13 +33,19 @@ Claude Code, Claude Desktop, claude.ai(커넥터)에서 우리 메신저를 MCP 
 | `read_thread` | channels:history | 스레드 전체 |
 | `search_messages` | search:read | 06 search-v2 필터 문법 사용 |
 | `send_message` | chat:write | 채널이나 스레드에 메시지 작성. 멘션 문법 지원(01 서비스 재사용) |
-| `send_dm` | chat:write | DM 보내기 |
+| `list_dms` | im:read | 1:1 DM과 그룹 DM 대화 목록(마지막 메시지, 안 읽은 수). 읽음 처리 안 함 |
+| `read_dm` | im:history | 1:1(`userId`) 또는 그룹(`groupId`) 메시지, 커서 페이지네이션. 읽음 처리 안 함, 스레드 답글 제외 |
+| `send_dm` | im:write | `userId`(1:1) 또는 `groupId`(기존 그룹) 중 하나에 메시지 1건 보내기. 소켓 이벤트·멘션 활동·푸시는 일반 경로와 같다 |
+| `edit_dm_message`, `delete_dm_message` | im:write | 자기 DM만(1:1과 그룹 모두), 그룹은 현재 멤버일 때만 |
 | `edit_message`, `delete_message` | chat:write | 자기 메시지만 |
 | `add_reaction`, `remove_reaction` | reactions:write | |
 | `list_users`, `get_user` | users:read | 프로필, 상태 |
 | `get_activity` | channels:history | 내 멘션과 활동(01 Activity API) |
 | `read_file` | files:read | 텍스트 계열 파일 내용(크기 상한) |
 
+- DM 수정·삭제를 `edit_message`/`delete_message`에 합치지 않고 별도 도구로 둔 이유: 채널 메시지(`Message`)와 DM(`DirectMessage`)은 다른 테이블이라 id가 겹치고, 한 `messageId`가 어느 쪽인지 알 수 없다. 범위도 `chat:write`와 `im:write`로 나뉘어, 채널 쓰기 권한만 준 토큰이 DM을 고치지 못한다.
+- DM 도구의 대상이 없거나 접근할 수 없으면(없는 사용자·그룹, 비활성 사용자, 게스트 격리, 그룹 비멤버) 같은 문구(`Conversation not found or not accessible`, 메시지는 `Message not found or not accessible`)로 답한다.
+- DM 전송·수정·삭제는 `services/dmService.ts`(1:1)와 `services/dmGroupService.ts`(그룹)를 REST·소켓·MCP가 함께 쓴다.
 - **리소스(Resources)**: `channel://<id>`, `thread://<id>`를 읽기 전용 리소스로 노출한다.
 - **프롬프트(Prompts)**: "채널 요약", "내 멘션 정리" 템플릿을 제공한다.
 

@@ -9,7 +9,7 @@ import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
-import { createActivitiesForDm, getMentionCountsByDmGroup, markDmGroupMentionsRead } from '../services/mentionService.js';
+import { getMentionCountsByDmGroup, markDmGroupMentionsRead } from '../services/mentionService.js';
 import {
   MIN_GROUP_OTHERS,
   MAX_GROUP_SIZE,
@@ -200,7 +200,6 @@ router.post('/:id/messages', authMiddleware, requireDmGroupMember, async (req: A
     const { content, fileIds } = sendSchema.parse(req.body);
     const dm = await sendGroupMessage({ groupId: req.dmGroupId!, fromUserId: req.user!.userId, content, fileIds });
     res.status(201).json(dm);
-    void createActivitiesForDm(dm);
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
