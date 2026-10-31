@@ -1,9 +1,11 @@
 import { TEST_PASSWORD } from './test-constants.js';
+import { jest } from '@jest/globals';
 import request from 'supertest';
 import app from '../app.js';
 import prisma from '../db.js';
-import { csvCell, EXPORT_MAX_ROWS } from '../services/auditLogService.js';
-import { purgeOldAuditLogs, hashEmailForAudit } from '../utils/auditLog.js';
+import { EventEmitter } from 'events';
+import { csvCell, EXPORT_MAX_ROWS, issueExportToken, consumeExportToken, writeWithBackpressure, iterateAuditRows, EXPORT_TOKEN_TTL_MS } from '../services/auditLogService.js';
+import { purgeOldAuditLogs, hashEmailForAudit, throttleUnknownLogin, resetUnknownLoginThrottle } from '../utils/auditLog.js';
 import { purgeAuditLogsIfDue } from '../scheduler.js';
 
 // 감사 로그 기록 범위, 조회·내보내기, 보존 정리 (E4)
@@ -23,6 +25,12 @@ describe('Audit logs', () => {
       await new Promise((r) => setTimeout(r, 25));
     }
     return null;
+  }
+
+  // 내보내기: 토큰을 받고(POST) 그 토큰으로 파일을 받는다(GET, 인증 헤더 없음)
+  async function exportFile(query: string, body: Record<string, unknown> = {}) {
+    const t = await request(app).post('/admin/audit-logs/export-token').set(auth(adminToken)).send(body).expect(201);
+    return request(app).get(`/admin/audit-logs/export?${query}&token=${t.body.token}`).expect(200);
   }
 
   async function reset() {
@@ -54,6 +62,7 @@ describe('Audit logs', () => {
   }
 
   beforeEach(async () => {
+    resetUnknownLoginThrottle();
     await reset();
     await seedUsers();
   });
@@ -94,6 +103,45 @@ describe('Audit logs', () => {
       expect(locked).toHaveLength(1);
       expect(locked[0].details).toBe(`emailHash=${hashEmailForAudit(email)}`);
       expect(JSON.stringify(locked)).not.toContain(email);
+    });
+
+    it('collapses unknown-email failures to one record per emailHash per 15 minutes with a count', async () => {
+      const email = 'nobody-here@example.com';
+      for (let i = 0; i < 5; i++) {
+        await request(app).post('/auth/login').send({ email, password: 'wrong-password-1' }).expect(401);
+      }
+      await new Promise((r) => setTimeout(r, 100));
+      const rows = await prisma.auditLog.findMany({ where: { action: 'auth.login_failed' } });
+      expect(rows).toHaveLength(1);
+      expect(rows[0].details).toContain('count=1');
+      // 15분이 지나면 그 사이 시도(4건 + 이번 1건)가 합쳐져 다음 기록의 count가 된다
+      expect(throttleUnknownLogin(hashEmailForAudit(email), Date.now() + 16 * 60 * 1000)).toBe(5);
+      // 존재하는 사용자의 실패는 그대로 매번 기록된다
+      for (let i = 0; i < 3; i++) {
+        await request(app).post('/auth/login').send({ email: 'audit-member@example.com', password: 'wrong-password-1' }).expect(401);
+      }
+      await new Promise((r) => setTimeout(r, 100));
+      expect(await prisma.auditLog.count({ where: { action: 'auth.login_failed', actorId: memberId } })).toBe(3);
+    });
+
+    it('targets the user when a known account gets locked', async () => {
+      const reg = await request(app).post('/auth/register').send({ email: 'audit-lock2@example.com', password: TEST_PASSWORD, name: 'Lock Two' });
+      for (let i = 0; i < 10; i++) {
+        await request(app).post('/auth/login').send({ email: 'audit-lock2@example.com', password: 'wrong-password-1' }).expect(401);
+      }
+      const row = await waitFor({ action: 'auth.login_locked' });
+      expect(row).toMatchObject({ actorId: null, targetType: 'user', targetId: reg.body.user.id });
+    });
+
+    it('keeps log rows when the actor is deleted (actorId becomes null)', async () => {
+      await prisma.auditLog.create({ data: { action: 'channel.edited', actorId: memberId, targetType: 'channel', targetId: 1 } });
+      await prisma.channelMember.deleteMany({ where: { userId: memberId } }); // 채널 멤버십은 사용자 삭제 전에 정리해야 한다
+      await prisma.user.delete({ where: { id: memberId } });
+      const rows = await prisma.auditLog.findMany({ where: { action: 'channel.edited' } });
+      expect(rows).toHaveLength(1);
+      expect(rows[0].actorId).toBeNull();
+      const list = await request(app).get('/admin/audit-logs?action=channel.edited').set(auth(adminToken)).expect(200);
+      expect(list.body.items[0].actor).toBeNull();
     });
 
     it('records member add/remove through the regular channel routes', async () => {
@@ -163,7 +211,7 @@ describe('Audit logs', () => {
       await request(app).post('/auth/login').send({ email: 'audit-member@example.com', password: TEST_PASSWORD });
       const tok = await request(app).post('/tokens').set(auth(adminToken)).send({ name: 'ci' }).expect(201);
       await request(app).post('/auth/change-password').set(auth(memberToken)).send({ currentPassword: TEST_PASSWORD, newPassword: NEW_PASSWORD }).expect(200);
-      await request(app).get('/admin/audit-logs/export?format=json').set(auth(adminToken)).expect(200);
+      await exportFile('format=json', { format: 'json' });
       await waitFor({ action: 'auth.password_changed' });
 
       const dump = JSON.stringify(await prisma.auditLog.findMany());
@@ -219,13 +267,20 @@ describe('Audit logs', () => {
       const naive = await request(app).get('/admin/audit-logs?from=2026-01-03T12:00:00&to=2026-01-03T12:00:00').set(auth(adminToken)).expect(200);
       expect(naive.body.items).toHaveLength(1);
 
+      // to에 날짜만 주면 그 날 전체(다음 날 00:00 미만)를 포함한다
+      const dayEnd = await request(app).get('/admin/audit-logs?from=2026-01-03&to=2026-01-05&limit=100').set(auth(adminToken)).expect(200);
+      expect(dayEnd.body.items.map((r: { targetId: number }) => r.targetId)).toEqual([5, 4, 3]);
+      const dayCut = await request(app).get('/admin/audit-logs?to=2026-01-05T11:59:59Z&limit=100').set(auth(adminToken)).expect(200);
+      expect(dayCut.body.items[0].targetId).toBe(4);
+
       await request(app).get('/admin/audit-logs?from=not-a-date').set(auth(adminToken)).expect(400);
       await request(app).get('/admin/audit-logs?actorId=abc').set(auth(adminToken)).expect(400);
     });
 
     it('rejects non-admins and anonymous callers', async () => {
       await request(app).get('/admin/audit-logs').set(auth(memberToken)).expect(403);
-      await request(app).get('/admin/audit-logs/export?format=csv').set(auth(memberToken)).expect(403);
+      await request(app).post('/admin/audit-logs/export-token').set(auth(memberToken)).send({ format: 'csv' }).expect(403);
+      await request(app).get('/admin/audit-logs/export?format=csv').expect(403);
       await request(app).get('/admin/audit-logs').expect(401);
       // 거절된 내보내기는 감사 기록을 남기지 않는다
       expect(await prisma.auditLog.count({ where: { action: 'audit.exported' } })).toBe(0);
@@ -237,7 +292,7 @@ describe('Audit logs', () => {
       await prisma.auditLog.create({
         data: { action: 'channel.edited', actorId: adminId, targetType: 'channel', targetId: 1, targetName: '=HYPERLINK("x")', details: '+1,"quoted"\nline' },
       });
-      const res = await request(app).get('/admin/audit-logs/export?format=csv&action=channel.edited').set(auth(adminToken)).expect(200);
+      const res = await exportFile('format=csv&action=channel.edited', { format: 'csv', action: ['channel.edited'] });
       expect(res.headers['content-type']).toContain('text/csv');
       expect(res.headers['content-disposition']).toContain('attachment');
       const text = res.text;
@@ -259,13 +314,74 @@ describe('Audit logs', () => {
           { action: 'a.two', actorId: adminId, targetType: 't' },
         ],
       });
-      const res = await request(app).get('/admin/audit-logs/export?format=json&action=a.one').set(auth(adminToken)).expect(200);
+      const res = await exportFile('format=json&action=a.one', { format: 'json', action: ['a.one'] });
       const parsed = JSON.parse(res.text);
       expect(parsed).toHaveLength(1);
       expect(parsed[0]).toMatchObject({ action: 'a.one', actorName: 'Audit Admin' });
-      const all = JSON.parse((await request(app).get('/admin/audit-logs/export?format=json').set(auth(adminToken)).expect(200)).text);
+      const all = JSON.parse((await exportFile('format=json', { format: 'json' })).text);
       expect(all.length).toBeGreaterThanOrEqual(2);
-      await request(app).get('/admin/audit-logs/export?format=xml').set(auth(adminToken)).expect(400);
+      await request(app).post('/admin/audit-logs/export-token').set(auth(adminToken)).send({ format: 'xml' }).expect(400);
+    });
+
+    it('issues a single-use token bound to the filter', async () => {
+      const issue = (body: Record<string, unknown>) => request(app).post('/admin/audit-logs/export-token').set(auth(adminToken)).send(body).expect(201);
+      // 사용 후 재사용 거부
+      const t1 = (await issue({ format: 'csv', action: ['a.one'] })).body.token;
+      await request(app).get(`/admin/audit-logs/export?format=csv&action=a.one&token=${t1}`).expect(200);
+      await request(app).get(`/admin/audit-logs/export?format=csv&action=a.one&token=${t1}`).expect(403);
+      // 필터를 바꾸면 거부되고 토큰도 소진된다
+      const t2 = (await issue({ format: 'csv', action: ['a.one'] })).body.token;
+      await request(app).get(`/admin/audit-logs/export?format=csv&action=a.two&token=${t2}`).expect(403);
+      await request(app).get(`/admin/audit-logs/export?format=csv&action=a.one&token=${t2}`).expect(403);
+      // 형식이 다르면 거부
+      const t3 = (await issue({ format: 'csv' })).body.token;
+      await request(app).get(`/admin/audit-logs/export?format=json&token=${t3}`).expect(403);
+      // 토큰 없음, 엉터리 토큰
+      await request(app).get('/admin/audit-logs/export?format=csv').expect(403);
+      await request(app).get('/admin/audit-logs/export?format=csv&token=nope').expect(403);
+      // 감사 로그에 토큰이 남지 않는다
+      expect(JSON.stringify(await prisma.auditLog.findMany())).not.toMatch(new RegExp(`${t1}|${t2}|${t3}`));
+    });
+
+    it('rejects expired tokens and tokens whose owner lost admin rights', async () => {
+      const now = Date.now();
+      const { token } = issueExportToken(adminId, 'b', now)!;
+      expect(consumeExportToken(token, 'b', now + EXPORT_TOKEN_TTL_MS + 1)).toBeNull();
+      expect(consumeExportToken(token, 'b', now)).toBeNull(); // 이미 소진
+      const ok = issueExportToken(adminId, 'b', now)!;
+      expect(consumeExportToken(ok.token, 'b', now + EXPORT_TOKEN_TTL_MS - 1)).toBe(adminId);
+
+      const t = await request(app).post('/admin/audit-logs/export-token').set(auth(adminToken)).send({ format: 'csv' }).expect(201);
+      await prisma.user.update({ where: { id: adminId }, data: { role: 'MEMBER' } });
+      await request(app).get(`/admin/audit-logs/export?format=csv&token=${t.body.token}`).expect(403);
+    });
+
+    it('stops writing and reading when the client disconnects', async () => {
+      // 버퍼가 찬 상태에서 close가 오면 drain을 영원히 기다리지 않는다
+      const fake = Object.assign(new EventEmitter(), { destroyed: false, write: () => false }) as unknown as Parameters<typeof writeWithBackpressure>[0];
+      const pending = writeWithBackpressure(fake, 'x');
+      (fake as unknown as EventEmitter).emit('close');
+      (fake as { destroyed: boolean }).destroyed = true;
+      expect(await pending).toBe(false);
+      expect((fake as unknown as EventEmitter).listenerCount('drain')).toBe(0);
+      // drain이 오면 계속 쓴다
+      const open = Object.assign(new EventEmitter(), { destroyed: false, write: () => false }) as unknown as Parameters<typeof writeWithBackpressure>[0];
+      const p2 = writeWithBackpressure(open, 'x');
+      (open as unknown as EventEmitter).emit('drain');
+      expect(await p2).toBe(true);
+
+      // 소비자가 멈추면 generator는 더 읽지 않는다(배치 1회)
+      await prisma.auditLog.createMany({ data: Array.from({ length: 2500 }, () => ({ action: 'bulk', actorId: adminId, targetType: 't' })) });
+      const spy = jest.spyOn(prisma.auditLog, 'findMany');
+      try {
+        for await (const row of iterateAuditRows({ action: ['bulk'] })) {
+          expect(row.action).toBe('bulk');
+          break;
+        }
+        expect(spy).toHaveBeenCalledTimes(1);
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it('escapes every formula trigger character', () => {
@@ -306,6 +422,22 @@ describe('Audit logs', () => {
       delete process.env.AUDIT_LOG_RETENTION_DAYS;
       expect(await purgeAuditLogsIfDue(Date.now() + 10 * DAY)).toBe(0);
       expect(await prisma.auditLog.count({ where: { action: 'ancient' } })).toBe(1);
+    });
+
+    it('retries a failed scheduler purge after one hour, not on the next tick', async () => {
+      process.env.AUDIT_LOG_RETENTION_DAYS = '30';
+      const spy = jest.spyOn(prisma.auditLog, 'findMany').mockRejectedValueOnce(new Error('db down'));
+      try {
+        const t = Date.now() + 300 * DAY;
+        await expect(purgeAuditLogsIfDue(t)).rejects.toThrow('db down');
+        expect(await purgeAuditLogsIfDue(t + 60_000)).toBe(0); // 백오프 중이라 건너뜀
+        expect(spy).toHaveBeenCalledTimes(1);
+        await prisma.auditLog.create({ data: { action: 'ancient', actorId: adminId, targetType: 't', createdAt: new Date('2000-01-01') } });
+        expect(await purgeAuditLogsIfDue(t + 60 * 60 * 1000 + 1)).toBe(1); // 1시간 뒤 재시도 성공
+      } finally {
+        spy.mockRestore();
+        delete process.env.AUDIT_LOG_RETENTION_DAYS;
+      }
     });
 
     it('scheduler purge runs at most once a day', async () => {

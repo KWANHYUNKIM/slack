@@ -10,6 +10,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { apiErrorMessage } from '@/lib/apiErrors';
 
 // 서버가 남기는 action → 번역 키. 목록에 없는 action(나중에 추가된 것)은 원문을 그대로 보여 준다.
 const ACTION_KEYS: Record<string, string> = {
@@ -77,29 +78,37 @@ export function AdminAuditLogTab() {
   const [items, setItems] = useState<AuditLogEntry[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const loadAction = useAdminAction('admin:errors.fetchAuditLog');
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const exportAction = useAdminAction('admin:errors.exportAuditLog');
-  // 필터를 빠르게 바꿨을 때 늦게 도착한 이전 응답이 덮어쓰지 않게 요청 번호로 거른다.
-  const requestId = useRef(0);
+  // 새 요청은 이전 요청을 취소하고 항상 실행한다(진행 중이라고 버리지 않는다). busy 가드는 여기에 쓰지 않는다.
+  const abortRef = useRef<AbortController | null>(null);
 
-  const load = useCallback(
-    async (filter: AuditLogFilter, cursor: number | null) => {
-      const id = ++requestId.current;
-      await loadAction.run(async () => {
-        const page = await api.adminListAuditLogs(filter, cursor);
-        if (id !== requestId.current) return;
-        setItems((prev) => (cursor ? [...prev, ...page.items] : page.items));
-        setNextCursor(page.nextCursor);
-        setLoaded(true);
-      });
-    },
-    // run은 fallbackKey가 같으면 안정적이다
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadAction.run],
-  );
+  const load = useCallback(async (filter: AuditLogFilter, cursor: number | null) => {
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    setLoading(true);
+    setLoadError('');
+    // 필터가 바뀌면 이전 커서는 쓸 수 없다. "더 보기"는 같은 필터의 다음 페이지일 때만 이어 받는다.
+    if (!cursor) setNextCursor(null);
+    try {
+      const page = await api.adminListAuditLogs(filter, cursor, 50, ctrl.signal);
+      if (ctrl.signal.aborted) return;
+      setItems((prev) => (cursor ? [...prev, ...page.items] : page.items));
+      setNextCursor(page.nextCursor);
+      setLoaded(true);
+    } catch (err) {
+      if (ctrl.signal.aborted) return;
+      setLoadError(apiErrorMessage(err, 'admin:errors.fetchAuditLog'));
+    } finally {
+      if (abortRef.current === ctrl) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void load(applied, null);
+    return () => abortRef.current?.abort();
   }, [applied, load]);
 
   const apply = () => {
@@ -123,17 +132,16 @@ export function AdminAuditLogTab() {
       actions: f.actions.includes(action) ? f.actions.filter((a) => a !== action) : [...f.actions, action],
     }));
 
+  // 토큰이 든 주소로 이동해 브라우저가 파일을 바로 받게 한다
   const download = (format: 'csv' | 'json') =>
     exportAction.run(async () => {
-      const blob = await api.adminExportAuditLogs(applied, format);
-      const url = URL.createObjectURL(blob);
+      const url = await api.adminAuditExportUrl(applied, format);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `audit-logs.${format}`;
+      a.download = '';
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
     });
 
   const actionLabel = (action: string) =>
@@ -202,7 +210,7 @@ export function AdminAuditLogTab() {
         </div>
       </div>
 
-      {loadAction.error && <ErrorBanner message={loadAction.error} onDismiss={loadAction.reset} />}
+      {loadError && <ErrorBanner message={loadError} onDismiss={() => setLoadError('')} />}
       {exportAction.error && <ErrorBanner message={exportAction.error} onDismiss={exportAction.reset} />}
 
       {loaded && items.length === 0 && (
@@ -248,7 +256,7 @@ export function AdminAuditLogTab() {
 
       {nextCursor && (
         <button
-          disabled={loadAction.busy}
+          disabled={loading}
           onClick={() => void load(applied, nextCursor)}
           className="mt-4 w-full rounded-lg border border-slack-border py-2 text-sm text-slack-secondary hover:bg-gray-50 disabled:opacity-50"
         >
