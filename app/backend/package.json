@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^8.4.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
