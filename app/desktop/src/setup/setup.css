@@ -126,3 +126,45 @@ button.link {
   font-weight: 400;
   text-decoration: underline;
 }
+
+/* 연결 중 표시: 회전하는 원 (애니메이션을 끈 사용자에게는 멈춘 원) */
+.connecting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+.connecting::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.connecting[hidden] {
+  display: none;
+}
+
+body.is-connecting #label,
+body.is-connecting #server,
+body.is-connecting #hint,
+body.is-connecting #description {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connecting::before {
+    animation: none;
+  }
+}

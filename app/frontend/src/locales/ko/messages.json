@@ -12,7 +12,7 @@
   "editorToolbar": {
     "attachFile": "파일 첨부",
     "emoji": "이모지",
-    "mention": "멘션하기",
+    "mention": "멘션",
     "stopRecording": "녹음 중지",
     "recordVoice": "음성 클립 녹음"
   },
@@ -54,7 +54,7 @@
   "notifications": {
     "title": "알림",
     "empty": "새 알림이 없습니다",
-    "unreadCount": "읽지 않은 메시지 {count}개"
+    "unreadCount": "안 읽은 메시지 {count}개"
   },
   "search": {
     "placeholder": "검색",
@@ -106,7 +106,7 @@
     "saved": "저장됨",
     "scheduled": "예약됨",
     "loadFailed": "저장한 메시지를 불러오지 못했습니다.",
-    "empty": "저장한 메시지가 아직 없습니다. 메시지의 북마크 아이콘을 눌러 저장해 보세요.",
+    "empty": "저장한 메시지가 아직 없습니다. 메시지의 저장 아이콘을 눌러 보세요.",
     "removeSaved": "저장 목록에서 제거",
     "menu": "메뉴",
     "reminders": "리마인더"
@@ -122,7 +122,7 @@
   },
   "actionsMenu": {
     "noActions": "사용할 수 있는 작업이 없습니다",
-    "markUnread": "읽지 않음으로 표시",
+    "markUnread": "안 읽음으로 표시",
     "pin": "메시지 고정",
     "unpin": "메시지 고정 해제",
     "edit": "메시지 수정",
@@ -158,7 +158,7 @@
     "repliedToThread": "스레드에 답글: {excerpt}",
     "deletedPlaceholder": "이 메시지는 삭제되었습니다.",
     "sendToChannel": "채널에도 보내기",
-    "removeFromChannel": "채널에서 지우기"
+    "removeFromChannel": "채널에서 제거"
   },
   "input": {
     "uploading": "업로드하는 중...",
@@ -175,15 +175,15 @@
     "emptyFirst": "첫 메시지를 보내 보세요!"
   },
   "reactions": {
-    "tooltip": "{names}님이 {emoji}로 반응했습니다",
-    "add": "반응 추가",
+    "tooltip": "{names}님이 리액션을 남겼습니다: {emoji}",
+    "add": "리액션 추가",
     "you": "나"
   },
   "toolbar": {
-    "addReaction": "반응 추가",
+    "addReaction": "리액션 추가",
     "replyInThread": "스레드로 답글 달기",
-    "removeBookmark": "북마크 해제",
-    "bookmark": "이 메시지 북마크",
+    "removeBookmark": "저장 해제",
+    "bookmark": "이 메시지 저장",
     "moreActions": "더 보기"
   },
   "mobileSearch": {
@@ -205,7 +205,7 @@
     "custom": "직접 지정...",
     "modalTitle": "메시지 예약",
     "dateTime": "날짜 및 시간",
-    "pickFuture": "미래의 시간을 선택해 주세요.",
+    "pickFuture": "지금보다 이후 시각을 선택해 주세요.",
     "submit": "예약",
     "submitting": "예약하는 중...",
     "close": "닫기"
@@ -225,9 +225,9 @@
     "replyCount": "답글 {count}개"
   },
   "unreads": {
-    "title": "읽지 않음",
-    "loadFailed": "읽지 않은 메시지를 불러오지 못했습니다.",
-    "empty": "읽지 않은 메시지가 없습니다. 모두 확인했어요! 🎉",
+    "title": "안 읽음",
+    "loadFailed": "안 읽은 메시지를 불러오지 못했습니다.",
+    "empty": "안 읽은 메시지가 없습니다. 모두 확인했습니다!",
     "menu": "메뉴"
   },
   "threadPanel": {
@@ -260,8 +260,8 @@
     "topicPlaceholder": "이 채널은 어떤 채널인가요?",
     "description": "설명",
     "descriptionPlaceholder": "설명을 추가하세요",
-    "createdBy": "{name} 님이 만듦",
-    "readOnly": "채널 소유자, 관리자(모더레이터), 워크스페이스 관리자만 이 정보를 수정할 수 있습니다.",
+    "createdBy": "{name}님이 만듦",
+    "readOnly": "채널 소유자, 운영자, 워크스페이스 관리자만 이 정보를 수정할 수 있습니다.",
     "save": "저장",
     "cancel": "취소",
     "saveFailed": "채널 상세를 저장하지 못했습니다."
@@ -342,7 +342,7 @@
       "tooLong": "리마인더는 1년 이내여야 합니다.",
       "created": "{time}에 알려 드립니다"
     },
-    "pastTime": "지금보다 이후의 시각을 선택하세요.",
+    "pastTime": "지금보다 이후 시각을 선택해 주세요.",
     "loadMore": "더 보기"
   }
 }

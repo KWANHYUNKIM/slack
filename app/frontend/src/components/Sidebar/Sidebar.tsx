@@ -30,6 +30,8 @@ import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Avatar } from '@/components/ui/avatar';
 import { UserMenuStatus } from '@/components/Profile/UserMenuStatus';
 import { DesktopServerMenuItem } from '@/components/Sidebar/DesktopServerMenuItem';
+import { DesktopNotificationMenuItem } from '@/components/Sidebar/DesktopNotificationMenuItem';
+import { getDesktop } from '@/lib/desktop';
 import { StatusDialog } from '@/components/Profile/StatusDialog';
 import { AccessTokensDialog } from '@/components/Profile/AccessTokensDialog';
 import { useCustomStatus, useIsDnd } from '@/stores/useStatusStore';
@@ -309,7 +311,10 @@ export function Sidebar() {
                   <KeyRound className="h-4 w-4" />
                   {t('userMenu.accessTokens')}
                 </Button>
-                {permission === 'unsupported' ? null : permission === 'denied' ? (
+                {/* 데스크톱 앱은 웹 푸시 대신 자체 알림 설정을 쓴다 */}
+                {getDesktop() ? (
+                  <DesktopNotificationMenuItem onDone={() => setShowAvatarMenu(false)} />
+                ) : permission === 'unsupported' ? null : permission === 'denied' ? (
                   <Button variant="menu-item" className="text-slack-hint cursor-default" onClick={() => setShowAvatarMenu(false)}>
                     <BellOff className="h-4 w-4" />
                     {t('userMenu.notificationsBlocked')}

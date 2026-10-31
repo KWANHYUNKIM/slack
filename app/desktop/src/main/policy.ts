@@ -26,7 +26,7 @@ export function isPrivateHost(hostname: string): boolean {
 
 /**
  * 사용자가 입력한 서버 주소를 origin 하나로 정규화한다.
- * - 스킴이 없으면 https://를 붙인다.
+ * - 스킴이 없으면 내부망 주소는 http://, 공용 주소는 https://를 붙인다.
  * - http/https만 받는다. 아이디·비밀번호가 든 주소는 거부한다.
  * - http는 내부망(localhost, 사설 IP, .local)에서만 허용한다. 공용 주소는 https만.
  * - 경로, 쿼리, 해시는 버리고 origin만 저장한다(허용 origin이 정확히 하나가 되도록).
@@ -40,11 +40,13 @@ export function normalizeServerUrl(input: unknown): ServerUrlResult {
   const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
   // "localhost:3000"은 스킴처럼 보이지만 호스트:포트다
   const looksLikeHostPort = /^[a-z0-9.-]+:\d+(\/|$)/i.test(trimmed);
-  const candidate = hasScheme && !looksLikeHostPort ? trimmed : `https://${trimmed}`;
+  const schemeless = !hasScheme || looksLikeHostPort;
 
   let url: URL;
   try {
-    url = new URL(candidate);
+    url = new URL(schemeless ? `https://${trimmed}` : trimmed);
+    // 스킴 없이 적은 내부망 주소(localhost:3000, 192.168.0.5, nas.local)는 http로 본다
+    if (schemeless && isPrivateHost(url.hostname)) url = new URL(`http://${trimmed}`);
   } catch {
     return { ok: false, error: 'invalid' };
   }

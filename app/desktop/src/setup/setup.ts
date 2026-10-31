@@ -4,12 +4,21 @@
  * 문구는 main이 고른 로캘(en/ko)의 번역을 받아 채운다. innerHTML은 쓰지 않는다.
  */
 
-type SetupPageErrorCode = 'empty' | 'invalid' | 'scheme' | 'credentials' | 'insecure' | 'unreachable' | 'redirected';
+type SetupPageErrorCode =
+  | 'empty'
+  | 'invalid'
+  | 'scheme'
+  | 'credentials'
+  | 'insecure'
+  | 'unreachable'
+  | 'redirected'
+  | 'timeout';
 
 interface SetupPageState {
   locale: string;
   messages: Record<string, string>;
   currentServerUrl: string | null;
+  connectingTo: string | null;
   error: { code: SetupPageErrorCode; server: string | null } | null;
   canCancel: boolean;
 }
@@ -35,6 +44,7 @@ function setupPageMain(): void {
   const cancelBtn = byId<HTMLButtonElement>('cancel');
   const resetBtn = byId<HTMLButtonElement>('reset');
   const currentEl = byId<HTMLParagraphElement>('current');
+  const connectingEl = byId<HTMLParagraphElement>('connecting');
   let messages: Record<string, string> = {};
 
   const tr = (key: string, params: Record<string, string> = {}) =>
@@ -59,8 +69,15 @@ function setupPageMain(): void {
     cancelBtn.textContent = tr('setup.cancel');
     resetBtn.textContent = tr('setup.reset');
 
-    cancelBtn.hidden = !state.canCancel;
-    resetBtn.hidden = !state.currentServerUrl;
+    // 연결 중: 입력 칸 대신 "연결 중" 문구와 취소 버튼만 보여 준다
+    const connecting = !!state.connectingTo;
+    document.body.classList.toggle('is-connecting', connecting);
+    connectingEl.hidden = !connecting;
+    connectingEl.textContent = connecting ? tr('setup.connecting', { server: state.connectingTo ?? '' }) : '';
+    input.disabled = connecting;
+    submitBtn.hidden = connecting;
+    cancelBtn.hidden = !state.canCancel && !connecting;
+    resetBtn.hidden = connecting || !state.currentServerUrl;
     currentEl.hidden = !state.currentServerUrl;
     currentEl.textContent = state.currentServerUrl ? tr('setup.current', { server: state.currentServerUrl }) : '';
     if (!input.value && state.currentServerUrl) input.value = state.currentServerUrl;

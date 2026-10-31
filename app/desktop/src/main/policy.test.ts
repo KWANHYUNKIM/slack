@@ -22,8 +22,20 @@ test('서버 주소: 스킴이 없으면 https를 붙이고 origin만 남긴다'
   assert.deepEqual(normalizeServerUrl('https://chat.example.com:8443'), { ok: true, origin: 'https://chat.example.com:8443' });
 });
 
-test('서버 주소: localhost:3000 같은 호스트:포트는 스킴으로 오인하지 않는다', () => {
-  assert.deepEqual(normalizeServerUrl('localhost:3000'), { ok: true, origin: 'https://localhost:3000' });
+test('서버 주소 단축 입력: 스킴이 없으면 내부망은 http, 공용 주소는 https', () => {
+  // 호스트:포트를 스킴으로 오인하지 않는다
+  assert.deepEqual(normalizeServerUrl('localhost:3000'), { ok: true, origin: 'http://localhost:3000' });
+  assert.deepEqual(normalizeServerUrl('localhost'), { ok: true, origin: 'http://localhost' });
+  assert.deepEqual(normalizeServerUrl('127.0.0.1:3100/c/1'), { ok: true, origin: 'http://127.0.0.1:3100' });
+  assert.deepEqual(normalizeServerUrl('192.168.0.5:3000'), { ok: true, origin: 'http://192.168.0.5:3000' });
+  assert.deepEqual(normalizeServerUrl('10.0.0.7'), { ok: true, origin: 'http://10.0.0.7' });
+  assert.deepEqual(normalizeServerUrl('nas.local:8080'), { ok: true, origin: 'http://nas.local:8080' });
+  assert.deepEqual(normalizeServerUrl('[::1]:3000'), { ok: true, origin: 'http://[::1]:3000' });
+  assert.deepEqual(normalizeServerUrl('chat.example.com:8443'), { ok: true, origin: 'https://chat.example.com:8443' });
+  assert.deepEqual(normalizeServerUrl('8.8.8.8:443'), { ok: true, origin: 'https://8.8.8.8' });
+  assert.deepEqual(normalizeServerUrl('172.32.0.1:3000'), { ok: true, origin: 'https://172.32.0.1:3000' });
+  // 스킴을 직접 적으면 그대로 따른다
+  assert.deepEqual(normalizeServerUrl('https://localhost:3000'), { ok: true, origin: 'https://localhost:3000' });
   assert.deepEqual(normalizeServerUrl('http://localhost:3000'), { ok: true, origin: 'http://localhost:3000' });
 });
 
@@ -79,7 +91,7 @@ test('will-navigate 판정: 허용 / 브라우저로 / 버림', () => {
   assert.equal(decideNavigation('https://docs.example.org/page', SERVER), 'open-external');
   assert.equal(decideNavigation('http://other.example.org/', SERVER), 'open-external');
   assert.equal(decideNavigation('file:///Users/me/secret', SERVER), 'deny');
-  assert.equal(decideNavigation('slackclone://channel/1', SERVER), 'deny');
+  assert.equal(decideNavigation('teammessenger://channel/1', SERVER), 'deny');
   assert.equal(decideNavigation('data:text/html,<script>alert(1)</script>', SERVER), 'deny');
   assert.equal(decideNavigation(`${SERVER}/`, null), 'open-external');
 });

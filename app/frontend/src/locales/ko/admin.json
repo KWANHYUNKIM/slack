@@ -109,7 +109,7 @@
       "createdBy": "만든 사람"
     },
     "copyUrl": "초대 URL 복사",
-    "full": "(가득 참)",
+    "full": "(사용 한도 도달)",
     "delete": "초대 삭제",
     "empty": "아직 초대 링크가 없습니다"
   },
@@ -154,23 +154,23 @@
     }
   },
   "errors": {
-    "archiveChannel": "채널을 보관하지 못했어요",
-    "createInvite": "초대 링크를 만들지 못했어요",
-    "createWebhook": "웹훅을 만들지 못했어요",
-    "deactivateUser": "사용자를 비활성화하지 못했어요",
-    "deleteChannel": "채널을 삭제하지 못했어요",
-    "deleteInvite": "초대 링크를 삭제하지 못했어요",
-    "deleteWebhook": "웹훅을 삭제하지 못했어요",
-    "editChannel": "채널을 수정하지 못했어요",
-    "fetchAuditLog": "감사 로그를 불러오지 못했어요",
-    "fetchChannels": "채널을 불러오지 못했어요",
-    "fetchInvites": "초대 링크를 불러오지 못했어요",
-    "fetchUsers": "사용자를 불러오지 못했어요",
-    "fetchWebhooks": "웹훅을 불러오지 못했어요",
-    "reactivateUser": "사용자를 다시 활성화하지 못했어요",
-    "removeChannelMember": "채널 멤버를 내보내지 못했어요",
-    "transferOwnership": "소유권을 이전하지 못했어요",
-    "unarchiveChannel": "채널 보관을 해제하지 못했어요",
-    "updateRole": "역할을 변경하지 못했어요"
+    "archiveChannel": "채널을 보관하지 못했습니다",
+    "createInvite": "초대 링크를 만들지 못했습니다",
+    "createWebhook": "웹훅을 만들지 못했습니다",
+    "deactivateUser": "사용자를 비활성화하지 못했습니다",
+    "deleteChannel": "채널을 삭제하지 못했습니다",
+    "deleteInvite": "초대 링크를 삭제하지 못했습니다",
+    "deleteWebhook": "웹훅을 삭제하지 못했습니다",
+    "editChannel": "채널을 수정하지 못했습니다",
+    "fetchAuditLog": "감사 로그를 불러오지 못했습니다",
+    "fetchChannels": "채널을 불러오지 못했습니다",
+    "fetchInvites": "초대 링크를 불러오지 못했습니다",
+    "fetchUsers": "사용자를 불러오지 못했습니다",
+    "fetchWebhooks": "웹훅을 불러오지 못했습니다",
+    "reactivateUser": "사용자를 다시 활성화하지 못했습니다",
+    "removeChannelMember": "채널 멤버를 내보내지 못했습니다",
+    "transferOwnership": "소유권을 이전하지 못했습니다",
+    "unarchiveChannel": "채널 보관을 해제하지 못했습니다",
+    "updateRole": "역할을 변경하지 못했습니다"
   }
 }

@@ -1,3 +1,5 @@
 {
-  "changeServer": "Change server…"
+  "changeServer": "Change server…",
+  "enableNotifications": "Enable desktop notifications",
+  "disableNotifications": "Disable desktop notifications"
 }
