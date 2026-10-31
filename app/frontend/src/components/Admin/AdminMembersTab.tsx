@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useAdminStore } from '@/stores/useAdminStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Avatar } from '@/components/ui/avatar';
+import { apiErrorMessage } from '@/lib/apiErrors';
 import { ConfirmDialog } from './ConfirmDialog';
 
 const ROLE_BADGE: Record<string, { labelKey: string; className: string }> = {
@@ -23,8 +24,50 @@ export function AdminMembersTab() {
     userId: number;
     userName: string;
   } | null>(null);
+  // 역할 변경처럼 대화상자가 없는 동작의 실패는 표 위에, 대화상자 동작의 실패는 대화상자 안에 보여 준다.
+  const [actionError, setActionError] = useState('');
+  const [dialogError, setDialogError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const isOwner = currentUser?.role === 'OWNER';
+
+  const handleRoleChange = async (userId: number, role: 'ADMIN' | 'MEMBER' | 'GUEST') => {
+    setActionError('');
+    try {
+      await updateUserRole(userId, role);
+    } catch (err) {
+      setActionError(apiErrorMessage(err, 'admin:errors.updateRole'));
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!confirmAction || busy) return;
+    const { type, userId } = confirmAction;
+    setBusy(true);
+    setDialogError('');
+    try {
+      if (type === 'transfer') {
+        await transferOwnership(userId);
+      } else if (type === 'deactivate') {
+        await deactivateUser(userId);
+      } else {
+        await reactivateUser(userId);
+      }
+      setConfirmAction(null);
+    } catch (err) {
+      const fallbackKey = type === 'transfer'
+        ? 'admin:errors.transferOwnership'
+        : type === 'deactivate' ? 'admin:errors.deactivateUser' : 'admin:errors.reactivateUser';
+      setDialogError(apiErrorMessage(err, fallbackKey));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const closeConfirm = () => {
+    setConfirmAction(null);
+    setDialogError('');
+  };
 
   const filtered = users.filter(
     (u) =>
@@ -60,6 +103,10 @@ export function AdminMembersTab() {
           className="w-full rounded-lg border border-slack-border ps-10 pe-4 py-2 text-sm focus:border-slack-focus focus:outline-none focus:ring-1 focus:ring-slack-focus"
         />
       </div>
+
+      {actionError && (
+        <p role="alert" className="mb-3 text-sm text-slack-error">{actionError}</p>
+      )}
 
       <div className="rounded-lg border border-slack-border overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
@@ -99,7 +146,7 @@ export function AdminMembersTab() {
                     ) : (
                       <select
                         value={user.role}
-                        onChange={(e) => updateUserRole(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'ADMIN' | 'MEMBER' | 'GUEST')}
                         className="rounded border border-slack-border px-2 py-1 text-xs focus:border-slack-focus focus:outline-none"
                       >
                         {getRoleOptions().map((r) => (
@@ -159,17 +206,10 @@ export function AdminMembersTab() {
           title={t(`members.dialogs.${confirmAction.type}.title`)}
           message={t(`members.dialogs.${confirmAction.type}.message`, { name: confirmAction.userName })}
           confirmLabel={t(`members.dialogs.${confirmAction.type}.confirm`)}
-          onConfirm={() => {
-            if (confirmAction.type === 'transfer') {
-              transferOwnership(confirmAction.userId);
-            } else if (confirmAction.type === 'deactivate') {
-              deactivateUser(confirmAction.userId);
-            } else {
-              reactivateUser(confirmAction.userId);
-            }
-            setConfirmAction(null);
-          }}
-          onCancel={() => setConfirmAction(null)}
+          error={dialogError}
+          busy={busy}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
         />
       )}
     </div>

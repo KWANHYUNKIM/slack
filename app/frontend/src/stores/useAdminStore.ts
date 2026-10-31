@@ -17,20 +17,33 @@ interface AdminState {
   fetchInvites: () => Promise<void>;
   fetchWebhooks: () => Promise<void>;
   fetchAuditLog: (limit?: number, offset?: number) => Promise<void>;
+  // 아래 변경 액션은 실패하면 낙관적으로 바꾼 상태를 되돌린 뒤 reject한다.
+  // 호출한 쪽이 try/catch로 받아 apiErrorMessage로 번역해 그 화면이나 대화상자에 보여 준다.
+  /** 실패 시 reject */
   updateUserRole: (userId: number, role: 'ADMIN' | 'MEMBER' | 'GUEST') => Promise<void>;
+  /** 실패 시 reject */
   transferOwnership: (userId: number) => Promise<void>;
+  /** 실패 시 reject */
   deactivateUser: (userId: number) => Promise<void>;
+  /** 실패 시 reject */
   reactivateUser: (userId: number) => Promise<void>;
+  /** 실패 시 reject */
   createInvite: (data: { role?: string; maxUses?: number | null; expiresAt?: string | null }) => Promise<void>;
+  /** 실패 시 reject */
   deleteInvite: (inviteId: number) => Promise<void>;
+  /** 실패 시 reject */
   createWebhook: (data: { name: string; channelId: number }) => Promise<void>;
+  /** 실패 시 reject */
   deleteWebhook: (webhookId: number) => Promise<void>;
+  /** 실패 시 reject */
   deleteChannel: (channelId: number) => Promise<void>;
+  /** 실패 시 reject */
   archiveChannel: (channelId: number) => Promise<void>;
+  /** 실패 시 reject */
   unarchiveChannel: (channelId: number) => Promise<void>;
-  /** 실패하면 reject한다(상태는 바꾸지 않는다). 호출한 쪽이 성공·실패를 판단하고 apiErrorMessage로 번역해 보여 준다. */
+  /** 실패 시 reject (상태는 바꾸지 않는다). 호출한 쪽이 성공·실패를 판단하고 apiErrorMessage로 번역해 보여 준다. */
   editChannel: (channelId: number, data: { name?: string; isPrivate?: boolean }) => Promise<void>;
-  // 주의: editChannel과 removeChannelMember 외의 액션은 아직 실패를 error 상태로 삼킨다. 호출 측과 함께 바꾸는 작업은 fix/admin-store-actions에서 한다.
+  /** 실패 시 reject */
   removeChannelMember: (channelId: number, userId: number) => Promise<void>;
 }
 
@@ -78,18 +91,15 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminUpdateUserRole(userId, role);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.updateRole') });
+      set({ users: prev });
+      throw err;
     }
   },
 
   transferOwnership: async (userId) => {
-    try {
-      await api.adminTransferOwnership(userId);
-      // Refresh users to reflect the role changes
-      await get().fetchUsers();
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : t('admin:errors.transferOwnership') });
-    }
+    await api.adminTransferOwnership(userId);
+    // Refresh users to reflect the role changes
+    await get().fetchUsers();
   },
 
   deactivateUser: async (userId) => {
@@ -99,7 +109,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminDeactivateUser(userId);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.deactivateUser') });
+      set({ users: prev });
+      throw err;
     }
   },
 
@@ -110,17 +121,14 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminReactivateUser(userId);
       set({ users: get().users.map((u) => (u.id === userId ? updated : u)) });
     } catch (err) {
-      set({ users: prev, error: err instanceof Error ? err.message : t('admin:errors.reactivateUser') });
+      set({ users: prev });
+      throw err;
     }
   },
 
   createInvite: async (data) => {
-    try {
-      const invite = await api.adminCreateInvite(data);
-      set({ invites: [invite, ...get().invites] });
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : t('admin:errors.createInvite') });
-    }
+    const invite = await api.adminCreateInvite(data);
+    set({ invites: [invite, ...get().invites] });
   },
 
   deleteInvite: async (inviteId) => {
@@ -129,7 +137,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteInvite(inviteId);
     } catch (err) {
-      set({ invites: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteInvite') });
+      set({ invites: prev });
+      throw err;
     }
   },
 
@@ -143,12 +152,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   },
 
   createWebhook: async (data) => {
-    try {
-      const webhook = await api.adminCreateWebhook(data);
-      set({ webhooks: [webhook, ...get().webhooks] });
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : t('admin:errors.createWebhook') });
-    }
+    const webhook = await api.adminCreateWebhook(data);
+    set({ webhooks: [webhook, ...get().webhooks] });
   },
 
   deleteWebhook: async (webhookId) => {
@@ -157,7 +162,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteWebhook(webhookId);
     } catch (err) {
-      set({ webhooks: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteWebhook') });
+      set({ webhooks: prev });
+      throw err;
     }
   },
 
@@ -167,7 +173,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       await api.adminDeleteChannel(channelId);
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.deleteChannel') });
+      set({ channels: prev });
+      throw err;
     }
   },
 
@@ -182,7 +189,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminArchiveChannel(channelId);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.archiveChannel') });
+      set({ channels: prev });
+      throw err;
     }
   },
 
@@ -197,7 +205,8 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updated = await api.adminUnarchiveChannel(channelId);
       set({ channels: get().channels.map((c) => (c.id === channelId ? updated : c)) });
     } catch (err) {
-      set({ channels: prev, error: err instanceof Error ? err.message : t('admin:errors.unarchiveChannel') });
+      set({ channels: prev });
+      throw err;
     }
   },
 
