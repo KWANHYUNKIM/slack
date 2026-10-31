@@ -17,6 +17,8 @@ export function ReminderMenu({ onPick }: ReminderMenuProps) {
   const [custom, setCustom] = useState('');
   const presets = useMemo(() => reminderPresets(), []);
   const customDate = parseLocalDateTime(custom);
+  // 과거 시각은 막고 이유를 보인다. 현재 시각 비교는 입력이 바뀔 때(이벤트)만 한다.
+  const [pastCustom, setPastCustom] = useState(false);
 
   return (
     <div data-testid="reminder-menu" className="border-t border-slack-border-light py-1">
@@ -49,12 +51,21 @@ export function ReminderMenu({ onPick }: ReminderMenuProps) {
             type="datetime-local"
             aria-label={t('reminder.customLabel')}
             value={custom}
-            onChange={(e) => setCustom(e.target.value)}
+            onChange={(e) => {
+              setCustom(e.target.value);
+              const d = parseLocalDateTime(e.target.value);
+              setPastCustom(d !== null && d.getTime() <= Date.now());
+            }}
             className="w-full rounded border border-slack-border px-2 py-1 text-[12px]"
           />
+          {pastCustom && (
+            <p data-testid="reminder-custom-past" role="alert" className="text-[11px] text-slack-error">
+              {t('reminder.pastTime')}
+            </p>
+          )}
           <button
             data-testid="reminder-custom-submit"
-            disabled={customDate === null}
+            disabled={customDate === null || pastCustom}
             onClick={() => customDate && customDate.getTime() > Date.now() && onPick(customDate)}
             className="w-full rounded bg-slack-btn px-2 py-1 text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
           >

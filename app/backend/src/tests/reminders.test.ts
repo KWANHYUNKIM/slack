@@ -9,7 +9,7 @@ import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
 import { settleBackgroundWork as settle } from '../services/mentionService.js';
-import { processDueReminders, MAX_PENDING_REMINDERS } from '../services/reminderService.js';
+import { processDueReminders, MAX_PENDING_REMINDERS, MAX_DELIVERY_ATTEMPTS, pickLocale, pushTextFor } from '../services/reminderService.js';
 
 // 파트 09: 리마인더 CRUD, 권한, 시각 도달 처리(활동·푸시·소켓), 방해금지 억제
 
@@ -35,7 +35,8 @@ describe('Reminders', () => {
   let pushSpy: ReturnType<typeof jest.spyOn>;
   const sockets: ClientSocket[] = [];
 
-  const create = (u: TestUser, body: object) => request(app).post('/reminders').set(auth(u)).send(body);
+  const create = (u: TestUser, body: object, lang?: string) =>
+    request(app).post('/reminders').set(auth(u)).set(lang ? { 'Accept-Language': lang } : {}).send(body);
   const list = async (u: TestUser, status = 'pending') => (await request(app).get(`/reminders?status=${status}`).set(auth(u))).body.items;
   const patch = (u: TestUser, id: number, body: object) => request(app).patch(`/reminders/${id}`).set(auth(u)).send(body);
   const remove = (u: TestUser, id: number) => request(app).delete(`/reminders/${id}`).set(auth(u));
@@ -366,6 +367,225 @@ describe('Reminders', () => {
       await settle();
       await prisma.user.update({ where: { id: carol.id }, data: { deactivatedAt: null } });
       expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0);
+    });
+  });
+
+  describe('completion, listing and cap', () => {
+    it('removes the reminder activity when completed, and tells the other tabs', async () => {
+      const s = await connect(alice);
+      const removed = collect(s, 'activity:removed');
+      const r = await create(alice, { text: 'complete removes activity', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      await processDueReminders();
+      await settle();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(1);
+      const activityId = (await prisma.activity.findFirstOrThrow({ where: { reminderId: r.body.id } })).id;
+
+      expect((await patch(alice, r.body.id, { completed: true })).status).toBe(200);
+      await settle();
+      await pause();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0);
+      expect(removed.some((e) => e.ids.includes(activityId))).toBe(true);
+      expect((await activities(alice)).some((a: any) => a.reminder?.id === r.body.id)).toBe(false);
+      // 되돌려도 이미 울린 회차라 활동은 다시 생기지 않는다
+      await patch(alice, r.body.id, { completed: false });
+      expect(await processDueReminders()).toBe(0);
+    });
+
+    it('returns the whole pending list by default and pages the done list with a cursor', async () => {
+      await prisma.reminder.deleteMany({ where: { userId: carol.id } });
+      await prisma.reminder.createMany({
+        data: Array.from({ length: 150 }, (_, i) => ({ userId: carol.id, text: `p${i}`, remindAt: new Date(Date.now() + 3600_000 + i) })),
+      });
+      expect((await list(carol)).length).toBe(150);
+      await prisma.reminder.deleteMany({ where: { userId: carol.id } });
+
+      const base = Date.now() - 100_000;
+      await prisma.reminder.createMany({
+        data: Array.from({ length: 5 }, (_, i) => ({
+          userId: carol.id, text: `d${i}`, remindAt: new Date(base), completedAt: new Date(base + (i < 2 ? 0 : i * 1000)),
+        })),
+      });
+      const page1 = (await request(app).get('/reminders?status=done&limit=2').set(auth(carol))).body;
+      expect(page1.items).toHaveLength(2);
+      expect(page1.nextCursor).toBe(page1.items[1].id);
+      const page2 = (await request(app).get(`/reminders?status=done&limit=2&cursor=${page1.nextCursor}`).set(auth(carol))).body;
+      const page3 = (await request(app).get(`/reminders?status=done&limit=2&cursor=${page2.nextCursor}`).set(auth(carol))).body;
+      const all = [...page1.items, ...page2.items, ...page3.items].map((r: any) => r.id);
+      expect(all).toHaveLength(5);
+      expect(new Set(all).size).toBe(5); // 같은 completedAt이 섞여 있어도 겹침과 누락이 없다
+      expect(page3.nextCursor).toBeNull();
+      // 남의 cursor는 빈 결과
+      const foreign = (await request(app).get(`/reminders?status=done&cursor=${all[0]}`).set(auth(bob))).body;
+      expect(foreign.items).toEqual([]);
+      await prisma.reminder.deleteMany({ where: { userId: carol.id } });
+    });
+
+    it('counts reopening and snoozing a completed reminder against the cap', async () => {
+      await prisma.reminder.deleteMany({ where: { userId: carol.id } });
+      const done = await create(carol, { text: 'done one', remindAt: inMinutes(5) });
+      await patch(carol, done.body.id, { completed: true });
+      await prisma.reminder.createMany({
+        data: Array.from({ length: MAX_PENDING_REMINDERS }, (_, i) => ({ userId: carol.id, text: `r${i}`, remindAt: new Date(Date.now() + 3600_000) })),
+      });
+      expect((await patch(carol, done.body.id, { completed: false })).status).toBe(400);
+      expect((await patch(carol, done.body.id, { remindAt: inMinutes(30) })).status).toBe(400);
+      await prisma.reminder.deleteMany({ where: { userId: carol.id } });
+    });
+  });
+
+  describe('delivery races', () => {
+    /**
+     * 활동을 만드는 도중에 끼어들 동작을 심는다(한 번만).
+     * 라우트를 부르면 같은 키의 활동 큐에서 이 insert를 기다리게 되어 교착하므로, 이미 커밋된 변경을 DB에 직접 넣는다.
+     */
+    function interceptActivityCreate(during: () => Promise<unknown>) {
+      const original = prisma.activity.createManyAndReturn.bind(prisma.activity);
+      return jest.spyOn(prisma.activity, 'createManyAndReturn').mockImplementationOnce(((args: never) =>
+        during().then(() => original(args))) as never);
+    }
+
+    it('drops the activity when the reminder is snoozed while it is being delivered, then fires the next round', async () => {
+      const r = await create(alice, { text: 'snooze race', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      const spy = interceptActivityCreate(() => prisma.reminder.update({ where: { id: r.body.id }, data: { remindAt: new Date(Date.now() + 1800_000), firedAt: null } }));
+      await processDueReminders();
+      await settle();
+      spy.mockRestore();
+
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0); // 낡은 회차의 활동이 남지 않는다
+      const row = await prisma.reminder.findUniqueOrThrow({ where: { id: r.body.id } });
+      expect(row.firedAt).toBeNull();
+
+      await makeDue(r.body.id);
+      expect(await processDueReminders()).toBe(1);
+      await settle();
+      const acts = await prisma.activity.findMany({ where: { reminderId: r.body.id } });
+      expect(acts).toHaveLength(1);
+      expect(acts[0].reminderSeq).toBe(2); // 회차가 달라 새 활동이 생긴다
+    });
+
+    it('allows a new activity per round even if the old one was not cleaned up', async () => {
+      const r = await create(alice, { text: 'round unique', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      await processDueReminders();
+      await settle();
+      // 스누즈의 활동 정리를 거치지 않고 회차만 되감는다
+      await prisma.reminder.update({ where: { id: r.body.id }, data: { firedAt: null, remindAt: new Date(Date.now() - 1000) } });
+      expect(await processDueReminders()).toBe(1);
+      await settle();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(2);
+    });
+
+    it('drops the activity when the reminder is deleted while it is being delivered', async () => {
+      const r = await create(alice, { text: 'delete race', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      const spy = interceptActivityCreate(() => prisma.reminder.delete({ where: { id: r.body.id } }));
+      await processDueReminders();
+      await settle();
+      spy.mockRestore();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0);
+      expect(await prisma.reminder.count({ where: { id: r.body.id } })).toBe(0);
+    });
+
+    it('drops the activity when the reminder is completed while it is being delivered', async () => {
+      const r = await create(alice, { text: 'complete race', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      const spy = interceptActivityCreate(() => prisma.reminder.update({ where: { id: r.body.id }, data: { completedAt: new Date() } }));
+      await processDueReminders();
+      await settle();
+      spy.mockRestore();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0);
+    });
+  });
+
+  describe('delivery failure', () => {
+    it('reverts the claim and retries on the next tick', async () => {
+      const r = await create(alice, { text: 'retry me', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      const spy = jest.spyOn(prisma.activity, 'createManyAndReturn').mockRejectedValueOnce(new Error('db down') as never);
+      expect(await processDueReminders()).toBe(1);
+      await settle();
+      const failed = await prisma.reminder.findUniqueOrThrow({ where: { id: r.body.id } });
+      expect(failed).toMatchObject({ firedAt: null, failCount: 1, failedAt: null });
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(0);
+      spy.mockRestore();
+
+      expect(await processDueReminders()).toBe(1); // 다음 틱
+      await settle();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(1);
+      expect((await prisma.reminder.findUniqueOrThrow({ where: { id: r.body.id } })).firedAt).not.toBeNull();
+    });
+
+    it('gives up and marks failed after the attempt limit, until the user snoozes it', async () => {
+      const r = await create(alice, { text: 'always fails', remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      const spy = jest.spyOn(prisma.activity, 'createManyAndReturn').mockRejectedValue(new Error('db down') as never);
+      for (let i = 0; i < MAX_DELIVERY_ATTEMPTS; i++) expect(await processDueReminders()).toBe(1);
+      await settle();
+      const row = await prisma.reminder.findUniqueOrThrow({ where: { id: r.body.id } });
+      expect(row.failCount).toBe(MAX_DELIVERY_ATTEMPTS);
+      expect(row.failedAt).not.toBeNull();
+      expect(await processDueReminders()).toBe(0); // 더 시도하지 않는다
+      spy.mockRestore();
+
+      expect((await patch(alice, r.body.id, { remindAt: inMinutes(10) })).status).toBe(200);
+      const reset = await prisma.reminder.findUniqueOrThrow({ where: { id: r.body.id } });
+      expect(reset).toMatchObject({ failCount: 0, failedAt: null });
+      await makeDue(r.body.id);
+      expect(await processDueReminders()).toBe(1);
+      await settle();
+      expect(await prisma.activity.count({ where: { reminderId: r.body.id } })).toBe(1);
+    });
+  });
+
+  describe('1:1 DM activity', () => {
+    it('carries the other participant so the click can open the conversation', async () => {
+      const dm = (await request(app).post('/dms').set(auth(bob)).send({ toUserId: alice.id, content: 'dm for reminder activity' })).body;
+      const r = await create(alice, { dmId: dm.id, remindAt: inMinutes(5) });
+      await makeDue(r.body.id);
+      await processDueReminders();
+      await settle();
+      const item = (await activities(alice)).find((a: any) => a.reminder?.id === r.body.id);
+      expect(item).toMatchObject({ type: 'REMINDER', dmId: dm.id, dmUserId: bob.id, dmGroupId: null });
+      // 채널 활동에는 없다
+      const m = await postMessage(bob, pubId, 'channel one');
+      const cr = await create(alice, { messageId: m.id, remindAt: inMinutes(5) });
+      await makeDue(cr.body.id);
+      await processDueReminders();
+      await settle();
+      const ch = (await activities(alice)).find((a: any) => a.reminder?.id === cr.body.id);
+      expect(ch.dmUserId).toBeNull();
+    });
+  });
+
+  describe('push text', () => {
+    beforeEach(async () => {
+      await prisma.user.update({ where: { id: bob.id }, data: { dndUntil: null, dndWithStatus: false } });
+    });
+
+    it('picks the locale from Accept-Language and defaults to Korean', () => {
+      expect(pickLocale('en-US,en;q=0.9')).toBe('en');
+      expect(pickLocale('ko-KR,ko;q=0.9,en;q=0.8')).toBe('ko');
+      expect(pickLocale('fr-FR,fr;q=0.9')).toBeNull();
+      expect(pickLocale(undefined)).toBeNull();
+      expect(pushTextFor(null, '')).toEqual({ title: '리마인더', body: '메시지에 대한 리마인더' });
+      expect(pushTextFor('en', '  ')).toEqual({ title: 'Reminder', body: 'Reminder about a message' });
+      expect(pushTextFor('ko', 'x'.repeat(300)).body).toHaveLength(100);
+    });
+
+    it('sends the push in the locale saved when the reminder was created', async () => {
+      const en = await create(bob, { text: 'english please', remindAt: inMinutes(5) }, 'en-US,en;q=0.9');
+      const ko = await create(bob, { text: '한국어로', remindAt: inMinutes(5) }, 'ko-KR');
+      const none = await create(bob, { text: 'no header', remindAt: inMinutes(5) }, 'fr-FR');
+      for (const r of [en, ko, none]) await makeDue(r.body.id);
+      await processDueReminders();
+      await settle();
+      const payloads = pushSpy.mock.calls.map((c: unknown) => JSON.parse((c as unknown[])[1] as string));
+      const byBody = (b: string) => payloads.find((p: { body: string }) => p.body === b);
+      expect(byBody('english please').title).toBe('Reminder');
+      expect(byBody('한국어로').title).toBe('리마인더');
+      expect(byBody('no header').title).toBe('리마인더');
     });
   });
 

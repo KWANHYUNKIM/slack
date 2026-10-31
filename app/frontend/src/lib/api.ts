@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import i18n, { t } from '@/lib/i18n';
 import type { CustomStatus, Dnd } from '@/lib/types';
 
 /**
@@ -339,6 +339,8 @@ export interface ApiActivity {
   dmId: number | null;
   /** 그룹 DM 활동이면 그룹 id */
   dmGroupId?: number | null;
+  /** 1:1 DM 활동의 상대 userId(리마인더 활동에서 이동용) */
+  dmUserId?: number | null;
   threadId: number | null;
   /** 리마인더 활동은 대상이 없거나 지워졌을 수 있어 null */
   message: { id: number; content: string; excerpt: string } | null;
@@ -1006,12 +1008,19 @@ export interface ApiReminder {
   dmGroupId: number | null;
 }
 
-export function getReminders(status: 'pending' | 'done') {
-  return request<{ items: ApiReminder[]; nextCursor: null }>(`/reminders?status=${status}`);
+export function getReminders(status: 'pending' | 'done', cursor?: number) {
+  const params = new URLSearchParams({ status });
+  if (cursor) params.set('cursor', String(cursor));
+  return request<{ items: ApiReminder[]; nextCursor: number | null }>(`/reminders?${params}`);
 }
 
 export function createReminder(body: { messageId?: number; dmId?: number; text?: string; remindAt: string }) {
-  return request<ApiReminder>('/reminders', { method: 'POST', body: JSON.stringify(body) });
+  // 푸시 문구 언어를 정하도록 앱 언어를 Accept-Language로 알린다
+  return request<ApiReminder>('/reminders', {
+    method: 'POST',
+    headers: { 'Accept-Language': i18n.language || 'ko' },
+    body: JSON.stringify(body),
+  });
 }
 
 export function updateReminder(id: number, body: { remindAt: string } | { completed: boolean }) {

@@ -1,9 +1,11 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
+import { paginateResults } from '../utils/pagination.js';
 import { logError } from '../utils/logger.js';
 import { cleanStatusText } from '../services/statusService.js';
 import {
@@ -11,6 +13,8 @@ import {
   MAX_PENDING_REMINDERS,
   MAX_REMINDER_TEXT,
   MIN_FUTURE_MS,
+  pickLocale,
+  DEFAULT_PUSH_LOCALE,
   deleteReminderActivities,
   emitReminder,
   emitReminderRemoved,
@@ -38,7 +42,9 @@ const patchSchema = z.object({
 
 const listSchema = z.object({
   status: z.enum(['pending', 'done']).default('pending'),
-  limit: z.coerce.number().int().min(1).max(200).default(100),
+  // 미완료는 한도(200)가 곧 상한이라 기본으로 전부 준다. 완료 목록은 cursor(마지막 항목 id)로 이어 받는다.
+  limit: z.coerce.number().int().min(1).max(200).default(200),
+  cursor: z.coerce.number().int().positive().optional(),
 }).strict();
 
 /** 현재 이후 1년 이내인지 확인한다. 아니면 에러 문구를 돌려준다. */
@@ -88,10 +94,11 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         channelId,
         text: text || null,
         remindAt: new Date(body.remindAt),
+        locale: pickLocale(req.headers['accept-language']) ?? DEFAULT_PUSH_LOCALE,
       },
     });
     const [reminder] = await serializeReminders(userId, [row]);
-    void emitReminder('reminder:updated', userId, row);
+    emitReminder('reminder:updated', userId, reminder);
     res.status(201).json(reminder);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -107,12 +114,33 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const { status, limit } = listSchema.parse(req.query);
-    const rows = status === 'pending'
-      ? await prisma.reminder.findMany({ where: { userId, completedAt: null }, orderBy: [{ remindAt: 'asc' }, { id: 'asc' }], take: limit })
-      : await prisma.reminder.findMany({ where: { userId, completedAt: { not: null } }, orderBy: [{ completedAt: 'desc' }, { id: 'desc' }], take: limit });
-    // 미완료는 한도(200)가 곧 상한이라 한 번에 다 나온다. 완료 목록은 최근 limit개만 준다.
-    res.json({ items: await serializeReminders(userId, rows), nextCursor: null });
+    const { status, limit, cursor } = listSchema.parse(req.query);
+    if (status === 'pending') {
+      const rows = await prisma.reminder.findMany({
+        where: { userId, completedAt: null },
+        orderBy: [{ remindAt: 'asc' }, { id: 'asc' }],
+        take: MAX_PENDING_REMINDERS,
+      });
+      res.json({ items: await serializeReminders(userId, rows), nextCursor: null });
+      return;
+    }
+    // 완료 목록: 최근 완료 순. cursor는 이전 페이지 마지막 항목 id이고 (completedAt, id) 순서로 이어 받는다.
+    let after: Prisma.ReminderWhereInput = {};
+    if (cursor) {
+      const anchor = await prisma.reminder.findFirst({ where: { id: cursor, userId, completedAt: { not: null } }, select: { id: true, completedAt: true } });
+      if (!anchor) {
+        res.json({ items: [], nextCursor: null });
+        return;
+      }
+      after = { OR: [{ completedAt: { lt: anchor.completedAt! } }, { completedAt: anchor.completedAt!, id: { lt: anchor.id } }] };
+    }
+    const rows = await prisma.reminder.findMany({
+      where: { userId, completedAt: { not: null }, ...after },
+      orderBy: [{ completedAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+    const { results, nextCursor } = paginateResults(rows, limit);
+    res.json({ items: await serializeReminders(userId, results), nextCursor: nextCursor ?? null });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Invalid query', details: error.issues });
@@ -147,19 +175,28 @@ router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => 
       return;
     }
 
+    // 완료된 것을 되살리거나(스누즈 포함) 하면 미완료 한도에 다시 들어간다
+    const reopening = existing.completedAt !== null && (body.remindAt !== undefined || body.completed === false);
+    if (reopening && (await prisma.reminder.count({ where: { userId, completedAt: null } })) >= MAX_PENDING_REMINDERS) {
+      res.status(400).json({ error: `Maximum of ${MAX_PENDING_REMINDERS} pending reminders allowed` });
+      return;
+    }
+
     let row;
     if (body.remindAt !== undefined) {
-      // 다시 알림: 새 시각에 한 번 더 울리도록 firedAt을 비우고 지난 알림 활동은 치운다
+      // 다시 알림: 새 시각에 한 번 더 울리도록 firedAt과 실패 기록을 비우고 지난 알림 활동은 치운다
       row = await prisma.reminder.update({
         where: { id },
-        data: { remindAt: new Date(body.remindAt), firedAt: null, completedAt: null },
+        data: { remindAt: new Date(body.remindAt), firedAt: null, completedAt: null, failCount: 0, failedAt: null },
       });
       await deleteReminderActivities(id);
     } else {
       row = await prisma.reminder.update({ where: { id }, data: { completedAt: body.completed ? new Date() : null } });
+      // 완료한 리마인더의 알림 활동은 더 필요 없다(activity:removed가 나간다)
+      if (body.completed) await deleteReminderActivities(id);
     }
     const [reminder] = await serializeReminders(userId, [row]);
-    void emitReminder('reminder:updated', userId, row);
+    emitReminder('reminder:updated', userId, reminder);
     res.json(reminder);
   } catch (error) {
     if (error instanceof z.ZodError) {

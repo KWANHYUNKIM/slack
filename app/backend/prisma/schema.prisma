@@ -374,6 +374,7 @@ model Activity {
   dmId      Int?
   channelId Int?
   reminderId Int?        // REMINDER 활동이면 리마인더 id(같은 메시지에 여러 리마인더가 있어도 활동을 따로 둔다)
+  reminderSeq Int?       // 몇 번째 발송인지(스누즈 후 다시 울릴 때 새 활동이 생기게 unique에 포함)
   dmGroupId Int?         // 그룹 DM 활동이면 그룹 id(나간 그룹의 활동을 가리고, 그룹별 멘션 수를 센다)
   emoji     String?      @db.VarChar(50)
   readAt    DateTime?
@@ -384,7 +385,7 @@ model Activity {
 
   // NULL 컬럼이 들어가면 Postgres는 NULL끼리 다르다고 보므로 이 unique는 중복을 못 막는다.
   // 그래서 mentionService가 생성 전에 기존 행을 먼저 조회해 중복을 거른다.
-  @@unique([userId, type, messageId, dmId, actorId, emoji, reminderId])
+  @@unique([userId, type, messageId, dmId, actorId, emoji, reminderId, reminderSeq])
   @@index([userId, readAt, createdAt])
   @@index([messageId])
   @@index([dmId])
@@ -438,6 +439,10 @@ model Reminder {
   remindAt    DateTime
   firedAt     DateTime?
   completedAt DateTime?
+  fireSeq     Int       @default(0) // 선점(발송)할 때마다 +1. 활동의 reminderSeq와 짝
+  failCount   Int       @default(0) // 발송 실패 횟수. 한도에 닿으면 failedAt을 찍고 더 시도하지 않는다
+  failedAt    DateTime?
+  locale      String?   @db.VarChar(8) // 만든 때의 언어(푸시 문구용)
   createdAt   DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

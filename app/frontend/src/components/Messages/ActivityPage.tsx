@@ -10,6 +10,7 @@ import { renderMessageContent } from '@/lib/renderMessageContent';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useActivityStore } from '@/stores/useActivityStore';
 import type { ActivityFilter, ApiActivity } from '@/lib/api';
+import { reminderOpenPath } from '@/lib/remind';
 
 const TAB_ORDER: ActivityFilter[] = ['all', 'mentions', 'threads', 'reactions'];
 const LOAD_MORE_THRESHOLD_PX = 200;
@@ -55,13 +56,20 @@ export function ActivityPage() {
   const handleOpen = (item: ApiActivity) => {
     void useActivityStore.getState().markRead([item.id]);
     // Jump to the thread parent when the activity is a reply, otherwise to the message itself
+    if (item.type === 'REMINDER') {
+      // 리마인더는 배우가 본인이라 1:1 DM 상대를 따로 받는다. 퍼말링크로 메시지까지 가고, 대상이 없으면 목록으로 간다.
+      navigate(reminderOpenPath({
+        channelId: item.channelId,
+        dmGroupId: item.dmGroupId,
+        dmUserId: item.dmUserId,
+        target: item.message ? { id: item.messageId ?? item.dmId ?? item.message.id, threadId: item.threadId } : null,
+      }));
+      return;
+    }
     const targetId = item.threadId ?? item.messageId ?? item.dmId;
     const state = targetId ? { scrollToMessageId: targetId } : undefined;
     if (item.dmGroupId) {
       navigate(`/g/${item.dmGroupId}`, { state });
-    } else if (item.type === 'REMINDER' && item.dmId !== null) {
-      // 1:1 DM 리마인더는 활동에 상대 정보가 없다(배우가 본인). 목록에서 열 수 있게 한다
-      navigate('/later');
     } else if (item.dmId !== null) {
       navigate(`/d/${item.actor.id}`, { state });
     } else if (item.channelId !== null) {

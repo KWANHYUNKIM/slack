@@ -46,7 +46,7 @@ export function MessageActionsMenu({
   const [showReminder, setShowReminder] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  // Initial position measurement
+  // Position measurement. 리마인더 하위 메뉴가 펼쳐지면 높이가 바뀌므로 다시 잰다.
   useLayoutEffect(() => {
     const anchor = anchorRef.current;
     const menu = menuRef.current;
@@ -58,11 +58,11 @@ export function MessageActionsMenu({
 
     let top = anchorRect.top;
     if (top + menuHeight > window.innerHeight) {
-      top = Math.max(0, anchorRect.top - menuHeight);
+      top = Math.max(0, Math.min(anchorRect.top - menuHeight, window.innerHeight - menuHeight));
     }
 
     setPos({ top, left: Math.max(0, anchorRect.right - menuWidth) });
-  }, []);
+  }, [showReminder]);
 
   // Close on scroll (matches Slack behavior) and click outside
   useEffect(() => {
