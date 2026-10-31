@@ -34,3 +34,21 @@ export function registerFieldErrorKey(fields: FieldError[] | undefined): string 
 export function loginFieldErrorKey(fields: FieldError[] | undefined): string {
   return (fields ?? []).some((f) => f.path === 'email') ? 'auth:login.errors.invalidEmail' : 'auth:login.errors.generic';
 }
+
+// ---- 세션 종료 판정 ----
+// 서버는 토큰이 없거나(AUTH_NO_TOKEN) 무효·만료·폐기·비활성화된 경우(AUTH_INVALID_TOKEN)에만 이 code로 401을 낸다.
+// 로그인 화면의 잘못된 자격(AUTH_INVALID_CREDENTIALS), 2차 인증 실패(MFA_INVALID_CODE, MFA_TOKEN_INVALID, MFA_UNAVAILABLE),
+// 다운로드 링크 만료(FILE_TOKEN_INVALID)도 401이지만 저장된 세션은 멀쩡하므로 로그아웃하면 안 된다.
+
+/** 세션 종료를 뜻하는 401 code */
+export const SESSION_ENDING_CODES: ReadonlySet<string> = new Set(['AUTH_NO_TOKEN', 'AUTH_INVALID_TOKEN']);
+
+/**
+ * 이 응답이 세션 종료 신호인가. 401이 아니면 아니다.
+ * code가 없거나 상태별 기본값(UNAUTHORIZED)이면 구체 사유를 모르는 것이므로 예전처럼 세션 종료로 본다(안전한 쪽).
+ */
+export function isSessionEndingError(status: number, code?: string | null): boolean {
+  if (status !== 401) return false;
+  if (!code || code === 'UNAUTHORIZED') return true;
+  return SESSION_ENDING_CODES.has(code);
+}

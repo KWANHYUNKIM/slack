@@ -43,7 +43,8 @@ export function connectSocket(): Socket | null {
   });
   socket.on('connect_error', (err) => {
     if (err.message === MFA_KICK_MESSAGE) window.dispatchEvent(new Event(MFA_ENROLLMENT_EVENT));
-    else if (err.message === 'Invalid token') handleSessionEnded();
+    // HTTP의 AUTH_INVALID_TOKEN·AUTH_NO_TOKEN과 같은 기준: 토큰 문제만 로그아웃, 서버 오류('Server error')는 재연결에 맡긴다
+    else if (err.message === 'Invalid token' || err.message === 'Authentication required') handleSessionEnded();
   });
 
   socket.on('connect', () => {

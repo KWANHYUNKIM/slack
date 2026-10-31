@@ -21,6 +21,7 @@
     "UPLOAD_FAILED": "업로드하지 못했습니다.",
     "AUTH_NO_TOKEN": "로그인해 주세요.",
     "AUTH_INVALID_TOKEN": "세션이 만료되었습니다. 다시 로그인해 주세요.",
+    "FILE_TOKEN_INVALID": "파일 링크가 만료되었거나 올바르지 않습니다. 다시 시도해 주세요.",
     "AUTH_INVALID_CREDENTIALS": "이메일 또는 비밀번호가 올바르지 않습니다.",
     "AUTH_ACCOUNT_LOCKED": "로그인 시도가 너무 많아 계정이 잠시 잠겼습니다. 나중에 다시 시도해 주세요.",
     "AUTH_REGISTRATION_FAILED": "가입을 완료하지 못했습니다. 입력 내용을 확인하거나 다른 이메일을 사용해 주세요.",

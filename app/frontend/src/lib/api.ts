@@ -2,6 +2,7 @@ import i18n, { t } from '@/lib/i18n';
 import type { CustomStatus, Dnd } from '@/lib/types';
 import { createFileTokenCache, buildFileUrl, type TokenResponse, type TokenState } from '@/lib/fileTokens';
 import { sessionEndAction } from '@/lib/sessionEnd';
+import { isSessionEndingError } from '@/lib/authErrors';
 
 /**
  * 파일별 다운로드 토큰. 캐시·갱신·거부 처리 로직은 lib/fileTokens.ts(순수)에 있고 여기서는 fetch만 붙인다.
@@ -78,11 +79,11 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: t('errors:client.requestFailed') }));
-    // Auto-logout on 401 (expired/invalid token).
+    // Auto-logout on 401 (expired/invalid token). 틀린 비밀번호·2FA 코드 같은 다른 401은 호출한 쪽이 처리한다(lib/authErrors.ts).
     // Guard: only redirect once — concurrent 401s after token removal are no-ops.
     // Uses hard reload (window.location) so all in-memory Zustand state is wiped.
     // 실패한 요청의 토큰이 지금 저장된 토큰일 때만 지운다(다른 탭이 2FA를 켜고 꺼서 새 토큰을 저장했으면 그대로 둔다)
-    if (res.status === 401 && sessionEndAction(token, localStorage.getItem('token')) === 'clear') {
+    if (isSessionEndingError(res.status, body.code) && sessionEndAction(token, localStorage.getItem('token')) === 'clear') {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
