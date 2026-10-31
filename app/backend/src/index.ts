@@ -4,6 +4,7 @@ import { initializeWebSocket } from './websocket/index.js';
 import { startScheduler } from './scheduler.js';
 import prisma from './db.js';
 import { ensureBuiltinRules } from './services/dlpService.js';
+import { normalizeChannelNameKeys } from './services/workspaceService.js';
 import { getStunConfig, getTotpEncryptionKey, warnIfInvalidStunPublicPort } from './config.js';
 import { startStunServer, StunServer } from './stun/stunServer.js';
 
@@ -28,6 +29,11 @@ const schedulerHandle = startScheduler();
 
 // 데이터 유출 방지의 내장 규칙 행을 첫 요청 전에 보장한다(실패해도 탐지는 기본값으로 동작한다)
 void ensureBuiltinRules();
+
+// E1a 백필이 PostgreSQL lower()로 만든 채널 nameKey를 JS 규칙(정답)에 맞춘다. 멱등이라 매번 돌려도 바뀌는 행이 없으면 끝난다.
+normalizeChannelNameKeys(prisma)
+  .then((fixed) => { if (fixed > 0) console.log(`Normalized ${fixed} channel name key(s)`); })
+  .catch((err) => console.error('Channel name key normalization failed:', err instanceof Error ? err.message : err));
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

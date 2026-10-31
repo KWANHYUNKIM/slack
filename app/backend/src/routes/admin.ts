@@ -15,6 +15,7 @@ import { sessionView } from './sessions.js';
 import { ERR } from '../utils/errorCodes.js';
 import { clearMfa, getRequireMfa, setRequireMfa, isMfaAvailable } from '../services/mfaService.js';
 import { getAllowOAuthApps, setAllowOAuthApps } from '../services/oauthService.js';
+import { setUserRole } from '../services/workspaceService.js';
 
 const router = Router();
 
@@ -94,10 +95,10 @@ router.patch('/users/:id', async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { role },
-      select: ADMIN_USER_SELECT,
+    // 역할 쓰기는 setUserRole 하나로: 조직 역할·기본 워크스페이스 역할·주 소유자까지 같은 트랜잭션에서 맞춘다(E1a)
+    const updated = await prisma.$transaction(async (tx) => {
+      await setUserRole(tx, userId, role);
+      return tx.user.findUniqueOrThrow({ where: { id: userId }, select: ADMIN_USER_SELECT });
     });
 
     // Invalidate cached auth so the new role takes effect immediately
@@ -890,10 +891,11 @@ router.post('/transfer-ownership', async (req: AuthRequest, res: Response) => {
     }
 
     // Atomic: demote current owner to ADMIN, promote target to OWNER
-    await prisma.$transaction([
-      prisma.user.update({ where: { id: ownerId }, data: { role: 'ADMIN' } }),
-      prisma.user.update({ where: { id: userId }, data: { role: 'OWNER' } }),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      // 이전 대상자를 조직 주 소유자로 명시 지정한다(E1a). 다른 OWNER가 있어도 주 소유자는 대상자다.
+      await setUserRole(tx, userId, 'OWNER', { makePrimaryOwner: true });
+      await setUserRole(tx, ownerId, 'ADMIN');
+    });
 
     // Invalidate cached auth so the new roles take effect immediately
     invalidateTokenCache(ownerId);

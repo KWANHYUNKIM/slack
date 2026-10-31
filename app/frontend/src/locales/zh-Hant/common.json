@@ -73,5 +73,11 @@
       "esc": "Esc",
       "enter": "Enter"
     }
+  },
+  "workspace": {
+    "defaultName": "工作區"
+  },
+  "organization": {
+    "defaultName": "組織"
   }
 }

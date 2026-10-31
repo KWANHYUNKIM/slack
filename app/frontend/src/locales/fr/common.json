@@ -73,5 +73,11 @@
       "esc": "Échap",
       "enter": "Entrée"
     }
+  },
+  "workspace": {
+    "defaultName": "Espace de travail"
+  },
+  "organization": {
+    "defaultName": "Organisation"
   }
 }

@@ -14,6 +14,7 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { validateChannelName } from '../utils/channelName.js';
 import { updateChannel, CHANNEL_NAME_TAKEN } from '../services/channelService.js';
 import { markChannelMentionsRead, getMentionCountsByChannel } from '../services/mentionService.js';
+import { channelHostData } from '../services/workspaceService.js';
 
 const router = Router();
 
@@ -53,6 +54,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         name,
         isPrivate,
         createdBy: userId,
+        // 기본 워크스페이스에 호스트로 연결한다(현재 워크스페이스 해석은 E1b)
+        ...channelHostData(name),
         members: {
           create: {
             userId,
