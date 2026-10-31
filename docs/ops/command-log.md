@@ -157,3 +157,9 @@
 | 2026-10-31 20:16 | PR #21 리뷰 9건 → dev-3 반영 지시. 총괄 결정: 이름 변경을 공용 서비스로 통합(관리자 경로도 channel:updated), 중복 이름 409+CHANNEL_NAME_TAKEN으로 통일(feat/channel-name-taken-code 흡수), 공개 채널 io.emit·비공개는 멤버 user 룸, 사이드바 설정 jsonb 원자 병합, 별표 요청 순번 |
 | 2026-10-31 20:23 | dev-3 리뷰 반영 확인(사이드바 raw SQL 파라미터 바인딩 확인, 4개 스위트 298 통과 보고) → PR #21 squash 머지(7d75e3d). POST /channels 중복은 400 유지+code 추가(기존 테스트 호환, 후속 판단). 마이그레이션 20261031130000을 dev1·dev2·dev4·dev5·slackclone·slackclone_dev에 migrate deploy 완료. dev-3 worktree 제거 |
 | 2026-10-31 20:25 | 배정: dev-4 02-group-dm(opus, 스키마·실시간·권한). 자원 감속(스왑 87%) 한도 1 |
+| 2026-10-31 20:33 | 사용자 지시: "진짜 slack이랑 비교해서 기능을 만들어주라 (C0CDUKV338U)" → 보드에 00b-gap-analysis-v2(planner-1, sonnet) 추가. 자원 감속(여유 28%, 스왑 91%) 한도 1을 dev-4가 쓰고 있어 dev-4 완료 직후 1순위로 실행. 결과 스펙을 우선순위대로 개발 배정 |
+| 2026-10-31 21:24 | 루프 점검: dev-4의 jest dms.test가 48분째 정지(PID 6743) → dev-4에게 종료, --detectOpenHandles로 원인 조사·수정 지시. 자원 감속(스왑 92%) |
+| 2026-10-31 21:28 | dev-4 완료 검토: 멈춘 jest는 결과 출력 후 미종료(소켓 서버 여러 파일, --forceExit 없음)로 판명. main 리베이스 후 tsc·eslint·i18n·외부 URL 재확인 → PR #23, /code-review medium |
+| 2026-10-31 21:31 | PR #23 리뷰 10건 → dev-4 반영 지시. 총괄 결정: 그룹 내 게스트는 행위자와 무관하게 전 멤버와 공유 채널 필요, 멤버 추가는 DMGroup 행 잠금 후 상한 검사, memberKey는 원키 시도 후 P2002면 접미사, 그룹 열 때 서버 읽음 호출, 읽음 커서는 최상위 메시지만 |
+| 2026-10-31 21:40 | PR #23 머지(514b1eb). 실수: 첫 merge 시도가 "Base branch was modified"로 실패했는데 바로 원격 브랜치를 지워 PR이 닫힘 → 브랜치 재푸시, gh pr reopen, 다시 squash 머지. 이후 merge 성공 확인 뒤에만 브랜치 삭제(--delete-branch). 마이그레이션 20261031140000_add_group_dm을 dev1·2·3·5·slackclone·slackclone_dev에 적용. dev-4 worktree 제거 |
+| 2026-10-31 21:42 | 자원 정상(여유 30%, 스왑 84%, 한도 3). 스왑이 90%에 가까워 2개만 배정: planner-1 00b-gap-analysis-v2(sonnet, 사용자 지시, #claude-test에서 CRUD 관찰), dev-5 04-threads-view(sonnet, worktree, dev5 DB) |
