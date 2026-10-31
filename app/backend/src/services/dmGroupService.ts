@@ -131,11 +131,14 @@ export async function findOrCreateGroup(creatorId: number, otherIds: number[]): 
   if (existing) return { groupId: existing.id, created: false };
 
   try {
+    const now = new Date();
     const group = await prisma.dMGroup.create({
       data: {
         memberKey,
         createdBy: creatorId,
-        members: { create: allIds.map((userId) => ({ userId })) },
+        createdAt: now,
+        members: { create: allIds.map((userId) => ({ userId, joinedAt: now })) },
+        memberships: { create: allIds.map((userId) => ({ userId, joinedAt: now })) },
       },
       select: { id: true },
     });
@@ -147,6 +150,39 @@ export async function findOrCreateGroup(creatorId: number, otherIds: number[]): 
     }
     throw err;
   }
+}
+
+// ── 구성원 이력(DMGroupMembership) ─────────────────────────────────────
+// 구성원이 바뀌는 경로(생성, 추가, 나가기)는 모두 이 파일에 있고, 이력도 여기서만 쓴다. 구간은 joinedAt 이상 leftAt 미만이다.
+// 생성은 그룹과 같은 문장(중첩 create)에서, 추가·나가기는 그룹을 잠근 트랜잭션 안에서 DMGroupMember와 같은 시각으로 남긴다.
+
+/** 가입 구간을 연다. 이미 열린 구간이 있는 사용자는 건너뛴다(같은 사람의 구간이 겹치지 않게). */
+async function openMemberships(tx: Prisma.TransactionClient, groupId: number, userIds: number[], at: Date): Promise<void> {
+  const open = await tx.dMGroupMembership.findMany({ where: { groupId, userId: { in: userIds }, leftAt: null }, select: { userId: true } });
+  const openIds = new Set(open.map((r) => r.userId));
+  const data = userIds.filter((userId) => !openIds.has(userId)).map((userId) => ({ groupId, userId, joinedAt: at }));
+  if (data.length > 0) await tx.dMGroupMembership.createMany({ data });
+}
+
+/** 열린 가입 구간을 닫는다 */
+async function closeMembership(tx: Prisma.TransactionClient, groupId: number, userId: number, at: Date): Promise<void> {
+  await tx.dMGroupMembership.updateMany({ where: { groupId, userId, leftAt: null }, data: { leftAt: at } });
+}
+
+/**
+ * 이력 행들로 "그 사람들이 볼 수 있었던 그룹 DM" 조건을 만든다(eDiscovery 범위와 법적 보존 제외에 같이 쓴다).
+ * 새 구성원도 가입 전 기록을 볼 수 있으므로, 한 번이라도 구성원이었던 그룹에서 마지막 구간이 끝나기 전(leftAt 미만)에
+ * 쓴 메시지 전체가 범위다. 나갔다가 다시 들어온 사이의 메시지도 재가입 뒤 볼 수 있었으므로 들어간다.
+ * 그룹마다 하나로 합친다: 열린 구간(지금 구성원)이 있으면 그룹 전체, 아니면 가장 늦은 leftAt 미만.
+ */
+export function groupVisibilityWhere(spans: { groupId: number; leftAt: Date | null }[]): Prisma.DirectMessageWhereInput[] {
+  const until = new Map<number, Date | null>();
+  for (const s of spans) {
+    const prev = until.get(s.groupId);
+    if (prev === null) continue;
+    until.set(s.groupId, s.leftAt === null || prev === undefined ? s.leftAt : (s.leftAt > prev ? s.leftAt : prev));
+  }
+  return [...until].map(([groupId, end]) => ({ groupId, ...(end ? { createdAt: { lt: end } } : {}) }));
 }
 
 /** 멤버 변경을 직렬화한다: 그룹 행을 잠근 뒤 멤버를 다시 읽는다(동시 추가로 9명 상한을 넘지 않게). */
@@ -176,7 +212,7 @@ async function refreshMemberKey(tx: Prisma.TransactionClient, groupId: number): 
 export type MemberChangeResult = { ok: true; addedIds: number[] } | { ok: false; status: number; error: string };
 
 /**
- * 멤버 추가. 정책: 기존 기록은 새 멤버에게도 보인다. 새 멤버의 읽음 커서는 지금 마지막 메시지로 둬서
+ * 멤버 추가(나갔던 사람의 재가입 포함, 이력에 새 구간이 생긴다). 정책: 기존 기록은 새 멤버에게도 보인다. 새 멤버의 읽음 커서는 지금 마지막 메시지로 둬서
  * 이전 기록 전체가 안 읽음으로 쌓이지 않게 한다. 이미 멤버인 사람은 건너뛴다.
  * 그룹 행을 잠근 트랜잭션 안에서 멤버 수·사용자·게스트 격리를 검사하고 추가와 memberKey 갱신까지 끝낸다.
  */
@@ -197,10 +233,12 @@ export async function addGroupMembers(groupId: number, actorId: number, userIds:
       orderBy: { id: 'desc' },
       select: { id: true },
     });
+    const now = new Date();
     await tx.dMGroupMember.createMany({
-      data: newIds.map((userId) => ({ groupId, userId, lastReadDmId: last?.id ?? null })),
+      data: newIds.map((userId) => ({ groupId, userId, lastReadDmId: last?.id ?? null, joinedAt: now })),
       skipDuplicates: true,
     });
+    await openMemberships(tx, groupId, newIds, now);
     await refreshMemberKey(tx, groupId);
     return { ok: true, addedIds: newIds };
   });
@@ -214,12 +252,14 @@ export async function addGroupMembers(groupId: number, actorId: number, userIds:
 /**
  * 나가기. 정책: 남은 사람이 2명 이하여도 그룹은 지우지 않는다(기록 보존, 남은 사람은 계속 볼 수 있다).
  * 나간 사람은 더 이상 조회·전송할 수 없고, 그 그룹의 내 활동은 visibleActivityWhere에서 빠진다.
+ * 구성원 이력의 구간은 닫아 둔다(eDiscovery·법적 보존이 구성원이었던 기간의 메시지를 계속 잡도록).
  */
 export async function leaveGroup(groupId: number, userId: number): Promise<void> {
   const before = await prisma.$transaction(async (tx) => {
     await lockGroup(tx, groupId);
     const rows = await tx.dMGroupMember.findMany({ where: { groupId }, select: { userId: true } });
-    await tx.dMGroupMember.deleteMany({ where: { groupId, userId } });
+    const { count } = await tx.dMGroupMember.deleteMany({ where: { groupId, userId } });
+    if (count > 0) await closeMembership(tx, groupId, userId, new Date());
     await refreshMemberKey(tx, groupId);
     return rows.map((r) => r.userId);
   });

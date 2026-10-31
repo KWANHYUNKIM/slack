@@ -14,6 +14,7 @@ describe('eDiscovery', () => {
   let aliceToken: string;
   let aliceId: number;
   let bobId: number;
+  let bobToken: string;
   let holdId: number;
 
   async function reset() {
@@ -67,7 +68,9 @@ describe('eDiscovery', () => {
     const a = await register('ed-alice@example.com', 'ED Alice');
     aliceId = a.id;
     aliceToken = a.token;
-    bobId = (await register('ed-bob@example.com', 'ED Bob')).id;
+    const b = await register('ed-bob@example.com', 'ED Bob');
+    bobId = b.id;
+    bobToken = b.token;
     holdId = (await request(app).post('/admin/legal-holds').set(auth(adminToken)).send({ name: 'Case', userIds: [aliceId] }).expect(201)).body.id;
     await prisma.auditLog.deleteMany();
   });
@@ -95,8 +98,8 @@ describe('eDiscovery', () => {
     // DM: alice가 보낸 것, 받은 것, 그룹 DM(alice가 구성원), 무관한 것
     const dmOut = await prisma.directMessage.create({ data: { content: 'hello bob contract', fromUserId: aliceId, toUserId: bobId } });
     const dmIn = await prisma.directMessage.create({ data: { content: 'reply to alice', fromUserId: bobId, toUserId: aliceId, deletedAt: new Date() } });
-    const group = await prisma.dMGroup.create({ data: { memberKey: `ed-${aliceId}-${bobId}-${memberId}`, createdBy: memberId } });
-    await prisma.dMGroupMember.createMany({ data: [aliceId, bobId, memberId].map((userId) => ({ groupId: group.id, userId })) });
+    // 그룹은 앱 API로 만든다(구성원 이력이 함께 생긴다)
+    const group = (await request(app).post('/dms/groups').set(auth(memberToken)).send({ userIds: [aliceId, bobId] }).expect(201)).body.group;
     const groupMsg = await prisma.directMessage.create({ data: { content: 'group note', fromUserId: memberId, groupId: group.id } });
     const unrelatedDm = await prisma.directMessage.create({ data: { content: 'contract unrelated', fromUserId: memberId, toUserId: bobId } });
 
@@ -188,6 +191,70 @@ describe('eDiscovery', () => {
     await request(app).post(`/admin/legal-holds/${holdId}/custodians`).set(auth(adminToken)).send({ userIds: [bobId] }).expect(200);
     const bob = await searchQ(`holdId=${holdId}&kind=dm`).expect(200);
     expect(bob.body.items.map((i: { id: number }) => i.id).sort()).toEqual([s.dmOut.id, s.dmIn.id, s.groupMsg.id, s.unrelatedDm.id].sort());
+  });
+
+  it('covers group DMs the custodian could see: up to their last leave, including history before joining and between rejoins', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 15)); // 메시지 시각과 가입·나가기 시각이 같은 ms에 겹치지 않게
+    const send = (token: string, groupId: number, content: string) =>
+      request(app).post(`/dms/groups/${groupId}/messages`).set(auth(token)).send({ content }).expect(201).then((r) => r.body.id as number);
+    const dmIdsOf = async () => (await searchQ(`holdId=${holdId}&kind=dm&counts=1`).expect(200)).body;
+
+    // Create: member가 alice·bob과 그룹을 만들고 메시지를 주고받는다
+    const groupId = (await request(app).post('/dms/groups').set(auth(memberToken)).send({ userIds: [aliceId, bobId] }).expect(201)).body.group.id as number;
+    const before = await send(memberToken, groupId, 'first period note');
+    const aliceSaid = await send(aliceToken, groupId, 'alice says bye');
+    // Update: 범위 안 메시지는 고쳐도 잡힌다
+    await request(app).patch(`/dms/messages/${before}`).set(auth(memberToken)).send({ content: 'first period note (edited)' }).expect(200);
+    await tick();
+
+    // alice가 나간다 → 지금은 나간 뒤 메시지가 빠진다
+    await request(app).delete(`/dms/groups/${groupId}/members/me`).set(auth(aliceToken)).expect(200);
+    await tick();
+    const away = await send(memberToken, groupId, 'said while alice was away');
+    await tick();
+    expect((await dmIdsOf()).items.map((i: { id: number }) => i.id)).toEqual([aliceSaid, before]);
+
+    // 다시 들어온다 → 재가입하면 나가 있던 사이의 기록도 볼 수 있으므로 잡힌다
+    await request(app).post(`/dms/groups/${groupId}/members`).set(auth(memberToken)).send({ userIds: [aliceId] }).expect(200);
+    await tick();
+    const after = await send(bobToken, groupId, 'welcome back');
+    // Delete: 소프트 삭제된 메시지도 표시와 함께 남는다
+    await request(app).delete(`/dms/messages/${after}`).set(auth(bobToken)).expect(200);
+
+    const spans = await prisma.dMGroupMembership.findMany({ where: { groupId, userId: aliceId }, orderBy: { id: 'asc' } });
+    expect(spans).toHaveLength(2);
+    expect(spans[0].leftAt).not.toBeNull();
+    expect(spans[1].leftAt).toBeNull();
+
+    // 나중에 추가된 그룹: 가입 전 기록은 잡히고, 마지막으로 나간 뒤의 메시지는 빠진다
+    const late = (await request(app).post('/dms/groups').set(auth(memberToken)).send({ userIds: [bobId, adminId] }).expect(201)).body.group.id as number;
+    const preJoin = await send(adminToken, late, 'before alice joined');
+    await tick();
+    await request(app).post(`/dms/groups/${late}/members`).set(auth(memberToken)).send({ userIds: [aliceId] }).expect(200);
+    await tick();
+    await request(app).delete(`/dms/groups/${late}/members/me`).set(auth(aliceToken)).expect(200);
+    await tick();
+    const postLeave = await send(adminToken, late, 'after alice left for good');
+
+    // 같은 필터를 이미 검색했으므로 건수는 counts=1로 다시 받는다
+    const r = await searchQ(`holdId=${holdId}&kind=dm&counts=1`).expect(200);
+    expect(r.body.items.map((i: { id: number }) => i.id)).toEqual([preJoin, after, away, aliceSaid, before]);
+    expect(r.body.counts.dm).toBe(5);
+    expect(r.body.items.find((i: { id: number }) => i.id === after)).toMatchObject({ deleted: true, group: { id: groupId } });
+    expect(r.body.items.find((i: { id: number }) => i.id === before)).toMatchObject({ content: 'first period note (edited)', editedAt: expect.any(String) });
+
+    const res = await exportFile({ holdId }, `holdId=${holdId}`);
+    const dmIds = lines(res.body as string).filter((x) => x.kind === 'dm').map((x) => x.id);
+    expect(dmIds).toEqual([before, aliceSaid, away, after, preJoin]);
+    expect(dmIds).not.toContain(postLeave);
+
+    // alice가 첫 그룹에서도 마지막으로 나가면 그 뒤 메시지는 빠지고, 그 전 것은 그대로다
+    await request(app).delete(`/dms/groups/${groupId}/members/me`).set(auth(aliceToken)).expect(200);
+    await tick();
+    const lastOut = await send(memberToken, groupId, 'after second leave');
+    const again = await dmIdsOf();
+    expect(again.counts.dm).toBe(5);
+    expect(again.items.map((i: { id: number }) => i.id)).not.toContain(lastOut);
   });
 
   it('exports JSONL with a meta line, records and a summary, and logs request and download with counts', async () => {
