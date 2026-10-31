@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
+import { attachableFiles, uniqueFileIds } from './fileAttach.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
 import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { logError } from '../utils/logger.js';
@@ -43,7 +44,7 @@ type Db = Prisma.TransactionClient | typeof prisma;
 
 const UNABLE_TO_ADD: UserCheck = { ok: false, status: 400, error: 'Unable to add users' };
 
-/** 첨부할 수 없는 fileIds(남의 파일, 없는 파일, 이미 붙은 파일). 라우트와 소켓이 400으로 바꾼다. */
+/** 첨부할 수 없는 fileIds(남의 파일, 없는 파일, 이미 붙은 파일, 삭제된 메시지에서 분리된 파일). 라우트와 소켓이 400으로 바꾼다. */
 export class InvalidFileIdsError extends Error {
   readonly code = 'INVALID_FILE_IDS';
   constructor() {
@@ -249,10 +250,10 @@ export async function sendGroupMessage(input: GroupMessageInput) {
 
     if (fileIds && fileIds.length > 0) {
       const updated = await tx.file.updateMany({
-        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+      if (updated.count !== uniqueFileIds(fileIds).length) throw new InvalidFileIdsError();
     }
 
     if (!threadId) {

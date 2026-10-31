@@ -1,5 +1,6 @@
 import type { DirectMessage } from '@prisma/client';
 import prisma from '../db.js';
+import { attachableFiles, uniqueFileIds } from './fileAttach.js';
 import { DM_INCLUDE_USERS } from '../db/selects.js';
 import { checkDmGroupMembership } from '../middleware/authorize.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
@@ -78,10 +79,10 @@ export async function sendDirectMessage(sender: DmSender, toUserId: number, inpu
 
     if (fileIds && fileIds.length > 0) {
       const updated = await tx.file.updateMany({
-        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+      if (updated.count !== uniqueFileIds(fileIds).length) throw new InvalidFileIdsError();
     }
 
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
@@ -135,10 +136,10 @@ export async function sendDirectReply(sender: DmSender, parentDm: DirectMessage,
 
     if (fileIds && fileIds.length > 0) {
       const updated = await tx.file.updateMany({
-        where: { id: { in: fileIds }, userId: fromUserId, messageId: null, dmId: null },
+        where: attachableFiles(fromUserId, fileIds),
         data: { dmId: created.id },
       });
-      if (updated.count !== fileIds.length) throw new InvalidFileIdsError();
+      if (updated.count !== uniqueFileIds(fileIds).length) throw new InvalidFileIdsError();
     }
 
     return tx.directMessage.findUniqueOrThrow({ where: { id: created.id }, include: DM_INCLUDE_USERS });
@@ -204,7 +205,11 @@ export async function editDirectMessage(userId: number, dm: DirectMessage, conte
 /** 내 DM(1:1 또는 그룹) 삭제(소프트). 참여자 전원(보낸 사람의 다른 탭 포함)에게 dm:deleted를 보낸다. */
 export async function deleteDirectMessage(userId: number, dm: DirectMessage): Promise<void> {
   await assertCanModifyDm(userId, dm);
-  await prisma.directMessage.update({ where: { id: dm.id }, data: { deletedAt: new Date() } });
+  // 소프트 삭제하고 첨부를 떼어 낸다(채널 메시지와 같다). 원래 DM id는 detachedFromDmId에 남겨 eDiscovery가 찾게 한다
+  await prisma.$transaction([
+    prisma.directMessage.update({ where: { id: dm.id }, data: { deletedAt: new Date() } }),
+    prisma.file.updateMany({ where: { dmId: dm.id }, data: { dmId: null, detachedFromDmId: dm.id } }),
+  ]);
   void deleteActivitiesForDm(dm.id);
 
   // 그룹과 1:1 모두 같은 모양({ dmId, fromUserId, toUserId, groupId, threadId }). 보낸 사람 본인의 user 룸에도 보낸다.

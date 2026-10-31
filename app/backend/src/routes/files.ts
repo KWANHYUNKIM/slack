@@ -510,6 +510,12 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
       return;
     }
 
+    // 삭제된 메시지·DM에서 분리된 파일은 업로더도 지울 수 없다(eDiscovery·보존 정리 대상이라 정리는 보존 정책만 한다)
+    if (file.detachedFromMessageId !== null || file.detachedFromDmId !== null) {
+      res.status(400).json({ error: 'Cannot delete a file that belonged to a deleted message', code: ERR.FILE_ATTACHED_TO_DELETED });
+      return;
+    }
+
     // Prevent deletion of files attached to messages or DMs
     if (file.messageId || file.dmId) {
       res.status(400).json({ error: 'Cannot delete a file that is attached to a message' });
@@ -553,6 +559,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const files = await prisma.file.findMany({
       where: {
         userId,
+        // 삭제된 메시지·DM에서 분리된 파일은 목록에서 뺀다
+        detachedFromMessageId: null,
+        detachedFromDmId: null,
         OR: [
           { messageId: null },
           { message: { deletedAt: null } },

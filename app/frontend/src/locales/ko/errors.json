@@ -48,6 +48,7 @@
     "INVALID_LOCALE": "올바르지 않은 언어 설정입니다.",
     "INVALID_TIME_ZONE": "올바르지 않은 시간대입니다.",
     "INVALID_FILE_IDS": "첨부한 파일 중 올바르지 않은 것이 있습니다.",
+    "FILE_ATTACHED_TO_DELETED": "삭제된 메시지에 속한 파일이라 삭제할 수 없습니다.",
     "TOKEN_LIMIT_REACHED": "액세스 토큰 한도에 도달했습니다. 하나를 먼저 삭제해 주세요.",
     "PAYLOAD_TOO_LARGE": "요청 내용이 너무 큽니다.",
     "UNSUPPORTED_MEDIA_TYPE": "지원하지 않는 콘텐츠 형식입니다.",

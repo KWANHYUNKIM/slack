@@ -358,24 +358,56 @@ async function blankDmParents(cutoff: Date, budget: Budget): Promise<PurgeCounts
   return counts;
 }
 
+type DetachedRow = FileRow & { detachedFromMessageId: number | null; detachedFromDmId: number | null };
+const ORPHAN_SELECT = { ...FILE_SELECT, detachedFromMessageId: true, detachedFromDmId: true } as const;
+
+/**
+ * 분리된 파일 중 원래 메시지·DM이 지금도 법적 보존에 걸려 있는 것을 뺀다. 원래 행이 이미 없으면(정리됨) 걸리지 않는다.
+ * DM은 stillPurgeableDms(DM 보존 조건 한 곳)로, 채널 메시지는 MESSAGE_NOT_HELD로 판단한다.
+ */
+async function dropHeldDetached<T extends { detachedFromMessageId: number | null; detachedFromDmId: number | null }>(files: T[]): Promise<T[]> {
+  const dmIds = [...new Set(files.flatMap((f) => (f.detachedFromDmId !== null ? [f.detachedFromDmId] : [])))];
+  const msgIds = [...new Set(files.flatMap((f) => (f.detachedFromMessageId !== null ? [f.detachedFromMessageId] : [])))];
+  const heldDms = new Set<number>();
+  if (dmIds.length > 0) {
+    const free = new Set(await stillPurgeableDms(dmIds));
+    const existing = await prisma.directMessage.findMany({ where: { id: { in: dmIds } }, select: { id: true } });
+    for (const d of existing) if (!free.has(d.id)) heldDms.add(d.id);
+  }
+  const heldMsgs = new Set<number>();
+  if (msgIds.length > 0) {
+    const free = new Set((await prisma.message.findMany({ where: { id: { in: msgIds }, ...MESSAGE_NOT_HELD }, select: { id: true } })).map((m) => m.id));
+    const existing = await prisma.message.findMany({ where: { id: { in: msgIds } }, select: { id: true } });
+    for (const m of existing) if (!free.has(m.id)) heldMsgs.add(m.id);
+  }
+  return files.filter((f) => !(f.detachedFromDmId !== null && heldDms.has(f.detachedFromDmId)) && !(f.detachedFromMessageId !== null && heldMsgs.has(f.detachedFromMessageId)));
+}
+
 /**
  * 이미 소프트 삭제되어 메시지에서 분리된 파일(messageId·dmId 모두 null)을 정리한다. 워크스페이스 기본 기간을 기준으로 한다.
+ * 업로더가 보존 대상이거나, 분리 전 원래 메시지·DM이 보존 대상(채널·보낸/받은 사람·그룹 구성원)이면 남긴다.
  * 업로드만 하고 아직 보내지 않은 파일도 이 조건에 닿지만, 기간 하한이 1일이라 보내는 중인 파일을 지우지는 않는다.
  */
 async function purgeOrphanFiles(cutoff: Date, budget: Budget): Promise<PurgeCounts> {
   const counts = emptyCounts();
-  const where: Prisma.FileWhereInput = { messageId: null, dmId: null, createdAt: { lt: cutoff }, user: NOT_HELD_USER };
+  const base: Prisma.FileWhereInput = { messageId: null, dmId: null, createdAt: { lt: cutoff }, user: NOT_HELD_USER };
+  // 남겨 둔(보존) 파일이 앞을 막지 않도록 id 커서로 넘어간다
+  let lastId = 0;
   for (;;) {
+    const where: Prisma.FileWhereInput = { ...base, id: { gt: lastId } };
     const take = Math.min(PURGE_BATCH, budget.left);
     if (take <= 0) {
       counts.partial = (await prisma.file.findFirst({ where, select: { id: true } })) !== null;
       break;
     }
-    const files = await prisma.file.findMany({ where, select: FILE_SELECT, orderBy: { id: 'asc' }, take });
-    if (files.length === 0) break;
-    budget.left -= files.length;
+    const rows: DetachedRow[] = await prisma.file.findMany({ where, select: ORPHAN_SELECT, orderBy: { id: 'asc' }, take });
+    if (rows.length === 0) break;
+    lastId = rows[rows.length - 1].id;
+    budget.left -= rows.length;
+    const files = await dropHeldDetached(rows);
+    if (files.length === 0) continue;
     const { removed } = await removeStoredFiles(files);
-    if (removed.length === 0) break;
+    if (removed.length === 0) continue;
     const { count } = await prisma.file.deleteMany({ where: { id: { in: removed.map((f) => f.id) }, messageId: null, dmId: null, user: NOT_HELD_USER } });
     counts.files += count;
   }
