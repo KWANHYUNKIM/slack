@@ -69,3 +69,10 @@ frontend: Layout/AppLayout.tsx, Sidebar/Sidebar.tsx·SidebarItem.tsx·UnreadBadg
 
 ## 8. 충돌 주의
 schema.prisma는 01(Activity), 05(User 필드)와 직렬 처리. routes/threads.ts·websocket/index.ts는 01(THREAD_REPLY 활동)과 겹치므로 01 병합 후 진행 권장. Sidebar는 01, 02, 03과 겹침. 답글 푸시 로직은 05의 `shouldNotify`를 거치게 됨.
+
+## 7. 보완 (00b 갭 분석 v2, planner-1)
+브라우저 도구가 없어 새 관찰은 하지 못했다(문서 기반). 기존 관찰과 현재 코드를 대조해 추가한 점.
+- 현재 main에는 `alsoSendToChannel`, `ThreadRead`, 부모 삭제 자리표시자가 모두 없다(schema.prisma, routes/threads.ts 확인). 삭제 시 부모 `deletedAt` 자리표시자 + 답글 유지는 이 파트의 완료 기준에 반드시 포함한다(현재 `GET /channels/:id/messages`는 `deletedAt:null`만 반환하므로 답글이 남은 삭제 부모가 타임라인에서 통째로 사라진다).
+- 07(퍼말링크)이 스레드 답글 링크를 `/c/:id/m/:parentId?reply=:replyId`로 정의한다. 이 파트의 스레드 패널은 `reply` 쿼리로 답글을 강조할 수 있어야 한다(같은 라우트 사용, 07과 중복 구현 금지).
+- 10(안 읽음 구분선)과 MessageList.tsx를 함께 건드린다. 채널 본문의 `alsoSendToChannel` 항목은 안 읽음 수에 포함, 스레드 안 일반 답글은 제외(기존 unreads-threads 테스트 규칙 유지).
+- 02에서 DMGroup이 생겼으므로 그룹 DM 스레드도 목록에 노출할지 결정이 필요하다: 이번 범위는 채널 스레드만, 그룹 DM·DM 스레드는 후속으로 명시.
