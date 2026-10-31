@@ -1,0 +1,74 @@
+# electron-builder 설정 (docs/architecture/enterprise-and-distribution.md 2절)
+# 설치 파일 안에 서버는 없다. 셸(main, preload, 서버 주소 입력 화면)만 묶는다.
+# 실제 빌드는 CI(release.yml, D2)에서 한다. 로컬 M2에서 Windows exe를 빌드하지 않는다.
+appId: com.slackclone.desktop
+productName: SlackClone
+copyright: Copyright (c) 2026 SlackClone contributors (MIT)
+
+directories:
+  output: release
+  # 저장소 .gitignore가 build/를 무시하므로 기본값(build) 대신 resources를 쓴다
+  buildResources: resources
+
+files:
+  - dist/**/*
+  - "!dist/**/*.test.js"
+  - package.json
+
+asar: true
+# 소스맵을 만들지 않으므로 넣을 것이 없다. 네이티브 모듈도 없다.
+npmRebuild: false
+
+# Electron Fuses: 패키징할 때 바이너리에 박는 보안 스위치 (Electron 보안 문서 권장값)
+electronFuses:
+  runAsNode: false # ELECTRON_RUN_AS_NODE로 앱을 일반 Node처럼 실행하지 못하게
+  enableCookieEncryption: true # 디스크의 쿠키를 OS 키로 암호화
+  enableNodeOptionsEnvironmentVariable: false # NODE_OPTIONS, NODE_EXTRA_CA_CERTS 무시
+  enableNodeCliInspectArguments: false # --inspect 디버거 연결 차단
+  enableEmbeddedAsarIntegrityValidation: true # app.asar 변조 검사 (macOS, Windows)
+  onlyLoadAppFromAsar: true # app.asar 밖의 코드를 읽지 않음
+  loadBrowserProcessSpecificV8Snapshot: false
+  grantFileProtocolExtraPrivileges: false # file:// 특권 없음 (입력 화면은 app:// 스킴을 쓴다)
+
+mac:
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  category: public.app-category.business
+  icon: resources/icon.png
+  hardenedRuntime: true
+  # 서명 인증서가 없으면 서명 없이 만든다(Gatekeeper 경고는 릴리스 노트에 안내)
+  notarize: false
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  icon: resources/icon.png
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  category: Network
+  icon: resources/icon.png
+
+appImage:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+# 자동 업데이트 피드(GitHub Releases, latest.yml)는 D2에서 설정한다. 지금은 아무 데도 올리지 않는다.
+publish: null
