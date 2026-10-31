@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import sharp from 'sharp';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { guestVisibleUserIds } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
@@ -460,22 +461,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
 
     // Guests can only see users who share a channel with them
-    let visibleUserIds: number[] | undefined;
-    if (req.user!.role === 'GUEST') {
-      const guestChannels = await prisma.channelMember.findMany({
-        where: { userId: req.user!.userId },
-        select: { channelId: true },
-      });
-      const channelIds = guestChannels.map(c => c.channelId);
-      const sharedMembers = channelIds.length > 0
-        ? await prisma.channelMember.findMany({
-            where: { channelId: { in: channelIds } },
-            select: { userId: true },
-            distinct: ['userId'],
-          })
-        : [];
-      visibleUserIds = sharedMembers.map(m => m.userId);
-    }
+    const visibleUserIds = await guestVisibleUserIds(req.user!.userId, req.user!.role);
 
     const where = {
       deactivatedAt: null,

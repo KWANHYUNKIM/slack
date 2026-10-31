@@ -2,8 +2,9 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '../db.js';
+import { channelTimelineWhere } from '../db/timeline.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { requireChannelMembership, requirePublicChannelReadAccess } from '../middleware/authorize.js';
+import { requireChannelMembership, requirePublicChannelReadAccess, listableChannelsWhere } from '../middleware/authorize.js';
 import { AuthRequest } from '../types.js';
 import { isUserOnline, getIO } from '../websocket/index.js';
 import { USER_SELECT_BASIC, USER_SELECT_FULL, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
@@ -89,18 +90,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const isGuest = req.user!.role === 'GUEST';
 
     const channels = await prisma.channel.findMany({
-      where: isGuest
-        ? { members: { some: { userId } }, archivedAt: null }
-        : {
-            archivedAt: null,
-            OR: [
-              { isPrivate: false },
-              { members: { some: { userId } } },
-            ],
-          },
+      where: listableChannelsWhere(userId, req.user!.role),
       include: {
         _count: {
           select: { members: true, messages: true },
@@ -876,7 +868,7 @@ router.post('/:id/read/baseline', authMiddleware, requireChannelMembership, asyn
 
     // No record yet — find the latest message to use as the baseline
     const latestMessage = await prisma.message.findFirst({
-      where: { channelId, OR: [{ threadId: null }, { alsoSendToChannel: true }], deletedAt: null },
+      where: channelTimelineWhere(channelId, { liveOnly: true }),
       orderBy: { id: 'desc' },
       select: { id: true },
     });
@@ -928,12 +920,7 @@ router.post('/:id/unread', authMiddleware, requireChannelMembership, async (req:
 
     // Find the message just before this one in the channel
     const previousMessage = await prisma.message.findFirst({
-      where: {
-        channelId,
-        OR: [{ threadId: null }, { alsoSendToChannel: true }],
-        deletedAt: null,
-        id: { lt: messageId },
-      },
+      where: { ...channelTimelineWhere(channelId, { liveOnly: true }), id: { lt: messageId } },
       orderBy: { id: 'desc' },
       select: { id: true },
     });

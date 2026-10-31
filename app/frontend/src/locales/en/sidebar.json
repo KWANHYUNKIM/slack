@@ -28,7 +28,8 @@
       "h2": "2 hours",
       "tomorrow": "Until tomorrow"
     },
-    "pauseError": "Could not change notification pause. Please try again."
+    "pauseError": "Could not change notification pause. Please try again.",
+    "accessTokens": "Personal access tokens"
   },
   "sections": {
     "starred": "Starred",

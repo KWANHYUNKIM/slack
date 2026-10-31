@@ -29,9 +29,13 @@ import pushRoutes from './routes/push.js';
 import activityRoutes from './routes/activity.js';
 import huddleRoutes from './routes/huddles.js';
 import reminderRoutes from './routes/reminders.js';
+import tokenRoutes from './routes/tokens.js';
+import mcpRoutes from './routes/mcp.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitKey } from './middleware/rateLimitKey.js';
+import { accessTokenAuth } from './middleware/accessTokenAuth.js';
+import { createMcpAuthFailureLimiter, createMcpTokenLimiter } from './mcp/rateLimit.js';
 import { JWT_SECRET } from './config.js';
 
 const app = express();
@@ -82,12 +86,17 @@ const apiLimiter = isTest
       keyGenerator: rateLimitKey,
     });
 
+// /mcp: 인증 실패는 IP 단위, 성공한 요청은 토큰 단위로 따로 센다
+const mcpAuthFailureLimiter = isTest ? (_req: any, _res: any, next: any) => next() : createMcpAuthFailureLimiter();
+const mcpTokenLimiter = isTest ? (_req: any, _res: any, next: any) => next() : createMcpTokenLimiter();
+
 // Cache-Control: no-store for all API responses
 app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/channels') || req.path.startsWith('/messages') ||
       req.path.startsWith('/files') || req.path.startsWith('/users') || req.path.startsWith('/dms') ||
       req.path.startsWith('/search') || req.path.startsWith('/bookmarks') || req.path.startsWith('/admin') ||
-      req.path.startsWith('/push') || req.path.startsWith('/threads')) {
+      req.path.startsWith('/push') || req.path.startsWith('/threads') || req.path.startsWith('/tokens') ||
+      req.path.startsWith('/mcp')) {
     res.setHeader('Cache-Control', 'no-store');
   }
   next();
@@ -139,6 +148,9 @@ app.use('/push', apiLimiter, pushRoutes);
 app.use('/activity', apiLimiter, activityRoutes);
 app.use('/huddles', apiLimiter, huddleRoutes);
 app.use('/reminders', apiLimiter, reminderRoutes);
+app.use('/tokens', apiLimiter, tokenRoutes);
+// MCP는 개인 액세스 토큰으로만 인증한다(로그인 JWT는 accessTokenAuth가 거부)
+app.use('/mcp', mcpAuthFailureLimiter, accessTokenAuth, mcpTokenLimiter, mcpRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

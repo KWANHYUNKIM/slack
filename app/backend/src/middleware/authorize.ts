@@ -366,6 +366,43 @@ async function messageReadAccess(
   next();
 }
 
+/**
+ * 채널 목록에 보이는 채널: 보관되지 않은 채널 중 공개 채널과 내가 속한 채널. 게스트는 속한 채널만.
+ * GET /channels와 MCP list_channels가 같이 쓴다.
+ */
+export function listableChannelsWhere(userId: number, role: string | undefined) {
+  return role === 'GUEST'
+    ? { members: { some: { userId } }, archivedAt: null }
+    : {
+        archivedAt: null,
+        OR: [
+          { isPrivate: false },
+          { members: { some: { userId } } },
+        ],
+      };
+}
+
+/**
+ * 게스트가 볼 수 있는 사용자 id(같은 채널에 있는 사람). 게스트가 아니면 undefined(제한 없음).
+ * GET /users와 MCP list_users가 같이 쓴다.
+ */
+export async function guestVisibleUserIds(userId: number, role: string | undefined): Promise<number[] | undefined> {
+  if (role !== 'GUEST') return undefined;
+  const guestChannels = await prisma.channelMember.findMany({
+    where: { userId },
+    select: { channelId: true },
+  });
+  const channelIds = guestChannels.map(c => c.channelId);
+  const sharedMembers = channelIds.length > 0
+    ? await prisma.channelMember.findMany({
+        where: { channelId: { in: channelIds } },
+        select: { userId: true },
+        distinct: ['userId'],
+      })
+    : [];
+  return sharedMembers.map(m => m.userId);
+}
+
 // ── WebSocket Helper ────────────────────────────────────────────────
 
 export async function checkDmGroupMembership(
