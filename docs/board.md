@@ -5,8 +5,8 @@
 | 00-gap-analysis (Slack ↔ slawk 기능 비교와 파트 분할) | planner-1 | sonnet | 완료 | 60분 | 2026-10-31 08:55 | 2026-10-31 08:58 | 루프 1, 실제 약 3분. 결과: specs/00~03 |
 | 01a-mentions-activity (백엔드) | dev-1 | sonnet | 완료(PR #8 머지) | 1.5h | 2026-10-31 10:05 | 2026-10-31 10:11 | P0, 스키마 변경. PR #5 위에 쌓음 |
 | 01b-mentions-activity (프런트) | dev-5 | sonnet | 완료(PR #9 머지) | 1.5h | 2026-10-31 10:30 | 2026-10-31 10:35 | | 활동 탭, 배지, @channel |
-| 03-channel-meta-star | dev-3 | sonnet | 진행 | 1.5h | 2026-10-31 19:50 | | P0, 스키마 변경 |
-| 02-group-dm | - | opus | 대기 | 2h | | | P0, 스키마 변경, 01 병합 후 단독 |
+| 03-channel-meta-star | dev-3 | sonnet | 완료(PR #21 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:23 | P0, 스키마 변경 |
+| 02-group-dm | dev-4 | opus | 진행 | 2h | 2026-10-31 20:25 | | P0, 스키마 변경, 01 병합 후 단독 |
 | 04-threads-view, 05-user-status-dnd 스펙 | planner-2 | sonnet | 완료 | 40분 | 2026-10-31 09:36 | 2026-10-31 09:38 | 루프 3, Slack 테스트 채널 CRUD 실습 포함 |
 | REA run1: Slack 데스크톱 앱 분석과 REA 평가 | planner-1 | opus | 완료 | 45분 | 2026-10-31 09:13 | 2026-10-31 09:35 | 루프 2 |
 | 규칙 문서(git, FE, BE, 보안, 기술 스택, 엔터프라이즈·배포) | 총괄 | - | 완료 | 30분 | 2026-10-31 09:15 | 2026-10-31 09:35 | |
@@ -53,5 +53,5 @@
 | feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | - | haiku | 대기 | 20분 | | | PR #10 남은 이슈 |
 | fix/auth-error-logging: auth 미들웨어 catch가 DB 오류까지 401로 삼켜 진단이 어려움 → logError, 인증 실패와 서버 오류 구분 | - | haiku | 대기 | 30분 | | | PR #15 남은 이슈 |
 | fix/admin-store-rethrow: useAdminStore.editChannel이 실패를 삼켜 컴포넌트가 이름 비교로 추정 → 다시 던지기 | - | haiku | 대기 | 20분 | | | PR #14 남은 이슈 |
-| feat/channel-name-taken-code: 중복 채널 이름 오류에 code(CHANNEL_NAME_TAKEN)와 errors 번역(POST /channels·관리자 변경) | - | haiku | 대기 | 30분 | | | PR #14 남은 이슈 |
+| feat/channel-name-taken-code: 중복 채널 이름 오류에 code(CHANNEL_NAME_TAKEN)와 errors 번역(POST /channels·관리자 변경) | dev-3 | sonnet | 완료(PR #21에 포함) | 30분 | | | PR #14 남은 이슈 |
 | feat/channel-name-skeleton: UTS #39 skeleton 컬럼으로 단일 체계 동형 이름(рау/pay, ɡ/g) 유니크 검사 | - | opus | 대기(스키마) | 2h | | | PR #14 남은 이슈 |

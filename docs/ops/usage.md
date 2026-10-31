@@ -44,3 +44,6 @@
 | 2026-10-31 19:52 | dev-2 | sonnet | chore/self-contained-assets | 72,615 |
 | 2026-10-31 19:58 | code-review | (리뷰) | PR #19 medium | 63,668 |
 | 2026-10-31 20:08 | dev-2 | sonnet | PR #19 리뷰 반영 | 53,575 |
+| 2026-10-31 20:10 | dev-3 | sonnet | 03-channel-meta-star | 186,116 |
+| 2026-10-31 20:15 | code-review | (리뷰) | PR #21 medium | 89,101 |
+| 2026-10-31 20:22 | dev-3 | sonnet | PR #21 리뷰 반영 | 44,981 |
