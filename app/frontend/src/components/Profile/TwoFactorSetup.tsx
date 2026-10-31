@@ -6,6 +6,7 @@ import { apiErrorMessage } from '@/lib/apiErrors';
 import { useToastStore } from '@/stores/useToastStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { RecoveryCodesPanel } from './RecoveryCodesPanel';
+import { QrCode } from './QrCode';
 
 interface TwoFactorSetupProps {
   /** 복구 코드를 저장했다고 확인한 뒤 부른다 */
@@ -14,7 +15,7 @@ interface TwoFactorSetupProps {
 }
 
 // 2FA 등록(E7b): 비밀 만들기 → 인증 앱에 추가(링크 또는 키) → 코드 확인 → 복구 코드 한 번 보여 주기.
-// QR 그림은 그리지 않는다. 외부 QR 서비스는 쓰지 않고(규칙 17), QR 라이브러리도 아직 없어서 링크와 키만 보여 준다.
+// QR은 lib/qr의 자체 인코더로 SVG를 그린다(외부 QR 서비스 금지, 규칙 17). 스캔이 어려우면 링크나 키를 쓴다.
 export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
   const { t } = useTranslation('settings');
   const showToast = useToastStore((s) => s.show);
@@ -98,6 +99,10 @@ export function TwoFactorSetup({ onFinished, onCancel }: TwoFactorSetupProps) {
         <form onSubmit={handleVerify} className="space-y-3">
           <p className="text-[13px] text-slack-primary">{t('twoFactor.setup.step1')}</p>
           <div className="rounded-md border border-slack-border p-3">
+            <div className="mb-3">
+              <QrCode value={setup.otpauthUri} />
+              <p className="mt-1 text-[12px] text-slack-secondary">{t('twoFactor.setup.qrHint')}</p>
+            </div>
             <p className="mb-1 text-[12px] text-slack-secondary">{t('twoFactor.setup.keyLabel')}</p>
             <div className="flex items-center gap-2">
               <code data-testid="mfa-setup-key" dir="ltr" className="min-w-0 flex-1 break-all font-mono text-[14px] tracking-wider">{groupedKey}</code>

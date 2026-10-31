@@ -163,6 +163,8 @@
       "step1": "1. Add this account to your authenticator app. Open the link on your phone, or enter the setup key by hand.",
       "uriLabel": "Setup link",
       "openInApp": "Open in authenticator app",
+      "qrLabel": "QR code for the authenticator app",
+      "qrHint": "Scan this QR code with your authenticator app, or use the link or key below.",
       "keyLabel": "Setup key",
       "copyKey": "Copy setup key",
       "copyUri": "Copy setup link",
