@@ -556,7 +556,7 @@ router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: A
       where: { id: dm.id },
       data: { deletedAt: new Date() },
     });
-    await deleteActivitiesForDm(dm.id);
+    void deleteActivitiesForDm(dm.id);
 
     // Broadcast to the other user so the deletion appears in real-time
     // (the sender's UI is already updated from the REST response)
@@ -607,7 +607,7 @@ router.post('/messages/:id/reactions', authMiddleware, requireDmAccess, async (r
     });
 
     const dm = req.dm;
-    await createReactionActivity({
+    void createReactionActivity({
       actorId: userId,
       targetUserId: dm.fromUserId,
       emoji,
@@ -657,7 +657,7 @@ router.delete('/messages/:id/reactions/:emoji', authMiddleware, requireDmAccess,
     }
 
     await prisma.dMReaction.delete({ where: { id: reaction.id } });
-    await removeReactionActivity({ actorId: userId, emoji: rawEmoji, dmId });
+    void removeReactionActivity({ actorId: userId, emoji: rawEmoji, dmId });
 
     const dm = req.dm;
     const io = getIO();

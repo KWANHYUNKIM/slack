@@ -18,6 +18,7 @@ import { USER_SELECT_BASIC, MESSAGE_INCLUDE_WITH_FILES, MESSAGE_INCLUDE_FULL, DM
 import { logError } from '../utils/logger.js';
 import { registerHuddleHandlers, handleHuddleDisconnect } from './huddles.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { KeyedQueue } from '../utils/keyedQueue.js';
 import {
   processNewChannelMessage,
   syncActivitiesOnEdit,
@@ -38,6 +39,10 @@ interface FocusedView {
   id: number; // channelId or otherUserId
 }
 const userFocusedView = new Map<number, FocusedView | null>();
+
+// 사용자별 status 쓰기(연결 시 online, 끊길 때 offline, PUT /users/me/status)를 들어온 순서대로 실행한다.
+// 연결 핸들러는 기다리지 않으므로 순서가 뒤집히지 않게 하고, 테스트는 settleBackgroundWork로 기다린다.
+export const presenceQueue = new KeyedQueue<number>();
 
 export function isUserViewingChannel(userId: number, channelId: number): boolean {
   const view = userFocusedView.get(userId);
@@ -246,6 +251,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
     }
 
     // Track user presence
+    // 여기서 await하면 그동안 들어온 이벤트(연결 직후 보낸 message:send, 곧바로 끊긴 disconnect)는
+    // 아래 리스너가 아직 없어 버려진다. 리스너를 먼저 달고, 온라인 기록은 기다리지 않는다.
     if (socket.user) {
       const userId = socket.user.userId;
 
@@ -257,9 +264,10 @@ export function initializeWebSocket(httpServer: HttpServer) {
 
       // If this is the first connection, mark user online and broadcast
       if (onlineUsers.get(userId)!.size === 1) {
-        try {
-          await prisma.user.update({
-            where: { id: userId },
+        presenceQueue.fire(userId, async () => {
+          // 사용자가 고른 상태(away, busy)는 덮지 않는다. 끊길 때 남긴 offline(또는 빈 값)만 online으로 바꾼다.
+          await prisma.user.updateMany({
+            where: { id: userId, OR: [{ status: 'offline' }, { status: null }] },
             data: { status: 'online' },
           });
 
@@ -271,9 +279,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
               status: 'online',
             });
           }
-        } catch (err) {
-          logError('Failed to update user presence', err);
-        }
+        }, 'Failed to update user presence');
       }
     }
 
@@ -526,7 +532,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
           }),
         ]);
 
-        await deleteActivitiesForMessage(data.messageId);
+        void deleteActivitiesForMessage(data.messageId);
 
         io.to(`channel:${message.channelId}`).emit('message:deleted', {
           messageId: data.messageId,
@@ -804,7 +810,8 @@ export function initializeWebSocket(httpServer: HttpServer) {
             onlineUsers.delete(userId);
             userFocusedView.delete(userId);
 
-            try {
+            // 온라인 기록이 아직 진행 중이면 그 뒤에 쓴다(오프라인이 온라인에 덮이지 않게)
+            presenceQueue.fire(userId, async () => {
               await prisma.user.update({
                 where: { id: userId },
                 data: {
@@ -822,9 +829,7 @@ export function initializeWebSocket(httpServer: HttpServer) {
                   lastSeen: new Date(),
                 });
               }
-            } catch (err) {
-              logError('Failed to update user presence on disconnect', err);
-            }
+            }, 'Failed to update user presence on disconnect');
           }
         }
       }

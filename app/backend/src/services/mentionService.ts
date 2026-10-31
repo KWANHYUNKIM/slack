@@ -4,6 +4,7 @@ import { MAX_MESSAGE_LENGTH } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { getIO, isUserOnline } from '../websocket/index.js';
 import { sendPushToUser } from './pushService.js';
+import { KeyedQueue, settleBackgroundWork, trackBackground } from '../utils/keyedQueue.js';
 
 // 멘션 파싱, 활동(Activity) 생성·동기화·정리를 한 곳에 모은다.
 // HTTP 라우트와 WebSocket 핸들러가 모두 이 서비스를 불러야 두 경로의 동작이 같아진다.
@@ -40,16 +41,14 @@ export function parseMentions(content: string): ParsedMentions {
   };
 }
 
-// 응답 뒤에 await 없이 도는 작업을 추적한다. 테스트가 끝나길 기다릴 때(settleBackgroundWork)만 쓴다.
-const pending = new Set<Promise<unknown>>();
-function track<T>(p: Promise<T>): Promise<T> {
-  pending.add(p);
-  void p.finally(() => pending.delete(p));
-  return p;
-}
-export async function settleBackgroundWork(): Promise<void> {
-  while (pending.size > 0) await Promise.allSettled([...pending]);
-}
+// 같은 메시지(또는 DM)의 활동 작업은 들어온 순서대로 하나씩 돌린다. 생성 후처리가 끝나기 전에
+// 편집·삭제가 오면(소켓은 이벤트를 동시에 처리한다) 삭제 정리 뒤에 생성·편집 insert가 끝나
+// 지운 메시지의 활동이 남거나, 생성 때 멘션이 편집 결과를 덮어쓴다.
+// 작업은 호출 시점 스냅샷이 아니라 차례가 왔을 때 DB에서 다시 읽은 메시지로 동작한다.
+export const activityQueue = new KeyedQueue<string>();
+export const messageKey = (id: number) => `m:${id}`;
+export const dmKey = (id: number) => `d:${id}`;
+export { settleBackgroundWork };
 
 // ── 직렬화와 이벤트 ──────────────────────────────────────────────────
 
@@ -185,6 +184,19 @@ interface ChannelMessageLike {
 type SyncMode = 'create' | 'edit';
 
 /**
+ * 큐 차례가 왔을 때 메시지를 다시 읽는다. 호출 시점 스냅샷은 그사이 커밋된 다른 편집(HTTP·소켓)이나
+ * 삭제로 낡았을 수 있으므로 최신 내용으로 동기화한다. 지워졌으면 null.
+ */
+async function reloadChannelMessage(snapshot: ChannelMessageLike): Promise<ChannelMessageLike | null> {
+  const m = await prisma.message.findUnique({
+    where: { id: snapshot.id },
+    select: { id: true, content: true, userId: true, channelId: true, threadId: true, deletedAt: true },
+  });
+  if (!m || m.deletedAt) return null;
+  return { id: m.id, content: m.content, userId: m.userId, channelId: m.channelId, threadId: m.threadId, user: snapshot.user };
+}
+
+/**
  * 멘션 대상을 계산해 Activity를 맞춘다. 새 메시지와 편집이 같은 로직을 쓴다.
  * - 없어진 멘션은 지우고, 새로 생긴 멘션만 만든다.
  * - 직접 멘션과 @channel/@here 사이에서 종류만 바뀌면 행을 지우지 않고 type만 바꾼다(읽음 상태 보존, 재알림 없음).
@@ -314,8 +326,10 @@ async function notifyChannelActivities(
  * 채널 메시지 생성 후처리의 단일 진입점(HTTP, 소켓, 예약 발송, 웹훅이 모두 호출).
  * message:new 브로드캐스트와 HTTP/ack 응답 **뒤에** 부르고 await하지 않는다. 실패는 로그만 남긴다.
  */
-async function processNewChannelMessageImpl(msg: ChannelMessageLike, opts: { generalPush?: boolean } = {}): Promise<Activity[]> {
+async function processNewChannelMessageImpl(snapshot: ChannelMessageLike, opts: { generalPush?: boolean } = {}): Promise<Activity[]> {
   try {
+    const msg = await reloadChannelMessage(snapshot);
+    if (!msg) return [];
     const { created: mentions } = await syncChannelMentions(msg, 'create');
     const replies = await createThreadReplyActivities(msg, new Set(mentions.map((a) => a.userId)));
     const created = [...mentions, ...replies];
@@ -328,8 +342,10 @@ async function processNewChannelMessageImpl(msg: ChannelMessageLike, opts: { gen
 }
 
 /** 채널 메시지 편집 후 호출: 바뀐 멘션을 동기화한다(추가분만 알림). 응답 뒤에 await 없이 부른다. */
-async function syncActivitiesOnEditImpl(msg: ChannelMessageLike): Promise<Activity[]> {
+async function syncActivitiesOnEditImpl(snapshot: ChannelMessageLike): Promise<Activity[]> {
   try {
+    const msg = await reloadChannelMessage(snapshot);
+    if (!msg) return [];
     const { created, removedUserIds } = await syncChannelMentions(msg, 'edit');
     const all = [...created];
     if (msg.threadId) {
@@ -355,7 +371,7 @@ async function syncActivitiesOnEditImpl(msg: ChannelMessageLike): Promise<Activi
 }
 
 /** 메시지(채널 또는 스레드 답글)가 지워질 때 그 메시지와 연결된 Activity를 정리한다. */
-export async function deleteActivitiesForMessage(messageId: number): Promise<void> {
+async function deleteActivitiesForMessageImpl(messageId: number): Promise<void> {
   try {
     await removeRows(await prisma.activity.findMany({ where: { messageId }, select: { id: true, userId: true } }));
   } catch (err) {
@@ -392,6 +408,16 @@ async function syncDmActivities(dm: DmLike): Promise<Activity[]> {
   return insertActivities([{ userId: dm.toUserId, actorId: dm.fromUserId, type: wanted, dmId: dm.id }]);
 }
 
+/** reloadChannelMessage의 DM판. */
+async function reloadDm(snapshot: DmLike): Promise<DmLike | null> {
+  const d = await prisma.directMessage.findUnique({
+    where: { id: snapshot.id },
+    select: { id: true, content: true, fromUserId: true, toUserId: true, threadId: true, deletedAt: true },
+  });
+  if (!d || d.deletedAt) return null;
+  return { id: d.id, content: d.content, fromUserId: d.fromUserId, toUserId: d.toUserId, threadId: d.threadId, fromUser: snapshot.fromUser };
+}
+
 async function notifyDmActivities(dm: DmLike, created: Activity[]): Promise<void> {
   if (created.length === 0) return;
   const actor = dm.fromUser ?? (await prisma.user.findUnique({ where: { id: dm.fromUserId }, select: { id: true, name: true, avatar: true } }));
@@ -402,8 +428,10 @@ async function notifyDmActivities(dm: DmLike, created: Activity[]): Promise<void
 }
 
 /** DM 전송·답글 직후 호출. 응답 뒤에 await 없이 부른다. */
-async function createActivitiesForDmImpl(dm: DmLike): Promise<Activity[]> {
+async function createActivitiesForDmImpl(snapshot: DmLike): Promise<Activity[]> {
   try {
+    const dm = await reloadDm(snapshot);
+    if (!dm) return [];
     const created = await syncDmActivities(dm);
     await notifyDmActivities(dm, created);
     return created;
@@ -413,8 +441,7 @@ async function createActivitiesForDmImpl(dm: DmLike): Promise<Activity[]> {
   }
 }
 
-
-export async function deleteActivitiesForDm(dmId: number): Promise<void> {
+async function deleteActivitiesForDmImpl(dmId: number): Promise<void> {
   try {
     await removeRows(await prisma.activity.findMany({ where: { dmId }, select: { id: true, userId: true } }));
   } catch (err) {
@@ -438,8 +465,16 @@ interface ReactionTarget {
 async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity | null> {
   try {
     if (t.targetUserId === t.actorId) return null;
-    const author = await prisma.user.findUnique({ where: { id: t.targetUserId }, select: { deactivatedAt: true } });
-    if (!author || author.deactivatedAt) return null;
+    // 대상 삭제 여부와 작성자 상태를 한 번에 본다(삭제 정리가 먼저 끝났으면 만들지 않는다).
+    const author = { select: { deactivatedAt: true } };
+    const target = t.messageId
+      ? await prisma.message.findUnique({ where: { id: t.messageId }, select: { deletedAt: true, user: author } })
+      : t.dmId
+        ? await prisma.directMessage
+          .findUnique({ where: { id: t.dmId }, select: { deletedAt: true, fromUser: author } })
+          .then((d) => d && { deletedAt: d.deletedAt, user: d.fromUser })
+        : null;
+    if (!target || target.deletedAt || target.user.deactivatedAt) return null;
     if (t.channelId) {
       const member = await prisma.channelMember.findUnique({
         where: { userId_channelId: { userId: t.targetUserId, channelId: t.channelId } },
@@ -465,7 +500,7 @@ async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity |
 }
 
 /** 리액션을 지우면 그 리액션이 만든 활동도 지운다. */
-export async function removeReactionActivity(t: Pick<ReactionTarget, 'actorId' | 'emoji' | 'messageId' | 'dmId'>): Promise<void> {
+async function removeReactionActivityImpl(t: Pick<ReactionTarget, 'actorId' | 'emoji' | 'messageId' | 'dmId'>): Promise<void> {
   try {
     const rows = await prisma.activity.findMany({
       where: { type: 'REACTION', actorId: t.actorId, emoji: t.emoji, messageId: t.messageId ?? null, dmId: t.dmId ?? null },
@@ -552,9 +587,33 @@ export async function getMentionCountsByDmPartner(userId: number): Promise<Map<n
 
 // ── 공개 진입점(백그라운드 추적 포함) ────────────────────────────────
 
-export const processNewChannelMessage = (...a: Parameters<typeof processNewChannelMessageImpl>) => track(processNewChannelMessageImpl(...a));
-export const syncActivitiesOnEdit = (...a: Parameters<typeof syncActivitiesOnEditImpl>) => track(syncActivitiesOnEditImpl(...a));
-export const createActivitiesForDm = (...a: Parameters<typeof createActivitiesForDmImpl>) => track(createActivitiesForDmImpl(...a));
+// 같은 대상의 생성·편집·삭제·리액션은 activityQueue로 순서를 지킨다. 각 Impl은 오류를 스스로 잡아 로그만 남기므로
+// 돌려주는 promise는 reject하지 않는다. 호출자는 기다리지 않는다(삭제 응답이 앞선 @channel 생성 작업에 막히지 않게).
+
+/** 리액션은 달린 메시지(또는 DM)의 키로 직렬화한다. 둘 다 없으면 모든 리액션이 한 키에 묶이므로 실행하지 않는다. */
+function reactionKey(t: { messageId?: number; dmId?: number }): string | null {
+  if (t.messageId) return messageKey(t.messageId);
+  if (t.dmId) return dmKey(t.dmId);
+  logError('Reaction activity without messageId or dmId', new Error('missing reaction target'));
+  return null;
+}
+
+export const processNewChannelMessage = (...a: Parameters<typeof processNewChannelMessageImpl>) =>
+  activityQueue.run(messageKey(a[0].id), () => processNewChannelMessageImpl(...a));
+export const syncActivitiesOnEdit = (...a: Parameters<typeof syncActivitiesOnEditImpl>) =>
+  activityQueue.run(messageKey(a[0].id), () => syncActivitiesOnEditImpl(...a));
+export const deleteActivitiesForMessage = (messageId: number) =>
+  activityQueue.run(messageKey(messageId), () => deleteActivitiesForMessageImpl(messageId));
+export const createActivitiesForDm = (...a: Parameters<typeof createActivitiesForDmImpl>) =>
+  activityQueue.run(dmKey(a[0].id), () => createActivitiesForDmImpl(...a));
 export const syncActivitiesOnDmEdit = createActivitiesForDm;
-export const createReactionActivity = (...a: Parameters<typeof createReactionActivityImpl>) => track(createReactionActivityImpl(...a));
-export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => track(markThreadMentionsReadImpl(...a));
+export const deleteActivitiesForDm = (dmId: number) => activityQueue.run(dmKey(dmId), () => deleteActivitiesForDmImpl(dmId));
+export function createReactionActivity(...a: Parameters<typeof createReactionActivityImpl>): Promise<Activity | null> {
+  const key = reactionKey(a[0]);
+  return key ? activityQueue.run(key, () => createReactionActivityImpl(...a)) : Promise.resolve(null);
+}
+export function removeReactionActivity(...a: Parameters<typeof removeReactionActivityImpl>): Promise<void> {
+  const key = reactionKey(a[0]);
+  return key ? activityQueue.run(key, () => removeReactionActivityImpl(...a)) : Promise.resolve();
+}
+export const markThreadMentionsRead = (...a: Parameters<typeof markThreadMentionsReadImpl>) => trackBackground(markThreadMentionsReadImpl(...a));
