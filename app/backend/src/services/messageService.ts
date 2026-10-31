@@ -1,4 +1,4 @@
-import type { Message } from '@prisma/client';
+import { Prisma, type Message } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../db.js';
 import { USER_SELECT_BASIC, MESSAGE_INCLUDE_FULL } from '../db/selects.js';
@@ -50,8 +50,18 @@ export interface SendChannelMessageInput {
   fileIds?: number[];
 }
 
+export interface SendChannelMessageOptions {
+  /** message:new를 내보내는 방법을 바꾼다. 기본은 채널 방 전체(io.to). 소켓 경로는 보낸 사람에게 방 참여와 무관하게 먼저 보낸다. */
+  broadcast?: (message: object) => void;
+}
+
 /** 채널(또는 그 안의 스레드)에 메시지를 올린다. 채널 멤버 확인은 호출하는 쪽 몫. */
-export async function sendChannelMessage(userId: number, channelId: number, input: SendChannelMessageInput) {
+export async function sendChannelMessage(
+  userId: number,
+  channelId: number,
+  input: SendChannelMessageInput,
+  options: SendChannelMessageOptions = {},
+) {
   const { content, threadId, alsoSendToChannel, fileIds } = input;
   await assertChannelNotArchived(channelId);
 
@@ -87,7 +97,10 @@ export async function sendChannelMessage(userId: number, channelId: number, inpu
   }).then((m) => (m ? withParentExcerpt(m) : m));
 
   // Broadcast via WebSocket so other users see the message in real-time
-  if (finalMessage) getIO()?.to(`channel:${channelId}`).emit('message:new', finalMessage);
+  if (finalMessage) {
+    if (options.broadcast) options.broadcast(finalMessage);
+    else getIO()?.to(`channel:${channelId}`).emit('message:new', finalMessage);
+  }
 
   // 활동 생성, 활동 이벤트, 푸시(await하지 않는다. 실패는 서비스가 로그로 남긴다)
   if (finalMessage) {
@@ -150,9 +163,15 @@ export async function addMessageReaction(userId: number, message: Message, emoji
   });
   if (existing) throw new ServiceError(400, 'Reaction already exists');
 
+  // 같은 리액션이 동시에 들어오면 위 조회를 둘 다 통과한다. 유니크 제약이 막은 쪽을 "이미 있음"으로 돌려준다.
   const reaction = await prisma.reaction.create({
     data: { emoji, userId, messageId: message.id },
     include: { user: { select: { id: true, name: true, avatar: true } } },
+  }).catch((error) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new ServiceError(400, 'Reaction already exists');
+    }
+    throw error;
   });
 
   // Broadcast to channel so other users see the reaction in real-time
@@ -181,7 +200,9 @@ export async function removeMessageReaction(userId: number, message: Message, em
   });
   if (!reaction) throw new ServiceError(404, 'Reaction not found');
 
-  await prisma.reaction.delete({ where: { id: reaction.id } });
+  // 동시에 두 번 지우면 한쪽은 이미 없다. delete는 P2025로 던지므로 deleteMany의 count로 판단해 404로 돌려준다.
+  const { count } = await prisma.reaction.deleteMany({ where: { id: reaction.id } });
+  if (count === 0) throw new ServiceError(404, 'Reaction not found');
   void removeReactionActivity({ actorId: userId, emoji, messageId: message.id });
 
   // Broadcast to channel so other users see the removal in real-time

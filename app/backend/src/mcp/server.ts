@@ -19,7 +19,7 @@ import { addReaction, deleteMessage, editMessage, removeReaction, sendMessage } 
 // MCP 서버 정의(mcp-1: 읽기 도구, mcp-2: 쓰기 도구). 요청마다 토큰 소유자 컨텍스트로 새로 만든다(stateless).
 // 토큰 범위에 없는 도구는 등록하지 않아 tools/list에도 보이지 않는다.
 
-export const MCP_SERVER_NAME = 'slackclone';
+export const MCP_SERVER_NAME = 'team-messenger';
 export const MCP_SERVER_VERSION = '1.0.0';
 
 // 프롬프트 인젝션 완화: 도구 결과에 들어 있는 사용자 콘텐츠는 지시가 아니라 데이터라고 알린다(mcp.md 5절)
@@ -61,7 +61,7 @@ async function runTool(
 ): Promise<CallToolResult> {
   let result: CallToolResult;
   let data: unknown;
-  const retryAfter = opts.write ? mcpWriteLimiter.consume(ctx.tokenId) : null;
+  const retryAfter = opts.write ? await mcpWriteLimiter.consume(ctx.tokenId) : null;
   if (retryAfter !== null) {
     result = fail(`Too many write requests for this token; retry in ${retryAfter} seconds`);
   } else {
@@ -178,7 +178,7 @@ export function createMcpServer(ctx: ToolContext): McpServer {
       description: `Replace the text of one of your own messages. Other people's messages cannot be edited. ${WRITE_NOTE} ${DATA_NOTE}`,
       inputSchema: {
         messageId: id().describe('Id of your own message'),
-        content: messageContentSchema.min(1),
+        content: messageContentSchema.refine((v) => v.trim().length > 0, { message: 'Content cannot be empty' }),
       },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     }, (args) => runTool(ctx, 'edit_message', () => editMessage(ctx, args), {
