@@ -309,3 +309,11 @@
 | 2026-11-01 04:45 | i18n-5a 검토: 리베이스 충돌 0, tsc, lint, i18n:check, i18n:test 25, 물리 방향 187, 외부 URL → PR #117, /code-review low |
 | 2026-11-01 04:47 | PR #117 리뷰 지적 0(출력이 tiers.ts에서 잘려 총괄이 나머지를 직접 확인) → 머지 |
 | 2026-11-01 04:49 | 배정: dev-2 fix/spa-routes+UI 경합 2건(haiku), dev-5 i18n-5b zh-Hant·fr·de·pt-BR(haiku). 감속(스왑 91%)이나 3명 허용에 따라 진행 3명(dev-4 E1a 리뷰 반영, dev-2, dev-5) |
+| 2026-11-01 04:55 | E1a 리뷰 반영 검토: 리베이스 충돌 0(분리 확인), dev4 DB 재적용 diff 0, e1-migration 10·user-role-writes 2·auth 25·admin 48·channels 14·error-code-coverage 11, tsc, i18n(2등급 새 키 경고 6 → 총괄이 ja·zh-Hans·es 번역 추가해 0) → 푸시, 기반 마이그레이션이라 /code-review medium 재리뷰 |
+| 2026-11-01 04:57 | i18n-5b 검토: tsc, lint, i18n:check 0, i18n:test 25, 외부 URL → PR #119, /code-review low |
+| 2026-11-01 04:59 | PR #119: 리뷰 지적 0, 브라우저 언어 연결 확인 중 pt·pt-PT가 pt-BR로 안 가는 점을 총괄이 보완(지역 변형 대체) → 머지. 2등급 7/31 |
+| 2026-11-01 05:00 | 배정: dev-5 i18n-5c it·ru·uk·pl(haiku, 슬라브어 CLDR 복수형 분기 허용 검사 포함). 진행 3명(dev-2, dev-5, E1a 재리뷰) |
+| 2026-11-01 05:02 | PR #115 재리뷰 9건 → dev-4: isDefault는 지정 상태로 유지(비공개·보관 때 지우지 않음, 지난 결정 번복)하고 조회 시 공개·미보관만, 기본 슬롯(defaultSlot)으로 이름별 보장, 트랜잭션 안 P2002 회피, 소유권 이전 시 주 소유자=대상, nameKey는 JS 규칙 기준 시작 시 정규화, Unsafe raw 검사 추가, setUserRole이 멤버십 upsert 유일 기록자, findSameName은 기본 워크스페이스 nameKey만 |
+| 2026-11-01 05:06 | dev-2 검토: 에이전트가 같은 보고를 반복 전송(끝나지 않은 백그라운드 감시) → TaskStop으로 중지, 남은 프로세스·포트 없음 확인. spa-routes 8, tsc, eslint → PR #120, /code-review medium |
+| 2026-11-01 05:08 | PR #120 리뷰 9건 → dev-2: DefaultRedirect 가드 되돌림, 체크 초기화는 사용자 변경 카운터로(ThreadsPage 포함), 목록 방식 유지하되 양방향 정적 테스트, API와 안 겹치는 경로 제거, sendIndex 공용, 테스트 경로 import.meta.url, E2E 직접 주소 단계 복원. 전역 text/html 미들웨어는 다운로드 링크 위험으로 기각 |
+| 2026-11-01 05:12 | PR #120 리뷰 반영 검토: spa-routes 10, alsosend 2, tsc, lint → 머지 |

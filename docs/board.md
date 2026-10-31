@@ -39,7 +39,7 @@
 | i18n-2 ko: 한국어 번역 전체와 검수 | dev-1 | sonnet | 완료(PR #47 머지) | 1.5h | 2026-10-31 23:23 | | 1등급 |
 | i18n-3 backend: 오류 code, User.locale·timeZone, 푸시 문구 | dev-4 | sonnet | 완료(PR #71 머지) | 2h | 2026-11-01 00:07 | | |
 | i18n-4 rtl: 논리 속성 전환, ar/he 점검 | dev-3 | sonnet | 완료(PR #74 머지) | 1.5h | 2026-11-01 00:48 | | |
-| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a 완료(PR #117), 5b(zh-Hant·fr·de·pt-BR) 진행 | 2h | 2026-11-01 04:29 | | |
+| i18n-5 tier2: 31개 언어 기계 번역, 누락 키 CI(5a: 기반+ja·zh-Hans·es, 나머지 28개는 후속) | dev-5 | haiku | 5a·5b 완료(7/31), 5c(it·ru·uk·pl) 진행 | 2h | 2026-11-01 04:29 | | |
 | chore/self-contained-assets: emoji-mart i18n 번들, mocks 삭제, CSP 축소, 외부 URL CI 검사 | dev-2 | sonnet | 완료(PR #19 머지) | 1.5h | 2026-10-31 19:50 | 2026-10-31 20:08 | docs/architecture/self-contained-assets.md |
 | feat/builtin-stun: 내장 STUN, /huddles/config | dev-4 | sonnet | 완료(PR #10 머지) | 1.5h | | | Google STUN 제거 |
 | mcp-1 server+PAT: /mcp, PAT, 읽기 도구 | dev-2 | opus | 완료(PR #43 머지) | 2.5h | 2026-10-31 22:57 | | docs/architecture/mcp.md |
@@ -76,11 +76,12 @@
 | E10 DLP: 정규식 규칙(내장 카드·주민번호·AWS 키·개인 키), 차단/경고, ReDoS 방지, 관리자 탭 | dev-5 | sonnet | 완료(PR #96 머지) | 2h | 2026-11-01 02:42 | 2026-11-01 02:51 | 엔터프라이즈 3절, 마이그레이션 070000 |
 | test/flaky-code-under-load: 전체 스위트에서만 channel-name-unicode의 400 응답 code 누락·edge-cases 타임아웃 재현, 원인 조사 | dev-3 | sonnet | 완료(PR #87 머지, 원인: supertest listen(0) 듀얼스택 바인딩을 다른 로컬 프로세스가 가로챔) | 1h | 2026-11-01 01:48 | 2026-11-01 02:11 | 2026-11-01 전체 스위트 |
 | E7c 2FA 후속: 로컬 QR 렌더링(외부 의존 없이), 복구 코드 재발급 API·UI | dev-4·dev-5 | sonnet | 복구 코드 재발급 완료(PR #99), QR 완료(PR #101 머지) | 1.5h | | | E7b 남은 이슈 |
-| fix/spa-routes: 프로덕션 spaRoutes에 /search, /unreads 등 누락 확인·보완(새로고침 시 API 응답) | dev-2 | haiku | 진행(경합 2건과 묶음) | 30분 | 2026-11-01 04:49 | | E2E 남은 이슈 |
-| fix/thread-alsosend-race, fix/login-admin-nav-race: 스레드 '채널에도 보내기' 체크 해제 경합, 로그인 직후 관리자 이동 경합 | dev-2 | haiku | 진행 | 45분 | 2026-11-01 04:49 | | E2E 남은 이슈 |
+| e2e/vite-proxy-target, e2e/2fa-hang(ThreadsPage 체크는 #120에서 해결): ThreadsPage 같은 체크 초기화 패턴, vite 프록시 대상 환경 변수화, 2FA E2E가 고스왑 환경에서 멈추는 원인 조사 | - | haiku | 대기 | 1h | | | PR #120 남은 이슈 |
+| fix/spa-routes: 프로덕션 spaRoutes에 /search, /unreads 등 누락 확인·보완(새로고침 시 API 응답) | dev-2 | haiku | 완료(PR #120 머지) | 30분 | 2026-11-01 04:49 | | E2E 남은 이슈 |
+| fix/thread-alsosend-race, fix/login-admin-nav-race: 스레드 '채널에도 보내기' 체크 해제 경합, 로그인 직후 관리자 이동 경합 | dev-2 | haiku | 완료(PR #120 머지) | 45분 | 2026-11-01 04:49 | 2026-11-01 05:06 | E2E 남은 이슈 |
 | fix/channel-purge-order: 채널 메시지 정리(deleteMessages, blankParents)도 DB 처리 행(RETURNING) 기준으로 저장소 파일을 사후 삭제할지, 본체 삭제 실패 재시도 방식 통일 | dev-3 | sonnet | 완료(PR #112 머지) | 45분 | 2026-11-01 04:14 | | PR #106 남은 이슈 |
 | spec/E1-multi-workspace: E1 조직·멀티 워크스페이스 스펙과 파트 분할(E2·E3·E8·E9 의존 정리), Enterprise Grid 조사 | planner-1 | opus | 완료(D1~D11 제안안 확정) | 1.5h | 2026-11-01 03:54 | 2026-11-01 04:03 | 엔터프라이즈 3절 |
-| E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | dev-4 | opus | PR #115 리뷰 반영 중 | 2h | 2026-11-01 04:22 | 2026-11-01 04:19 | docs/specs/E1-multi-workspace.md 9절 |
+| E1a 스키마와 백필(Organization·Workspace·WorkspaceMember·ChannelWorkspace, 기본 조직·워크스페이스 백필) | dev-4 | opus | PR #115 재리뷰 반영 중 | 2h | 2026-11-01 04:22 | 2026-11-01 04:19 | docs/specs/E1-multi-workspace.md 9절 |
 | E1b 워크스페이스 컨텍스트와 API(resolveWorkspace, /workspaces, ws:<id> room) | - | opus | 대기(E1a 후) | 2h | | | E1 스펙 |
 | E1c 채널·사용자·관리 격리(io.emit 4곳 제거, 이름 유니크 워크스페이스 단위) | - | opus | 대기(E1b 후) | 2h | | | E1 스펙 |
 | E1d DM·검색·활동·MCP 워크스페이스 범위 | - | sonnet | 대기(E1c 후) | 2h | | | E1 스펙 |
