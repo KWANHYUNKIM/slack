@@ -1,0 +1,248 @@
+{
+  "language": {
+    "label": "言語",
+    "pending": "{name}（翻訳準備中）",
+    "beta": "ベータ",
+    "betaOption": "{name}（ベータ）"
+  },
+  "avatar": {
+    "alt": "プロフィール画像",
+    "dnd": "通知を一時停止中"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "close": "閉じる",
+    "loading": "読み込み中...",
+    "notFound": "プロフィールが見つかりません",
+    "uploadPhoto": "写真をアップロード",
+    "uploading": "アップロード中...",
+    "name": "名前",
+    "bio": "自己紹介",
+    "bioPlaceholder": "自己紹介を入力",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "status": "ステータス",
+    "joined": "参加日",
+    "message": "メッセージ",
+    "edit": "プロフィールを編集",
+    "statusValue": {
+      "online": "オンライン",
+      "away": "離席中",
+      "offline": "オフライン"
+    },
+    "errors": {
+      "loadFailed": "プロフィールを読み込めませんでした。",
+      "saveFailed": "プロフィールを保存できませんでした。もう一度お試しください。",
+      "notImage": "画像ファイルを選択してください。",
+      "tooLarge": "画像は5MB未満にしてください。",
+      "uploadFailed": "写真をアップロードできませんでした。もう一度お試しください。"
+    },
+    "statusUntil": "{time}まで"
+  },
+  "crop": {
+    "title": "写真の切り抜き",
+    "close": "閉じる",
+    "zoom": "拡大・縮小",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中...",
+    "failed": "切り抜きに失敗しました"
+  },
+  "accessTokens": {
+    "title": "個人用アクセストークン",
+    "description": "トークンを使うと、ClaudeなどのMCPクライアントがあなたの権限でワークスペースを読み取り、許可されていれば書き込みもできます。パスワードと同じように扱ってください。",
+    "nameLabel": "トークン名",
+    "namePlaceholder": "例: 自分のノートPCのClaude Code",
+    "scopesLabel": "権限",
+    "scope": {
+      "channelsRead": "チャンネル一覧を表示",
+      "channelsHistory": "メッセージ、スレッド、アクティビティを読み取る",
+      "usersRead": "メンバーを表示",
+      "chatWrite": "自分のメッセージを投稿、編集、削除",
+      "reactionsWrite": "自分のリアクションを追加、削除",
+      "imRead": "自分のダイレクトメッセージとグループDMを一覧表示",
+      "imHistory": "自分のダイレクトメッセージの履歴を読み取る",
+      "imWrite": "自分のダイレクトメッセージを送信、編集、削除",
+      "searchRead": "メッセージ、ファイル、メンバー、チャンネルを検索（DMの結果にはDM履歴が必要）",
+      "filesRead": "ファイル一覧を表示し、テキストファイルの内容を読み取る"
+    },
+    "expiryLabel": "有効期限",
+    "expiryDays": "{count, plural, other {# 日}}",
+    "expiryNever": "期限なし",
+    "neverWarning": "有効期限のないトークンは、取り消すまで有効です。",
+    "create": "トークンを生成",
+    "createdNotice": "新しいトークンを今すぐコピーしてください。後から再表示することはできません。",
+    "copy": "トークンをコピー",
+    "copyCommand": "コマンドをコピー",
+    "copied": "クリップボードにコピーしました",
+    "connectHint": "Claude Codeから接続するには:",
+    "dismiss": "完了、トークンを隠す",
+    "loading": "読み込み中...",
+    "empty": "個人用アクセストークンはありません。",
+    "expires": "{date}に期限切れ",
+    "expired": "期限切れ",
+    "noExpiry": "期限なし",
+    "lastUsed": "最終使用日: {date}",
+    "neverUsed": "未使用",
+    "rename": "名前を変更",
+    "renameLabel": "トークン{name}の名前を変更",
+    "revoke": "取り消す",
+    "revokeLabel": "トークン{name}を取り消す",
+    "revokeConfirm": "今すぐ取り消す",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "errors": {
+      "loadFailed": "トークンを読み込めませんでした。",
+      "createFailed": "トークンを作成できませんでした。もう一度お試しください。",
+      "renameFailed": "トークンの名前を変更できませんでした。",
+      "revokeFailed": "トークンを取り消せませんでした。",
+      "copyFailed": "コピーできませんでした。テキストを選択して手動でコピーしてください。",
+      "limitReached": "有効なトークンは最大{max}個までです。使わなくなったものを取り消してから、もう一度お試しください。",
+      "codeRequired": "トークンを作成するには2要素認証コードを入力してください。",
+      "invalidCode": "2要素認証コードが正しくありません。"
+    },
+    "codeLabel": "2要素認証コード",
+    "codeHint": "トークンを作成するには、認証アプリのコードを入力してください。"
+  },
+  "sessions": {
+    "title": "サインイン中のデバイス",
+    "description": "次のデバイスがあなたのアカウントにサインインしています。見覚えがない、またはもう使っていないデバイスはサインアウトしてください。",
+    "loading": "読み込み中...",
+    "empty": "サインイン中のデバイスはありません。",
+    "thisDevice": "このデバイス",
+    "unknownDevice": "不明なデバイス",
+    "signedInAt": "{date}にサインイン",
+    "lastActive": "最終利用: {date}",
+    "signOut": "サインアウト",
+    "signOutLabel": "{device}をサインアウト",
+    "signOutThisLabel": "このデバイス（{device}）をサインアウト",
+    "signOutOthers": "他のすべてのデバイスをサインアウト",
+    "signOutOthersConfirm": "{count, plural, other {他のデバイス#台をサインアウト}}",
+    "revoked": "デバイスをサインアウトしました",
+    "revokedOthers": "他のすべてのデバイスをサインアウトしました",
+    "errors": {
+      "loadFailed": "デバイスを読み込めませんでした。",
+      "revokeFailed": "サインアウトできませんでした。もう一度お試しください。"
+    },
+    "device": {
+      "desktop": "デスクトップアプリ",
+      "desktopOn": "{os}のデスクトップアプリ",
+      "browser": "{browser}",
+      "browserOn": "{os}の{browser}",
+      "unknownOn": "{os}の不明なデバイス"
+    }
+  },
+  "changePassword": {
+    "title": "パスワードを変更",
+    "description": "現在のパスワードを入力し、新しいパスワードを選んでください。",
+    "currentLabel": "現在のパスワード",
+    "newLabel": "新しいパスワード",
+    "confirmLabel": "新しいパスワード（確認）",
+    "sessionsNote": "パスワードを変更すると、他のサインイン中のデバイスはサインアウトされます。",
+    "submit": "パスワードを変更",
+    "submitting": "変更中...",
+    "cancel": "キャンセル",
+    "successToast": "パスワードを変更しました",
+    "errors": {
+      "currentRequired": "現在のパスワードを入力してください。",
+      "failed": "パスワードを変更できませんでした。もう一度お試しください。"
+    }
+  },
+  "twoFactor": {
+    "title": "2要素認証",
+    "description": "サインイン時に、パスワードに加えて認証アプリのコードを求めます。",
+    "loading": "読み込み中...",
+    "statusOn": "オン",
+    "statusOff": "オフ",
+    "enabledSince": "{date}にオンにしました",
+    "recoveryRemaining": "{count, plural, other {リカバリーコードの残り# 個}}",
+    "unavailable": "このサーバーでは2要素認証を利用できません。管理者に確認してください。",
+    "requiredNotice": "組織で2要素認証が必要です。",
+    "close": "閉じる",
+    "setup": {
+      "start": "2要素認証を設定",
+      "starting": "準備中...",
+      "step1": "1. 認証アプリにこのアカウントを追加します。スマートフォンでリンクを開くか、設定キーを手入力してください。",
+      "uriLabel": "設定リンク",
+      "openInApp": "認証アプリで開く",
+      "qrLabel": "認証アプリ用のQRコード",
+      "qrHint": "認証アプリでこのQRコードを読み取るか、下のリンクまたはキーを使ってください。",
+      "keyLabel": "設定キー",
+      "copyKey": "設定キーをコピー",
+      "copyUri": "設定リンクをコピー",
+      "copied": "コピーしました",
+      "step2": "2. 認証アプリに表示された6桁のコードを入力します。",
+      "codeLabel": "認証コード",
+      "codePlaceholder": "123456",
+      "verify": "オンにする",
+      "verifying": "確認中...",
+      "cancel": "キャンセル",
+      "passwordLabel": "3. 現在のパスワードを入力します。",
+      "sessionsNote": "オンにすると、他のサインイン中のデバイスはサインアウトされます。"
+    },
+    "recovery": {
+      "title": "リカバリーコードを保存",
+      "description": "端末をなくしたときは、リカバリーコードでサインインできます。各コードは1回だけ使えます。このコードは再表示されません。",
+      "download": "ダウンロード",
+      "copy": "すべてコピー",
+      "fileHeader": "リカバリーコード。各コードは1回だけ使えます。安全な場所に保管してください。",
+      "confirmSaved": "リカバリーコードを保存しました",
+      "fileName": "recovery-codes.txt"
+    },
+    "reauth": {
+      "passwordLabel": "パスワード",
+      "codeLabel": "認証コードまたはリカバリーコード",
+      "cancel": "キャンセル",
+      "passwordInvalid": "正しいパスワードを入力してください。",
+      "codeInvalid": "正しい認証コードまたはリカバリーコードを入力してください。"
+    },
+    "regenerate": {
+      "start": "新しいリカバリーコードを作成",
+      "title": "新しいリカバリーコードを作成",
+      "description": "新しいコードを作成すると、以前のリカバリーコードは使えなくなります。パスワードと、認証アプリのコード（またはリカバリーコード）を入力してください。",
+      "submit": "新しいコードを作成",
+      "submitting": "作成中...",
+      "lowNotice": "{count, plural, other {リカバリーコードは残り# 個です}}。なくなる前に新しいコードを作成してください。",
+      "toast": "新しいリカバリーコードの準備ができました"
+    },
+    "disable": {
+      "title": "2要素認証をオフにする",
+      "description": "パスワードと、認証アプリのコード（またはリカバリーコード）を入力してください。",
+      "start": "オフにする",
+      "submit": "2要素認証をオフにする",
+      "submitting": "オフにしています...",
+      "blockedByPolicy": "組織で2要素認証が必要なため、オフにできません。端末をなくした場合は、管理者にリセットを依頼してください。"
+    },
+    "enabledToast": "2要素認証をオンにしました",
+    "disabledToast": "2要素認証をオフにしました",
+    "errors": {
+      "loadFailed": "2要素認証の設定を読み込めませんでした。",
+      "setupFailed": "設定を開始できませんでした。もう一度お試しください。",
+      "enableFailed": "2要素認証をオンにできませんでした。",
+      "regenerateFailed": "新しいリカバリーコードを作成できませんでした。",
+      "disableFailed": "2要素認証をオフにできませんでした。",
+      "copyFailed": "クリップボードにコピーできませんでした。"
+    }
+  },
+  "connectedApps": {
+    "title": "接続済みのアプリ",
+    "description": "OAuthサインインの流れで、あなたのアカウントの利用を許可したアプリです。あなたの権限で動作します。使わなくなったアプリは接続を解除してください。",
+    "loading": "読み込み中...",
+    "empty": "アカウントに接続されているアプリはありません。",
+    "redirectsTo": "戻り先: {hosts}",
+    "connectedAt": "{date}に接続",
+    "lastUsed": "最終利用: {date}",
+    "neverUsed": "未使用",
+    "disconnect": "接続を解除",
+    "disconnectLabel": "{name}の接続を解除",
+    "disconnectConfirm": "今すぐ解除",
+    "cancel": "キャンセル",
+    "disconnected": "アプリの接続を解除しました",
+    "close": "閉じる",
+    "errors": {
+      "loadFailed": "接続済みのアプリを読み込めませんでした。",
+      "disconnectFailed": "アプリの接続を解除できませんでした。"
+    },
+    "unnamedApp": "名前のないアプリ"
+  }
+}

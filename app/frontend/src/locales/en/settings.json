@@ -1,7 +1,9 @@
 {
   "language": {
     "label": "Language",
-    "pending": "{name} (translation coming soon)"
+    "pending": "{name} (translation coming soon)",
+    "beta": "Beta",
+    "betaOption": "{name} (Beta)"
   },
   "avatar": {
     "alt": "Avatar",

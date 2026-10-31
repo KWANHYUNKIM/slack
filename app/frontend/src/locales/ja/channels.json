@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "チャンネルを作成",
+    "tabBrowse": "チャンネルを探す",
+    "nameLabel": "チャンネル名",
+    "namePlaceholder": "例: plan-budget",
+    "visibility": "公開範囲",
+    "public": "公開",
+    "private": "非公開",
+    "publicHint": "ワークスペースのメンバー全員がこのチャンネルを探して参加できます。",
+    "privateHint": "招待されたメンバーだけがこのチャンネルを探して参加できます。",
+    "cancel": "キャンセル",
+    "create": "作成",
+    "noChannels": "参加できるチャンネルはありません",
+    "memberCount": "{count, plural, other {# 人のメンバー}}",
+    "joined": "参加済み",
+    "join": "参加",
+    "close": "閉じる",
+    "errors": {
+      "createFailed": "チャンネルを作成できませんでした"
+    }
+  },
+  "errors": {
+    "loadConversations": "会話を読み込めませんでした。",
+    "loadChannels": "チャンネルを読み込めませんでした。"
+  },
+  "membersPanel": {
+    "title": "メンバー",
+    "addPeople": "メンバーを追加",
+    "loadError": "メンバーを読み込めませんでした。",
+    "removeError": "メンバーを削除できませんでした",
+    "online": "オンライン — {count}",
+    "offline": "オフライン — {count}",
+    "removeDialog": {
+      "title": "メンバーを削除しますか？",
+      "message": "このチャンネルから<bold>{name}</bold>を削除しますか？"
+    },
+    "removing": "削除中...",
+    "searchByName": "名前で検索...",
+    "noUsers": "ユーザーが見つかりません",
+    "roles": {
+      "owner": "オーナー",
+      "moderator": "モデレーター"
+    },
+    "removeMember": "メンバーを削除"
+  },
+  "dm": {
+    "messagePlaceholder": "{name}へのメッセージ",
+    "you": "（あなた）",
+    "star": "スター付きに追加",
+    "unstar": "スター付きから削除",
+    "loadingMessages": "メッセージを読み込み中...",
+    "selfSpace": "ここはあなた専用のスペースです。下書きを書いたり、やることを一覧にしたり、リンクやファイルを置いたりできます。",
+    "conversationStart": "{name}さんとの会話の始まり",
+    "sendToBegin": "メッセージを送信して会話を始めましょう。",
+    "edited": "（編集済み）",
+    "pinnedMessages": "ピン留めしたメッセージ",
+    "noPins": "ピン留めしたメッセージはまだありません",
+    "files": "ファイル",
+    "noFiles": "共有されたファイルはまだありません",
+    "loadError": "メッセージを読み込めませんでした。",
+    "sendError": "メッセージを送信できませんでした。もう一度お試しください。"
+  },
+  "nameRules": {
+    "required": "チャンネル名を入力してください。",
+    "tooLong": "チャンネル名は{max}文字以内で入力してください。",
+    "invalidChars": "チャンネル名に使えるのは、文字・数字・ハイフン・アンダースコアのみで、先頭は文字か数字にしてください。",
+    "tooManyMarks": "チャンネル名では、結合文字を連続して4つ以上使えません。",
+    "mixedScripts": "チャンネル名では、似た文字の異なる文字体系（ラテン文字とキリル文字やギリシャ文字など）や、別の数字体系の数字を混在させられません。",
+    "taken": "同じ名前のチャンネルがすでに存在します。"
+  },
+  "groupDM": {
+    "members": "{count, plural, other {# 人のメンバー}}",
+    "nameLabel": "会話名",
+    "namePlaceholder": "名前を追加",
+    "noName": "名前なし（メンバー名を表示）",
+    "rename": "会話の名前を変更",
+    "addPeople": "メンバーを追加",
+    "add": "追加",
+    "createWith": "グループ会話を開始",
+    "leave": "会話から退出",
+    "leaveConfirm": "この会話から退出しますか？ 以後、この会話のメッセージは表示されなくなります。",
+    "conversationStart": "{names}さんとの会話の始まりです",
+    "addError": "メンバーを追加できませんでした。もう一度お試しください。",
+    "renameError": "会話の名前を変更できませんでした。もう一度お試しください。",
+    "leaveError": "会話から退出できませんでした。もう一度お試しください。"
+  }
+}

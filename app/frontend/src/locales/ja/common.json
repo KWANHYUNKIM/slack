@@ -1,0 +1,77 @@
+{
+  "actions": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "send": "送信",
+    "confirm": "確認",
+    "back": "戻る",
+    "remove": "削除",
+    "add": "追加",
+    "create": "作成",
+    "retry": "再試行",
+    "search": "検索",
+    "copy": "コピー",
+    "done": "完了",
+    "next": "次へ",
+    "more": "その他"
+  },
+  "emojiPicker": {
+    "loadFailed": "絵文字を読み込めませんでした。接続を確認してもう一度お試しください。",
+    "retry": "再試行"
+  },
+  "status": {
+    "loading": "読み込み中...",
+    "saving": "保存中...",
+    "deleting": "削除中..."
+  },
+  "dates": {
+    "today": "今日",
+    "yesterday": "昨日"
+  },
+  "quickSwitcher": {
+    "title": "クイックスイッチャー",
+    "inputLabel": "会話に移動",
+    "placeholder": "チャンネルまたは会話に移動",
+    "recent": "最近",
+    "results": "結果",
+    "clearRecent": "最近の履歴を消去",
+    "listLabel": "会話",
+    "noResults": "一致する会話はありません",
+    "starred": "スター付き",
+    "unread": "未読",
+    "dnd": "通知オフ",
+    "footer": "{keys}で開きます。↑↓で移動、Enterで開く、Escで閉じます。",
+    "open": "移動…",
+    "kind": {
+      "channel": "チャンネル",
+      "dm": "ダイレクトメッセージ",
+      "group": "グループメッセージ"
+    }
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "groups": {
+      "navigation": "移動",
+      "general": "全般"
+    },
+    "items": {
+      "switcher": "クイックスイッチャーを開く",
+      "prevChannel": "前の会話",
+      "nextChannel": "次の会話",
+      "prevUnread": "前の未読の会話",
+      "nextUnread": "次の未読の会話",
+      "help": "キーボードショートカットを表示",
+      "closeTop": "クイックスイッチャーまたはこのダイアログを閉じる"
+    },
+    "keys": {
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "shift": "Shift",
+      "esc": "Esc",
+      "enter": "Enter"
+    }
+  }
+}

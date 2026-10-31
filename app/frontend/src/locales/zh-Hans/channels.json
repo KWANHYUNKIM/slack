@@ -1,0 +1,88 @@
+{
+  "dialog": {
+    "tabCreate": "创建频道",
+    "tabBrowse": "浏览频道",
+    "nameLabel": "频道名称",
+    "namePlaceholder": "例如 plan-budget",
+    "visibility": "可见性",
+    "public": "公开",
+    "private": "私有",
+    "publicHint": "工作区中的任何人都可以找到并加入此频道。",
+    "privateHint": "只有受邀成员可以找到并加入此频道。",
+    "cancel": "取消",
+    "create": "创建",
+    "noChannels": "没有可加入的频道",
+    "memberCount": "{count, plural, other {# 位成员}}",
+    "joined": "已加入",
+    "join": "加入",
+    "close": "关闭",
+    "errors": {
+      "createFailed": "无法创建频道"
+    }
+  },
+  "errors": {
+    "loadConversations": "无法加载会话。",
+    "loadChannels": "无法加载频道。"
+  },
+  "membersPanel": {
+    "title": "成员",
+    "addPeople": "添加成员",
+    "loadError": "无法加载成员。",
+    "removeError": "无法移除成员",
+    "online": "在线 — {count}",
+    "offline": "离线 — {count}",
+    "removeDialog": {
+      "title": "移除成员？",
+      "message": "确定要将 <bold>{name}</bold> 从此频道移除吗？"
+    },
+    "removing": "正在移除...",
+    "searchByName": "按姓名搜索...",
+    "noUsers": "未找到用户",
+    "roles": {
+      "owner": "所有者",
+      "moderator": "版主"
+    },
+    "removeMember": "移除成员"
+  },
+  "dm": {
+    "messagePlaceholder": "发消息给 {name}",
+    "you": "（您）",
+    "star": "添加到已加星标",
+    "unstar": "从已加星标中移除",
+    "loadingMessages": "正在加载消息...",
+    "selfSpace": "这是您的个人空间。可以写草稿、列待办事项，或保存链接和文件。",
+    "conversationStart": "与 {name} 的会话开始",
+    "sendToBegin": "发送一条消息开始会话。",
+    "edited": "（已编辑）",
+    "pinnedMessages": "置顶消息",
+    "noPins": "还没有置顶消息",
+    "files": "文件",
+    "noFiles": "还没有共享文件",
+    "loadError": "无法加载消息。",
+    "sendError": "消息发送失败，请重试。"
+  },
+  "nameRules": {
+    "required": "请输入频道名称。",
+    "tooLong": "频道名称不能超过 {max} 个字符。",
+    "invalidChars": "频道名称只能包含字母、数字、连字符和下划线，并且必须以字母或数字开头。",
+    "tooManyMarks": "频道名称中不能连续出现 4 个以上的组合符号。",
+    "mixedScripts": "频道名称不能混用外形相近的字母表（如拉丁字母与西里尔字母或希腊字母），也不能混用其他数字系统的数字。",
+    "taken": "已存在同名频道。"
+  },
+  "groupDM": {
+    "members": "{count, plural, other {# 位成员}}",
+    "nameLabel": "会话名称",
+    "namePlaceholder": "添加名称",
+    "noName": "无名称（显示成员名字）",
+    "rename": "重命名会话",
+    "addPeople": "添加成员",
+    "add": "添加",
+    "createWith": "开始群组会话",
+    "leave": "退出会话",
+    "leaveConfirm": "确定要退出此会话吗？退出后将看不到其中的消息。",
+    "conversationStart": "这是与 {names} 的会话开始",
+    "addError": "无法添加成员，请重试。",
+    "renameError": "无法重命名会话，请重试。",
+    "leaveError": "无法退出会话，请重试。"
+  }
+}

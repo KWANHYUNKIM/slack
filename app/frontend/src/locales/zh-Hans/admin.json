@@ -1,0 +1,468 @@
+{
+  "page": {
+    "title": "管理面板",
+    "openSidebar": "打开侧边栏",
+    "tabs": {
+      "members": "成员",
+      "invites": "邀请",
+      "channels": "频道",
+      "webhooks": "Webhook",
+      "audit": "审计日志",
+      "retention": "数据保留",
+      "security": "安全",
+      "dlp": "DLP",
+      "legalHolds": "法律保留"
+    }
+  },
+  "channels": {
+    "columns": {
+      "channel": "频道",
+      "members": "成员",
+      "messages": "消息",
+      "created": "创建时间"
+    },
+    "actions": {
+      "rename": "重命名频道",
+      "archive": "归档频道",
+      "delete": "删除频道",
+      "unarchive": "取消归档",
+      "deletePermanently": "永久删除"
+    },
+    "emptyActive": "没有活跃的频道",
+    "archivedHeading": "已归档的频道（{count}）",
+    "archivedOn": "于 {date} 归档",
+    "messageCount": "{count, plural, other {# 条消息}}",
+    "deleteDialog": {
+      "title": "删除频道",
+      "message": "确定要永久删除 #{name} 吗？所有消息都将丢失，且无法撤销。"
+    },
+    "archiveDialog": {
+      "title": "归档频道",
+      "confirm": "归档",
+      "message": "归档 #{name}？它将从侧边栏隐藏，但消息会保留。之后可以取消归档。"
+    },
+    "unarchiveDialog": {
+      "title": "取消归档频道",
+      "confirm": "取消归档",
+      "message": "取消归档 #{name}？它将重新出现在所有成员的侧边栏中。"
+    }
+  },
+  "members": {
+    "searchPlaceholder": "搜索成员...",
+    "columns": {
+      "user": "用户",
+      "email": "电子邮件",
+      "role": "角色",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "you": "（您）",
+    "roles": {
+      "owner": "所有者",
+      "admin": "管理员",
+      "member": "成员",
+      "guest": "访客"
+    },
+    "status": {
+      "active": "活跃",
+      "deactivated": "已停用"
+    },
+    "actions": {
+      "transfer": "转让所有权",
+      "reactivate": "重新启用",
+      "deactivate": "停用",
+      "forceLogout": "强制退出登录",
+      "resetMfa": "重置两步验证"
+    },
+    "empty": "未找到用户",
+    "dialogs": {
+      "transfer": {
+        "title": "转让工作区所有权",
+        "confirm": "转让",
+        "message": "确定要将工作区所有权转让给 {name} 吗？您将被降级为管理员。"
+      },
+      "deactivate": {
+        "title": "停用用户",
+        "confirm": "停用",
+        "message": "确定要停用 {name} 吗？其将立即退出登录，且无法再登录。"
+      },
+      "reactivate": {
+        "title": "重新启用用户",
+        "confirm": "重新启用",
+        "message": "确定要重新启用 {name} 吗？其将可以再次登录。"
+      },
+      "forceLogout": {
+        "title": "强制退出登录",
+        "confirm": "退出登录",
+        "message": "现在让 {name} 在所有设备上退出登录吗？其账户将保持活跃，并且可以再次登录。"
+      },
+      "resetMfa": {
+        "title": "重置两步验证",
+        "confirm": "重置",
+        "message": "要为 {name} 移除两步验证吗？其将在所有设备上退出登录，并且只能使用密码登录。"
+      }
+    },
+    "badges": {
+      "mfa": "2FA",
+      "mfaLabel": "已开启两步验证"
+    }
+  },
+  "invites": {
+    "createHeading": "创建邀请链接",
+    "fields": {
+      "role": "角色",
+      "maxUses": "最多使用次数",
+      "expiresIn": "有效期"
+    },
+    "unlimited": "不限",
+    "expiry": {
+      "1d": "1 天",
+      "7d": "7 天",
+      "30d": "30 天",
+      "never": "永不过期"
+    },
+    "expired": "已过期",
+    "columns": {
+      "url": "邀请 URL",
+      "uses": "使用次数",
+      "expires": "过期时间",
+      "createdBy": "创建者"
+    },
+    "copyUrl": "复制邀请 URL",
+    "full": "（已满）",
+    "delete": "删除邀请",
+    "empty": "还没有邀请链接"
+  },
+  "webhooks": {
+    "createHeading": "创建 Webhook",
+    "fields": {
+      "name": "Webhook 名称",
+      "channel": "频道"
+    },
+    "namePlaceholder": "我的集成",
+    "selectChannel": "选择频道...",
+    "columns": {
+      "name": "名称",
+      "url": "Webhook URL",
+      "lastUsed": "最后使用"
+    },
+    "never": "从未",
+    "justNow": "刚刚",
+    "inactive": "未启用",
+    "copyUrl": "复制 Webhook URL",
+    "delete": "删除 Webhook",
+    "empty": "还没有配置 Webhook"
+  },
+  "audit": {
+    "empty": "没有匹配的审计日志条目。记录的操作会显示在这里。",
+    "loadMore": "加载更多",
+    "targets": {
+      "user": "用户",
+      "channel": "频道",
+      "invite": "邀请",
+      "webhook": "Webhook",
+      "message": "消息",
+      "directMessage": "私信",
+      "token": "访问令牌",
+      "auditLog": "审计日志",
+      "mcpTool": "MCP 工具",
+      "workspace": "工作区",
+      "file": "文件",
+      "dlpRule": "DLP 规则",
+      "legalHold": "法律保留"
+    },
+    "action": {
+      "authLogin": "已登录",
+      "authLoginFailed": "登录失败",
+      "authLogout": "已退出登录",
+      "authPasswordChanged": "已更改密码",
+      "userRoleChanged": "已更改角色",
+      "userDeactivated": "已停用",
+      "userForceLogout": "强制退出登录",
+      "userReactivated": "已重新启用",
+      "ownershipTransferred": "已转让所有权",
+      "ownerBootstrapped": "已创建所有者",
+      "channelCreated": "已创建频道",
+      "channelEdited": "已编辑频道",
+      "channelArchived": "已归档频道",
+      "channelUnarchived": "已取消归档频道",
+      "channelDeleted": "已删除频道",
+      "channelMemberAdded": "已添加成员",
+      "channelMemberRemoved": "已移除成员",
+      "inviteCreated": "已创建邀请",
+      "inviteDeleted": "已删除邀请",
+      "webhookCreated": "已创建 Webhook",
+      "webhookDeleted": "已删除 Webhook",
+      "tokenCreate": "已创建令牌",
+      "tokenRevoke": "已撤销令牌",
+      "mcpToolCall": "MCP 工具调用",
+      "auditExported": "已导出审计日志",
+      "authLoginLocked": "账户已锁定",
+      "sessionRevoked": "设备已退出登录",
+      "sessionRevokedAll": "所有设备已退出登录",
+      "retentionPurged": "已删除过期数据",
+      "retentionWorkspaceUpdated": "保留策略已更改",
+      "retentionChannelUpdated": "频道保留设置已更改",
+      "retentionChannelCleared": "频道保留设置已重置",
+      "mfaEnabled": "已开启两步验证",
+      "mfaDisabled": "已关闭两步验证",
+      "mfaRecoveryUsed": "已使用恢复代码",
+      "mfaRecoveryRegenerated": "已重新生成恢复代码",
+      "mfaResetByAdmin": "管理员已重置两步验证",
+      "mfaPolicyChanged": "两步验证要求已更改",
+      "dlpBlocked": "DLP 已拦截消息",
+      "dlpWarned": "DLP 警告",
+      "dlpRuleCreated": "已创建 DLP 规则",
+      "dlpRuleUpdated": "DLP 规则已更改",
+      "dlpRuleDeleted": "已删除 DLP 规则",
+      "dlpRuleTimeout": "DLP 规则超时",
+      "dlpRuleAutoDisabled": "DLP 规则已自动关闭",
+      "legalHoldCreated": "已创建法律保留",
+      "legalHoldUpdated": "已编辑法律保留",
+      "legalHoldCustodianAdded": "已将人员加入法律保留",
+      "legalHoldCustodianRemoved": "已将人员移出法律保留",
+      "legalHoldReleased": "已解除法律保留",
+      "ediscoverySearched": "eDiscovery 搜索",
+      "ediscoveryExportRequested": "已请求 eDiscovery 导出",
+      "ediscoveryExported": "已导出 eDiscovery"
+    },
+    "filters": {
+      "allActions": "所有操作",
+      "actionsSelected": "{count, plural, other {# 项操作}}",
+      "actor": "操作者",
+      "allActors": "所有操作者",
+      "targetType": "对象类型",
+      "allTargets": "所有对象",
+      "from": "开始",
+      "to": "结束",
+      "apply": "应用",
+      "reset": "重置"
+    },
+    "export": {
+      "csv": "导出 CSV",
+      "json": "导出 JSON"
+    },
+    "unknownActor": "未知"
+  },
+  "errors": {
+    "archiveChannel": "无法归档频道",
+    "createInvite": "无法创建邀请",
+    "createWebhook": "无法创建 Webhook",
+    "deactivateUser": "无法停用用户",
+    "deleteChannel": "无法删除频道",
+    "deleteInvite": "无法删除邀请",
+    "deleteWebhook": "无法删除 Webhook",
+    "editChannel": "无法编辑频道",
+    "exportAuditLog": "无法导出审计日志",
+    "fetchAuditLog": "无法获取审计日志",
+    "fetchChannels": "无法获取频道",
+    "fetchInvites": "无法获取邀请",
+    "fetchUsers": "无法获取用户",
+    "fetchWebhooks": "无法获取 Webhook",
+    "forceLogout": "无法让用户退出登录",
+    "reactivateUser": "无法重新启用用户",
+    "removeChannelMember": "无法移除频道成员",
+    "transferOwnership": "无法转让所有权",
+    "unarchiveChannel": "无法取消归档频道",
+    "updateRole": "无法更新角色",
+    "resetMfa": "无法重置两步验证"
+  },
+  "retention": {
+    "title": "数据保留",
+    "description": "在设定的天数后自动删除消息。文件会随消息一起删除。清理每天运行一次。提醒会保留，并显示“已删除的消息”。",
+    "loadError": "无法加载保留策略",
+    "saveError": "无法保存保留策略",
+    "resetError": "无法重置频道策略",
+    "workspace": {
+      "heading": "工作区默认值",
+      "hint": "适用于所有没有单独设置的频道，以及私信和群组私信。"
+    },
+    "mode": {
+      "forever": "永久保留",
+      "days": "按天数后删除",
+      "inherit": "使用工作区默认值"
+    },
+    "daysLabel": "天数",
+    "daysHint": "{min} 到 {max} 天",
+    "effective": {
+      "forever": "永久保留",
+      "days": "{count, plural, other {# 天}}"
+    },
+    "channels": {
+      "heading": "频道",
+      "columns": {
+        "channel": "频道",
+        "policy": "策略",
+        "effective": "适用"
+      },
+      "legalHold": "法律保留",
+      "reset": "恢复为默认值",
+      "empty": "没有频道"
+    },
+    "save": "保存",
+    "saved": "已保存",
+    "confirm": {
+      "title": "永久删除旧消息？",
+      "message": "在下次清理时，早于 {count, plural, other {# 天}}的消息及其文件将被永久删除。此操作无法撤销。",
+      "confirm": "应用策略"
+    }
+  },
+  "security": {
+    "title": "两步验证",
+    "requireMfa": "要求所有成员使用两步验证",
+    "requireMfaHint": "未设置两步验证的成员，在开启之前只能访问设置页面。",
+    "unavailable": "由于未设置加密密钥（TOTP_ENCRYPTION_KEY），此服务器已关闭两步验证。该要求未生效。",
+    "saved": "安全设置已保存",
+    "loading": "正在加载...",
+    "errors": {
+      "loadFailed": "无法加载安全设置。",
+      "saveFailed": "无法保存安全设置。"
+    },
+    "allowOAuthApps": "允许成员连接 OAuth 应用",
+    "allowOAuthAppsHint": "允许成员通过 OAuth 登录流程连接 Claude 等应用。关闭此选项将立即断开所有应用的连接。"
+  },
+  "dlp": {
+    "title": "数据防泄漏",
+    "description": "检测消息中的敏感模式，例如银行卡号。阻止规则会阻止消息保存。警告规则会保存消息，并记录在审计日志中。消息内容从不写入日志。",
+    "loadError": "无法加载 DLP 规则",
+    "saveError": "无法保存规则",
+    "toggleError": "无法更改规则",
+    "deleteError": "无法删除规则",
+    "testError": "无法测试模式",
+    "builtinBadge": "内置",
+    "builtinPattern": "内置检测器",
+    "builtin": {
+      "credit_card": "信用卡号",
+      "kr_rrn": "韩国居民登记号",
+      "aws_access_key": "AWS 访问密钥",
+      "private_key": "私钥"
+    },
+    "action": {
+      "BLOCK": "阻止",
+      "WARN": "警告"
+    },
+    "columns": {
+      "name": "规则",
+      "pattern": "模式",
+      "action": "操作",
+      "enabled": "状态"
+    },
+    "on": "开",
+    "off": "关",
+    "toggleLabel": "开启或关闭 {name}",
+    "edit": "编辑",
+    "editLabel": "编辑 {name}",
+    "delete": "删除",
+    "deleteLabel": "删除 {name}",
+    "form": {
+      "createHeading": "添加规则",
+      "editHeading": "编辑规则",
+      "name": "名称",
+      "pattern": "模式（正则表达式）",
+      "patternPlaceholder": "PROJECT-\\d{4}",
+      "action": "操作",
+      "add": "添加规则",
+      "save": "保存",
+      "cancel": "取消",
+      "hint": "最多 {max} 个字符。不允许使用 (a+)+ 之类的嵌套重复、反向引用以及过大的重复次数。"
+    },
+    "patternProblem": {
+      "empty": "请输入模式。",
+      "tooLong": "模式太长。",
+      "invalid": "这不是有效的正则表达式。",
+      "backreference": "不允许使用反向引用。",
+      "nestedQuantifier": "嵌套重复可能导致检查非常缓慢，因此不允许使用。",
+      "repeatTooLarge": "重复次数过大（最多 200）。"
+    },
+    "test": {
+      "heading": "测试模式",
+      "hint": "不会保存任何内容。请在上方输入模式或选择已保存的规则，然后输入示例文本。",
+      "source": "要测试的模式",
+      "sourceDraft": "上方表单中的模式",
+      "sample": "示例文本",
+      "run": "测试",
+      "matched": "匹配。此文本会被检测到。",
+      "notMatched": "不匹配。",
+      "timedOut": "检查耗时过长，已停止。请简化模式。"
+    },
+    "confirmDelete": {
+      "title": "删除此规则？",
+      "message": "规则“{name}”将被移除，不再进行检查。"
+    }
+  },
+  "legalHolds": {
+    "description": "即使数据保留策略会删除，也要保留某人写过或收到过的所有内容。管理员可以搜索并导出保留的数据，用于法律审查。",
+    "statusFilter": "显示",
+    "status": {
+      "active": "生效中",
+      "released": "已解除",
+      "all": "全部"
+    },
+    "empty": "没有法律保留",
+    "selectHint": "选择一个法律保留，以管理其人员并搜索其数据。",
+    "loadMore": "加载更多",
+    "custodianCount": "{count, plural, other {# 人}}",
+    "createdOn": "创建于 {date}",
+    "releasedOn": "解除于 {date}",
+    "createdBy": "由 {name} 于 {date} 创建",
+    "releasedBy": "由 {name} 于 {date} 解除",
+    "unknownUser": "未知用户",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "fields": {
+      "name": "名称",
+      "description": "描述（可选）"
+    },
+    "create": {
+      "open": "新建保留",
+      "submit": "创建保留",
+      "hint": "创建保留后可以添加人员。"
+    },
+    "custodians": {
+      "heading": "保留中的人员",
+      "pick": "选择一个人",
+      "add": "添加",
+      "remove": "将 {name} 移出此保留",
+      "empty": "此保留中还没有人员。",
+      "deactivated": "已停用"
+    },
+    "release": {
+      "open": "解除保留",
+      "title": "解除此法律保留？",
+      "message": "“{name}”将停止保留数据。不在其他生效保留中的人员将恢复为常规保留策略，其旧消息可能会在下次清理时被删除。保留及其人员列表会保留在记录中。此操作无法撤销。",
+      "confirm": "解除"
+    },
+    "discovery": {
+      "heading": "搜索与导出",
+      "hint": "涵盖保留中人员在任何频道（包括私有频道）发出的消息、其参与的私信和群组私信，以及文件详情。已删除的消息也会包含在内，并标注为已删除。",
+      "query": "关键词",
+      "from": "开始",
+      "to": "结束",
+      "search": "搜索",
+      "export": "导出（JSONL）",
+      "exportHint": "导出上次搜索的结果。每次搜索和导出都会记录在审计日志中。",
+      "searchFirst": "请先使用这些筛选条件搜索。导出会使用下方所显示搜索的筛选条件。",
+      "kinds": {
+        "channel": "频道消息",
+        "dm": "私信",
+        "file": "文件"
+      },
+      "empty": "没有结果",
+      "deleted": "已删除",
+      "edited": "已编辑",
+      "reply": "线程回复",
+      "groupDm": "群组私信 #{id}",
+      "directMessage": "{from} → {to}"
+    },
+    "errors": {
+      "load": "无法加载法律保留",
+      "create": "无法创建法律保留",
+      "update": "无法更新法律保留",
+      "custodians": "无法更改保留中的人员",
+      "release": "无法解除法律保留",
+      "search": "搜索失败",
+      "export": "导出失败"
+    }
+  }
+}

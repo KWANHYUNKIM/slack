@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "activity": "アクティビティ",
+    "unreads": "未読",
+    "later": "後で",
+    "files": "ファイル",
+    "admin": "管理",
+    "threads": "スレッド"
+  },
+  "workspace": {
+    "name": "Slawk",
+    "newMessage": "新しいメッセージ"
+  },
+  "userMenu": {
+    "profile": "プロフィール",
+    "notificationsBlocked": "通知がブロックされています",
+    "disableNotifications": "通知をオフにする",
+    "enableNotifications": "通知をオンにする",
+    "signOut": "サインアウト",
+    "updateStatus": "ステータスを更新",
+    "pauseNotifications": "通知を一時停止",
+    "pausedUntil": "{time}まで一時停止中",
+    "pausedIndefinitely": "ステータスをクリアするまで一時停止中",
+    "resumeNotifications": "通知を再開",
+    "pause": {
+      "m30": "30分",
+      "h1": "1時間",
+      "h2": "2時間",
+      "tomorrow": "明日まで"
+    },
+    "pauseError": "通知の一時停止を変更できませんでした。もう一度お試しください。",
+    "accessTokens": "個人用アクセストークン",
+    "sessions": "サインイン中のデバイス",
+    "twoFactor": "2要素認証",
+    "changePassword": "パスワードを変更",
+    "connectedApps": "接続済みのアプリ"
+  },
+  "sections": {
+    "starred": "スター付き",
+    "channels": "チャンネル",
+    "addChannels": "チャンネルを追加",
+    "directMessages": "ダイレクトメッセージ",
+    "addTeammates": "メンバーを追加",
+    "starredEmpty": "チャンネルや会話にスターを付けると、ここに表示されます。",
+    "collapse": "{section}を閉じる",
+    "expand": "{section}を開く"
+  },
+  "teammates": {
+    "title": "ダイレクトメッセージ",
+    "subtitle": "会話を探すか開始する",
+    "searchPlaceholder": "名前で検索...",
+    "noUsers": "ユーザーが見つかりません",
+    "close": "閉じる",
+    "pickSubtitle": "最大{max}人まで選択",
+    "select": "{name}を選択",
+    "selectedCount": "{max}人中{count}人を選択中",
+    "start": "会話を開始",
+    "startGroup": "グループ会話を開始"
+  },
+  "you": "（あなた）",
+  "notifications": {
+    "someone": "誰か",
+    "sentAttachment": "添付ファイルを送信しました",
+    "threadTitle": "{name}（スレッド）"
+  },
+  "groupDM": {
+    "memberCount": "{count, plural, other {# 人}}",
+    "createError": "グループ会話を開始できませんでした。もう一度お試しください。"
+  },
+  "statusDialog": {
+    "title": "ステータスを設定",
+    "emojiLabel": "絵文字を選択",
+    "textLabel": "今の状況は？",
+    "textPlaceholder": "今の状況は？",
+    "durationLabel": "次の時間で消去",
+    "duration": {
+      "never": "消去しない",
+      "m30": "30分",
+      "h1": "1時間",
+      "h4": "4時間",
+      "today": "今日中",
+      "week": "今週中"
+    },
+    "pauseCheckbox": "ステータスが消去されるまで通知を一時停止",
+    "save": "保存",
+    "clear": "ステータスを消去",
+    "cancel": "キャンセル",
+    "expiresAt": "{time}に消去されます",
+    "saveError": "ステータスを保存できませんでした。もう一度お試しください。"
+  },
+  "findConversation": "会話を探す"
+}

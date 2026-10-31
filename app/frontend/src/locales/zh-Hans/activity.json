@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "动态",
+    "markAllRead": "全部标记为已读",
+    "loading": "正在加载...",
+    "loadingMore": "正在加载更多...",
+    "loadFailed": "无法加载动态。",
+    "empty": "还没有动态。",
+    "unread": "未读",
+    "menu": "菜单",
+    "someone": "某人",
+    "directMessage": "一条私信",
+    "messageDeleted": "已删除的消息"
+  },
+  "tabs": {
+    "all": "全部",
+    "mentions": "提及",
+    "threads": "线程",
+    "reactions": "反应"
+  },
+  "describe": {
+    "mention": "{actor}在{where}中提及了您",
+    "channelMention": "{actor}在{where}中提及了 @channel",
+    "hereMention": "{actor}在{where}中提及了 @here",
+    "threadReply": "{actor}在{where}的线程中回复了",
+    "reaction": "{actor}在{where}中对您的消息做出了 {emoji} 反应",
+    "reminder": "提醒"
+  }
+}
