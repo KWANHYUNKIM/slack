@@ -14,7 +14,9 @@ import {
   generateToken,
   toTokenView,
 } from '../services/accessTokenService.js';
-import { verifySecondFactor, isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures } from '../services/mfaService.js';
+import {
+  verifySecondFactor, restoreRecoveryCode, isMfaVerifyLocked, recordMfaVerifyFailure, clearMfaVerifyFailures,
+} from '../services/mfaService.js';
 
 // 개인 액세스 토큰 관리(mcp-1). 로그인 세션(JWT)으로만 다룬다.
 // authMiddleware는 JWT만 받으므로 PAT로 PAT를 만들거나 지울 수 없다.
@@ -59,7 +61,13 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { name, scopes, expiresInDays, code } = createSchema.parse(req.body);
     const userId = req.user!.userId;
 
+    const now = new Date();
+    // 만료된 토큰은 쓸 수 없으므로 상한에서 뺀다(폐기하지 않아도 새로 만들 수 있게).
+    const usableWhere = { ...activeWhere(userId), OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] };
+    const LIMIT = { error: 'Too many tokens', code: ERR.TOKEN_LIMIT_REACHED };
+
     const me = await prisma.user.findUnique({ where: { id: userId }, select: { mfaEnabledAt: true } });
+    let verified: Awaited<ReturnType<typeof verifySecondFactor>> | null = null;
     if (me?.mfaEnabledAt) {
       if (!code) {
         res.status(403).json({ error: 'Two-factor code required', code: ERR.MFA_CODE_REQUIRED });
@@ -69,43 +77,57 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         res.status(429).json({ error: 'Too many failed attempts. Try again later.', code: ERR.AUTH_TOO_MANY_ATTEMPTS });
         return;
       }
-      const verified = await verifySecondFactor(userId, code);
+      // 상한에 닿았으면 코드를 확인하기 전에 거부한다(복구 코드를 헛되이 쓰지 않게). 최종 판정은 아래 트랜잭션이 한다.
+      if ((await prisma.personalAccessToken.count({ where: usableWhere })) >= MAX_ACTIVE_TOKENS) {
+        res.status(409).json(LIMIT);
+        return;
+      }
+      verified = await verifySecondFactor(userId, code);
       if (!verified.ok) {
+        // 키가 없어 확인할 수 없는 것은 사용자의 실패가 아니다
+        if (verified.reason === 'unavailable') {
+          res.status(503).json({ error: 'Two-factor authentication is not available on this server', code: ERR.MFA_UNAVAILABLE });
+          return;
+        }
         recordMfaVerifyFailure(userId);
         // 401은 프런트에서 로그아웃으로 처리되므로 403으로 답한다
         res.status(403).json({ error: 'Invalid authentication code', code: ERR.MFA_INVALID_CODE });
         return;
       }
       clearMfaVerifyFailures(userId);
-      if (verified.method === 'recovery') {
-        void writeAuditLog({ action: 'mfa.recovery_used', actorId: userId, targetType: 'user', targetId: userId, details: `remaining=${verified.remaining}; purpose=token_create` });
-      }
     }
 
     const { token, publicId, tokenHash } = generateToken();
-    const now = new Date();
     // 동시 발급이 상한을 넘지 않게 사용자 행을 잠그고 그 안에서 세고 만든다.
-    // 만료된 토큰은 쓸 수 없으므로 상한에서 뺀다(폐기하지 않아도 새로 만들 수 있게).
-    const row = await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
-      const activeCount = await tx.personalAccessToken.count({
-        where: { ...activeWhere(userId), OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    let row;
+    try {
+      row = await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+        const activeCount = await tx.personalAccessToken.count({ where: usableWhere });
+        if (activeCount >= MAX_ACTIVE_TOKENS) return null;
+        return tx.personalAccessToken.create({
+          data: {
+            userId,
+            name,
+            publicId,
+            tokenHash,
+            scopes: [...new Set(scopes)],
+            expiresAt: expiresInDays === null ? null : new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000),
+          },
+        });
       });
-      if (activeCount >= MAX_ACTIVE_TOKENS) return null;
-      return tx.personalAccessToken.create({
-        data: {
-          userId,
-          name,
-          publicId,
-          tokenHash,
-          scopes: [...new Set(scopes)],
-          expiresAt: expiresInDays === null ? null : new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000),
-        },
-      });
-    });
+    } catch (error) {
+      if (verified?.ok && verified.method === 'recovery') await restoreRecoveryCode(userId, verified.consumed);
+      throw error;
+    }
     if (!row) {
-      res.status(409).json({ error: 'Too many tokens', code: ERR.TOKEN_LIMIT_REACHED });
+      // 확인 뒤에 상한에 닿았으면(동시 발급) 이번에 쓴 복구 코드를 되돌린다
+      if (verified?.ok && verified.method === 'recovery') await restoreRecoveryCode(userId, verified.consumed);
+      res.status(409).json(LIMIT);
       return;
+    }
+    if (verified?.ok && verified.method === 'recovery') {
+      void writeAuditLog({ action: 'mfa.recovery_used', actorId: userId, targetType: 'user', targetId: userId, details: `remaining=${verified.remaining}; purpose=token_create` });
     }
 
     // 원문과 해시는 감사 로그에 남기지 않는다. 기록은 기다리지 않는다(실패는 writeAuditLog가 logError로 남긴다).

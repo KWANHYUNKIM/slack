@@ -16,7 +16,7 @@ import {
   createMfaChallenge, findMfaChallenge, claimMfaChallengeAttempt, consumeMfaChallenge,
   verifySecondFactor, restoreRecoveryCode, isMfaPolicyEnforced, MFA_CHALLENGE_TTL_MS,
 } from '../services/mfaService.js';
-import { createAttemptLimiter } from '../utils/attemptLimiter.js';
+import { createAttemptLimiter, type AttemptOutcome } from '../utils/attemptLimiter.js';
 
 const router = Router();
 const isTest = process.env.NODE_ENV === 'test';
@@ -293,38 +293,44 @@ router.post('/login/2fa', async (req: Request, res: Response) => {
       res.status(401).json(MFA_TOKEN_EXPIRED);
       return;
     }
-    // 검증 전에 시도를 먼저 센다. 동시에 수십 건이 와도 이메일 잠금(10회)과 대기당 5회를 넘겨 검증하지 않는다.
-    // 두 카운터 모두 성공하면 비운다(대기는 used로 닫힌다).
-    const acquired = loginAttempts.tryAcquire(user.email);
-    if (!acquired.ok) {
+    // 검증 전에 이메일 잠금 자리를 잡는다(실패 수 + 검증 중인 수가 10 미만일 때만). 동시에 수십 건이 와도 한도를 넘겨 검증하지 않고,
+    // 실패는 결과가 나온 뒤에만 세서 맞는 코드가 잠금이나 login_locked 기록을 만들지 않는다. 대기당 5회는 claim이 따로 막는다.
+    if (!loginAttempts.reserve(user.email)) {
       res.status(429).json({ error: 'Account temporarily locked. Try again later.', code: ERR.AUTH_ACCOUNT_LOCKED });
       return;
     }
-    if (acquired.locked) auditLoginLocked(user.email, user.id);
-    if (!(await claimMfaChallengeAttempt(challenge.id))) {
-      res.status(401).json(MFA_TOKEN_EXPIRED);
-      return;
+    let outcome: AttemptOutcome = 'neutral';
+    let result: Awaited<ReturnType<typeof verifySecondFactor>>;
+    try {
+      if (!(await claimMfaChallengeAttempt(challenge.id))) {
+        res.status(401).json(MFA_TOKEN_EXPIRED);
+        return;
+      }
+
+      result = await verifySecondFactor(user.id, code);
+      if (!result.ok) {
+        // 키가 없어 TOTP를 확인할 수 없는 것은 잠금 실패로 세지 않는다(대기 시도 수는 이미 썼다)
+        if (result.reason !== 'unavailable') outcome = 'failure';
+        // 코드 원문은 남기지 않는다
+        const reason = result.reason === 'bad_recovery_code' ? 'bad_recovery_code' : 'bad_totp';
+        void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: `reason=${reason}` });
+        res.status(401).json({
+          error: 'Invalid authentication code',
+          code: result.reason === 'unavailable' ? ERR.MFA_UNAVAILABLE : ERR.MFA_INVALID_CODE,
+        });
+        return;
+      }
+      // 같은 대기로 다른 요청이 먼저 성공했으면 세션을 하나 더 만들지 않는다. 이번에 쓴 복구 코드는 되돌린다.
+      if (!(await consumeMfaChallenge(challenge.id))) {
+        if (result.method === 'recovery') await restoreRecoveryCode(user.id, result.consumed);
+        res.status(401).json(MFA_TOKEN_EXPIRED);
+        return;
+      }
+      outcome = 'success';
+    } finally {
+      if (loginAttempts.release(user.email, outcome)) auditLoginLocked(user.email, user.id);
     }
 
-    const result = await verifySecondFactor(user.id, code);
-    if (!result.ok) {
-      // 코드 원문은 남기지 않는다. 키가 없어 TOTP를 확인할 수 없는 경우도 사용자 쪽에서는 같은 실패라 bad_totp로 센다.
-      const reason = result.reason === 'bad_recovery_code' ? 'bad_recovery_code' : 'bad_totp';
-      void writeAuditLog({ action: 'auth.login_failed', actorId: user.id, targetType: 'user', targetId: user.id, details: `reason=${reason}` });
-      res.status(401).json({
-        error: 'Invalid authentication code',
-        code: result.reason === 'unavailable' ? ERR.MFA_UNAVAILABLE : ERR.MFA_INVALID_CODE,
-      });
-      return;
-    }
-    // 같은 대기로 다른 요청이 먼저 성공했으면 세션을 하나 더 만들지 않는다. 이번에 쓴 복구 코드는 되돌린다.
-    if (!(await consumeMfaChallenge(challenge.id))) {
-      if (result.method === 'recovery') await restoreRecoveryCode(user.id, result.consumed);
-      res.status(401).json(MFA_TOKEN_EXPIRED);
-      return;
-    }
-
-    loginAttempts.clear(user.email);
     if (result.method === 'recovery') {
       void writeAuditLog({ action: 'mfa.recovery_used', actorId: user.id, targetType: 'user', targetId: user.id, details: `remaining=${result.remaining}` });
     }

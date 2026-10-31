@@ -166,7 +166,8 @@
       "download": "Download",
       "copy": "Copy all",
       "fileHeader": "Recovery codes. Each code works once. Keep them somewhere safe.",
-      "confirmSaved": "I saved my recovery codes"
+      "confirmSaved": "I saved my recovery codes",
+      "fileName": "recovery-codes.txt"
     },
     "disable": {
       "title": "Turn off two-factor authentication",
@@ -176,7 +177,8 @@
       "codeLabel": "Authentication or recovery code",
       "submit": "Turn off two-factor authentication",
       "submitting": "Turning off...",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "blockedByPolicy": "Your organization requires two-factor authentication, so you cannot turn it off. If you lost your device, ask an administrator to reset it."
     },
     "enabledToast": "Two-factor authentication is on",
     "disabledToast": "Two-factor authentication is off",

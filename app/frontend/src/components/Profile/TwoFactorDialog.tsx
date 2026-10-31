@@ -95,7 +95,10 @@ export function TwoFactorDialog({ onClose }: TwoFactorDialogProps) {
             <p data-testid="mfa-recovery-remaining" className="mb-3 text-[13px] text-slack-secondary">
               {t('twoFactor.recoveryRemaining', { count: status.recoveryCodesRemaining })}
             </p>
-            {!disabling ? (
+            {status.required ? (
+              // 조직이 필수로 했으면 끌 수 없다(서버도 MFA_REQUIRED_BY_POLICY로 막는다)
+              <p data-testid="mfa-disable-blocked" className="text-[13px] text-amber-700">{t('twoFactor.disable.blockedByPolicy')}</p>
+            ) : !disabling ? (
               <button
                 type="button"
                 data-testid="mfa-disable-start"

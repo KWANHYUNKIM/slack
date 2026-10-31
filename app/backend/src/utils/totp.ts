@@ -26,25 +26,6 @@ export function base32Encode(buf: Buffer): string {
   return out;
 }
 
-/** base32를 푼다. 공백·패딩·소문자를 허용하고, 알파벳 밖 글자가 있으면 null. */
-export function base32Decode(input: string): Buffer | null {
-  const s = input.replace(/[\s=]/g, '').toUpperCase();
-  let bits = 0;
-  let value = 0;
-  const out: number[] = [];
-  for (const ch of s) {
-    const idx = BASE32_ALPHABET.indexOf(ch);
-    if (idx < 0) return null;
-    value = (value << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      out.push((value >>> (bits - 8)) & 255);
-      bits -= 8;
-    }
-  }
-  return Buffer.from(out);
-}
-
 export type TotpAlgorithm = 'sha1' | 'sha256' | 'sha512';
 
 /** HOTP(RFC 4226): HMAC(secret, counter) → 동적 절단 → digits 자리 */

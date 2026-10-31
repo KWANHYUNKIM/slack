@@ -71,9 +71,18 @@ export function getSessionIdleTimeoutHours(): number {
 
 // 2FA 비밀 암호화 키(E7b). 32바이트를 hex(64자) 또는 base64로 받는다. 호출 시점에 읽는다(테스트가 바꿔 가며 확인한다).
 // 없거나 형식이 틀리면 null이고, 그때 2FA 등록·TOTP 확인·필수 정책은 꺼진다(이미 켠 사용자는 복구 코드로만 로그인한다).
+// 요청마다(인증 미들웨어가 정책 판단에 부른다) 정규식과 Buffer를 만들지 않게, 환경 변수 원문이 같으면 이전 결과를 쓴다.
 let warnedTotpKey = false;
+let cachedTotpKey: { raw: string | undefined; key: Buffer | null } | null = null;
 export function getTotpEncryptionKey(): Buffer | null {
-  const raw = (process.env.TOTP_ENCRYPTION_KEY ?? '').trim();
+  const env = process.env.TOTP_ENCRYPTION_KEY;
+  if (cachedTotpKey && cachedTotpKey.raw === env) return cachedTotpKey.key;
+  const key = parseTotpKey((env ?? '').trim());
+  cachedTotpKey = { raw: env, key };
+  return key;
+}
+
+function parseTotpKey(raw: string): Buffer | null {
   let key: Buffer | null = null;
   if (/^[0-9a-fA-F]{64}$/.test(raw)) {
     key = Buffer.from(raw, 'hex');

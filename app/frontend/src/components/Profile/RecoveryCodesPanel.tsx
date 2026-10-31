@@ -17,7 +17,8 @@ export function RecoveryCodesPanel({ codes, onDone }: RecoveryCodesPanelProps) {
     const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'recovery-codes.txt';
+    // 파일 이름도 번역한다. 글자·숫자·점·밑줄·하이픈 말고는(경로 구분자, 공백, 제어 문자 등) 하이픈으로 바꾼다.
+    a.download = t('twoFactor.recovery.fileName').replace(/[^\p{L}\p{N}._-]/gu, '-') || 'recovery-codes.txt';
     document.body.appendChild(a);
     a.click();
     a.remove();

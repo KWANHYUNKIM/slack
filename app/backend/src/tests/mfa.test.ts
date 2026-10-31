@@ -10,7 +10,9 @@ import { JWT_SECRET } from '../config.js';
 import app from '../app.js';
 import prisma from '../db.js';
 import { initializeWebSocket } from '../websocket/index.js';
-import { base32Decode, base32Encode, hotp, totp, totpStep, verifyTotp, buildOtpauthUri } from '../utils/totp.js';
+import { base32Encode, hotp, totp, totpStep, verifyTotp, buildOtpauthUri } from '../utils/totp.js';
+import { base32Decode } from './base32.js';
+import { MAX_ACTIVE_TOKENS } from '../services/accessTokenService.js';
 import { sealSecret, openSecret } from '../utils/secretBox.js';
 import { normalizeRecoveryCode, generateRecoveryCode, setRequireMfa, getRequireMfa } from '../services/mfaService.js';
 import { setWorkspaceRetentionDays, getWorkspaceRetentionDays } from '../services/retentionService.js';
@@ -630,6 +632,71 @@ describe('2단계 인증 API (E7b)', () => {
     secretsSeen.push(ok.body.token);
     // 같은 코드로 한 번 더는 안 된다
     expect((await request(app).post('/tokens').set(auth(token)).send({ name: 'replay', code })).body.code).toBe('MFA_INVALID_CODE');
+  });
+
+  it('PAT 상한에 닿았으면 코드를 확인하기 전에 거부하고 복구 코드를 쓰지 않는다', async () => {
+    const { id, token: firstToken } = await register('pat-limit-mfa@example.com');
+    const { recoveryCodes, token } = await enroll(firstToken);
+    await prisma.personalAccessToken.createMany({
+      data: Array.from({ length: MAX_ACTIVE_TOKENS }, (_, i) => ({
+        userId: id, name: `t${i}`, publicId: crypto.randomBytes(6).toString('hex'), tokenHash: '0'.repeat(64), scopes: ['channels:read'],
+      })),
+    });
+    const before = await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } });
+    const r = await request(app).post('/tokens').set(auth(token)).send({ name: 'over', code: recoveryCodes[0] });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('TOKEN_LIMIT_REACHED');
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(before);
+    expect(await prisma.auditLog.count({ where: { action: 'mfa.recovery_used', targetId: id } })).toBe(0);
+    // 하나를 폐기하면 같은 복구 코드로 발급되고 그때 소모된다
+    const one = await prisma.personalAccessToken.findFirstOrThrow({ where: { userId: id } });
+    await prisma.personalAccessToken.update({ where: { id: one.id }, data: { revokedAt: new Date() } });
+    const ok = await request(app).post('/tokens').set(auth(token)).send({ name: 'fits', code: recoveryCodes[0] });
+    expect(ok.status).toBe(201);
+    secretsSeen.push(ok.body.token);
+    expect(await prisma.mfaRecoveryCode.count({ where: { userId: id, usedAt: null } })).toBe(before - 1);
+  });
+
+  it('맞는 코드는 잠금을 만들지 않는다: 9번 틀린 뒤 맞는 코드면 로그인되고 login_locked가 남지 않는다', async () => {
+    const email = 'nine-mfa@example.com';
+    const { id, token } = await register(email);
+    const { secret } = await enroll(token);
+    const wrong = () => (totp(secret, Date.now()) === '000000' ? '111111' : '000000');
+    // 대기당 5회라 두 대기로 나눠 9번 틀린다
+    for (const n of [5, 4]) {
+      const s = await passwordStep(email);
+      for (let i = 0; i < n; i++) {
+        expect((await request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: wrong() })).body.code).toBe('MFA_INVALID_CODE');
+      }
+    }
+    const s = await passwordStep(email);
+    const ok = await request(app).post('/auth/login/2fa').send({ mfaToken: s.mfaToken, code: totp(secret, Date.now() + 30_000) });
+    expect(ok.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(await prisma.auditLog.count({ where: { action: 'auth.login_locked', targetId: id } })).toBe(0);
+    // 성공하면 실패 수가 비워져 다시 9번 틀려도 잠기지 않는다
+    for (const n of [5, 4]) {
+      const s2 = await passwordStep(email);
+      for (let i = 0; i < n; i++) await request(app).post('/auth/login/2fa').send({ mfaToken: s2.mfaToken, code: wrong() });
+    }
+    expect((await request(app).post('/auth/login').send({ email, password: TEST_PASSWORD })).status).toBe(200);
+  });
+
+  it('키가 없어 확인할 수 없는 것은 실패로 세지 않고 503 MFA_UNAVAILABLE로 답한다', async () => {
+    const { id, token: firstToken } = await register('unavail-mfa@example.com');
+    const { secret, token } = await enroll(firstToken);
+    await forgetLastStep(id);
+    delete process.env.TOTP_ENCRYPTION_KEY;
+    // 5회 제한보다 많이 보내도 잠기지 않는다(사용자 실패가 아니다)
+    for (let i = 0; i < 6; i++) {
+      const off = await request(app).post('/users/me/2fa/disable').set(auth(token)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
+      expect({ s: off.status, c: off.body.code }).toEqual({ s: 503, c: 'MFA_UNAVAILABLE' });
+      const pat = await request(app).post('/tokens').set(auth(token)).send({ name: 'x', code: totp(secret, Date.now()) });
+      expect({ s: pat.status, c: pat.body.code }).toEqual({ s: 503, c: 'MFA_UNAVAILABLE' });
+    }
+    process.env.TOTP_ENCRYPTION_KEY = KEY_HEX;
+    const off = await request(app).post('/users/me/2fa/disable').set(auth(token)).send({ password: TEST_PASSWORD, code: totp(secret, Date.now()) });
+    expect(off.status).toBe(200);
   });
 
   it('암호화 키가 없으면 2FA를 켤 수 없고, 이미 켠 사용자는 복구 코드로만 로그인한다', async () => {

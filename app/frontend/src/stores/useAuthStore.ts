@@ -183,9 +183,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!storageListenerRegistered) {
       storageListenerRegistered = true;
       window.addEventListener('storage', (e) => {
-        if (e.key === 'token' && e.newValue === null) {
+        if (e.key !== 'token') return;
+        if (e.newValue === null) {
           disconnectSocket();
           window.location.href = '/login';
+          return;
+        }
+        // 다른 탭이 2FA를 켜고 꺼서 새 토큰을 받았다(이전 토큰은 무효). 이 탭도 새 토큰으로 다시 붙는다.
+        // HTTP 요청은 매번 localStorage를 읽으므로 따로 할 일이 없다.
+        if (e.oldValue !== null && e.newValue !== e.oldValue) {
+          clearDownloadToken();
+          reconnectSocket();
         }
       });
       // 앱을 쓰는 중에 관리자가 2FA 필수를 켜면 API가 MFA_ENROLLMENT_REQUIRED를 돌려준다(lib/api.ts가 알린다)

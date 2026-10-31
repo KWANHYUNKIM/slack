@@ -315,7 +315,8 @@ router.post('/users/:id/2fa/reset', async (req: AuthRequest, res: Response) => {
     await prisma.user.update({ where: { id: target.id }, data: { tokenVersion: { increment: 1 } } });
     const revoked = await revokeUserSessions(target.id);
     invalidateTokenCache(target.id);
-    kickUser(target.id);
+    // 계정 비활성화가 아니라 세션 폐기이므로 세션 폐기와 같은 사유로 끊는다
+    kickUser(target.id, 'Session revoked');
     await writeAuditLog({
       action: 'mfa.reset_by_admin', actorId: req.user!.userId, targetType: 'user', targetId: target.id,
       targetName: target.name, details: `sessions=${revoked.length}`,

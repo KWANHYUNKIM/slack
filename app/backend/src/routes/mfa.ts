@@ -164,9 +164,13 @@ router.post('/disable', async (req: AuthRequest, res: Response) => {
     }
     const result = await verifySecondFactor(userId, code);
     if (!result.ok) {
+      // 키가 없어 TOTP를 확인할 수 없는 것은 사용자의 실패로 세지 않는다
+      if (result.reason === 'unavailable') {
+        res.status(503).json(UNAVAILABLE);
+        return;
+      }
       recordMfaVerifyFailure(userId);
-      if (result.reason === 'unavailable') res.status(503).json(UNAVAILABLE);
-      else res.status(403).json(INVALID_CODE);
+      res.status(403).json(INVALID_CODE);
       return;
     }
     clearMfaVerifyFailures(userId);

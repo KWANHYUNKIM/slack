@@ -1,10 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 import { MFA_ENROLLMENT_EVENT } from '@/lib/api';
+import { sessionEndAction } from '@/lib/sessionEnd';
 
 /** 서버(websocket/index.ts MFA_KICK_MESSAGE)가 2FA 등록이 필요해 거부하거나 끊을 때 보내는 사유 */
 const MFA_KICK_MESSAGE = 'MFA enrollment required';
 
 let socket: Socket | null = null;
+/** 이 소켓이 마지막으로 들고 붙은 토큰 */
+let usedToken: string | null = null;
 
 export function getSocket(): Socket | null {
   return socket;
@@ -17,7 +20,11 @@ export function connectSocket(): Socket | null {
   if (!token) return null;
 
   socket = io({
-    auth: (cb) => { cb({ token: localStorage.getItem('token') }); },
+    // 연결할 때마다 지금 저장된 토큰을 읽는다. 어떤 토큰으로 붙었는지 기억해 두었다가 세션 종료 판단에 쓴다.
+    auth: (cb) => {
+      usedToken = localStorage.getItem('token');
+      cb({ token: usedToken });
+    },
     transports: ['websocket', 'polling'],
   });
 
@@ -52,7 +59,13 @@ export function connectSocket(): Socket | null {
 export const SESSION_ENDED_FLAG = 'sessionEnded';
 
 function handleSessionEnded() {
-  if (!localStorage.getItem('token')) return;
+  // 다른 탭이 2FA를 켜고 꺼서 이미 새 토큰을 저장했으면 지우지 않고 새 토큰으로 다시 붙는다
+  const action = sessionEndAction(usedToken, localStorage.getItem('token'));
+  if (action === 'ignore') return;
+  if (action === 'retry') {
+    socket?.connect();
+    return;
+  }
   localStorage.removeItem('token');
   sessionStorage.setItem(SESSION_ENDED_FLAG, '1');
   disconnectSocket();
