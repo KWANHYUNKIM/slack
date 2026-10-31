@@ -57,3 +57,6 @@
 | 2026-10-31 22:07 | dev-1 | sonnet | 05-user-status-dnd | 204,133 |
 | 2026-10-31 22:10 | code-review | (리뷰) | PR #28 medium | 89,692 |
 | 2026-10-31 22:14 | dev-1 | sonnet | PR #28 리뷰 반영 | 29,513 |
+| 2026-10-31 22:20 | dev-2 | sonnet | 06-quick-switcher-shortcuts | 128,115 |
+| 2026-10-31 22:24 | code-review | (리뷰) | PR #30 medium | 85,973 |
+| 2026-10-31 22:27 | dev-2 | sonnet | PR #30 리뷰 반영 | 36,448 |

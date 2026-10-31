@@ -172,3 +172,7 @@
 | 2026-10-31 22:11 | PR #28 리뷰 10건 → dev-1 반영 지시. 총괄 결정: 수동 DND가 더 길면 상태 묶음으로 덮지 않음, keep은 expiresAt 미전송(없음=유지, null=해제), 상태 문구는 <> 제거 대신 렌더 이스케이프에 맡김, /dms 시각 UTC ISO |
 | 2026-10-31 22:16 | PR #28 머지(7175db1). 첫 merge가 "Base branch was modified"로 일시 실패 → 브랜치 삭제 없이 8초 뒤 재시도해 성공(PR #23 실수 교훈 적용). 마이그레이션 20261031160000_add_user_status_dnd를 dev2~5·slackclone·slackclone_dev에 적용, dev-1 worktree 제거 |
 | 2026-10-31 22:17 | 배정: dev-2 06-quick-switcher-shortcuts(sonnet, 비스키마). 자원 감속(스왑 88%) 한도 1 |
+| 2026-10-31 22:22 | dev-2 06 완료 검토: main 리베이스, tsc·eslint·i18n·외부 URL·switcher:test 20/20 재확인 → PR #30, /code-review medium |
+| 2026-10-31 22:24 | PR #30 리뷰 9건 → dev-2 반영 지시. 총괄 결정: 최근 방문은 사용자별 키·로그아웃 시 삭제, 목록 로드 완료 후에만 정리, Esc는 각 모달이 처리하고 전파 중단, 키 라벨 번역 키화 |
+| 2026-10-31 22:26 | 사용자 질문 "바로바로 실행해주면 안되나?" → 자원 규칙(스왑 91%, 한도 1) 초과 여부를 물었고 사용자가 "3명까지 허용" 선택. CLAUDE.md 4장 예외로 동시 3명 운영: dev-2 06 리뷰 반영, dev-3 07-message-permalink, dev-4 08-search-v2(fix/search-nfc 흡수). 무거운 작업(vite·빌드·전체 스위트) 금지 유지, 디스크 5GB 미만이나 정지 단계면 즉시 축소 |
+| 2026-10-31 22:30 | PR #30 머지(16564f2), main에서 frontend tsc·switcher:test 26/26 확인, worktree 제거. 배정: dev-5 09-reminders(sonnet, 스키마 20261031170000_대). 사용자 허용 3명(dev-3 07, dev-4 08, dev-5 09). 10은 07 머지 후 |
