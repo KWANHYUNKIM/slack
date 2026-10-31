@@ -218,7 +218,19 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    res.json({ ...channel, isStarred });
+    // 안 읽음 구분선용 기준점. 열기 응답에서만 계산하고 읽음 처리는 하지 않는다(프런트가 이 값을 잡은 뒤 /read를 부른다).
+    // 읽음 행이 없으면(채널 생성자 등) 목록의 안 읽음 배지와 같게 전부 안 읽음(null)으로 본다.
+    const timelineFilter = { channelId, OR: [{ threadId: null }, { alsoSendToChannel: true }], deletedAt: null };
+    const readRow = await prisma.channelRead.findUnique({
+      where: { userId_channelId: { userId, channelId } },
+      select: { lastReadMessageId: true },
+    });
+    const lastReadMessageId = readRow?.lastReadMessageId ?? null;
+    const unreadCount = await prisma.message.count({
+      where: { ...timelineFilter, ...(lastReadMessageId !== null && { id: { gt: lastReadMessageId } }) },
+    });
+
+    res.json({ ...channel, isStarred, lastReadMessageId, unreadCount });
   } catch (error) {
     logError('Get channel error', error);
     res.status(500).json({ error: 'Failed to get channel' });

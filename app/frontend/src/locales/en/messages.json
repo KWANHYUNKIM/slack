@@ -260,5 +260,11 @@
     "notFound": "This message can't be found, or you don't have permission to view it",
     "goHome": "Go home",
     "copyManually": "Couldn't copy automatically. Copy this link: {url}"
+  },
+  "unread": {
+    "divider": "New",
+    "newMessagesBar": "{count, plural, one {# new message} other {# new messages}}",
+    "newMessagesBarAtLeast": "{count, plural, one {# or more new message} other {# or more new messages}}",
+    "markRead": "Mark as read"
   }
 }

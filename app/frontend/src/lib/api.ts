@@ -192,6 +192,8 @@ export interface ApiChannel {
 
 export interface ApiChannelDetail extends ApiChannel {
   createdBy?: number | null;
+  /** 열기 직전의 읽음 기준점(멤버만). 안 읽음 구분선에 쓴다 */
+  lastReadMessageId?: number | null;
   members: Array<{
     userId: number;
     channelId: number;
