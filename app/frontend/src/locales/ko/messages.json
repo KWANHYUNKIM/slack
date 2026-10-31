@@ -94,7 +94,8 @@
     "pin": "메시지 고정",
     "unpin": "메시지 고정 해제",
     "edit": "메시지 수정",
-    "delete": "메시지 삭제"
+    "delete": "메시지 삭제",
+    "copyLink": "링크 복사"
   },
   "area": {
     "selectChannel": "채널을 선택해 대화를 시작하세요",
@@ -253,5 +254,11 @@
     "openThread": "스레드 열기",
     "loadMore": "더 보기",
     "loading": "불러오는 중..."
+  },
+  "permalink": {
+    "copied": "링크를 복사했습니다",
+    "copyFailed": "링크를 복사하지 못했습니다",
+    "notFound": "이 메시지를 찾을 수 없거나 볼 권한이 없습니다",
+    "goHome": "홈으로 가기"
   }
 }

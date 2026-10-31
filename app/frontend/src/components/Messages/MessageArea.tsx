@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Hash, Menu } from 'lucide-react';
 import { useMobileStore } from '@/stores/useMobileStore';
 import { useChannelStore } from '@/stores/useChannelStore';
@@ -50,6 +50,13 @@ export function MessageArea() {
     // 한 번 쓴 state는 비워 새로고침해도 패널이 다시 열리지 않게 한다
     navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: {} });
   }, [location.key, activeChannelId, openThreadId, location.pathname, location.search, navigate]);
+
+  // 퍼말링크 /c/:channelId/m/:parentId?reply=:replyId 로 들어오면 부모의 스레드를 열어 답글을 강조한다
+  const { messageId: routeMessageId } = useParams<{ messageId?: string }>();
+  useEffect(() => {
+    const parentId = Number(routeMessageId);
+    if (highlightReplyId && parentId > 0) setActiveThreadId(parentId);
+  }, [routeMessageId, highlightReplyId, activeChannelId]);
 
   const handleOpenThread = useCallback((messageId: number) => {
     setActiveThreadId(messageId);

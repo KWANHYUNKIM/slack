@@ -1,7 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { isToday, isYesterday } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { copyPermalink } from '@/hooks/useCopyPermalink';
 import { formatDate, formatTime, formatTimeShort, formatDateTime } from '@/lib/i18n/format';
 import { t as translate } from '@/lib/i18n';
 import {
@@ -293,6 +294,22 @@ export function DMConversation(props: DMConversationProps) {
     setActiveThreadId(null);
     setShowMembers(false);
   }
+
+  // 퍼말링크(/d/:userId/m/:parentId?reply=:replyId)로 들어오면 그 스레드를 열고 답글을 강조한다
+  const { messageId: routeMessageId } = useParams<{ messageId?: string }>();
+  const routeSearch = useLocation().search;
+  const highlightReplyId = Number(new URLSearchParams(routeSearch).get('reply')) || null;
+  const permalinkKey = highlightReplyId && Number(routeMessageId) > 0 ? `${userId}:${routeMessageId}:${highlightReplyId}` : null;
+  const [openedPermalinkKey, setOpenedPermalinkKey] = useState<string | null>(null);
+  if (permalinkKey !== openedPermalinkKey) {
+    setOpenedPermalinkKey(permalinkKey);
+    if (permalinkKey) setActiveThreadId(Number(routeMessageId));
+  }
+
+  // 링크 복사가 가리킬 대화: 그룹 DM은 그룹 id, 1:1은 상대 userId
+  const permalinkBase = isGroup
+    ? { kind: 'group' as const, conversationId: groupId }
+    : { kind: 'dm' as const, conversationId: props.userId };
 
   // Memoize dmParticipantIds to prevent MessageInput re-renders
   const currentUserId = currentUser?.id;
@@ -686,6 +703,10 @@ export function DMConversation(props: DMConversationProps) {
                             showOwnerActions={isOwner}
                             onEdit={() => handleStartEdit(msg)}
                             onDelete={() => handleDelete(msg.id)}
+                            onCopyLink={() => {
+                              setShowMoreMenuId(null);
+                              void copyPermalink({ ...permalinkBase, messageId: msg.id });
+                            }}
                             onPin={() => handleTogglePin(msg)}
                             isPinned={msg.isPinned}
                             onMarkUnread={isGroup ? undefined : () => {
@@ -783,6 +804,8 @@ export function DMConversation(props: DMConversationProps) {
             variant="dm"
             onClose={handleCloseThread}
             onReplyCountChange={handleReplyCountChange}
+            highlightReplyId={highlightReplyId}
+            permalinkBase={permalinkBase}
           />
         )}
       </div>

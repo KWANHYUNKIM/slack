@@ -16,6 +16,7 @@ import { useThreadStore } from '@/stores/useThreadStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
 import { markDMGroupRead } from '@/lib/api';
+import { usePermalinkSync } from '@/hooks/usePermalinkSync';
 import { HuddleBar } from '@/components/Huddle/HuddleBar';
 import { HuddleIncomingCall } from '@/components/Huddle/HuddleIncomingCall';
 import { AppLayout } from '@/components/Layout/AppLayout';
@@ -56,9 +57,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
  * - /channels/:channelId  → sets activeChannelId
  * - /dm/:userId           → sets activeDMId
  * - /g/:groupId           → sets activeGroupId (group DM)
+ * - .../m/:messageId       → permalink: usePermalinkSync checks access and jumps to the message
  */
 function RouteSync() {
-  const { channelId, userId, groupId } = useParams<{ channelId?: string; userId?: string; groupId?: string }>();
+  const { channelId, userId, groupId, messageId } = useParams<{ channelId?: string; userId?: string; groupId?: string; messageId?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const setActiveChannel = useChannelStore((s) => s.setActiveChannel);
@@ -68,7 +70,11 @@ function RouteSync() {
   // Re-run when channels finish loading so we can validate the channel exists
   const channelsLoaded = channels.length > 0;
 
+  usePermalinkSync();
+
   useEffect(() => {
+    // 퍼말링크는 usePermalinkSync가 권한을 확인한 뒤 대화를 연다
+    if (messageId) return;
     if (channelId) {
       const id = parseInt(channelId, 10);
       if (isNaN(id) || id <= 0) return;
@@ -96,7 +102,7 @@ function RouteSync() {
         useChannelStore.getState().setActiveGroup(id, scrollToMessageId);
       }
     }
-  }, [channelId, userId, groupId, setActiveChannel, setActiveDM, location.state, channelsLoaded, navigate]);
+  }, [channelId, userId, groupId, messageId, setActiveChannel, setActiveDM, location.state, channelsLoaded, navigate]);
 
   return null;
 }
@@ -660,6 +666,10 @@ function App() {
           <Route path="c/:channelId" element={<RouteSync />} />
           <Route path="d/:userId" element={<RouteSync />} />
           <Route path="g/:groupId" element={<RouteSync />} />
+          <Route path="c/:channelId/m/:messageId" element={<RouteSync />} />
+          <Route path="d/:userId/m/:messageId" element={<RouteSync />} />
+          <Route path="g/:groupId/m/:messageId" element={<RouteSync />} />
+          <Route path="message-not-found" element={<PageRouteSync />} />
           <Route path="files" element={<PageRouteSync />} />
           <Route path="unreads" element={<PageRouteSync />} />
           <Route path="later" element={<PageRouteSync />} />

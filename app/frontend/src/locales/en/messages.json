@@ -94,7 +94,8 @@
     "pin": "Pin message",
     "unpin": "Unpin message",
     "edit": "Edit message",
-    "delete": "Delete message"
+    "delete": "Delete message",
+    "copyLink": "Copy link"
   },
   "area": {
     "selectChannel": "Select a channel to start messaging",
@@ -253,5 +254,11 @@
     "openThread": "Open thread",
     "loadMore": "Load more",
     "loading": "Loading..."
+  },
+  "permalink": {
+    "copied": "Link copied",
+    "copyFailed": "Could not copy the link",
+    "notFound": "This message can't be found, or you don't have permission to view it",
+    "goHome": "Go home"
   }
 }
