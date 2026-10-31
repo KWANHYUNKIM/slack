@@ -682,6 +682,7 @@ export function DMConversation(props: DMConversationProps) {
                           <MessageActionsMenu
                             anchorClassName="absolute -top-4 end-2 mt-9"
                             onClose={() => setShowMoreMenuId(null)}
+                            reminderTarget={{ dmId: msg.id }}
                             testIdPrefix="dm"
                             showOwnerActions={isOwner}
                             onEdit={() => handleStartEdit(msg)}

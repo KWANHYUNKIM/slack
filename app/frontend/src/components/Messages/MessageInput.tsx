@@ -13,6 +13,8 @@ import { serializeDelta } from '@/lib/serializeDelta';
 import { LinkModal } from './LinkModal';
 import { ScheduleModal } from './ScheduleModal';
 import { ScheduleMenu } from './ScheduleMenu';
+import { isRemindCommand, parseRemind } from '@/lib/remind';
+import { useReminderStore } from '@/stores/useReminderStore';
 import { FormatToolbar } from './FormatToolbar';
 import { FilePreview } from './FilePreview';
 import { MentionDropdown } from './MentionDropdown';
@@ -69,6 +71,27 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
     const text = serializeDelta(quill);
     if (!text && editor.pendingFiles.length === 0) return;
     const content = text || '';
+    // /remind 는 채널 메시지로 저장하지 않고 리마인더로 만든다(파싱 오류는 입력창 아래에 안내)
+    if (isRemindCommand(text) && editor.pendingFiles.length === 0) {
+      const parsed = parseRemind(text);
+      if (!parsed.ok) {
+        setScheduleError(t(`reminder.command.${parsed.error}`));
+        setTimeout(() => setScheduleError(null), 6000);
+        return;
+      }
+      const remindAt = new Date(Date.now() + parsed.minutes * 60_000);
+      if (await useReminderStore.getState().create({ text: parsed.text, remindAt })) {
+        editor.clearEditor();
+        const key = getDraftKey(channelId, dmParticipantIds);
+        if (key) drafts.delete(key);
+        setScheduleConfirm(t('reminder.command.created', { time: formatDateTime(remindAt) }));
+        setTimeout(() => setScheduleConfirm(null), 4000);
+      } else {
+        setScheduleError(t('reminder.toast.createFailed'));
+        setTimeout(() => setScheduleError(null), 4000);
+      }
+      return;
+    }
     const fileIds = editor.pendingFiles.map((f) => f.id);
     try {
       await onSend(content, fileIds.length > 0 ? fileIds : undefined);
@@ -79,7 +102,7 @@ export const MessageInput = React.memo(function MessageInput({ placeholder, onSe
     } catch {
       // Send failed — editor content is preserved so the user doesn't lose their message
     }
-  }, [onSend, editor, channelId, dmParticipantIds]);
+  }, [onSend, editor, channelId, dmParticipantIds, t]);
 
   handleSendRef.current = handleSend;
 

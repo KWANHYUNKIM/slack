@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
     "i18n:test": "node --test scripts/icu-args.test.mjs",
-    "switcher:test": "node --test scripts/switcher.test.mjs"
+    "switcher:test": "node --test scripts/switcher.test.mjs",
+    "remind:test": "node --test scripts/remind.test.mjs"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",

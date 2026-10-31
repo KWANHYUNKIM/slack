@@ -157,6 +157,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       // Seeing it right now (channel or DM open, window focused): it is read on arrival
       const { activeChannelId, activeDMId } = useChannelStore.getState();
       const isViewing =
+        activity.type !== 'REMINDER' && // 리마인더는 화면을 보고 있어도 직접 확인하게 둔다
         document.hasFocus() &&
         !document.hidden &&
         (activity.dmId !== null ? activeDMId === activity.actor.id : activity.channelId !== null && activeChannelId === activity.channelId);

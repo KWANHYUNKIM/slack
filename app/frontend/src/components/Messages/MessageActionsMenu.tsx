@@ -1,9 +1,11 @@
 import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Pin, Pencil, Trash2, MailOpen } from 'lucide-react';
+import { Pin, Pencil, Trash2, MailOpen, AlarmClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useReminderStore } from '@/stores/useReminderStore';
+import { ReminderMenu } from './ReminderMenu';
 
 interface MessageActionsMenuProps {
   onPin?: () => void;
@@ -11,6 +13,8 @@ interface MessageActionsMenuProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onMarkUnread?: () => void;
+  /** 있으면 "리마인더" 항목을 보인다. 채널 메시지는 messageId, DM은 dmId */
+  reminderTarget?: { messageId?: number; dmId?: number };
   onClose: () => void;
   showOwnerActions: boolean;
   /** Classes applied to the invisible positioning anchor (e.g. absolute -top-4 right-5 mt-9) */
@@ -24,6 +28,7 @@ export function MessageActionsMenu({
   onEdit,
   onDelete,
   onMarkUnread,
+  reminderTarget,
   onClose,
   showOwnerActions,
   anchorClassName,
@@ -36,6 +41,7 @@ export function MessageActionsMenu({
   useLayoutEffect(() => {
     onCloseRef.current = onClose;
   });
+  const [showReminder, setShowReminder] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   // Initial position measurement
@@ -76,7 +82,7 @@ export function MessageActionsMenu({
     };
   }, []);
 
-  const hasAnyAction = onPin || showOwnerActions || onMarkUnread;
+  const hasAnyAction = onPin || showOwnerActions || onMarkUnread || reminderTarget;
 
   const menuContent = (
     <div
@@ -100,6 +106,20 @@ export function MessageActionsMenu({
               <MailOpen className="h-4 w-4" />
               {t('actionsMenu.markUnread')}
             </Button>
+          )}
+          {reminderTarget && (
+            <Button variant="menu-item" data-testid="reminder-menu-item" aria-expanded={showReminder} onClick={() => setShowReminder((v) => !v)}>
+              <AlarmClock className="h-4 w-4" />
+              {t('actionsMenu.remind')}
+            </Button>
+          )}
+          {reminderTarget && showReminder && (
+            <ReminderMenu
+              onPick={(date) => {
+                onClose();
+                void useReminderStore.getState().create({ ...reminderTarget, remindAt: date });
+              }}
+            />
           )}
           {onPin && (
             <Button variant="menu-item" onClick={onPin}>

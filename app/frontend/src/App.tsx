@@ -12,6 +12,7 @@ import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useStatusStore, isMyDndNow } from '@/stores/useStatusStore';
 import { useHuddleStore, setHuddleUserId } from '@/stores/useHuddleStore';
 import { useActivityStore } from '@/stores/useActivityStore';
+import { useReminderStore } from '@/stores/useReminderStore';
 import { useThreadStore } from '@/stores/useThreadStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { toUserStatus } from '@/lib/types';
@@ -246,6 +247,7 @@ function AppShell() {
     };
     const unbindActivity = useActivityStore.getState().bindSocket(socket);
     const unbindThreads = useThreadStore.getState().bindSocket(socket);
+    const unbindReminders = useReminderStore.getState().bindSocket(socket);
     // If already connected (reconnect scenario), update immediately
     if (socket.connected) handleConnect();
 
@@ -549,6 +551,7 @@ function AppShell() {
     return () => {
       unbindActivity();
       unbindThreads();
+      unbindReminders();
       socket.off('connect', handleConnect);
       socket.off('message:new', handleNewMessage);
       socket.off('message:updated', handleUpdatedMessage);
