@@ -454,8 +454,8 @@ router.get('/:id/download', async (req: AuthRequest, res: Response, next) => {
 
       // Validate range bounds
       if (start < 0 || end >= total || start > end || isNaN(start) || isNaN(end)) {
-        res.status(416).setHeader('Content-Range', `bytes */${total}`);
-        res.end();
+        res.setHeader('Content-Range', `bytes */${total}`);
+        res.status(416).json({ error: 'Range not satisfiable' }); // code는 errorCodeDefaults가 붙인다
         return;
       }
 
