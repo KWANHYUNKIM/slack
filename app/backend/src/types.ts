@@ -17,4 +17,5 @@ export interface AuthRequest extends Request {
   message?: any;
   file?: any;
   dm?: any;
+  dmGroupId?: number;
 }

@@ -80,17 +80,19 @@ router.get('/unread-count', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
-// GET /activity/mention-counts - 채널별/DM 상대별 안 읽은 멘션 수. 활동이 읽힘/삭제될 때 사이드바 배지를 가볍게 맞추는 용도
+// GET /activity/mention-counts - 채널별/DM 상대별/그룹 DM별 안 읽은 멘션 수. 활동이 읽힘/삭제될 때 사이드바 배지를 가볍게 맞추는 용도
 router.get('/mention-counts', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const where = { ...(await visibleActivityWhere(req.user!.userId)), readAt: null, type: { in: MENTION_TYPES } };
-    const [channelRows, dmRows] = await Promise.all([
+    const [channelRows, dmRows, groupRows] = await Promise.all([
       prisma.activity.groupBy({ by: ['channelId'], where: { ...where, channelId: { not: null } }, _count: { _all: true } }),
-      prisma.activity.groupBy({ by: ['actorId'], where: { ...where, dmId: { not: null } }, _count: { _all: true } }),
+      prisma.activity.groupBy({ by: ['actorId'], where: { ...where, dmId: { not: null }, dmGroupId: null }, _count: { _all: true } }),
+      prisma.activity.groupBy({ by: ['dmGroupId'], where: { ...where, dmGroupId: { not: null } }, _count: { _all: true } }),
     ]);
     res.json({
       channels: Object.fromEntries(channelRows.map((r) => [r.channelId as number, r._count._all])),
       dms: Object.fromEntries(dmRows.map((r) => [r.actorId, r._count._all])),
+      groups: Object.fromEntries(groupRows.map((r) => [r.dmGroupId as number, r._count._all])),
     });
   } catch (error) {
     logError('Activity mention counts error', error);

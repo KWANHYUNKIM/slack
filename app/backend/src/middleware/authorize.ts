@@ -81,7 +81,7 @@ export async function requireMessageAccess(
  * Returns the file record if access is granted, or null otherwise.
  *
  * - Message-attached files: requires channel membership
- * - DM-attached files: requires DM participation (sender or recipient)
+ * - DM-attached files: requires DM participation (sender or recipient, or group member)
  * - Unattached files: requires file ownership
  *
  * Used by both the requireFileAccess middleware and the download-token
@@ -115,7 +115,7 @@ export async function verifyFileAccess(
       where: { id: file.dmId },
     });
     if (!dm || dm.deletedAt) return null;
-    if (dm.fromUserId !== userId && dm.toUserId !== userId) return null;
+    if (!(await canAccessDm(dm, userId))) return null;
   } else {
     if (file.userId !== userId) return null;
   }
@@ -150,8 +150,20 @@ export async function requireFileAccess(
 }
 
 /**
+ * DM 접근 판정. 그룹 메시지(groupId 있음)는 현재 그룹 멤버만, 1:1 메시지는 보낸 사람·받는 사람만.
+ * 그룹을 나간 사람은 자기가 보낸 메시지라도 더 이상 접근할 수 없다.
+ */
+export async function canAccessDm(
+  dm: { fromUserId: number; toUserId: number | null; groupId: number | null },
+  userId: number,
+): Promise<boolean> {
+  if (dm.groupId !== null) return checkDmGroupMembership(userId, dm.groupId);
+  return dm.fromUserId === userId || dm.toUserId === userId;
+}
+
+/**
  * Requires the authenticated user to be a participant in the DM
- * specified by req.params.id (either sender or recipient).
+ * specified by req.params.id (either sender or recipient, or a member of its group).
  * Use for read-only operations and thread replies.
  * Attaches req.dm on success.
  */
@@ -176,7 +188,7 @@ export async function requireDmAccess(
   }
 
   const userId = req.user!.userId;
-  if (dm.fromUserId !== userId && dm.toUserId !== userId) {
+  if (!(await canAccessDm(dm, userId))) {
     res.status(403).json({ error: 'Access denied' });
     return;
   }
@@ -215,8 +227,38 @@ export async function requireDmOwnership(
     res.status(403).json({ error: 'You can only modify your own messages' });
     return;
   }
+  // 그룹을 나간 뒤에는 자기 메시지도 고치거나 지울 수 없다
+  if (dm.groupId !== null && !(await checkDmGroupMembership(userId, dm.groupId))) {
+    res.status(403).json({ error: 'Access denied' });
+    return;
+  }
 
   req.dm = dm;
+  next();
+}
+
+/**
+ * Requires the authenticated user to be a current member of the group DM
+ * specified by req.params.id. Attaches req.dmGroupId on success.
+ * 그룹이 없거나 멤버가 아니면 둘 다 404로 답해 그룹 id 존재 여부를 숨긴다.
+ */
+export async function requireDmGroupMember(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const groupId = parseIntParam(req.params.id);
+  if (!groupId) {
+    res.status(400).json({ error: 'Invalid group ID' });
+    return;
+  }
+
+  if (!(await checkDmGroupMembership(req.user!.userId, groupId))) {
+    res.status(404).json({ error: 'Conversation not found' });
+    return;
+  }
+
+  req.dmGroupId = groupId;
   next();
 }
 
@@ -315,6 +357,17 @@ export async function requirePublicMessageReadAccess(
 
 // ── WebSocket Helper ────────────────────────────────────────────────
 
+export async function checkDmGroupMembership(
+  userId: number,
+  groupId: number,
+): Promise<boolean> {
+  const membership = await prisma.dMGroupMember.findUnique({
+    where: { groupId_userId: { groupId, userId } },
+    select: { userId: true },
+  });
+  return !!membership;
+}
+
 export async function checkChannelMembership(
   userId: number,
   channelId: number,
@@ -358,7 +411,18 @@ export const wsDmSendSchema = z.object({
   content: contentSchema,
 });
 
+export const wsDmGroupSendSchema = z.object({
+  groupId: z.number().int().positive(),
+  content: optionalContentSchema,
+  fileIds: z.array(z.number().int().positive()).max(10).optional(),
+}).refine(
+  (data) => (data.content?.trim().length ?? 0) > 0 || (data.fileIds && data.fileIds.length > 0),
+  { message: 'Message must have content or file attachments' },
+);
+
 export const wsChannelIdSchema = z.number().int().positive();
+
+export const wsDmGroupIdSchema = z.number().int().positive();
 
 export const wsUserIdSchema = z.number().int().positive();
 

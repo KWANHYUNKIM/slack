@@ -39,6 +39,7 @@ beforeAll(async () => {
   await prisma.channelMember.deleteMany();
   await prisma.channel.deleteMany();
   await prisma.directMessage.deleteMany();
+  await prisma.dMGroup.deleteMany();
   await prisma.user.deleteMany();
 });
 

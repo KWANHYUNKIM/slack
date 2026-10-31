@@ -32,12 +32,21 @@
     "subtitle": "대화 상대를 찾거나 새 대화를 시작하세요",
     "searchPlaceholder": "이름으로 검색...",
     "noUsers": "사용자를 찾을 수 없습니다",
-    "close": "닫기"
+    "close": "닫기",
+    "pickSubtitle": "최대 {max}명까지 고를 수 있어요",
+    "select": "{name} 선택",
+    "selectedCount": "{max}명 중 {count}명 선택",
+    "start": "대화 시작",
+    "startGroup": "그룹 대화 시작"
   },
   "you": "(나)",
   "notifications": {
     "someone": "누군가",
     "sentAttachment": "첨부 파일을 보냈습니다",
     "threadTitle": "{name}님의 스레드"
+  },
+  "groupDM": {
+    "memberCount": "멤버 {count}명",
+    "createError": "그룹 대화를 시작하지 못했습니다. 다시 시도해 주세요."
   }
 }

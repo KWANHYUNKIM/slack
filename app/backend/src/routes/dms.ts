@@ -11,6 +11,7 @@ import { parsePagination, paginateResults } from '../utils/pagination.js';
 import { parseIntParam } from '../utils/params.js';
 import { logError } from '../utils/logger.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 import {
   createActivitiesForDm,
   syncActivitiesOnDmEdit,
@@ -139,6 +140,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           CASE WHEN "fromUserId" = ${userId} THEN "toUserId" ELSE "fromUserId" END AS "otherUserId"
         FROM "DirectMessage"
         WHERE ("fromUserId" = ${userId} OR "toUserId" = ${userId})
+          AND "groupId" IS NULL
           AND "deletedAt" IS NULL
       ),
       last_messages AS (
@@ -155,6 +157,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           CASE WHEN dm."fromUserId" = ${userId} THEN dm."toUserId" ELSE dm."fromUserId" END AS other_id
         FROM "DirectMessage" dm
         WHERE (dm."fromUserId" = ${userId} OR dm."toUserId" = ${userId})
+          AND dm."groupId" IS NULL
           AND dm."deletedAt" IS NULL
         ORDER BY other_id, dm."createdAt" DESC
       ),
@@ -437,8 +440,16 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
     );
     const { content, fileIds } = replySchema.parse(req.body);
 
+    // 그룹 메시지의 답글은 같은 그룹으로 간다(멤버 여부는 requireDmAccess가 확인했다)
+    if (parentDm.groupId !== null) {
+      const groupReply = await sendGroupMessage({ groupId: parentDm.groupId, fromUserId, content, fileIds, threadId: parentId });
+      res.status(201).json(groupReply);
+      void createActivitiesForDm({ ...groupReply, threadId: parentId });
+      return;
+    }
+
     // Reply goes to the same conversation (same from/to pair)
-    const toUserId = parentDm.fromUserId === fromUserId ? parentDm.toUserId : parentDm.fromUserId;
+    const toUserId: number = parentDm.fromUserId === fromUserId ? parentDm.toUserId : parentDm.fromUserId;
 
     // Block replies to deactivated users (same check as POST /dms)
     if (fromUserId !== toUserId) {
@@ -525,6 +536,10 @@ router.post('/messages/:id/reply', authMiddleware, requireDmAccess, async (req: 
       res.status(400).json({ error: error.issues });
       return;
     }
+    if (error instanceof InvalidFileIdsError) {
+      res.status(400).json({ error: error.message, code: error.code });
+      return;
+    }
     logError('DM reply error', error);
     res.status(500).json({ error: 'Failed to send reply' });
   }
@@ -580,7 +595,9 @@ router.patch('/messages/:id', authMiddleware, requireDmOwnership, async (req: Au
     // Broadcast to the other user so the edit appears in real-time
     // (the sender's UI is already updated from the REST response)
     const io = getIO();
-    if (io && updated.fromUserId !== updated.toUserId) {
+    if (updated.groupId !== null) {
+      await emitToGroup(updated.groupId, 'dm:updated', updated, updated.fromUserId);
+    } else if (io && updated.fromUserId !== updated.toUserId) {
       io.to(`user:${updated.toUserId}`).emit('dm:updated', updated);
     }
 
@@ -611,7 +628,15 @@ router.delete('/messages/:id', authMiddleware, requireDmOwnership, async (req: A
     // Broadcast to the other user so the deletion appears in real-time
     // (the sender's UI is already updated from the REST response)
     const io = getIO();
-    if (io && dm.fromUserId !== dm.toUserId) {
+    if (dm.groupId !== null) {
+      await emitToGroup(dm.groupId, 'dm:deleted', {
+        dmId: dm.id,
+        fromUserId: dm.fromUserId,
+        toUserId: null,
+        groupId: dm.groupId,
+        threadId: dm.threadId,
+      }, dm.fromUserId);
+    } else if (io && dm.fromUserId !== dm.toUserId) {
       io.to(`user:${dm.toUserId}`).emit('dm:deleted', {
         dmId: dm.id,
         fromUserId: dm.fromUserId,
@@ -662,11 +687,16 @@ router.post('/messages/:id/reactions', authMiddleware, requireDmAccess, async (r
       targetUserId: dm.fromUserId,
       emoji,
       dmId,
+      ...(dm.groupId !== null && { dmGroupId: dm.groupId }),
     });
 
-    // Broadcast to both DM participants
+    // Broadcast to both DM participants (그룹이면 멤버 전원)
     const io = getIO();
-    if (io) {
+    if (dm.groupId !== null) {
+      await emitToGroup(dm.groupId, 'dm:reaction:added', {
+        dmId, groupId: dm.groupId, reaction: { id: reaction.id, emoji, userId, user: reaction.user },
+      });
+    } else if (io) {
       const payload = { dmId, reaction: { id: reaction.id, emoji, userId, user: reaction.user } };
       io.to(`user:${dm.fromUserId}`).emit('dm:reaction:added', payload);
       if (dm.fromUserId !== dm.toUserId) {
@@ -711,7 +741,9 @@ router.delete('/messages/:id/reactions/:emoji', authMiddleware, requireDmAccess,
 
     const dm = req.dm;
     const io = getIO();
-    if (io) {
+    if (dm.groupId !== null) {
+      await emitToGroup(dm.groupId, 'dm:reaction:removed', { dmId, groupId: dm.groupId, emoji: rawEmoji, userId });
+    } else if (io) {
       const payload = { dmId, emoji: rawEmoji, userId };
       io.to(`user:${dm.fromUserId}`).emit('dm:reaction:removed', payload);
       if (dm.fromUserId !== dm.toUserId) {
@@ -868,7 +900,9 @@ router.post('/messages/:id/pin', authMiddleware, requireDmAccess, async (req: Au
 
     // Broadcast to both participants
     const io = getIO();
-    if (io) {
+    if (updated.groupId !== null) {
+      await emitToGroup(updated.groupId, 'dm:updated', updated);
+    } else if (io) {
       const room1 = `dm:${updated.fromUserId}:${updated.toUserId}`;
       const room2 = `dm:${updated.toUserId}:${updated.fromUserId}`;
       io.to(room1).to(room2).emit('dm:updated', updated);
@@ -894,7 +928,9 @@ router.delete('/messages/:id/pin', authMiddleware, requireDmAccess, async (req: 
     });
 
     const io = getIO();
-    if (io) {
+    if (updated.groupId !== null) {
+      await emitToGroup(updated.groupId, 'dm:updated', updated);
+    } else if (io) {
       const room1 = `dm:${updated.fromUserId}:${updated.toUserId}`;
       const room2 = `dm:${updated.toUserId}:${updated.fromUserId}`;
       io.to(room1).to(room2).emit('dm:updated', updated);

@@ -56,6 +56,7 @@ model User {
   dmStars            DMStar[]      @relation("DMStarOwner")
   dmStarredBy        DMStar[]      @relation("DMStarTarget")
   sidebarPref        SidebarPref?
+  dmGroups           DMGroupMember[]
 }
 
 model InviteLink {
@@ -183,7 +184,8 @@ model DirectMessage {
   id         Int       @id @default(autoincrement())
   content    String
   fromUserId Int
-  toUserId   Int
+  toUserId   Int?      // 그룹 DM 메시지는 null (groupId와 둘 중 하나만 채워진다, DB CHECK 제약)
+  groupId    Int?
   threadId   Int?
   isPinned   Boolean   @default(false)
   pinnedBy   Int?
@@ -195,7 +197,8 @@ model DirectMessage {
   readAt     DateTime?
 
   fromUser   User             @relation("SentMessages", fields: [fromUserId], references: [id])
-  toUser     User             @relation("ReceivedMessages", fields: [toUserId], references: [id])
+  toUser     User?            @relation("ReceivedMessages", fields: [toUserId], references: [id], onDelete: Restrict)
+  group      DMGroup?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
   parent     DirectMessage?   @relation("DMThread", fields: [threadId], references: [id])
   replies    DirectMessage[]  @relation("DMThread")
   reactions  DMReaction[]
@@ -203,7 +206,35 @@ model DirectMessage {
 
   @@index([fromUserId, toUserId])
   @@index([toUserId, fromUserId])
+  @@index([groupId, createdAt])
   @@index([threadId])
+}
+
+// 그룹 DM(본인 포함 3~9명). memberKey는 현재 멤버 id를 정렬해 '-'로 이은 값으로, 같은 멤버 집합의 중복 생성을 막는다.
+// 나가기·추가로 다른 그룹과 키가 겹치면 '#<id>'를 붙여 떼어 둔다(재사용 대상에서 빠진다).
+model DMGroup {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(100)
+  memberKey String   @unique @db.VarChar(255)
+  createdBy Int
+  createdAt DateTime @default(now())
+
+  members  DMGroupMember[]
+  messages DirectMessage[]
+}
+
+model DMGroupMember {
+  groupId      Int
+  userId       Int
+  lastReadDmId Int?      // 읽음 커서: 이 id까지 읽었다
+  starredAt    DateTime? // 사이드바 별표(사용자별)
+  joinedAt     DateTime  @default(now())
+
+  group DMGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
 }
 
 model DMReaction {
@@ -311,6 +342,7 @@ model Activity {
   messageId Int?
   dmId      Int?
   channelId Int?
+  dmGroupId Int?         // 그룹 DM 활동이면 그룹 id(나간 그룹의 활동을 가리고, 그룹별 멘션 수를 센다)
   emoji     String?      @db.VarChar(50)
   readAt    DateTime?
   createdAt DateTime     @default(now())
@@ -325,6 +357,7 @@ model Activity {
   @@index([messageId])
   @@index([dmId])
   @@index([userId, channelId, readAt])
+  @@index([userId, dmGroupId, readAt])
 }
 
 // 즐겨찾기(채널)

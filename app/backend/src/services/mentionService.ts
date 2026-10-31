@@ -60,6 +60,7 @@ export interface ActivityView {
   channelId: number | null;
   messageId: number | null;
   dmId: number | null;
+  dmGroupId: number | null;
   threadId: number | null;
   message: { id: number; content: string; excerpt: string } | null;
   emoji: string | null;
@@ -125,6 +126,7 @@ export async function serializeActivities(rows: Activity[], preload: Preload = {
       channelId: r.channelId,
       messageId: r.messageId,
       dmId: r.dmId,
+      dmGroupId: r.dmGroupId,
       threadId: target.threadId,
       message: { id: target.id, content: target.content, excerpt: excerpt(target.content) },
       emoji: r.emoji,
@@ -385,13 +387,49 @@ interface DmLike {
   id: number;
   content: string;
   fromUserId: number;
-  toUserId: number;
+  toUserId: number | null; // 그룹 메시지는 null
+  groupId?: number | null;
   threadId: number | null;
   fromUser?: ActorLike | null;
 }
 
+/**
+ * 그룹 DM의 활동을 맞춘다. 멤버 중 멘션된 사람은 MENTION, 스레드 답글이면 부모 작성자와 스레드 참여자(멘션 제외)는 THREAD_REPLY.
+ * 멤버가 아니거나 비활성인 사람은 대상이 아니다(멘션 서비스는 그룹 멤버 한정).
+ */
+async function syncGroupDmActivities(dm: DmLike & { groupId: number }): Promise<Activity[]> {
+  const members = await prisma.dMGroupMember.findMany({
+    where: { groupId: dm.groupId, userId: { not: dm.fromUserId }, user: { deactivatedAt: null } },
+    select: { userId: true },
+  });
+  const memberSet = new Set(members.map((m) => m.userId));
+  const wanted = new Map<number, ActivityType>();
+  for (const id of parseMentions(dm.content).userIds) if (memberSet.has(id)) wanted.set(id, 'MENTION');
+  if (dm.threadId) {
+    const participants = await prisma.directMessage.findMany({
+      where: { OR: [{ id: dm.threadId }, { threadId: dm.threadId }], deletedAt: null },
+      select: { fromUserId: true },
+      distinct: ['fromUserId'],
+    });
+    for (const p of participants) {
+      if (memberSet.has(p.fromUserId) && !wanted.has(p.fromUserId)) wanted.set(p.fromUserId, 'THREAD_REPLY');
+    }
+  }
+
+  const existing = await prisma.activity.findMany({ where: { dmId: dm.id, type: { in: ['MENTION', 'THREAD_REPLY'] } } });
+  await removeRows(existing.filter((a) => wanted.get(a.userId) !== a.type));
+  const have = new Set(existing.filter((a) => wanted.get(a.userId) === a.type).map((a) => a.userId));
+  const data: Prisma.ActivityCreateManyInput[] = [];
+  for (const [userId, type] of wanted) {
+    if (!have.has(userId)) data.push({ userId, actorId: dm.fromUserId, type, dmId: dm.id, dmGroupId: dm.groupId });
+  }
+  return insertActivities(data);
+}
+
 /** DM의 활동을 맞춘다: 상대를 멘션하면 MENTION, 아니면 스레드 답글일 때 THREAD_REPLY. 생성과 편집이 같이 쓴다. */
 async function syncDmActivities(dm: DmLike): Promise<Activity[]> {
+  if (dm.groupId) return syncGroupDmActivities({ ...dm, groupId: dm.groupId });
+  if (dm.toUserId === null) return [];
   const mentioned = dm.fromUserId !== dm.toUserId && parseMentions(dm.content).userIds.includes(dm.toUserId);
   const existing = await prisma.activity.findMany({ where: { dmId: dm.id, type: { in: ['MENTION', 'THREAD_REPLY'] } } });
 
@@ -412,10 +450,18 @@ async function syncDmActivities(dm: DmLike): Promise<Activity[]> {
 async function reloadDm(snapshot: DmLike): Promise<DmLike | null> {
   const d = await prisma.directMessage.findUnique({
     where: { id: snapshot.id },
-    select: { id: true, content: true, fromUserId: true, toUserId: true, threadId: true, deletedAt: true },
+    select: { id: true, content: true, fromUserId: true, toUserId: true, groupId: true, threadId: true, deletedAt: true },
   });
   if (!d || d.deletedAt) return null;
-  return { id: d.id, content: d.content, fromUserId: d.fromUserId, toUserId: d.toUserId, threadId: d.threadId, fromUser: snapshot.fromUser };
+  return {
+    id: d.id,
+    content: d.content,
+    fromUserId: d.fromUserId,
+    toUserId: d.toUserId,
+    groupId: d.groupId,
+    threadId: d.threadId,
+    fromUser: snapshot.fromUser,
+  };
 }
 
 async function notifyDmActivities(dm: DmLike, created: Activity[]): Promise<void> {
@@ -457,6 +503,7 @@ interface ReactionTarget {
   emoji: string;
   messageId?: number;
   dmId?: number;
+  dmGroupId?: number; // 그룹 DM 메시지의 리액션이면 그룹 id
   channelId?: number;
   actor?: ActorLike;
 }
@@ -481,6 +528,12 @@ async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity |
       });
       if (!member) return null;
     }
+    if (t.dmGroupId) {
+      const member = await prisma.dMGroupMember.findUnique({
+        where: { groupId_userId: { groupId: t.dmGroupId, userId: t.targetUserId } },
+      });
+      if (!member) return null; // 그룹을 나간 작성자에게는 남기지 않는다
+    }
     const where = {
       userId: t.targetUserId,
       actorId: t.actorId,
@@ -489,7 +542,7 @@ async function createReactionActivityImpl(t: ReactionTarget): Promise<Activity |
       messageId: t.messageId ?? null,
       dmId: t.dmId ?? null,
     };
-    const [created] = await insertActivities([{ ...where, channelId: t.channelId ?? null }]);
+    const [created] = await insertActivities([{ ...where, channelId: t.channelId ?? null, dmGroupId: t.dmGroupId ?? null }]);
     if (!created) return null; // 이미 있음(동시 요청 포함)
     await emitNew([created], { actors: t.actor ? [t.actor] : [] });
     return created;
@@ -545,9 +598,14 @@ async function markThreadMentionsReadImpl(userId: number, parentId: number): Pro
   return markRead(userId, { type: { in: MENTION_TYPES }, messageId: { in: replies.map((r) => r.id) } });
 }
 
-/** DM 대화를 열어 읽었을 때 상대가 보낸 멘션을 읽음 처리한다. */
+/** 1:1 DM 대화를 열어 읽었을 때 상대가 보낸 멘션을 읽음 처리한다(그룹 DM 멘션은 건드리지 않는다). */
 export function markDmMentionsRead(userId: number, otherUserId: number): Promise<number[]> {
-  return markRead(userId, { actorId: otherUserId, dmId: { not: null }, type: { in: MENTION_TYPES } });
+  return markRead(userId, { actorId: otherUserId, dmId: { not: null }, dmGroupId: null, type: { in: MENTION_TYPES } });
+}
+
+/** 그룹 DM을 열어 읽었을 때 그 그룹의 멘션을 읽음 처리한다. */
+export function markDmGroupMentionsRead(userId: number, groupId: number): Promise<number[]> {
+  return markRead(userId, { dmGroupId: groupId, type: { in: MENTION_TYPES } });
 }
 
 /** 활동 탭 API: id 목록 또는 전체. 내 활동만 건드린다. */
@@ -555,12 +613,19 @@ export function markActivitiesRead(userId: number, opts: { ids?: number[]; all?:
   return markRead(userId, opts.all ? {} : { id: { in: opts.ids ?? [] } });
 }
 
-/** 내가 지금 볼 수 있는 활동 범위: DM 활동, 또는 내가 멤버인 채널의 활동. */
+/** 내가 지금 볼 수 있는 활동 범위: 1:1 DM 활동, 내가 멤버인 채널의 활동, 내가 멤버인 그룹 DM의 활동. */
 export async function visibleActivityWhere(userId: number) {
-  const memberships = await prisma.channelMember.findMany({ where: { userId }, select: { channelId: true } });
+  const [memberships, groups] = await Promise.all([
+    prisma.channelMember.findMany({ where: { userId }, select: { channelId: true } }),
+    prisma.dMGroupMember.findMany({ where: { userId }, select: { groupId: true } }),
+  ]);
   return {
     userId,
-    OR: [{ channelId: null }, { channelId: { in: memberships.map((m) => m.channelId) } }],
+    OR: [
+      { channelId: null, dmGroupId: null },
+      { channelId: { in: memberships.map((m) => m.channelId) } },
+      { dmGroupId: { in: groups.map((g) => g.groupId) } },
+    ],
   };
 }
 
@@ -575,14 +640,25 @@ export async function getMentionCountsByChannel(userId: number, channelIds: numb
   return new Map(rows.map((r) => [r.channelId as number, r._count._all]));
 }
 
-/** DM 상대별 안 읽은 멘션 수. */
+/** 1:1 DM 상대별 안 읽은 멘션 수. */
 export async function getMentionCountsByDmPartner(userId: number): Promise<Map<number, number>> {
   const rows = await prisma.activity.groupBy({
     by: ['actorId'],
-    where: { userId, readAt: null, type: { in: MENTION_TYPES }, dmId: { not: null } },
+    where: { userId, readAt: null, type: { in: MENTION_TYPES }, dmId: { not: null }, dmGroupId: null },
     _count: { _all: true },
   });
   return new Map(rows.map((r) => [r.actorId, r._count._all]));
+}
+
+/** 그룹 DM별 안 읽은 멘션 수(내가 멤버인 그룹만). */
+export async function getMentionCountsByDmGroup(userId: number, groupIds: number[]): Promise<Map<number, number>> {
+  if (groupIds.length === 0) return new Map();
+  const rows = await prisma.activity.groupBy({
+    by: ['dmGroupId'],
+    where: { userId, readAt: null, type: { in: MENTION_TYPES }, dmGroupId: { in: groupIds } },
+    _count: { _all: true },
+  });
+  return new Map(rows.map((r) => [r.dmGroupId as number, r._count._all]));
 }
 
 // ── 공개 진입점(백그라운드 추적 포함) ────────────────────────────────

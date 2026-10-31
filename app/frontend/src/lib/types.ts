@@ -43,6 +43,17 @@ export interface DirectMessage {
   isStarred?: boolean;
 }
 
+/** 그룹 DM(본인 포함 3~9명) 사이드바 항목 */
+export interface GroupDM {
+  id: number;
+  /** 사용자가 붙인 이름. 없으면 멤버 이름을 나열해 보여 준다 */
+  name: string | null;
+  members: { id: number; name: string; avatar: string | null; status: UserStatus }[];
+  unreadCount: number;
+  mentionCount: number;
+  isStarred: boolean;
+}
+
 export interface Reaction {
   emoji: string;
   count: number;

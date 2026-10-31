@@ -3,7 +3,7 @@
 이름은 `<자원>:<동작>` 형식이다(`docs/conventions/backend.md` 2절). **새 이벤트를 만들면 이 표에 먼저 등록한다.**
 쓰기는 HTTP, 알림은 Socket.io다. DB에 커밋한 뒤 room으로 보낸다.
 
-room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM 대화)
+room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM 대화). 그룹 DM은 전용 room 없이 `user:<id>`를 쓴다(아래 파트 02).
 
 ## 활동(Activity) - 파트 01
 
@@ -19,6 +19,22 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 |---|---|---|---|---|
 | `channel:updated` | 서버 -> 클라이언트 | 공개 채널은 전체(`io.emit`), 비공개 채널은 멤버 각자의 `user:<id>` | `{ id, name, topic, description }` | `PATCH /channels/:id` 또는 `PATCH /admin/channels/:id`로 이름·주제·설명·공개 여부가 바뀌었을 때(변경 없으면 보내지 않음) |
 | `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'channel' \| 'dm', id, isStarred }` | `PUT/DELETE /channels/:id/star`, `/dms/:userId/star` (다른 탭 동기화) |
+
+## 그룹 DM - 파트 02
+
+그룹 DM 이벤트는 별도 room 없이 멤버 각자의 `user:<id>`로 보낸다(기존 `dm:*`와 같은 방식, 나가기·추가 때 room 관리가 필요 없다). 서버는 매번 현재 멤버를 DB에서 읽어 보낸다.
+
+| 이벤트 | 방향 | 대상 room | payload | 시점 |
+|---|---|---|---|---|
+| `dmgroup:send` | 클라이언트 -> 서버 | - | `{ groupId, content, fileIds? }`, ack 지원: 성공 `{ id }`, 실패 `{ error, code? }`(잘못된 fileIds는 `code: 'INVALID_FILE_IDS'`) | 소켓 경로 전송. ack가 없으면 실패를 `error` 이벤트로 보낸다 |
+| `dmgroup:typing:start` / `dmgroup:typing:stop` | 양방향 | 나를 뺀 멤버의 `user:<id>` | 보낼 때 `groupId`(number), 받을 때 `{ groupId, userId }` | 입력 중 표시. 멤버가 아니면 무시 |
+| `dmgroup:member:added` | 서버 -> 클라이언트 | 추가 후 멤버 전원의 `user:<id>` | `{ groupId, userIds, actorId, group }` | `POST /dms/groups/:id/members` |
+| `dmgroup:member:removed` | 서버 -> 클라이언트 | 나가기 전 멤버 전원(나간 사람 포함)의 `user:<id>` | `{ groupId, userId }` | `DELETE /dms/groups/:id/members/me` |
+| `dmgroup:updated` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | `{ id, name }` | `PATCH /dms/groups/:id`로 이름이 바뀌었을 때 |
+| `dm:new` / `dm:reply` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | DM 객체(`groupId` 있음, `toUserId`는 null) | 그룹 메시지·답글 전송(HTTP, 소켓) |
+| `dm:updated` / `dm:deleted` | 서버 -> 클라이언트 | 보낸 사람을 뺀 멤버의 `user:<id>`(핀은 전원) | `dm:deleted`는 `{ dmId, fromUserId, toUserId: null, groupId, threadId }` | 그룹 메시지 편집·삭제·핀 |
+| `dm:reaction:added` / `dm:reaction:removed` | 서버 -> 클라이언트 | 멤버 전원의 `user:<id>` | 1:1과 같은 모양 + `groupId` | 그룹 메시지 리액션 |
+| `star:updated` | 서버 -> 클라이언트 | `user:<본인>` | `{ type: 'group', id: groupId, isStarred }` | `PUT/DELETE /dms/groups/:id/star` |
 
 ## 기존 이벤트 (slawk에서 이어받음)
 

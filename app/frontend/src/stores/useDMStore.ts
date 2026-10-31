@@ -1,7 +1,11 @@
 import { t } from '@/lib/i18n';
 import { create } from 'zustand';
-import { getConversation, sendDM, editDM, deleteDM, addDMReaction, removeDMReaction, type ApiDirectMessage, type ApiDMReaction } from '@/lib/api';
+import {
+  getConversation, sendDM, editDM, deleteDM, addDMReaction, removeDMReaction,
+  getDMGroupMessages, sendDMGroupMessage, type ApiDirectMessage, type ApiDMReaction,
+} from '@/lib/api';
 import { useAuthStore } from './useAuthStore';
+import { useChannelStore } from './useChannelStore';
 import type { Reaction } from '@/lib/types';
 
 export interface DMFile {
@@ -26,6 +30,21 @@ export interface DMMessage {
   threadParticipants: { id: number; name: string; avatar: string | null }[];
   reactions: Reaction[];
   files: DMFile[];
+}
+
+// 대화 키: 1:1 DM은 상대 userId(양수), 그룹 DM은 -groupId(음수).
+// messages 맵과 액션(조회·전송·편집·리액션)이 이 숫자 키 하나로 두 종류의 대화를 함께 다룬다.
+export const groupConversationKey = (groupId: number) => -groupId;
+const isGroupKey = (key: number) => key < 0;
+
+/** 소켓으로 받은 DM이 어느 대화에 속하는지 */
+export function conversationKeyOf(
+  dm: { fromUserId: number; toUserId: number | null; groupId?: number | null },
+  currentUserId: number,
+): number | null {
+  if (dm.groupId) return groupConversationKey(dm.groupId);
+  if (dm.toUserId === null) return null;
+  return dm.fromUserId === currentUserId ? dm.toUserId : dm.fromUserId;
 }
 
 function groupReactions(apiReactions?: ApiDMReaction[]): Reaction[] {
@@ -69,6 +88,7 @@ function transformDM(dm: ApiDirectMessage): DMMessage {
 }
 
 interface DMState {
+  /** 대화 키(1:1은 userId, 그룹은 groupConversationKey(groupId)) → 메시지 */
   messages: Record<number, DMMessage[]>;
   isLoading: boolean;
   loadError: string | null;
@@ -82,7 +102,7 @@ interface DMState {
   deleteMessage: (messageId: number, userId: number) => Promise<void>;
   addIncomingMessage: (dm: ApiDirectMessage, currentUserId: number) => void;
   onDMUpdated: (dm: ApiDirectMessage, currentUserId: number) => void;
-  onDMDeleted: (data: { dmId: number; fromUserId: number; toUserId: number }, currentUserId: number) => void;
+  onDMDeleted: (data: { dmId: number; fromUserId: number; toUserId: number | null; groupId?: number | null }, currentUserId: number) => void;
   addReaction: (dmId: number, emoji: string, conversationUserId: number) => void;
   removeReaction: (dmId: number, emoji: string, conversationUserId: number) => void;
   onReactionAdded: (data: { dmId: number; reaction: { emoji: string; userId: number; user: { name: string } } }) => void;
@@ -104,7 +124,15 @@ export const useDMStore = create<DMState>((set, get) => ({
   fetchConversation: async (userId: number, around?: number) => {
     set({ isLoading: true, loadError: null, loadingUserId: userId });
     try {
-      const data = await getConversation(userId, undefined, around);
+      let data: { messages: ApiDirectMessage[] };
+      if (isGroupKey(userId)) {
+        const groupData = await getDMGroupMessages(-userId, undefined, around);
+        // 응답에 실린 최신 멤버 목록으로 사이드바·헤더를 맞춘다
+        if (groupData.group) useChannelStore.getState().upsertGroupDM(groupData.group);
+        data = groupData;
+      } else {
+        data = await getConversation(userId, undefined, around);
+      }
       // Discard stale response if user already switched to another conversation
       if (get().loadingUserId !== userId) return;
       const msgs = data.messages.map(transformDM);
@@ -123,7 +151,9 @@ export const useDMStore = create<DMState>((set, get) => ({
   sendMessage: async (userId: number, content: string, fileIds?: number[]) => {
     set({ isSending: true, sendError: null });
     try {
-      const dm = await sendDM(userId, content, fileIds);
+      const dm = isGroupKey(userId)
+        ? await sendDMGroupMessage(-userId, content, fileIds)
+        : await sendDM(userId, content, fileIds);
       const message = transformDM(dm);
       set((state) => {
         const existing = state.messages[userId] ?? [];
@@ -337,7 +367,8 @@ export const useDMStore = create<DMState>((set, get) => ({
   addIncomingMessage: (dm: ApiDirectMessage, currentUserId: number) => {
     // Thread replies don't appear in the main conversation
     if (dm.threadId) return;
-    const otherUserId = dm.fromUserId === currentUserId ? dm.toUserId : dm.fromUserId;
+    const otherUserId = conversationKeyOf(dm, currentUserId);
+    if (otherUserId === null) return;
     const state = get();
     // Only add if we have this conversation loaded and the message isn't already there
     if (!state.messages[otherUserId]) return;
@@ -352,7 +383,8 @@ export const useDMStore = create<DMState>((set, get) => ({
   },
 
   onDMUpdated: (dm: ApiDirectMessage, currentUserId: number) => {
-    const otherUserId = dm.fromUserId === currentUserId ? dm.toUserId : dm.fromUserId;
+    const otherUserId = conversationKeyOf(dm, currentUserId);
+    if (otherUserId === null) return;
     const state = get();
     if (!state.messages[otherUserId]) return;
     const updated = transformDM(dm);
@@ -366,8 +398,9 @@ export const useDMStore = create<DMState>((set, get) => ({
     });
   },
 
-  onDMDeleted: (data: { dmId: number; fromUserId: number; toUserId: number }, currentUserId: number) => {
-    const otherUserId = data.fromUserId === currentUserId ? data.toUserId : data.fromUserId;
+  onDMDeleted: (data: { dmId: number; fromUserId: number; toUserId: number | null; groupId?: number | null }, currentUserId: number) => {
+    const otherUserId = conversationKeyOf(data, currentUserId);
+    if (otherUserId === null) return;
     const state = get();
     if (!state.messages[otherUserId]) return;
     set({

@@ -6,6 +6,9 @@ import { JwtPayload } from '../types.js';
 import { JWT_SECRET } from '../config.js';
 import {
   checkChannelMembership,
+  checkDmGroupMembership,
+  wsDmGroupSendSchema,
+  wsDmGroupIdSchema,
   wsMessageSendSchema,
   wsMessageEditSchema,
   wsMessageDeleteSchema,
@@ -25,6 +28,7 @@ import {
   deleteActivitiesForMessage,
   createActivitiesForDm,
 } from '../services/mentionService.js';
+import { sendGroupMessage, emitToGroup, InvalidFileIdsError } from '../services/dmGroupService.js';
 
 interface AuthenticatedSocket extends Socket {
   user?: JwtPayload;
@@ -64,6 +68,9 @@ const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
   'typing:stop': { max: 60, windowMs: 60_000 },
   'dm:typing:start': { max: 60, windowMs: 60_000 },
   'dm:typing:stop': { max: 60, windowMs: 60_000 },
+  'dmgroup:send': { max: 30, windowMs: 60_000 },
+  'dmgroup:typing:start': { max: 60, windowMs: 60_000 },
+  'dmgroup:typing:stop': { max: 60, windowMs: 60_000 },
   'join:channel': { max: 20, windowMs: 60_000 },
   'dm:join': { max: 20, windowMs: 60_000 },
   'huddle:invite': { max: 10, windowMs: 60_000 },
@@ -115,7 +122,13 @@ async function getSharedUsers(userId: number): Promise<number[]> {
       SELECT CASE WHEN "fromUserId" = ${userId} THEN "toUserId" ELSE "fromUserId" END AS "userId"
       FROM "DirectMessage"
       WHERE ("fromUserId" = ${userId} OR "toUserId" = ${userId})
+        AND "groupId" IS NULL
         AND "deletedAt" IS NULL
+      UNION
+      SELECT gm2."userId"
+      FROM "DMGroupMember" gm1
+      JOIN "DMGroupMember" gm2 ON gm2."groupId" = gm1."groupId" AND gm2."userId" != gm1."userId"
+      WHERE gm1."userId" = ${userId}
     ) shared
   `;
   return rows.map((r) => r.userId);
@@ -769,6 +782,63 @@ export function initializeWebSocket(httpServer: HttpServer) {
         userId: socket.user.userId,
       });
     });
+
+    // 그룹 DM 전송. HTTP POST /dms/groups/:id/messages와 같은 서비스를 쓴다. ack가 있으면 결과를 ack로 돌려준다.
+    socket.on('dmgroup:send', async (rawData: unknown, ack?: (response: { error?: string; code?: string; id?: number }) => void) => {
+      const sendError = (message: string, code?: string) => {
+        if (typeof ack === 'function') ack({ error: message, ...(code && { code }) });
+        else socket.emit('error', { message });
+      };
+
+      if (!socket.user) return;
+      if (!checkRateLimit(socket.user.userId, 'dmgroup:send')) {
+        sendError('Rate limit exceeded');
+        return;
+      }
+
+      try {
+        const parsed = wsDmGroupSendSchema.safeParse(rawData);
+        if (!parsed.success) {
+          sendError('Invalid DM payload');
+          return;
+        }
+        const { groupId, content, fileIds } = parsed.data;
+        if (!(await checkDmGroupMembership(socket.user.userId, groupId))) {
+          sendError('Unable to send message');
+          return;
+        }
+
+        const dm = await sendGroupMessage({ groupId, fromUserId: socket.user.userId, content, fileIds });
+        if (typeof ack === 'function') ack({ id: dm.id });
+        void createActivitiesForDm(dm);
+      } catch (error) {
+        if (error instanceof InvalidFileIdsError) {
+          sendError(error.message, error.code);
+          return;
+        }
+        logError('WebSocket group DM error', error);
+        sendError('Failed to send DM');
+      }
+    });
+
+    // 그룹 DM 입력 중 표시: 멤버인지 확인한 뒤 나를 뺀 멤버에게 보낸다
+    for (const event of ['dmgroup:typing:start', 'dmgroup:typing:stop'] as const) {
+      socket.on(event, async (rawGroupId: unknown) => {
+        if (!socket.user) return;
+        if (!checkRateLimit(socket.user.userId, event)) return;
+
+        const parsed = wsDmGroupIdSchema.safeParse(rawGroupId);
+        if (!parsed.success) return;
+        const groupId = parsed.data;
+        const userId = socket.user.userId;
+        try {
+          if (!(await checkDmGroupMembership(userId, groupId))) return;
+          await emitToGroup(groupId, event, { groupId, userId }, userId);
+        } catch (error) {
+          logError('WebSocket group typing error', error);
+        }
+      });
+    }
 
     // Focus tracking for smart push notifications
     socket.on('focus:channel', (channelId: unknown) => {

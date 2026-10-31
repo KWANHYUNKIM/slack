@@ -67,5 +67,21 @@
     "invalidChars": "Channel names can only contain letters, numbers, hyphens, and underscores, and must start with a letter or number.",
     "mixedScripts": "Channel names can't mix look-alike alphabets (such as Latin with Cyrillic or Greek) or digits from another number system.",
     "taken": "A channel with that name already exists."
+  },
+  "groupDM": {
+    "members": "{count, plural, one {# member} other {# members}}",
+    "nameLabel": "Conversation name",
+    "namePlaceholder": "Add a name",
+    "noName": "No name (shows member names)",
+    "rename": "Rename conversation",
+    "addPeople": "Add people",
+    "add": "Add",
+    "createWith": "Start group conversation",
+    "leave": "Leave conversation",
+    "leaveConfirm": "Leave this conversation? You will no longer see its messages.",
+    "conversationStart": "This is the start of your conversation with {names}",
+    "addError": "Could not add people. Please try again.",
+    "renameError": "Could not rename the conversation. Please try again.",
+    "leaveError": "Could not leave the conversation. Please try again."
   }
 }
