@@ -66,5 +66,5 @@
 | fix/admin-store-actions: useAdminStore 나머지 액션(delete/archive/role) 실패 전달과 호출 측 처리 | dev-1 | haiku | 완료(PR #42 머지) | 30분 | 2026-10-31 23:03 | | PR #38 남은 이슈 |
 | mcp-2b send_dm: MCP DM·그룹 DM 쓰기·읽기 도구(DM 공용 서비스 추출) | dev-2 | sonnet | 완료(PR #63 머지, #58 빈 머지 재제출) | 1.5h | 2026-10-31 23:40 | | PR #49 남은 이슈 |
 | feat/bootstrap-owner: 빈 DB 배포에서 첫 OWNER 생성 경로(사용자 0명일 때만, 동시성 안전) | dev-5 | opus | 완료(PR #57 머지) | 1h | 2026-10-31 23:44 | | PR #55에서 발견 |
-| fix/emoji-cdn-runtime: emoji-mart data를 번들로, dist CDN 도메인 검사 | dev-1 | sonnet | PR #64 리뷰 반영 중 | 1h | 2026-11-01 00:00 | | PR #55에서 발견(규칙 17) |
+| fix/emoji-cdn-runtime: emoji-mart data를 번들로, dist CDN 도메인 검사 | dev-1 | sonnet | 완료(PR #64 머지) | 1h | 2026-11-01 00:00 | | PR #55에서 발견(규칙 17) |
 | chore/ops-followups: .env.example BOOTSTRAP 키, compose $$ 안내, 자동 업데이트 문서 정리, ci.yml action SHA 고정 | dev-3 | haiku | 완료(PR #61 머지) | 45분 | 2026-11-01 00:00 | | |
