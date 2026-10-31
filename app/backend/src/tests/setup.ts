@@ -2,8 +2,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import prisma from '../db.js';
+import { bindEphemeralListenToLoopback } from './loopback.js';
 import { clearTokenCache } from '../middleware/auth.js';
 import { settleBackgroundWork } from '../services/mentionService.js';
+
+bindEphemeralListenToLoopback();
 
 // 끝나지 않는 작업 하나가 모든 테스트의 정리를 훅 시간 한도까지 막지 않게 상한을 둔다.
 async function settleWithLimit(ms = 10000): Promise<void> {
