@@ -13,7 +13,7 @@ import { ERR } from '../utils/errorCodes.js';
 import { STATUS_SELECT, toPublicUser } from '../services/statusService.js';
 import { isUserOnline } from '../websocket/index.js';
 import {
-  DEFAULT_WORKSPACE_ID, LastWorkspaceOwnerError, WORKSPACE_PUBLIC_SELECT, activeMemberWhere, loadUserWorkspaceState,
+  DEFAULT_WORKSPACE_ID, LastWorkspaceOwnerError, WorkspaceMemberGoneError, WORKSPACE_PUBLIC_SELECT, activeMemberWhere, loadUserWorkspaceState,
   workspaceSummaryForUser,
   parseWorkspaceId, roleRank,
 } from '../services/workspaceService.js';
@@ -134,7 +134,7 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
       return;
     }
     const userId = req.user!.userId;
-    const state = await loadUserWorkspaceState(prisma, userId);
+    const state = await requestWorkspaceState(req);
     if (!state) {
       res.status(401).json({ error: 'Invalid token', code: ERR.AUTH_INVALID_TOKEN });
       return;
@@ -171,26 +171,40 @@ router.post('/:id/join', authMiddleware, async (req: AuthRequest, res: Response)
   }
 });
 
-// POST /workspaces/:id/leave - 나가기. 기본 워크스페이스·주 소유자·마지막 OWNER는 거부
+/**
+ * 나가기 규칙(POST /:id/leave와 자기 자신 DELETE가 함께 쓴다). 기본 워크스페이스는 나갈 수 없고(계정 비활성화로만),
+ * 마지막 OWNER는 removeMember가 행을 잠근 뒤 거부한다. 주 소유자 가드는 기본 워크스페이스에만 의미가 있어 두지 않는다.
+ */
+async function leaveSelf(req: AuthRequest, res: Response): Promise<void> {
+  const t = req.targetWorkspace!;
+  const userId = req.user!.userId;
+  if (t.id === DEFAULT_WORKSPACE_ID) {
+    res.status(409).json(DEFAULT_MEMBERSHIP_REQUIRED);
+    return;
+  }
+  await removeMember({ workspaceId: t.id, userId, actorId: userId, self: true });
+  res.json({ success: true });
+}
+
+/** 잠금 뒤 검사에서 나온 오류를 응답으로. 처리했으면 true */
+function sendMemberChangeError(error: unknown, res: Response): boolean {
+  if (error instanceof LastWorkspaceOwnerError) {
+    res.status(409).json(LAST_OWNER);
+    return true;
+  }
+  if (error instanceof WorkspaceMemberGoneError) {
+    res.status(404).json(USER_NOT_FOUND);
+    return true;
+  }
+  return false;
+}
+
+// POST /workspaces/:id/leave - 나가기. 기본 워크스페이스·마지막 OWNER는 거부
 router.post('/:id/leave', authMiddleware, requireWorkspaceMember, async (req: AuthRequest, res: Response) => {
   try {
-    const t = req.targetWorkspace!;
-    const userId = req.user!.userId;
-    if (t.id === DEFAULT_WORKSPACE_ID) {
-      res.status(409).json(DEFAULT_MEMBERSHIP_REQUIRED);
-      return;
-    }
-    if (await isPrimaryOwner(t.organizationId, userId)) {
-      res.status(403).json(PRIMARY_OWNER);
-      return;
-    }
-    await removeMember({ workspaceId: t.id, userId, currentRole: t.role!, actorId: userId, self: true });
-    res.json({ success: true });
+    await leaveSelf(req, res);
   } catch (error) {
-    if (error instanceof LastWorkspaceOwnerError) {
-      res.status(409).json(LAST_OWNER);
-      return;
-    }
+    if (sendMemberChangeError(error, res)) return;
     logError('Leave workspace error', error);
     res.status(500).json({ error: 'Failed to leave workspace', code: ERR.INTERNAL_ERROR });
   }
@@ -319,18 +333,15 @@ router.patch('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, asyn
       res.json({ workspaceId: t.id, userId: target.userId, role });
       return;
     }
-    // 마지막 OWNER 강등은 updateMemberRole이 워크스페이스 행을 잠근 뒤 검사한다(LastWorkspaceOwnerError)
-    await updateMemberRole({ workspaceId: t.id, userId: target.userId, role, previousRole: target.role, actorId: req.user!.userId });
+    // 마지막 OWNER 강등은 updateMemberRole이 워크스페이스 행을 잠그고 지금 역할을 다시 읽은 뒤 검사한다
+    await updateMemberRole({ workspaceId: t.id, userId: target.userId, role, actorId: req.user!.userId });
     res.json({ workspaceId: t.id, userId: target.userId, role });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues, code: ERR.VALIDATION_FAILED });
       return;
     }
-    if (error instanceof LastWorkspaceOwnerError) {
-      res.status(409).json(LAST_OWNER);
-      return;
-    }
+    if (sendMemberChangeError(error, res)) return;
     logError('Update workspace member error', error);
     res.status(500).json({ error: 'Failed to update member', code: ERR.INTERNAL_ERROR });
   }
@@ -347,6 +358,11 @@ router.delete('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, asy
     }
     const target = await loadTargetMember(req, res);
     if (!target) return;
+    // 자기 자신 제거는 나가기와 같다(역할 등급·주 소유자 검사 없이 나가기 규칙만)
+    if (target.userId === req.user!.userId) {
+      await leaveSelf(req, res);
+      return;
+    }
     if (await isPrimaryOwner(t.organizationId, target.userId)) {
       res.status(403).json(PRIMARY_OWNER);
       return;
@@ -355,17 +371,11 @@ router.delete('/:id/members/:userId', authMiddleware, requireWorkspaceAdmin, asy
       res.status(403).json(ROLE_FORBIDDEN);
       return;
     }
-    // 마지막 OWNER 검사는 removeMember가 워크스페이스 행을 잠근 뒤 한다
-    await removeMember({
-      workspaceId: t.id, userId: target.userId, currentRole: target.role, actorId: req.user!.userId,
-      self: target.userId === req.user!.userId,
-    });
+    // 마지막 OWNER 검사는 removeMember가 워크스페이스 행을 잠그고 지금 역할을 다시 읽은 뒤 한다
+    await removeMember({ workspaceId: t.id, userId: target.userId, actorId: req.user!.userId, self: false });
     res.json({ success: true });
   } catch (error) {
-    if (error instanceof LastWorkspaceOwnerError) {
-      res.status(409).json(LAST_OWNER);
-      return;
-    }
+    if (sendMemberChangeError(error, res)) return;
     logError('Remove workspace member error', error);
     res.status(500).json({ error: 'Failed to remove member', code: ERR.INTERNAL_ERROR });
   }

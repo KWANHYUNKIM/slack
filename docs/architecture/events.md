@@ -70,8 +70,8 @@ room: `user:<id>`(개인), `channel:<id>`(채널), `dm:<작은id>-<큰id>`(DM �
 | 이벤트 | 대상 room | payload | 시점 |
 |---|---|---|---|
 | `workspace:member:added` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId, role }` | 배정(`POST /workspaces/:id/members`), 초대 수락(`POST /auth/invite/:code/accept`), 공개 워크스페이스 참여(`POST /workspaces/:id/join`), 워크스페이스를 만든 사람(`POST /org/workspaces`, 본인에게만). 대상 소켓은 먼저 `ws:<id>`에 들어간다 |
-| `workspace:member:updated` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId, role }` | 역할 변경(`PATCH /workspaces/:id/members/:userId`). 보낸 뒤 대상의 소켓을 끊는다(`error` `{ message: 'Workspace membership changed' }`, `/admin` 역할 변경과 같은 규칙) |
-| `workspace:member:removed` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId }` | 제거(`DELETE /workspaces/:id/members/:userId`), 나가기(`POST /workspaces/:id/leave`). 보낸 뒤 대상 소켓을 room에서 빼고, 다른 사람이 뺀 경우에는 소켓을 끊는다(같은 `error` 사유). 기본 워크스페이스는 이 API로 나가거나 뺄 수 없다(계정 비활성화로만). 클라이언트는 그 워크스페이스를 전환기에서 뺀다 |
+| `workspace:member:updated` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId, role }` | 역할 변경(`PATCH /workspaces/:id/members/:userId`). 기본 워크스페이스(역할이 User.role이라 socket.user.role이 바뀜)일 때만 보낸 뒤 대상의 소켓을 끊는다(`error` `{ message: 'Workspace membership changed' }`, `/admin` 역할 변경과 같은 규칙). 다른 워크스페이스는 이벤트만 보내고 연결은 유지한다 |
+| `workspace:member:removed` | `user:<대상>`, `ws:<id>` | `{ workspaceId, userId }` | 제거(`DELETE /workspaces/:id/members/:userId`), 나가기(`POST /workspaces/:id/leave`). 보낸 뒤 서버가 대상 소켓을 `ws:<id>` room에서 뺀다(연결은 유지). 기본 워크스페이스는 이 API로 나가거나 뺄 수 없다(계정 비활성화로만). 클라이언트는 그 워크스페이스를 전환기에서 뺀다 |
 | `workspace:updated` | `ws:<id>` | `{ id, slug, name, icon, description, discoverability }` | `PATCH /org/workspaces/:id` |
 | `workspace:archived` | `ws:<id>` | `{ id }` | `POST /org/workspaces/:id/archive`(기본 워크스페이스는 보관 불가). 보낸 뒤 room을 비운다. 이후 그 워크스페이스 API는 404 |
 | `workspace:unarchived` | `ws:<id>` | `{ id }` | `POST /org/workspaces/:id/unarchive`. 남아 있던 활성 멤버의 소켓을 room에 다시 넣은 뒤 보낸다 |

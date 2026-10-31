@@ -52,21 +52,29 @@ const ORG_WORKSPACE_SELECT = {
   ...WORKSPACE_PUBLIC_SELECT, organizationId: true, archivedAt: true, createdAt: true, createdBy: true,
 } satisfies Prisma.WorkspaceSelect;
 
-/** 같은 조직의 slug·이름(대소문자 무시) 충돌. 없으면 null */
+/**
+ * 같은 조직의 slug·이름 충돌을 미리 알려 준다. 없으면 null. 이름 비교는 DB 유니크 인덱스(organizationId, lower(name),
+ * 마이그레이션 20261102015000)와 같은 식을 쓴다. 미리 보기일 뿐이고 동시 요청은 인덱스가 막는다(uniqueConflict).
+ */
 async function findWorkspaceConflict(organizationId: number, slug: string | undefined, name: string | undefined, exceptId?: number) {
   const others = { organizationId, ...(exceptId ? { id: { not: exceptId } } : {}) };
   if (slug !== undefined && (await prisma.workspace.findFirst({ where: { ...others, slug }, select: { id: true } }))) {
     return { error: 'Workspace URL is taken', code: ERR.WORKSPACE_SLUG_TAKEN } as const;
   }
-  if (name !== undefined && (await prisma.workspace.findFirst({
-    where: { ...others, name: { equals: name, mode: 'insensitive' } }, select: { id: true },
-  }))) {
-    return { error: 'Workspace name is taken', code: ERR.WORKSPACE_NAME_TAKEN } as const;
+  if (name !== undefined) {
+    const taken = await prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT "id" FROM "Workspace"
+      WHERE "organizationId" = ${organizationId} AND lower("name") = lower(${name}) AND "id" <> ${exceptId ?? 0}
+      LIMIT 1`;
+    if (taken.length > 0) return { error: 'Workspace name is taken', code: ERR.WORKSPACE_NAME_TAKEN } as const;
   }
   return null;
 }
 
-/** 동시 요청이 먼저 가져간 경우의 유니크 충돌(P2002)을 같은 오류로 바꾼다 */
+/**
+ * 동시 요청이 먼저 가져간 경우의 유니크 충돌(P2002)을 같은 오류로 바꾼다. slug 유니크가 아니면 이름 유니크
+ * (@@unique([organizationId, name]) 또는 함수 인덱스 Workspace_organizationId_lower_name_key)다.
+ */
 function uniqueConflict(error: unknown) {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') return null;
   const target = String((error.meta as { target?: unknown } | undefined)?.target ?? '');
@@ -96,6 +104,15 @@ async function activeMemberCounts(organizationId: number, ids: number[]): Promis
 }
 
 // PATCH /org/workspaces/:id 권한: 조직 관리자 또는 그 워크스페이스 OWNER
+// :id 형식 검사는 권한 검사보다 먼저 한다. 잘못된 id는 호출자와 무관하게 400이다
+function requireWorkspaceIdParam(req: AuthRequest, res: Response, next: NextFunction): void {
+  if (parseWorkspaceId(req.params.id) === null) {
+    res.status(400).json({ error: 'Invalid workspace id', code: ERR.INVALID_WORKSPACE_ID });
+    return;
+  }
+  next();
+}
+
 async function requireOrgAdminOrWorkspaceOwner(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   if (isOrgAdminRole(req.user?.orgRole)) {
     next();
@@ -245,7 +262,7 @@ router.post('/workspaces', ...ADMIN_STACK, async (req: AuthRequest, res: Respons
 });
 
 // PATCH /org/workspaces/:id - 이름·주소·설명·접근 수준(조직 관리자 또는 그 워크스페이스 OWNER)
-router.patch('/workspaces/:id', authMiddleware, requireOrgAdminOrWorkspaceOwner, async (req: AuthRequest, res: Response) => {
+router.patch('/workspaces/:id', authMiddleware, requireWorkspaceIdParam, requireOrgAdminOrWorkspaceOwner, async (req: AuthRequest, res: Response) => {
   try {
     const body = updateWorkspaceSchema.parse(req.body);
     if (body.slug !== undefined && !WORKSPACE_SLUG_RE.test(body.slug)) {
@@ -293,7 +310,7 @@ router.patch('/workspaces/:id', authMiddleware, requireOrgAdminOrWorkspaceOwner,
 });
 
 // POST /org/workspaces/:id/archive - 보관(D6). 마지막 활성 워크스페이스는 거부. 보관 뒤 그 워크스페이스 API는 404
-router.post('/workspaces/:id/archive', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
+router.post('/workspaces/:id/archive', authMiddleware, requireWorkspaceIdParam, requireOrgAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const current = await loadOrgWorkspace(req, res);
     if (!current) return;
@@ -329,7 +346,7 @@ router.post('/workspaces/:id/archive', ...ADMIN_STACK, async (req: AuthRequest, 
 });
 
 // POST /org/workspaces/:id/unarchive - 보관 해제. 남아 있던 활성 멤버의 소켓을 room에 다시 넣고 알린다
-router.post('/workspaces/:id/unarchive', ...ADMIN_STACK, async (req: AuthRequest, res: Response) => {
+router.post('/workspaces/:id/unarchive', authMiddleware, requireWorkspaceIdParam, requireOrgAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const current = await loadOrgWorkspace(req, res);
     if (!current) return;

@@ -13,7 +13,7 @@ import { ERR } from '../utils/errorCodes.js';
 import { joinDefaultChannels } from '../services/defaultChannelService.js';
 import {
   DEFAULT_WORKSPACE_ID, WORKSPACE_PUBLIC_SELECT, addWorkspaceMember, joinWorkspaceDefaultChannels, setUserRole,
-  loadUserWorkspaceState, workspaceSummaryForUser,
+  AlreadyWorkspaceMemberError, loadUserWorkspaceState, workspaceSummaryForUser,
 } from '../services/workspaceService.js';
 import { requestWorkspaceState } from '../middleware/workspace.js';
 import { addMember } from '../services/workspaceMemberService.js';
@@ -538,8 +538,12 @@ router.post('/invite/:code/accept', authMiddleware, async (req: AuthRequest, res
     const role = invite.role === 'GUEST' ? 'GUEST' : 'MEMBER';
     await addMember({
       workspaceId: invite.workspaceId, userId, role, actorId: userId, invitedBy: invite.createdBy, source: 'invite',
-      // 가입과 같은 원자적 사용 처리. 동시에 마지막 한 번을 가져가면 참여도 하지 않는다
+      // 초대 행을 잠근 뒤 멤버십 확인 → 사용 횟수 증가 → (addMember가) 멤버십 생성. 같은 사용자가 동시에 두 번 수락해도
+      // 두 번째는 잠금이 풀린 뒤 멤버십을 보고 409가 되어 사용 횟수가 한 번만 는다. 마지막 한 번을 다른 사람이 가져가면 참여하지 않는다
       claim: async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "InviteLink" WHERE "code" = ${code} FOR UPDATE`;
+        const current = await loadUserWorkspaceState(tx, userId);
+        if (current?.memberships.some((m) => m.workspaceId === invite.workspaceId)) throw new AlreadyWorkspaceMemberError();
         const claimed = await tx.$queryRaw<Array<{ id: number }>>`
           UPDATE "InviteLink"
           SET "useCount" = "useCount" + 1
@@ -555,6 +559,10 @@ router.post('/invite/:code/accept', authMiddleware, async (req: AuthRequest, res
     const { organizationId: _org, archivedAt: _archivedAt, ...workspace } = invite.workspace;
     res.json({ workspace: { ...workspace, role } });
   } catch (error) {
+    if (error instanceof AlreadyWorkspaceMemberError) {
+      res.status(409).json({ error: 'Already a member of this workspace', code: ERR.USER_ALREADY_WORKSPACE_MEMBER });
+      return;
+    }
     if (error instanceof Error && error.message === 'INVITE_INVALID') {
       res.status(400).json({ error: 'Invite code is no longer valid', code: ERR.INVITE_INVALID });
       return;

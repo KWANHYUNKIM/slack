@@ -302,13 +302,40 @@ export class LastWorkspaceOwnerError extends Error {
   }
 }
 
+/** 잠근 뒤 다시 읽어 보니 이미 활성 멤버일 때 던진다(초대 수락). 라우트가 409 USER_ALREADY_WORKSPACE_MEMBER로 바꾼다 */
+export class AlreadyWorkspaceMemberError extends Error {
+  constructor() {
+    super('USER_ALREADY_WORKSPACE_MEMBER');
+  }
+}
+
+/** 잠근 뒤 다시 읽어 보니 대상이 이미 활성 멤버가 아닐 때 던진다. 라우트가 404 USER_NOT_FOUND로 바꾼다 */
+export class WorkspaceMemberGoneError extends Error {
+  constructor() {
+    super('WORKSPACE_MEMBER_GONE');
+  }
+}
+
 /**
- * OWNER인 사용자를 빼거나 강등하기 전에 부른다. 워크스페이스 행을 잠근 뒤 세므로 두 OWNER가 동시에 나가도 하나만 성공한다.
- * 잠금은 트랜잭션이 끝날 때 풀린다.
+ * OWNER 수를 바꿀 수 있는 변경(나가기·제거·강등)의 공통 앞부분. 트랜잭션 안에서 워크스페이스 행을 잠근 뒤 대상의 지금 역할을
+ * 다시 읽는다(요청 전에 읽은 역할은 그 사이 바뀌었을 수 있다). 잠금은 트랜잭션이 끝날 때 풀리므로 두 OWNER가 동시에 나가도
+ * 하나만 성공한다. newRole은 바꿀 역할이고 나가기·제거는 null이다. OWNER에서 벗어나면 마지막 OWNER인지 확인한다.
+ * 지금 역할을 돌려준다.
  */
-export async function assertNotLastOwner(db: Prisma.TransactionClient, workspaceId: number): Promise<void> {
+export async function lockAndReadMemberRole(
+  db: Prisma.TransactionClient,
+  workspaceId: number,
+  userId: number,
+  newRole: Role | null,
+): Promise<Role> {
   await lockWorkspace(db, workspaceId);
-  if ((await countWorkspaceOwners(db, workspaceId)) <= 1) throw new LastWorkspaceOwnerError();
+  const state = await loadUserWorkspaceState(db, userId);
+  const current = state?.memberships.find((m) => m.workspaceId === workspaceId)?.role;
+  if (!current) throw new WorkspaceMemberGoneError();
+  if (current === 'OWNER' && newRole !== 'OWNER' && (await countWorkspaceOwners(db, workspaceId)) <= 1) {
+    throw new LastWorkspaceOwnerError();
+  }
+  return current;
 }
 
 /**

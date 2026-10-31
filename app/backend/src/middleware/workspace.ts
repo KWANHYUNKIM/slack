@@ -48,13 +48,16 @@ export async function requestWorkspaceState(req: AuthRequest): Promise<UserWorks
 }
 
 /**
- * 현재 워크스페이스를 쓰지 않는 경로. 계정 단위(로그인, 내 프로필·세션·2FA·상태, 토큰)와 워크스페이스를 경로로 받는
- * /workspaces, /org는 헤더를 보지 않는다. 그래야 워크스페이스가 하나도 없는 사용자도 로그아웃·초대 수락·참여를 할 수 있다.
- * /users/me/sidebar는 워크스페이스 단위라(E1d) 해석한다.
+ * 워크스페이스와 무관한 계정 단위 경로. 이 경로들은 X-Workspace-Id를 보지 않고 req.workspace도 두지 않는다.
+ * 그래야 워크스페이스가 하나도 없는 사용자도 로그아웃·초대 수락·참여·푸시 해제·앱 연결 승인을 할 수 있다.
+ * - 계정: /auth(로그인·로그아웃·초대 수락), /users/me(프로필·세션·2FA·상태·연결 앱), /tokens(개인 액세스 토큰, D10 조직 단위),
+ *   /push(기기 단위 푸시 구독), /oauth(앱 연결 승인 authorize 계열, 토큰은 조직 단위)
+ * - 워크스페이스를 경로로 받는 /workspaces, 조직 관리 /org
+ * 예외: /users/me/sidebar는 워크스페이스 단위라(E1d) 해석한다.
  */
 export function isWorkspaceFreePath(fullPath: string): boolean {
   const under = (prefix: string) => fullPath === prefix || fullPath.startsWith(`${prefix}/`);
-  if (under('/auth') || under('/workspaces') || under('/org') || under('/tokens')) return true;
+  if (['/auth', '/workspaces', '/org', '/tokens', '/push', '/oauth'].some(under)) return true;
   if (under('/users/me')) return !under('/users/me/sidebar');
   return false;
 }

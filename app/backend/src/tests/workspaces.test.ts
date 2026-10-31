@@ -421,11 +421,46 @@ describe('Workspaces (E1b)', () => {
       const primary = await request(app).delete(`/workspaces/${fx.workspaceA}/members/${fx.users.ab.id}`).set(admin);
       expect(primary.status).toBe(403);
       expect(primary.body.code).toBe('CANNOT_REMOVE_PRIMARY_OWNER');
-      // 스스로 나가는 것도 막는다
+      // 기본 워크스페이스가 아닌 곳은 주 소유자도 스스로 나갈 수 있다(기본 워크스페이스 나가기는 따로 막힌다)
       const primaryLeave = await request(app).post(`/workspaces/${fx.workspaceA}/leave`).set(auth(fx.users.ab.token));
-      expect(primaryLeave.status).toBe(403);
-      expect(primaryLeave.body.code).toBe('CANNOT_REMOVE_PRIMARY_OWNER');
-      expect((await request(app).get(`/workspaces/${fx.workspaceA}`).set(auth(fx.users.ab.token))).status).toBe(200);
+      expect(primaryLeave.status).toBe(200);
+      expect((await request(app).get(`/workspaces/${fx.workspaceA}`).set(auth(fx.users.ab.token))).status).toBe(404);
+    });
+
+    it('removing yourself follows the leave rules (no rank check, last owner and default workspace still apply)', async () => {
+      // A의 ADMIN이 자기 자신을 DELETE로 빼면 나가기와 같다
+      const selfA = await request(app).delete(`/workspaces/${fx.workspaceA}/members/${fx.users.aAdmin.id}`).set(auth(fx.users.aAdmin.token));
+      expect(selfA.status).toBe(200);
+      // 감사 로그는 응답 뒤에 쓰인다(writeAuditLog를 기다리지 않음). 잠깐 기다리며 확인한다
+      let left = null;
+      for (let i = 0; i < 20 && !left; i++) {
+        left = await prisma.auditLog.findFirst({ where: { action: 'workspace.left', targetId: fx.users.aAdmin.id } });
+        if (!left) await new Promise((r) => setTimeout(r, 50));
+      }
+      expect(left).not.toBeNull();
+      // B의 유일한 OWNER는 자기 자신을 뺄 수 없다
+      const selfB = await request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.bOwner.id}`).set(auth(fx.users.bOwner.token));
+      expect(selfB.status).toBe(409);
+      expect(selfB.body.code).toBe('LAST_WORKSPACE_OWNER');
+    });
+
+    it('two admins removing the same member at once: one 200, one 404 (role re-read under the lock)', async () => {
+      const admin = auth(fx.users.orgAdmin.token);
+      for (let round = 0; round < 3; round++) {
+        await addFixtureMember(fx.workspaceB, fx.users.a.id, 'MEMBER');
+        const results = await Promise.all([
+          request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin),
+          request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(auth(fx.users.bOwner.token)),
+        ]);
+        expect(results.map((r) => r.status).sort()).toEqual([200, 404]);
+      }
+      // 감사 로그는 응답 뒤에 쓰인다. 마지막 한 건을 잠깐 기다린다
+      let removedLogs = 0;
+      for (let i = 0; i < 20 && removedLogs < 3; i++) {
+        removedLogs = await prisma.auditLog.count({ where: { action: 'workspace.member_removed', targetId: fx.users.a.id } });
+        if (removedLogs < 3) await new Promise((r) => setTimeout(r, 50));
+      }
+      expect(removedLogs).toBe(3);
     });
 
     it('two owners leaving at the same time: exactly one succeeds (row lock)', async () => {
@@ -477,6 +512,54 @@ describe('Workspaces (E1b)', () => {
       // 조직 ADMIN(기본 워크스페이스 OWNER 아님)은 기본 워크스페이스에서 ADMIN을 줄 수 없다(조직 역할이 같이 바뀌므로)
       const denied = await request(app).patch(`/workspaces/${DEFAULT_WORKSPACE_ID}/members/${owner.id}`).set(auth(fx.users.orgAdmin.token)).send({ role: 'MEMBER' });
       expect(denied.status).toBe(403);
+    });
+  });
+
+  // ─── 재리뷰 보강: 이름 유일성, 잘못된 id, 계정 단위 경로 ─────
+
+  describe('review follow-ups', () => {
+    it('workspace names are unique case-insensitively at the DB level, also under concurrent creates', async () => {
+      const admin = auth(fx.users.orgAdmin.token);
+      for (let round = 0; round < 2; round++) {
+        const results = await Promise.all([
+          request(app).post('/org/workspaces').set(admin).send({ slug: `wsx-r${round}a`, name: `Race ${round}` }),
+          request(app).post('/org/workspaces').set(admin).send({ slug: `wsx-r${round}b`, name: `RACE ${round}` }),
+        ]);
+        expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+        expect(results.find((r) => r.status === 409)!.body.code).toBe('WORKSPACE_NAME_TAKEN');
+      }
+      // 앱 검사를 거치지 않는 쓰기도 인덱스가 막는다
+      await expect(prisma.workspace.create({ data: { organizationId: 1, slug: 'wsx-direct', name: 'wSx A' } }))
+        .rejects.toMatchObject({ code: 'P2002' });
+      // 이름 변경도 같은 규칙
+      const rename = await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ name: 'WSX A' });
+      expect(rename.status).toBe(409);
+      expect(rename.body.code).toBe('WORKSPACE_NAME_TAKEN');
+      // 대소문자만 바꾸는 자기 이름 변경은 된다
+      const self = await request(app).patch(`/org/workspaces/${fx.workspaceA}`).set(admin).send({ name: 'WSX A' });
+      expect(self.status).toBe(200);
+    });
+
+    it('rejects a malformed :id with 400 whoever calls', async () => {
+      for (const token of [fx.users.a.token, fx.users.orgAdmin.token]) {
+        expect((await request(app).patch('/org/workspaces/abc').set(auth(token)).send({ name: 'x' })).body.code).toBe('INVALID_WORKSPACE_ID');
+        expect((await request(app).post('/org/workspaces/0/archive').set(auth(token))).status).toBe(400);
+        expect((await request(app).post('/org/workspaces/1.5/unarchive').set(auth(token))).status).toBe(400);
+        expect((await request(app).get('/workspaces/abc/members').set(auth(token))).status).toBe(400);
+      }
+    });
+
+    it('account-level paths (/push, /oauth authorize) ignore the workspace header and work without a workspace', async () => {
+      await prisma.workspaceMember.updateMany({ where: { userId: fx.users.a.id }, data: { leftAt: new Date() } });
+      const push = await request(app).delete('/push/subscribe').set(auth(fx.users.a.token)).set('X-Workspace-Id', 'garbage')
+        .send({ endpoint: 'https://push.example.invalid/x' });
+      expect(push.status).toBe(200);
+      expect(push.headers['x-workspace-id']).toBeUndefined();
+      const oauth = await request(app).get('/oauth/authorize/details').set(auth(fx.users.a.token)).set('X-Workspace-Id', 'garbage');
+      expect(oauth.body.code).not.toBe('NO_WORKSPACE');
+      expect(oauth.body.code).not.toBe('INVALID_WORKSPACE_ID');
+      // 워크스페이스 단위 경로는 여전히 막힌다
+      expect((await request(app).get('/users').set(auth(fx.users.a.token))).body.code).toBe('NO_WORKSPACE');
     });
   });
 
@@ -551,6 +634,20 @@ describe('Workspaces (E1b)', () => {
       const exhausted = await request(app).post('/auth/invite/wsx-inv-1/accept').set(auth(fx.users.aAdmin.token));
       expect(exhausted.status).toBe(400);
       expect(exhausted.body.code).toBe('INVITE_EXHAUSTED');
+    });
+
+    it('the same user accepting twice at once uses the invite only once', async () => {
+      await invite(fx.workspaceB, { code: 'wsx-inv-race', maxUses: 10 });
+      for (let round = 0; round < 3; round++) {
+        const results = await Promise.all([
+          request(app).post('/auth/invite/wsx-inv-race/accept').set(auth(fx.users.a.token)),
+          request(app).post('/auth/invite/wsx-inv-race/accept').set(auth(fx.users.a.token)),
+        ]);
+        expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
+        expect(results.find((r) => r.status === 409)!.body.code).toBe('USER_ALREADY_WORKSPACE_MEMBER');
+        expect((await prisma.inviteLink.findUnique({ where: { code: 'wsx-inv-race' } }))?.useCount).toBe(round + 1);
+        await request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.a.token)).expect(200);
+      }
     });
 
     it('rejects invites to archived workspaces, expired and unknown invites', async () => {
@@ -651,56 +748,69 @@ describe('Workspace socket events (E1b)', () => {
     expect(aGot).toEqual([expect.objectContaining({ id: fx.workspaceA })]);
   });
 
-  it('member added/updated/removed: target joins the room live, role change and removal disconnect the target', async () => {
-    let a = await connect(fx.users.a.token);
+  it('member added/updated/removed in another workspace: events and room changes only, the connection stays', async () => {
+    const a = await connect(fx.users.a.token);
     const b = await connect(fx.users.b.token);
     const admin = auth(fx.users.orgAdmin.token);
+    const aErrors = record(a, 'error');
+    const aDisconnects = record(a, 'disconnect');
 
-    const added = next(a, 'workspace:member:added');
-    const bSawAdded = next(b, 'workspace:member:added');
-    await request(app).post(`/workspaces/${fx.workspaceB}/members`).set(admin).send({ userId: fx.users.a.id }).expect(201);
-    expect(await added).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'MEMBER' });
-    expect(await bSawAdded).toMatchObject({ userId: fx.users.a.id });
+    for (let round = 0; round < 2; round++) {
+      const added = next(a, 'workspace:member:added');
+      const bSawAdded = next(b, 'workspace:member:added');
+      await request(app).post(`/workspaces/${fx.workspaceB}/members`).set(admin).send({ userId: fx.users.a.id }).expect(201);
+      expect(await added).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'MEMBER' });
+      expect(await bSawAdded).toMatchObject({ userId: fx.users.a.id });
 
-    // 이제 a도 B room에 있다(추가는 끊지 않는다)
-    const aUpdated = next(a, 'workspace:updated');
-    await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: 'x' }).expect(200);
-    expect(await aUpdated).toMatchObject({ id: fx.workspaceB });
+      // 이제 a도 B room에 있다
+      const aUpdated = next(a, 'workspace:updated');
+      await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: `x${round}` }).expect(200);
+      expect(await aUpdated).toMatchObject({ id: fx.workspaceB });
+
+      // 역할 변경: 이벤트만, 연결은 유지
+      const roleChanged = next(a, 'workspace:member:updated');
+      await request(app).patch(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).send({ role: 'ADMIN' }).expect(200);
+      expect(await roleChanged).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'ADMIN' });
+
+      // 제거: 이벤트를 받고 B room에서만 빠진다
+      const removed = next(a, 'workspace:member:removed');
+      const bSawRemoved = next(b, 'workspace:member:removed');
+      await request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).expect(200);
+      expect(await removed).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id });
+      expect(await bSawRemoved).toMatchObject({ userId: fx.users.a.id });
+
+      // 같은 연결로 B 이벤트는 더 받지 않고 A 이벤트는 받는다(b가 받는 시점까지 a에는 오지 않음)
+      const aGot = record(a, 'workspace:updated');
+      const bUpdated = next(b, 'workspace:updated');
+      await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: `y${round}` }).expect(200);
+      await bUpdated;
+      const aSelf = next(a, 'workspace:updated');
+      await request(app).patch(`/org/workspaces/${fx.workspaceA}`).set(admin).send({ description: `z${round}` }).expect(200);
+      await aSelf;
+      expect(aGot.map((p: any) => p.id)).toEqual([fx.workspaceA]);
+      a.off('workspace:updated');
+    }
     expect(a.connected).toBe(true);
+    expect(aErrors).toEqual([]);
+    expect(aDisconnects).toEqual([]);
+  });
 
-    // 역할 변경: 이벤트를 받은 뒤 서버가 연결을 끊는다
-    const roleChanged = next(a, 'workspace:member:updated');
-    const kicked = next(a, 'error');
-    const dropped = next(a, 'disconnect');
-    await request(app).patch(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).send({ role: 'ADMIN' }).expect(200);
-    expect(await roleChanged).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id, role: 'ADMIN' });
+  it('a default workspace role change disconnects the target (socket.user.role changes)', async () => {
+    const owner = await createFixtureUser('wsy-owner@example.com', 'Owner');
+    await setUserRole(prisma, owner.id, 'OWNER');
+    const member = await createFixtureUser('wsy-m@example.com', 'M');
+    await setUserRole(prisma, member.id, 'MEMBER');
+    const m = await connect(member.token);
+    const updated = next(m, 'workspace:member:updated');
+    const kicked = next(m, 'error');
+    const dropped = next(m, 'disconnect');
+    await request(app).patch(`/workspaces/${DEFAULT_WORKSPACE_ID}/members/${member.id}`).set(auth(owner.token)).send({ role: 'ADMIN' }).expect(200);
+    expect(await updated).toEqual({ workspaceId: DEFAULT_WORKSPACE_ID, userId: member.id, role: 'ADMIN' });
     expect(await kicked).toEqual({ message: 'Workspace membership changed' });
     expect(await dropped).toBe('io server disconnect');
-
-    // 다시 붙으면 B room에 있다
-    a = await connect(fx.users.a.token);
-    const removed = next(a, 'workspace:member:removed');
-    const droppedAgain = next(a, 'disconnect');
-    const bSawRemoved = next(b, 'workspace:member:removed');
-    await request(app).delete(`/workspaces/${fx.workspaceB}/members/${fx.users.a.id}`).set(admin).expect(200);
-    expect(await removed).toEqual({ workspaceId: fx.workspaceB, userId: fx.users.a.id });
-    expect(await droppedAgain).toBe('io server disconnect');
-    expect(await bSawRemoved).toMatchObject({ userId: fx.users.a.id });
-
-    // 다시 붙어도 B 이벤트는 받지 않는다(b가 받는 시점까지 a에는 오지 않음)
-    a = await connect(fx.users.a.token);
-    const aGot = record(a, 'workspace:updated');
-    const bUpdated = next(b, 'workspace:updated');
-    await request(app).patch(`/org/workspaces/${fx.workspaceB}`).set(admin).send({ description: 'y' }).expect(200);
-    await bUpdated;
-    const aSelf = next(a, 'workspace:updated');
-    await request(app).patch(`/org/workspaces/${fx.workspaceA}`).set(admin).send({ description: 'z' }).expect(200);
-    await aSelf;
-    expect(aGot.map((p: any) => p.id)).toEqual([fx.workspaceA]);
   });
 
   it('leaving by yourself does not disconnect you', async () => {
-    await prisma.workspace.update({ where: { id: fx.workspaceB }, data: { discoverability: 'OPEN' } });
     const ab = await connect(fx.users.ab.token);
     const removed = next(ab, 'workspace:member:removed');
     await request(app).post(`/workspaces/${fx.workspaceB}/leave`).set(auth(fx.users.ab.token)).expect(200);

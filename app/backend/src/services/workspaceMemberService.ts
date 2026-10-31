@@ -6,7 +6,7 @@ import { writeAuditLog } from '../utils/auditLog.js';
 import { logError } from '../utils/logger.js';
 import { joinDefaultChannels } from './defaultChannelService.js';
 import {
-  DEFAULT_WORKSPACE_ID, assertNotLastOwner, changeWorkspaceRole, joinWorkspace, joinWorkspaceDefaultChannels, leaveWorkspace,
+  DEFAULT_WORKSPACE_ID, changeWorkspaceRole, lockAndReadMemberRole, joinWorkspace, joinWorkspaceDefaultChannels, leaveWorkspace,
 } from './workspaceService.js';
 
 // 워크스페이스 멤버십 변경(E1b)의 공통 경로: DB 쓰기 → 캐시 비우기 → 소켓 room 가입·탈퇴와 workspace:* 이벤트 → 감사 로그.
@@ -81,35 +81,39 @@ export async function addMember(params: {
 }
 
 export async function updateMemberRole(params: {
-  workspaceId: number; userId: number; role: Role; previousRole: Role; actorId: number;
-}): Promise<void> {
-  const { workspaceId, userId, role, previousRole, actorId } = params;
-  await prisma.$transaction(async (tx) => {
-    if (previousRole === 'OWNER' && role !== 'OWNER') await assertNotLastOwner(tx, workspaceId);
-    await changeWorkspaceRole(tx, { workspaceId, userId, role });
+  workspaceId: number; userId: number; role: Role; actorId: number;
+}): Promise<Role> {
+  const { workspaceId, userId, role, actorId } = params;
+  const previousRole = await prisma.$transaction(async (tx) => {
+    const current = await lockAndReadMemberRole(tx, workspaceId, userId, role);
+    if (current !== role) await changeWorkspaceRole(tx, { workspaceId, userId, role });
+    return current;
   });
+  if (previousRole === role) return previousRole;
   invalidateTokenCache(userId);
   announceUpdated(workspaceId, userId, role);
-  // 소켓에 남은 역할·room을 버리고 새로 연결하게 한다(/admin 역할 변경과 같은 규칙)
-  kickUser(userId, WORKSPACE_KICK_MESSAGE);
+  // 기본 워크스페이스 역할은 User.role이라 소켓의 socket.user.role도 바뀐다. 남은 소켓을 끊어 새 역할로 다시 붙게 한다
+  // (/admin 역할 변경과 같은 규칙). 다른 워크스페이스 역할은 소켓이 들고 있지 않으므로 이벤트만 보낸다.
+  if (workspaceId === DEFAULT_WORKSPACE_ID) kickUser(userId, WORKSPACE_KICK_MESSAGE);
   void writeAuditLog({
     action: 'workspace.member_role_changed', actorId, targetType: 'user', targetId: userId,
     details: `workspaceId=${workspaceId}; from=${previousRole}; to=${role}`,
   });
+  return previousRole;
 }
 
 export async function removeMember(params: {
-  workspaceId: number; userId: number; currentRole: Role; actorId: number; self: boolean;
+  workspaceId: number; userId: number; actorId: number; self: boolean;
 }): Promise<void> {
-  const { workspaceId, userId, currentRole, actorId, self } = params;
-  await prisma.$transaction(async (tx) => {
-    if (currentRole === 'OWNER') await assertNotLastOwner(tx, workspaceId);
-    await leaveWorkspace(tx, { workspaceId, userId, currentRole });
+  const { workspaceId, userId, actorId, self } = params;
+  const currentRole = await prisma.$transaction(async (tx) => {
+    const current = await lockAndReadMemberRole(tx, workspaceId, userId, null);
+    await leaveWorkspace(tx, { workspaceId, userId, currentRole: current });
+    return current;
   });
   invalidateTokenCache(userId);
+  // 연결은 끊지 않는다. 대상 소켓을 ws:<id> room에서 빼고 workspace:member:removed로 알린다
   announceRemoved(workspaceId, userId);
-  // 다른 사람이 뺀 경우에만 끊는다. 스스로 나간 사용자는 이벤트로 전환기를 고치면 되고, 끊으면 프런트가 로그아웃한다
-  if (!self) kickUser(userId, WORKSPACE_KICK_MESSAGE);
   void writeAuditLog({
     action: self ? 'workspace.left' : 'workspace.member_removed', actorId, targetType: 'user', targetId: userId,
     details: `workspaceId=${workspaceId}; role=${currentRole}`,
