@@ -43,6 +43,7 @@
 | mcp-2 write tools: 쓰기 도구, 감사 로그, MCP rate limit | - | sonnet | 대기 | 2h | | | |
 | mcp-3 search+files: 검색, 파일, 리소스, 프롬프트 | - | sonnet | 대기(06 이후) | 1.5h | | | |
 | mcp-4 oauth: OAuth 2.1, claude.ai 커넥터 | - | opus | 대기 | 3h | | | |
-| fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | 진행 중 (10:50) | 45분 | | | PR #9 브라우저 확인에서 발견 |
+| fix/channel-read-clears-mentions: 채널을 열어 끝까지 읽어도 오래된 멘션 배지가 남는 문제(01a markChannelMentionsRead 기준점 확인) | dev-1 | sonnet | PR #12 (10:50~11:08) | 45분 | | | PR #9 브라우저 확인에서 발견 |
 | fix/i18n-followups: 허들 오류 문구 키 연결(PR #10 후), <Trans>로 굵은 글씨·kbd 복원, 스레드 placeholder 즉시 반영 | - | haiku | 대기 | 45분 | | | PR #11 남은 이슈 |
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
+| test/flaky-activity: 전용 DB에서도 activity·security·dms 테스트 간헐 실패. 백그라운드 활동 생성 타이밍, settleBackgroundWork 누락 지점 조사 | - | opus | **높음** | 1.5h | | | CI 신뢰성 |
