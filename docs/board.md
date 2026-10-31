@@ -29,7 +29,7 @@
 | 테스트 채널 CRUD 실습: 메시지·스레드·리액션·상태·DND, 04·05 스펙 보완 | planner-1 | sonnet | 완료 | 40분 | 2026-10-31 09:58 | 2026-10-31 10:04 | #claude-test |
 | test/suite-flaky-rest: 전체 npm test 3회 중 2회 실패(files 타임아웃, dms 회원가입 응답 누락, edge-cases 타임아웃, DB 컨테이너 연결 끊김). scale.test.ts는 POST 응답 상태 확인 추가 | dev-1 | sonnet | 완료(PR #15 머지) | 1h | 12:36 | 14:39 | 256MB DB 부하 의심 |
 | feat/channel-name-hardening: 결합 문자 연속 개수 제한, 문자 체계 혼합(키릴+라틴 동형 문자) 차단 검토, 관리자 상한 80과 생성 상한 25 통일 여부 | - | sonnet | 대기 | 45분 | | | dev-5 남은 이슈 |
-| fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | - | sonnet | 대기 | 1h | | | 06 search-v2와 함께 |
+| fix/search-nfc: /search 질의와 메시지 본문 NFC 정규화(NFD 한글 질의 미일치) | dev-4 | sonnet | 완료(PR #33에 포함) | 1h | | | 06 search-v2와 함께 |
 | test/scale-flaky: scale.test.ts '100 messages'가 400으로 한 번 실패, 재현 안 됨 | - | haiku | 관찰 | | | | PR #5 |
 | verify/gcs-v8: @google-cloud/storage 8 실제 버킷 업로드·다운로드·삭제 확인 | - | haiku | 배포 전 | 30분 | | | PR #6에서 확인 못 함 |
 | build/docker-self-contained: 원작자 GCP base 이미지 의존 제거, 자체 Dockerfile과 이미지 빌드 | - | sonnet | 대기 | 1.5h | | | PR #6 리뷰 1번. 웹 배포 전제 |
@@ -51,14 +51,15 @@
 | verify/e2e-smoke에 Playwright 포트 분리 포함(3000·5173은 다른 프로젝트) | | | | | | | PR #11 |
 | test/flaky-activity: 원인 2개 확정(소켓 연결 직후 리스너 없음, 활동 후처리 경쟁) → 브랜치 fix/activity-race(b79bf51, #12 위 스택). activity 30회 0 실패. 남은 전체 스위트 간헐 실패(요청 멈춤, DB 컨테이너 연결 끊김)는 원인 미확정 | dev-3 | opus | 완료(PR #13 머지) | 1.5h | 11:12 | 12:20 | 실제 70분 |
 | feat/stun-public-port: 컨테이너 UDP 포트 매핑이 다를 때 STUN_PUBLIC_PORT | - | haiku | 대기 | 20분 | | | PR #10 남은 이슈 |
-| fix/auth-error-logging: auth 미들웨어 catch가 DB 오류까지 401로 삼켜 진단이 어려움 → logError, 인증 실패와 서버 오류 구분 | - | haiku | 대기 | 30분 | | | PR #15 남은 이슈 |
-| fix/admin-store-rethrow: useAdminStore.editChannel이 실패를 삼켜 컴포넌트가 이름 비교로 추정 → 다시 던지기 | - | haiku | 대기 | 20분 | | | PR #14 남은 이슈 |
+| fix/auth-error-logging: auth 미들웨어 catch가 DB 오류까지 401로 삼켜 진단이 어려움 → logError, 인증 실패와 서버 오류 구분 | dev-1 | haiku | 진행 | 30분 | 2026-10-31 22:52 | | PR #15 남은 이슈 |
+| fix/admin-store-rethrow: useAdminStore.editChannel이 실패를 삼켜 컴포넌트가 이름 비교로 추정 → 다시 던지기 | dev-1 | haiku | 진행 | 20분 | 2026-10-31 22:52 | | PR #14 남은 이슈 |
 | feat/channel-name-taken-code: 중복 채널 이름 오류에 code(CHANNEL_NAME_TAKEN)와 errors 번역(POST /channels·관리자 변경) | dev-3 | sonnet | 완료(PR #21에 포함) | 30분 | | | PR #14 남은 이슈 |
 | feat/channel-name-skeleton: UTS #39 skeleton 컬럼으로 단일 체계 동형 이름(рау/pay, ɡ/g) 유니크 검사 | - | opus | 대기(스키마) | 2h | | | PR #14 남은 이슈 |
 | 00b-gap-analysis-v2: 실제 Slack(#claude-test)과 현재 main 기능 비교, CRUD 관찰, 차이 우선순위 표와 다음 파트 스펙(06~) | planner-1 | sonnet | 완료(문서 기반, 브라우저 미관찰) | 1h | 2026-10-31 21:42 | 2026-10-31 21:45 | Claude in Chrome 도구 없음 → 04·05·06~10 "검증 필요" 항목 브라우저 재관찰 필요 | 2026-10-31 20:33 사용자 지시 |
 | 06-quick-switcher-shortcuts: Cmd/Ctrl+K 빠른 전환기, 전역 단축키 | dev-2 | sonnet | 완료(PR #30 머지) | 1.5h | 2026-10-31 22:17 | 2026-10-31 22:20 | 00b |
 | 07-message-permalink: 메시지 링크 복사와 딥링크 | dev-3 | sonnet | 완료(PR #32 머지) | 1.5h | 2026-10-31 22:26 | 2026-10-31 22:32 | 00b |
-| 08-search-v2: from:/in:/날짜 필터, 탭, 하이라이트 | dev-4 | sonnet | PR #33 리뷰 반영 중 | 2h | 2026-10-31 22:26 | 2026-10-31 22:37 | 00b, 기존 fix/search-nfc 흡수 |
-| 10-unread-divider: 안 읽음 구분선 | dev-3 | sonnet | 진행 | 1.5h | 2026-10-31 22:43 | | 00b |
+| 08-search-v2: from:/in:/날짜 필터, 탭, 하이라이트 | dev-4 | sonnet | 완료(PR #33 머지) | 2h | 2026-10-31 22:26 | 2026-10-31 22:37 | 00b, 기존 fix/search-nfc 흡수 |
+| 10-unread-divider: 안 읽음 구분선 | dev-3 | sonnet | PR #36 리뷰 반영 중 | 1.5h | 2026-10-31 22:43 | 2026-10-31 22:49 | 00b |
 | 09-reminders: 리마인더 | dev-5 | sonnet | PR #34 리뷰 반영 중 | 1.5h | 2026-10-31 22:30 | 2026-10-31 22:39 | 00b, 스키마 |
 | 00c-slack-browser-verify: Claude in Chrome으로 #claude-test CRUD 재관찰, 06~10 "검증 필요" 확인 | - | sonnet | 대기(브라우저 도구 필요) | 1h | | | 사용자 확인 필요 |
+| feat/dm-unread-divider: 1:1 DM·그룹 DM 안 읽음 구분선(기준점 필드, 열 때 읽음 처리 순서) | - | sonnet | 대기 | 1h | | | PR #36 남은 이슈 |
