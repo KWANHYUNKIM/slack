@@ -351,3 +351,6 @@
 | 2026-11-01 06:20 | 사용자: "계속 돌려줘 그리고 MCP 되나 이제?" → main 기준 mcp 30·mcp-write 19·mcp-dm 22·oauth 42 재실행 통과, 도구 18개와 연결 방법 안내 |
 | 2026-11-01 06:21 | 사용자: "loop를 바로바로 해주면 안되나?" → 3명 허용대로 빈 자리 채움: planner-1 spec/E2-sso(opus, 문서), dev-2 verify/rtl-layout(sonnet, 3120/5190). 예비 점검 주기 25분→10분 |
 | 2026-11-01 06:22 | 사용자: "이거 또한 md 에 적용시켜서 해주면 되거든" → CLAUDE.md 3장에 "루프는 바로바로"(알림 즉시 처리, 빈 자리 즉시 채움, 예비 점검 10분), 4장에 감속 단계 3명 허용(무거운 작업만 순차) 반영 |
+| 2026-11-01 06:41 | PR #138 리뷰 반영 검토: 리베이스 충돌 0, workspace-isolation 27·workspaces 41·admin 48·users 23·webhooks 37·sessions 29·error-code-coverage 11, tsc → 푸시, 권한 범위 변경이 커 /code-review medium 재리뷰 |
+| 2026-11-01 06:42 | 배정: dev-1 E1f 프런트 전환기(sonnet, 프런트만, E2E 시 3125/5195·dev1 DB). 진행 3명(dev-1 E1f, dev-2 RTL 점검, planner-1 E2 스펙) + E1c 재리뷰 |
+| 2026-11-01 06:45 | E2 스펙 검토: docs/specs/E2-sso.md, docs/research/sso.md. D1~D14 제안안 확정, D8 딥링크 스킴만 teammessenger로 변경(브랜드 이름 금지), D4 구제 경로는 E2g 후속. E2a~E2g 보드 등록 |
